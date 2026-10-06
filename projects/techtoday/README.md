@@ -36,7 +36,9 @@ git commit -m "feat(techtoday): short description"
 git push -u origin feat/techtoday-short-description
 ```
 
-Open a pull request and squash-merge it into `main`. Changes under
+The branch push deploys it live for testing (see
+[../DEPLOYMENT.md](../DEPLOYMENT.md)). Once verified, open a pull request and
+squash-merge it into `main`, which redeploys from `main`. Changes under
 `projects/techtoday/**` trigger `.github/workflows/deploy-techtoday.yml`. The
 workflow copies public files (home page, CSS, and study guides) and
 synchronizes them to `/var/www/techtoday/` on EC2; Nginx serves the files

@@ -142,7 +142,7 @@ The final `grep` should print nothing, and the `test -f` command should print
 
 The workflow reuses the shared GitHub secrets already configured for this repo:
 `AWS_REGION`, `AWS_ACCOUNT_ID`, `AWS_DEPLOY_ROLE_ARN`, `EC2_HOST`, and
-`EC2_SSH_KEY`. It runs on pushes to `staging` and `main` that touch
+`EC2_SSH_KEY`. It runs on pushes to **any** branch that touch
 `projects/<project-name>/**` or the workflow file itself.
 
 > **Nginx include & rate limiting (handled automatically):** per-project location files only
@@ -153,30 +153,31 @@ The workflow reuses the shared GitHub secrets already configured for this repo:
 
 ## 6. Deploy
 
-Commit and push to `staging` first — that is the deployment target for all
-day-to-day work ([DEPLOYMENT.md](DEPLOYMENT.md)). The push under
-`projects/<project-name>/` triggers the workflow, which provisions and deploys
-everything automatically:
+Commit on a feature branch and push it — every branch deploys on push
+([DEPLOYMENT.md](DEPLOYMENT.md)). The push under `projects/<project-name>/`
+triggers the workflow, which provisions and deploys everything automatically:
 
 ```bash
 # Run on: local machine
-git checkout staging
+git checkout main && git pull origin main
+git checkout -b feat/add-<project-name>
 git add projects/<project-name> .github/workflows/deploy-<project-name>.yml
 git commit -m "Add <project-name> project"
-git push origin staging
+git push -u origin feat/add-<project-name>
 ```
 
 Watch the run under the repository's **Actions** tab. The first run creates all
 AWS and EC2 resources for the project; later pushes rebuild and restart only
 this project.
 
-After verifying the live URL (§ 7), promote the project to production:
+After verifying the live URL (§ 7), merge the branch into `main` (via a pull
+request, or locally), which redeploys the project from `main`:
 
 ```bash
 # Run on: local machine
 git checkout main
 git pull origin main
-git merge staging
+git merge feat/add-<project-name>
 git push origin main
 ```
 

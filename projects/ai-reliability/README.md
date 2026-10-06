@@ -207,26 +207,28 @@ aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-strin
 
 ## Commit and Automatic Deployment
 
-Push to `staging` first, verify, then promote to `main` (see
-[../DEPLOYMENT.md](../DEPLOYMENT.md)):
+Push a branch to deploy it live for testing, verify, then merge into `main`
+(see [../DEPLOYMENT.md](../DEPLOYMENT.md)):
 
 ```bash
-git checkout staging
+git checkout main && git pull origin main
+git checkout -b feat/ai-reliability-short-description
 git add projects/ai-reliability .github/workflows/deploy-ai-reliability.yml
-git commit -m "feat(ai-reliability): add AI Reliability Lab container project"
-git push origin staging
+git commit -m "feat(ai-reliability): short description"
+git push -u origin feat/ai-reliability-short-description
 ```
 
-Watch the run under the repository's **Actions** tab. After verifying:
+Watch the run under the repository's **Actions** tab. After verifying, merge
+into `main` (via a pull request, or locally):
 
 ```bash
 git checkout main
 git pull origin main
-git merge staging
+git merge feat/ai-reliability-short-description
 git push origin main
 ```
 
-Pushes touching `projects/ai-reliability/**` or the workflow file trigger
+Pushes to any branch touching `projects/ai-reliability/**` or the workflow file trigger
 `deploy-ai-reliability.yml`, which pushes the image to
 `techtoday/ai-reliability` and restarts only the `ai-reliability` service on
 EC2 (host port `5008`).
@@ -326,5 +328,5 @@ If the pull reports `no space left on device`, run `docker system df`, then
 
 Single-service project, fully automated: `.github/workflows/deploy-ai-reliability.yml`
 builds and pushes the one image, provisions ECR, the env file, Nginx, and the
-Compose service, and restarts `ai-reliability` on every push to `staging` or
-`main` that touches the trigger paths.
+Compose service, and restarts `ai-reliability` on every push to any
+branch that touches the trigger paths.
