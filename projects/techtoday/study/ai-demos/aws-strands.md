@@ -45,6 +45,14 @@ Level · **Beginner-friendly** · Framework · **AWS Strands SDK** · Model host
 19. [Every command in one place](#s17b)
 20. [Troubleshooting](#s18)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Environment & AWS Setup
+
+Configure IAM credentials, request Amazon Bedrock model access, and verify the local Python development environment.
+
 <a id="s0"></a>
 
 ## 1. AWS setup from zero
@@ -186,6 +194,14 @@ python 00_check_setup.py
 > 🔑 **What success looks like.** You should see six `[ OK ]` lines ending with *"All checks passed."* If something fails, the script prints the fix. It may ask you to enable model access, paste fresh credentials, or replace a retired model. Run this before anything else. If it passes, every example in this guide should work.
 
 > 🔑 **Do this before anything else.** Spend 15 minutes on Section 0 before you write agent code. Setup failures are the main reason people stop hands-on AI work. Do not continue until `get-caller-identity` returns your account details.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Agent Concepts & Protocols
+
+Understand why agents exist, how they extend RAG, the ReAct reasoning loop, and open standards like MCP and A2A.
 
 <a id="s1"></a>
 
@@ -412,6 +428,14 @@ Diagram 7 — MCP vs A2A, side by side
 
 > 💡 **Scope note.** Module 1 only introduces these protocols. Building MCP servers and A2A agents is a larger topic. Learn the vocabulary now so it is familiar later. Then move on. Do not build an MCP server today; finish the agent fundamentals first.
 
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — The AWS Stack & Strands Runtime
+
+Connect Amazon Bedrock foundation models to the AWS Strands SDK and run your first agent loop in code.
+
 <a id="s6"></a>
 
 ## 7. The AWS agentic stack
@@ -559,6 +583,14 @@ python one/02_hello_world_langgraph.py
 > 🔑 **Expected output.** You will see five lines: `human:` the request · `ai:` (empty) · `tool:` Hello, Alice! · `tool:` Hello, Bob! · `ai:` a summary. The empty `ai:` line means the model chose to use a tool instead of answering. That is the agentic loop from Diagram 9, visible in your terminal.
 
 > 💡 **Model note.** Older tutorials pin `anthropic.claude-3-5-haiku-20241022-v1:0`, which AWS has retired. These files already use the current model through `config.py`, so you do not need to patch anything. If AWS retires a model later, run `python 01_list_models.py`, pick an active model, and change the single line in `config.py`. Every example uses that setting.
+
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Tools & Function Calling
+
+Convert Python functions into schema-driven tools, enable multi-tool decision making, and integrate pre-built community and AWS services.
 
 <a id="s9"></a>
 
@@ -946,6 +978,14 @@ python two/07_use_aws.py
 
 > ⚠️ **Handle with care.** `use_aws` can modify real resources. While you learn, stick to read-only requests such as "list" and "describe". Always use a sandbox account, never production. This is why the consent prompt exists. Read it before you type `y`.
 
+---
+
+<a id="unit-5"></a>
+
+## Unit 5 — Custom Tools & Advanced Patterns
+
+Build production custom tools with domain logic, manage state with class-based tools, and execute parallel calls with async tools.
+
 <a id="s15"></a>
 
 ## 16. Building custom tools
@@ -1149,6 +1189,14 @@ python two/09_async_tools.py
 ```
 
 > 🔑 **What to notice.** The printed timing is the lesson: roughly 2 seconds instead of 6. Run it yourself so you see concurrency, not just read about it. The bare `await main()` works in a Jupyter cell. In a plain script, use `asyncio.run(main())`.
+
+---
+
+<a id="unit-6"></a>
+
+## Unit 6 — Capstone Project & Troubleshooting
+
+Combine tools into an end-to-end travel assistant agent, reference runnable commands, and diagnose common Bedrock errors.
 
 <a id="s17"></a>
 
