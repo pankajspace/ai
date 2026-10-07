@@ -35,6 +35,14 @@ This revision guide covers the full Docker lesson. Three real projects, every co
 5. [Cheatsheet, Golden Rules & Debugging](#port4)
 6. [Self-test — 30 questions](#revise)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations & Container Environment
+
+The tiffin-delivery mental model, image vs container lifecycle, and Apple Silicon / macOS environment setup.
+
 <a id="port0"></a>
 
 ## 1. The Dabbawala Analogy + Mac Setup
@@ -176,6 +184,14 @@ Use this list to check your work.
 - I can explain "an image is a photograph, not a mirror" to someone else
 
 - I can say the difference between a VM and a container in one sentence
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Single-Container Microservices
+
+Package a scikit-learn ML microservice in a Dockerfile with port mapping, environment variables, and image optimization.
 
 <a id="port1"></a>
 
@@ -611,6 +627,14 @@ Use this list to check your work.
 - I can answer: "I edited my code, why doesn't the container see it?"
 
 - I can explain why `--host 0.0.0.0`  is required in the CMD
+
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Multi-Container RAG & Agent Workflows
+
+Orchestrate multi-service applications using Docker Compose, mount persistent volumes, configure internal networking, and run background agents.
 
 <a id="port2"></a>
 
@@ -1304,6 +1328,14 @@ Use this list to check your work.
 - I can explain why `curl localhost:7000`  fails on purpose
 
 - I can draw the 3-service architecture from memory on paper
+
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Operations, Debugging & Assessment
+
+Master container inspection and cleanup commands, apply production sizing rules, and validate understanding with 30 self-test questions.
 
 <a id="port4"></a>
 

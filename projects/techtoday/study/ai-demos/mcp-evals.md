@@ -35,6 +35,14 @@ A model can reason well, but it cannot see current data by itself. A tool gives 
 5. [Evals: how you check the AI did the right thing](#evals)
 6. [Recap and homework](#recap)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Tools & The Integration Challenge
+
+Understand why models require external tools, how tool calling works, and why bespoke integrations create an N-by-M scaling mess.
+
 <a id="stuck"></a>
 
 ## 1. Why models get stuck and what a tool is
@@ -256,6 +264,14 @@ With MCP, each tool is wrapped once as a server. Each app learns MCP once as a c
 
 GitHub can build a GitHub MCP server once. Every MCP-speaking AI app can use GitHub with zero extra per-app tool glue. MCP does not remove the work. It moves it to the tool owner, who does it **once** for everyone.
 
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — The Model Context Protocol & Demos
+
+Explore MCP architecture, build a cricket MCP server and client, and enforce runtime tool-input safety guardrails.
+
 <a id="inside"></a>
 
 ## 3. Inside MCP
@@ -469,6 +485,14 @@ Can you trust SQL from a model not to send `DROP TABLE users`? **Never.** Treat 
 - Use least privilege, such as a read-only database connection. Even if all else fails, it cannot delete data.
 
 > ⚠️ **Important.** A hostile user may ask the model to delete data. The host and application must enforce the limits.
+
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Application Evals & Production Takeaways
+
+Measure AI application accuracy with deterministic and model-based evals, and review core production practices.
 
 <a id="evals"></a>
 
