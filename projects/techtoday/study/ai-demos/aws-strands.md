@@ -61,8 +61,6 @@ Configure IAM credentials, request Amazon Bedrock model access, and verify the l
 
 ### 0.1 · Create an access key (browser, once)
 
-Section 0 · Setup
-
 Both modules run on your laptop and call AI models hosted on AWS. You need two things: **credentials**, which let your laptop talk to AWS, and **model access**, which lets your AWS account use the models. That is all.
 
 > 💡 **What this costs.** Running code locally is free. You pay only for model calls. AWS prices those calls per token, which means per small piece of text. The examples in this guide cost a fraction of a cent in total. Nothing keeps running in the background, so there is nothing to switch off later.
@@ -211,8 +209,6 @@ Understand why agents exist, how they extend RAG, the ReAct reasoning loop, and 
 
 ### Overview
 
-Section 1 · Module 1 · one
-
 Start here because it frames the rest of the guide. A standard LLM has two hard limits:
 
 - Knowledge cutoff: it knows only what it learned during training. Ask about yesterday's news and it cannot help.
@@ -235,8 +231,6 @@ Here is the key point. Many teams build a RAG system. Then users ask the AI to d
 <a id="s2-the-full-rag-pipeline"></a>
 
 ### The full RAG pipeline
-
-Section 2
 
 RAG combines an LLM with a search system. It has three steps:
 
@@ -308,8 +302,6 @@ RAG is an **open-book exam**. The model has not memorised the textbook. You let 
 
 ### Overview
 
-Section 3
-
 The word *agent* means something that performs a task for you. A working definition is: **AI agents are autonomous software systems that use AI to reason, plan, and carry out tasks** for humans or other systems. Autonomous means they can keep working without step-by-step instructions. They make decisions, adapt to new information, and act.
 
 Their strength is **iterative thinking**. They check results, adjust, and keep working toward a goal. They often use RAG as one part of that workflow.
@@ -353,8 +345,6 @@ That final synthesis combines three sources into one judgement. This decision-ma
 
 ### Overview
 
-Section 4
-
 Think of this as a progression. Each step adds one capability. Use it to orient yourself if you already know agents a little.
 
 ```mermaid
@@ -380,8 +370,6 @@ Remember this line: each level adds exactly one thing. First memory, then ground
 <a id="s5-mcp-model-context-protocol"></a>
 
 ### MCP — Model Context Protocol
-
-Section 5
 
 When agents need to reach the outside world or other agents, you need standard connection methods. Two protocols matter. People often confuse them, so compare them side by side.
 
@@ -444,8 +432,6 @@ Connect Amazon Bedrock foundation models to the AWS Strands SDK and run your fir
 
 ### Overview
 
-Section 6
-
 AWS offers three layers for building agents. Know which layer you are using.
 
 ```mermaid
@@ -467,8 +453,6 @@ Diagram 8 — The AWS agentic stack and where Strands sits within it
 <a id="s7-overview"></a>
 
 ### Overview
-
-Section 7
 
 Strands has three core components: **model**, **tools**, and **prompt**. It also has an agentic feedback loop.
 
@@ -501,8 +485,6 @@ Here is the loop in plain terms. The agent asks the model. The model reasons, re
 <a id="s8-8-1-the-simplest-possible-agent-strands-nova-lite"></a>
 
 ### 8.1 · The simplest possible agent — Strands + Nova Lite
-
-Section 8 · Hands-on
 
 > 💡 **How to run every example in this guide.** Run everything from the project root, which is the folder that contains `config.py`. Do not run from inside `one/`. The scripts import shared settings from `config.py`. If you run from a subfolder, you get `ModuleNotFoundError: No module named 'config'`.
 
@@ -600,8 +582,6 @@ Convert Python functions into schema-driven tools, enable multi-tool decision ma
 
 ### Types of tools
 
-Section 9 · Module 2 · two
-
 Use this simple division of labour:
 
 - The LLM is the brain. It understands requests, reasons about what needs to happen, and decides which tools to use.
@@ -640,8 +620,6 @@ Diagram 11 — Types of tools an agent can use
 <a id="s10-overview"></a>
 
 ### Overview
-
-Section 10 · Hands-on
 
 This is the most important idea in this module. Start with a normal Python function that checks whether a server is up:
 
@@ -724,8 +702,6 @@ This pattern works for any function. Add `@tool`, give it to your `Agent`, and t
 
 ### Overview
 
-Section 11 · Hands-on
-
 This is a practical, self-contained example from Module 2. You do not need to configure anything external.
 
 **two/01_function_to_tool.py**
@@ -789,8 +765,6 @@ python two/02_tip_calculator.py
 <a id="s12-overview"></a>
 
 ### Overview
-
-Section 12
 
 Scenario: you ask a sales assistant to *"pull last quarter's sales data and email a summary to the team."* That is not one task. It is three tasks: query the database, analyse the numbers, and send an email.
 
@@ -856,8 +830,6 @@ python two/03_multi_tool_sales.py
 <a id="s13-13-1-calculator"></a>
 
 ### 13.1 · Calculator
-
-Section 13 · Hands-on
 
 You do not have to write every tool yourself. `strands_tools` includes ready-made tools. Import them and use them.
 
@@ -934,8 +906,6 @@ python two/06_multi_prebuilt_tools.py
 
 ### Overview
 
-Section 14 · Hands-on
-
 One tool can work with many services. `use_aws` translates plain English into AWS API calls.
 
 **two/07_use_aws.py**
@@ -993,8 +963,6 @@ Build production custom tools with domain logic, manage state with class-based t
 <a id="s15-overview"></a>
 
 ### Overview
-
-Section 15 · Hands-on
 
 When community tools do not fit your need, write your own. This applies to an internal API, a private database, or a new action. Example: an online store checking inventory.
 
@@ -1054,8 +1022,6 @@ python two/04_custom_tool_inventory.py
 <a id="s16-16-1-the-database-connection-problem-class-based-tools"></a>
 
 ### 16.1 · The database connection problem → class-based tools
-
-Section 16 · Advanced
 
 This module ends with three cases where the plain `@tool` approach starts to strain. Learn them so you can recognise the pattern when it appears. You do not need to memorise them.
 
@@ -1205,8 +1171,6 @@ Combine tools into an end-to-end travel assistant agent, reference runnable comm
 <a id="s17-the-brief"></a>
 
 ### The brief
-
-Section 17 · Capstone
 
 This project mirrors Diagram 3, the travel planner. You finish where Module 1 began, but now you build it yourself. It uses every skill from both modules: custom tools, multiple tools, a pre-built tool, a system prompt, and the agentic loop.
 
@@ -1381,8 +1345,6 @@ Notice that the agent calls `get_weather_forecast` first. Then it feeds those nu
 
 ### Setup (once)
 
-Section 17b
-
 Use this as a copy-paste reference. Run every command from the project root, which is the folder that contains `config.py`.
 
 **Run it**
@@ -1440,8 +1402,6 @@ env | grep AWS               # what credentials are actually set?
 <a id="s18-troubleshooting-keep-this-open-while-you-work"></a>
 
 ### Troubleshooting — keep this open while you work
-
-Section 18
 
 1. **`ResourceNotFoundException … end of its life` /<br>`marked by provider as Legacy`<br>**: Retired model. Run `python 01_list_models.py`, pick an active model, and change `MODEL_ID` in `config.py`.
 2. **`AccessDeniedException`**: The model is not enabled in Bedrock Model access, or you are using the wrong region. Check both.
