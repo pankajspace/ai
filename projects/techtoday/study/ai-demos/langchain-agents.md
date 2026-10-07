@@ -54,6 +54,14 @@ Concepts, Worked Examples & a Tool-Using Agent
 5. [Hands-On Project](#project)
 6. [What's Next](#next)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Mental Models & Adaptation
+
+Review core LLM limitations and compare prompt engineering, fine-tuning, and tool-augmented workflows.
+
 <a id="recap"></a>
 
 ## 1. You already know the basics
@@ -94,6 +102,14 @@ Before you build, remember the **three** main ways to steer a pre-trained model.
 
 > **🧭 Why this matters here.** Chains, tools, agents — it's all still **option 1,
 > organised cleverly**. Nothing new to fear. Let's build.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — LangChain Core & LCEL
+
+Compose prompt templates, foundation models, and output parsers using LangChain Expression Language (LCEL).
 
 <a id="langchain"></a>
 
@@ -315,6 +331,14 @@ print(chain.invoke({"history": history, "question": "What's my name?"}).content)
 > **🎙️ Speaker note.** Run the summarizer live and change the template in front of them
 > ("now make it snarky"). The target feeling: *"oh — it's just my raw OpenAI code, tidied
 > up."*
+
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Tool-Using Agents & Capstone
+
+Define custom Python tools, run a ReAct reasoning loop, ship a Smart Shop Assistant, and explore memory.
 
 <a id="agent"></a>
 

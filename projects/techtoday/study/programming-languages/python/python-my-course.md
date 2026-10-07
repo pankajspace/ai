@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, and modules & imports.
+Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, modules & imports, and virtual environments.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -10,7 +10,7 @@ Navigation: [TechToday](../../../index.html) · [← Programming Languages](../p
 
 # Python My Course
 
-The high-yield Python course reference: common everyday syntax, type hints, keywords, core collections, functions, async/await concurrency, practical OOP solutions, error handling, and modules & imports.
+The high-yield Python course reference: common everyday syntax, type hints, keywords, core collections, functions, async/await concurrency, practical OOP solutions, error handling, modules & imports, and virtual environments.
 
 <a id="table-of-contents"></a>
 
@@ -32,6 +32,7 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 14. [Object-Oriented Programming (OOP)](#14-object-oriented-programming)
 15. [Everyday Error Handling](#15-everyday-error-handling)
 16. [Modules & Imports](#16-modules-and-imports)
+17. [Virtual Environments](#17-virtual-environments)
 
 ---
 
@@ -1452,9 +1453,9 @@ print("Inventory item passed!")
 
 <a id="unit-5"></a>
 
-## Unit 5 — Error Handling & Modules
+## Unit 5 — Error Handling, Modules & Environments
 
-Catching runtime exceptions gracefully, structuring scripts, and working with Python modules.
+Catching runtime exceptions gracefully, structuring scripts, and managing isolated project environments.
 
 <a id="15-everyday-error-handling"></a>
 
@@ -1643,6 +1644,120 @@ print("Load config passed!")
 
 ---
 
+<a id="17-virtual-environments"></a>
+
+## 17. Virtual Environments
+
+- **Environment Creation** `python3 -m venv .venv` <!-- great -->
+- **Activation** `source .venv/bin/activate` <!-- great -->
+- **Dependency Installation** `pip install -r requirements.txt` <!-- good -->
+
+A virtual environment is a self-contained, isolated directory tree containing a Python installation for a specific version, along with its own independent set of packages in `site-packages`. Without a virtual environment, installing third-party libraries globally with `pip install` risks version conflicts across different projects and can corrupt system Python tools. Activating an environment temporarily modifies your shell's `PATH` so `python` and `pip` point directly to the project's local sandbox.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Dedicated Apartment Kitchen vs. A Shared Public Canteen**
+>
+> Imagine sharing one giant global kitchen with every tenant in a city. If project A needs Chef salt v1 and project B demands Chef salt v2, their conflicting ingredients ruin each other's recipes. A virtual environment is your project's private kitchen: you stock exactly the spices and utensils your specific recipe needs without interfering with anyone else. When you leave the project, you simply step outside or delete the kitchen folder without leaving any mess.
+
+### Using
+
+```bash
+# Create a virtual environment named `.venv`
+python3 -m venv .venv
+
+# Activate the virtual environment
+source .venv/bin/activate  # On Windows use `.venv\Scripts\activate`
+
+# Install dependencies from `requirements.txt` if it exists
+pip install -r requirements.txt
+```
+
+Key everyday commands and workflow:
+1. `python3 -m venv .venv`: Uses Python's built-in `venv` module to create an isolated environment in a directory named `.venv`.
+2. `source .venv/bin/activate`: Updates shell environment variables (`PATH` and `VIRTUAL_ENV`) so terminal commands resolve to `.venv/bin/python` and `.venv/bin/pip`. On Windows (PowerShell/Command Prompt), run `.venv\Scripts\activate`.
+3. `pip install -r requirements.txt`: Reads the dependency specification and installs reproducible package versions into `.venv/lib/pythonX.Y/site-packages`.
+4. `pip freeze > requirements.txt`: Exports currently installed packages and exact version pins to share with collaborators or deploy in CI/CD.
+5. `deactivate`: Restores shell environment variables back to their previous system values.
+6. Verify active environment in Python code: inspect `sys.prefix != sys.base_prefix` to confirm isolation at runtime.
+
+```python
+import sys
+from pathlib import Path
+
+# Verify whether the current script is running inside a virtual environment
+def is_virtual_env() -> bool:
+    # In a virtual environment, sys.prefix points to the .venv directory,
+    # while sys.base_prefix points to the global system Python installation.
+    return sys.prefix != sys.base_prefix
+
+print(f"Python Executable: {sys.executable}")
+print(f"Active Environment Path: {sys.prefix}")
+print(f"Base System Python Path: {sys.base_prefix}")
+print(f"Running inside virtual environment: {is_virtual_env()}")
+
+# Check for requirements.txt in project root
+req_file = Path("requirements.txt")
+if req_file.exists():
+    dependencies = [line.strip() for line in req_file.read_text().splitlines() if line.strip() and not line.startswith("#")]
+    print(f"Project requirements ({len(dependencies)} packages): {dependencies}")
+```
+
+- **Strength — Clean Project Isolation & Reproducibility** Keeps conflicting package versions strictly separated per project and enables deterministic, zero-surprise builds across team members and CI/CD pipelines.
+- **Weakness — Committing `.venv` to Git** The `.venv` folder is OS- and path-dependent and must never be committed to source control. Always add `.venv/` to `.gitignore` and commit `requirements.txt` instead.
+
+**Interview question**
+
+*Write a Python utility function `parse_requirements(requirements_content: str) -> dict[str, str]` that parses a standard `requirements.txt` file string and returns a dictionary mapping package names to their pinned version constraints (e.g. `{"fastapi": ">=0.110.0", "requests": "==2.31.0"}`). Ignore comments and empty lines.*
+
+Iterate over the lines, strip whitespace, ignore empty lines and comment lines starting with `#`, then parse package names and version specifiers (such as `==`, `>=`, `<=`, `~=`).
+
+**Answer — Parse Requirements File**
+
+```python
+import re
+
+def parse_requirements(requirements_content: str) -> dict[str, str]:
+    requirements = {}
+    pattern = re.compile(r"^([A-Za-z0-9_.\-]+)\s*([<>=!~].*)?$")
+
+    for line in requirements_content.splitlines():
+        cleaned = line.strip()
+        # Skip empty lines and comment lines
+        if not cleaned or cleaned.startswith("#"):
+            continue
+
+        match = pattern.match(cleaned)
+        if match:
+            pkg_name = match.group(1).lower()
+            specifier = (match.group(2) or "").strip()
+            requirements[pkg_name] = specifier
+
+    return requirements
+
+# Test cases
+sample_reqs = """
+# Production dependencies
+requests==2.31.0
+fastapi>=0.110.0
+uvicorn~=0.28.0
+pytest
+"""
+
+parsed = parse_requirements(sample_reqs)
+assert parsed["requests"] == "==2.31.0"
+assert parsed["fastapi"] == ">=0.110.0"
+assert parsed["uvicorn"] == "~=0.28.0"
+assert parsed["pytest"] == ""
+print("Parse requirements passed!")
+```
+
+> **Key idea**
+>
+> Always use a dedicated virtual environment for every Python project. Never install third-party dependencies into the global system interpreter, and never commit the `.venv` directory to Git — commit `requirements.txt` so anyone can recreate the environment in seconds.
+
+---
+
 ## Daily Python Cheat Sheet
 
 A quick checklist of the most common daily syntax:
@@ -1663,6 +1778,7 @@ A quick checklist of the most common daily syntax:
 14. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
 15. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
 16. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
+17. **Virtual Environments:** Create isolated project environments with `python3 -m venv .venv`, activate with `source .venv/bin/activate` (or `.venv\Scripts\activate` on Windows), install dependencies from `requirements.txt` via `pip install -r requirements.txt`, and check with `sys.prefix != sys.base_prefix`. Never commit `.venv` to git.
 
 ---
 

@@ -37,6 +37,14 @@ You do not need a PhD, advanced math or a machine learning background. In one si
 7. [Build & Ship Your Apps](#project)
 8. [Where We Go Next](#next)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — Foundations of Language Models
+
+Understand the AI inflection point, tokenization, next-token prediction, temperature, and self-supervised learning.
+
 <a id="why"></a>
 
 ## 1. Why AI Is *Everywhere* Now
@@ -201,6 +209,14 @@ Here is the hidden-word example:
 > 🔑 **Why this changes everything.** The model does this **billions of times**. To guess “coffee”, it has to learn grammar, context, what baristas do, what is hot and what fits in a cup. *Understanding emerges as a side effect of getting very good at fill-in-the-blank.* That is the main idea behind ChatGPT.
 
 > ⚠️ **Keep it honest.** Because it learned by predicting plausible text, an LLM can sometimes produce confident-sounding *wrong* answers — called **hallucinations**. A big part of our job as AI engineers is designing around that (e.g. feeding it real documents — we will see that later). Trust, but verify.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — The AI Engineer & Model APIs
+
+Transition from software engineering to AI engineering, master system prompting, and invoke models via API in Python.
 
 <a id="build"></a>
 
@@ -438,6 +454,14 @@ print(response.choices[0].message.content)
 ```
 
 > **Where to get the key.** Sign up free at `console.groq.com` → *API Keys* → Create key, then add it to your `.env` as `GROQ_API_KEY=gsk_...`. **Notice that little changed** — just the key, the `base_url`, and the model name. This is a key idea in AI Engineering: the model is swappable.
+
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Hands-On Projects & Beyond
+
+Ship an AI Website Summarizer and LLM Arena, then chart the path toward RAG, memory, and autonomous agents.
 
 <a id="project"></a>
 

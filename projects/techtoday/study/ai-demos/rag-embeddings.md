@@ -37,6 +37,14 @@ LangChain agents can *act*, but they still do not know **your** data. RAG fixes 
 9. [Chat with Your Documents](#project)
 10. [What's Next](#next)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — RAG Mental Model & Architecture
+
+Understand why models hallucinate, how retrieval grounds generation, and trace the end-to-end RAG architecture.
+
 <a id="recap"></a>
 
 ## 1. What You Can *Already* Do
@@ -128,6 +136,14 @@ flowchart LR
 > **Phase 2 — Querying (online, every question):** turn the question into numbers → find nearest chunks in the database → paste them into the prompt → LLM answers. Milliseconds per query.
 
 > 🔑 **💡 The important idea.** You are *not* retraining the model. The model stays exactly the same `gpt-4o-mini` you called through the raw OpenAI API. We're only changing **what goes into the prompt**. RAG is, at its core, very fancy *prompt engineering* — automated.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Embeddings, Chunking & Vector Stores
+
+Convert text to high-dimensional vectors, split documents into semantic chunks, and index vectors in databases.
 
 <a id="emb"></a>
 
@@ -627,6 +643,14 @@ A vector DB is just these three calls:
 >
 > Chroma · HNSW · Pinecone · proprietary · Qdrant · HNSW · FAISS · IVF + HNSW
 
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Retrieval Pipelines & Search Optimization
+
+Construct a working retrieval pipeline and improve recall with hybrid search (BM25 + vectors) and cross-encoder rerankers.
+
 <a id="build"></a>
 
 ## 7. Build a Real RAG in *30 Lines*
@@ -1061,6 +1085,14 @@ Reciprocal rank fusion combines both ranked lists. It is a common production def
 > 🎯 **Industry spotlight · this is what the leaderboard chases — every "+10% retrieval quality" paper is one of these tricks.** Reranking + hybrid search are the two single biggest quality wins in RAG. Add them and you go from "demo works" to "production works". Almost every benchmark in the MTEB leaderboard uses some combination. You now know the playbook.
 >
 > BM25 + Vector · Cross-encoder rerank · Reciprocal rank fusion · Cohere Rerank API
+
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Capstone Application & Production RAG
+
+Build an end-to-end PDF chat assistant with citation grounding and explore advanced agentic RAG architectures.
 
 <a id="project"></a>
 

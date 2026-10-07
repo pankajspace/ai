@@ -13,6 +13,6 @@ SONNET = "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # stronger reasoning
 NOVA_LITE = "us.amazon.nova-lite-v1:0"                   # cheapest, Amazon's own
 
 # Default used across the examples. Override with:  export MODEL_ID="..."
-MODEL_ID = os.environ.get("MODEL_ID", HAIKU)
+MODEL_ID = os.environ.get("MODEL_ID", NOVA_LITE)
 
 REGION = os.environ.get("AWS_DEFAULT_REGION", "us-east-1")

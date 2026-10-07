@@ -37,6 +37,14 @@ Scale · **200 disputes/min at dinner peak** · Budget · **14 LLM calls per dis
 11. [Two upgrades worth paying for](#s11)
 12. [Six places where a bench helps](#s12)
 
+---
+
+<a id="unit-1"></a>
+
+## Unit 1 — The Multi-Judge Adjudication Pattern
+
+Understand self-consistency voting, claim decomposition, and independent evaluation of compound customer grievances.
+
 <a id="s1"></a>
 
 ## 1. Why use three independent judges?
@@ -177,6 +185,14 @@ Each grievance goes to the bench **three times, independently**, with no shared 
 > **Do not use the confidence score for payout decisions.** The model generated that number. It is not a calibrated probability. Show it to your ops team, log it, and chart it, but never make a payout branch on it. Branch on the *vote split*, which your code computed and you can defend.
 >
 > **The synthesis prompt must say “treat all verdicts as final.”** Without that line, the model may retry the bench's ruling while it writes the summary. It can quietly turn a 1–2 escalate into an upheld because the complaint *reads* sympathetic. One sentence in the prompt makes the majority stay final.
+
+---
+
+<a id="unit-2"></a>
+
+## Unit 2 — Pipeline Architecture & Resource Budgets
+
+Trace the four pipeline stages, account for 14 parallel LLM calls, and plan audit storage across millions of disputes.
 
 <a id="s4"></a>
 
@@ -527,6 +543,14 @@ Move the 69% to cold storage after 90 days and your hot footprint drops from 380
 >
 > Because storage is cheap but queries are not. 380 GB of raw JSON in your hot path slows every dashboard and every scan that touches the table. Retention is rarely only about the disk bill. It keeps the working set small enough to stay fast.
 
+---
+
+<a id="unit-3"></a>
+
+## Unit 3 — Production Reliability & Prompt Engineering
+
+Design asynchronous background execution, guard against five critical failure points, and craft strict structured prompts.
+
 <a id="s7"></a>
 
 ## 7. Submit fast. Process in the background.
@@ -776,6 +800,14 @@ Amount:    {{refund_amount}}
 > We've refunded ₹689 to your original payment method. ₹640 for the two biryanis that weren't delivered and ₹49 for the delivery fee, since the order arrived well past its estimated time. It should reflect within 3 working days. On the spilled raita, we don't have enough from the order record to settle it automatically, so a colleague will review it and write to you within 24 hours.
 
 Notice what the message does *not* do: it doesn't mention g4 at all. Leaving out a rejected grievance is a deliberate product choice. Telling a customer “we checked and you're wrong about the delivery partner” does not help. **The bench ruling is for your ledger. The customer gets the outcome.**
+
+---
+
+<a id="unit-4"></a>
+
+## Unit 4 — Architecture Tradeoffs & Expansion
+
+Avoid common production pitfalls, evaluate high-value optimizations, and apply the multi-judge pattern across enterprise domains.
 
 <a id="s10"></a>
 
