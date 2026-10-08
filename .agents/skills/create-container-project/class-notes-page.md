@@ -49,8 +49,8 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 
 ## 3. Rebuild the page structure
 
-1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, responsive data cards, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Add a small inline `<style>`, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Delete styles that only served removed interactive widgets.
-2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow with `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
+1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, responsive data cards, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Create and link a companion `<name>.css` file, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Do not use inline `<style>` tags. Delete styles that only served removed interactive widgets.
+2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow inside your `<name>.css` file using `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
    - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../../index.html` and `<a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`
    - `.progress`
@@ -101,10 +101,9 @@ Class-notes pages have no interactive examples. Turn each one into static conten
    - **Print button** → delete it.
 3. Carry over all the information the widget held: preset data, every possible outcome or answer, hints, notes and feedback text. Data that lived only in the script (arrays, answers, explanations) must appear in the static version.
 4. Reuse styles already in the reference `<style>` (token chips, `.prob-row` bars) for static output; set bar widths inline. Recolour light pastel inline colours for the dark theme.
-5. Delete the widget's script and any styles used only by it. Keep only these scripts, in this order, at the end of body:
+5. Delete the widget's script and any styles used only by it. Extract any remaining page-specific scripts (like the accordion script and the `topic-menu-panel` opener) into a single external `<name>.js` file. Link your scripts at the end of the body in this order:
    1. `<script src="../dsa/dsa-study.js">`
-   2. the accordion script copied from the reference
-   3. the inline `topic-menu-panel` opener in the sidebar, if the reference has it
+   2. `<script src="<name>.js">`
 
    Do not redeclare `dsa-study.js` globals (`progress`, `esc`, `copyText`, `VIZ`, …).
 6. Reword the text around the widget. "Type anything", "drag the slider", "click Play" and "try it" become "Here is an example" or "The cards show".
