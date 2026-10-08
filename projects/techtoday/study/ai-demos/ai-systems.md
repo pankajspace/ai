@@ -14,7 +14,7 @@ Applied AI · Case study · Agentic system design
 
 # The Refund Bench
 
-A customer writes one angry paragraph. It contains four separate claims. Some are true. Some are false. One cannot be checked. An agent must find each claim, compare it with evidence, and decide the refund amount in under fifteen seconds. It must never pay twice.
+A customer writes one angry paragraph. It contains four claims. Some are true. Some are false. One cannot be checked. An agent must find each claim, check the evidence, and decide the refund in under 15 seconds. It must never pay twice.
 
 Scale · **200 disputes/min at dinner peak** · Budget · **14 LLM calls per dispute** · Hard limit · **₹2,000 auto-approval cap** · SLA · **p50 < 15s · p90 < 30s**
 
@@ -55,13 +55,13 @@ Understand self-consistency voting, claim decomposition, and independent evaluat
 
 - Section 1 · Main idea
 
-Not because three people are always smarter than one. One judge can have a bad day. One judge can misread a document or miss a detail. You cannot see that from the outside. So you seat three judges, let each one decide alone, and count the votes.
+Three people are not always smarter than one. A judge can have a bad day, misread a document, or miss a detail. You cannot see this from the outside. So, you use three judges. Each decides alone, and you count the votes.
 
 A **2–1 split is information**. It tells you the case was hard. A single confident ruling cannot show that. A **3–0 ruling is information too**. It tells you the case was clear.
 
 A large language model (LLM) is like a judge who has a different day each time you ask. You can give the same question and the same evidence and still get a slightly different answer. That happens because the model samples from a distribution, which means it chooses from likely next tokens instead of looking up one fixed answer. So use the court pattern: **ask three times, independently, and count.**
 
-This is **self-consistency** (Wang et al., 2022). When the model has strong evidence, the reasoning paths usually agree. When it is guessing, the answers spread out. The verdict you keep is the majority; the spread becomes your confidence. The cost is simple: K samples cost K times as much.
+This is **self-consistency** (Wang et al., 2022). When the model has strong evidence, the answers usually agree. When it guesses, the answers vary. The majority verdict is the one you keep. The spread of answers shows your confidence. The cost is simple: K samples cost K times as much.
 
 > 🎯 **Ask the room.**
 >
@@ -94,7 +94,7 @@ The system uses three independent rulings, temperature 0.5–0.8, and no shared 
 
 > ⚠️ **Production reality.**
 >
-> Set temperature for each stage, not once for the whole system. Verification samples need **T > 0**, roughly 0.5–0.8. At T = 0 all three judges return byte-identical answers and the bench adds no value. Go above 0.8 and rulings can become unclear. Run synthesis at **low temperature**: that stage writes the message to the customer and must not invent anything.
+> Set the temperature for each stage separately. Verification samples need **T > 0**, roughly 0.5 to 0.8. At T = 0, all three judges give the exact same answer, so the bench adds no value. Above 0.8, rulings can become unclear. Run synthesis at a **low temperature**. This stage writes the message to the customer and must not invent anything.
 
 <a id="s2"></a>
 
@@ -106,7 +106,7 @@ The system uses three independent rulings, temperature 0.5–0.8, and no shared 
 
 - Section 2 · The case
 
-The rest of the page follows one dispute. Real disputes contain 1–8 grievances. This one has four.
+The rest of the page follows a single dispute. Real disputes contain 1 to 8 grievances. This one has four.
 
 > **DISPUTE** d7a41…c39 · **ORDER** ₹1,840 · **FILED** 21:52 IST
 >
@@ -118,15 +118,15 @@ upheld rejected escalate not a grievance
 
 ### Two sentences are not claims
 
-“We had guests over, it was embarrassing” gives context and feeling. There is no evidence to check against it. “The worst experience I've had” is an opinion. “Refund everything” is a demand, not a claim. None of these can be marked true or false, so they do not enter the pipeline.
+“We had guests over, it was embarrassing” gives context and feeling, but there is no evidence to check against it. “The worst experience I've had” is an opinion. “Refund everything” is a demand, not a claim. You cannot mark these as true or false, so they do not enter the pipeline.
 
-That leaves the main design question. You must answer it before you write code: **what counts as a grievance?**
+This leaves the main design question. You must answer it before writing code: **what counts as a grievance?**
 
 > 🎯 **Ask the room.**
 >
 > **“Is “the delivery guy was rude” a grievance?”**
 >
-> Yes. Many people get this wrong. It is a *claim about an event*, so it belongs in the pipeline. It is not an opinion like “the food was mediocre.” A lack of evidence does not remove it during extraction. That is decided during **judgement**, not at **extraction**. Mixing up those two stages is the most common design error in this system.
+> Yes. Many people get this wrong. It is a *claim about an event*, so it belongs in the pipeline. It is not an opinion like “the food was mediocre.” A lack of evidence does not remove it during extraction. That is decided during **judgement**, not at **extraction**. Mixing up these two stages is a common design error.
 
 Use this working definition in the prompt: **a grievance is a statement about something that happened to this order, and evidence could in principle confirm or contradict it.** “Arrived at 9:40pm” qualifies. “It was embarrassing” does not.
 
@@ -134,13 +134,13 @@ Use this working definition in the prompt: **a grievance is a statement about so
 
 ### One sentence needed missing context
 
-“Two of *the four* were missing” cannot be judged on its own. Four of what? The extraction prompt requires every grievance to be **self-contained**, with references matched to the order:
+“Two of *the four* were missing” cannot be judged alone. Four of what? The extraction prompt requires every grievance to be **self-contained**. References must match the order:
 
 1. **“Two of the four were missing completely.”**: “2 of the 4 Hyderabadi Biryani units ordered were not delivered.”
 2. **“The delivery guy was rude when I asked *him* about *it*.”**: “The delivery partner behaved rudely when asked about the missing items.”
 > ⚠️ **Production reality.**
 >
-> A rule that says “do not use pronouns” tells the model what *not* to do but not what to do instead. Name the operation. This is **co-reference resolution**, a task the model already knows by name. Give it the order's line items to resolve against. A ban creates refusals. A procedure gets useful work.
+> A rule like “do not use pronouns” tells the model what *not* to do, but not what it should do. Name the operation instead. This is **co-reference resolution**, a task the model knows. Give it the order's line items to resolve against. Banning actions creates refusals, but procedures get useful work done.
 
 <a id="s3"></a>
 
@@ -152,7 +152,7 @@ Use this working definition in the prompt: **a grievance is a statement about so
 
 - Section 3 · Bench rulings
 
-Each grievance goes to the bench **three times, independently**, with no shared history and no chaining. Each judge sees the grievance *and the evidence snapshot*. Twelve calls.
+Each grievance goes to the bench **three times, independently**. There is no shared history and no chaining. Each judge sees the grievance *and the evidence snapshot*. This makes twelve calls.
 
 - **g1** Order was delivered 85 minutes after it was placed. *(evidence · placed 20:15 · delivered 21:40 · SLA 45 min)* — votes U,U,U → **upheld** · confidence 0.98 · ₹49
 - **g2** 2 of the 4 Hyderabadi Biryani units ordered were not delivered. *(evidence · billed 4 · pickup weight 1.2 kg vs expected 2.4 kg)* — votes U,U,U → **upheld** · confidence 0.91 · ₹640
@@ -179,10 +179,10 @@ Each grievance goes to the bench **three times, independently**, with no shared 
 >
 > **“Which mistake costs more: refunding ₹640 that you did not owe, or refusing ₹640 that you did?”**
 >
-> The refusal costs more. A wrong refund costs ₹640 once. A wrong refusal can cost a customer. In food delivery that is thousands of rupees of lifetime value, plus a one-star review. **The errors have different costs, so the system should treat them differently.** That is why the three verdicts are not symmetric: when unsure, the design never rejects, it escalates.
+> The refusal costs more. A wrong refund costs ₹640 once. A wrong refusal can cost a customer. In food delivery, that means thousands of rupees of lifetime value, plus a one-star review. **The errors have different costs, so the system should treat them differently.** This is why the three verdicts are not symmetric: when unsure, the design never rejects. Instead, it escalates.
 > ⚠️ **Production reality.**
 >
-> **Do not use the confidence score for payout decisions.** The model generated that number. It is not a calibrated probability. Show it to your ops team, log it, and chart it, but never make a payout branch on it. Branch on the *vote split*, which your code computed and you can defend.
+> **Do not use the confidence score for payout decisions.** The model generated that number. It is not a calibrated probability. Show it to your ops team, log it, and chart it, but never branch payouts on it. Branch on the *vote split*, which your code computed and you can defend.
 >
 > **The synthesis prompt must say “treat all verdicts as final.”** Without that line, the model may retry the bench's ruling while it writes the summary. It can quietly turn a 1–2 escalate into an upheld because the complaint *reads* sympathetic. One sentence in the prompt makes the majority stay final.
 
@@ -335,7 +335,7 @@ The blue slivers at both ends are identical in all three bars. Adding grievances
 
 - Section 5 · Call math
 
-The formula is small enough to remember:
+The formula is simple to remember:
 
 ```text
 calls = 1 (extract) + N × K (judge) + 1 (settle)
@@ -403,7 +403,7 @@ Each block is one LLM call. Both rows use the same clock. The four-line version 
    - **Calls per line**: 1
    - **Time**: 1–2 s
    - **Verdict**: useful for one dispute
-Twelve lines per dispute looks free until you include concurrency. At peak there are roughly **25 disputes in flight at once**. Four lines each is 100 simultaneous requests; twelve lines each is 300. **Your total rate limit divided by your concurrency sets how much parallelism each dispute can use**, not by what one dispute would prefer.
+Twelve lines per dispute look free until you include concurrency. At peak there are roughly **25 disputes in flight at once**. Four lines each is 100 simultaneous requests; twelve lines each is 300. **Your total rate limit divided by your concurrency sets how much parallelism each dispute can use**, not by what one dispute would prefer.
 
 <a id="s5-calls-7-seconds-of-work-15-seconds-of-promise"></a>
 
@@ -440,7 +440,7 @@ Why does the requirement say **p50 < 15 seconds**? Because 7 seconds is an **est
 
 - Section 6 · Capacity estimation
 
-The question is narrower than it looks. Not “how big is our data”. But: *when one dispute settles, which rows did we just write?*
+This question is narrower than it looks. Do not ask “how big is our data”. Ask: *when one dispute settles, which rows did we just write?*
 
 Four tables. Count the rows in each.
 
@@ -478,7 +478,7 @@ The frozen copy: order lines, timestamps, GPS trail, weights, ratings, as they s
 
 ### Table 4 — judge_rulings, twelve rows
 
-People often forget this table. You made 12 judging calls and you keep **every ruling**, not just the winners. The raw JSON each judge returned, around 2 KB:
+People often forget this table. You made 12 judging calls. Keep **every ruling**, not just the winners. The raw JSON each judge returned, around 2 KB:
 
 ```json
 {"ruling":"ESCALATE","confidence":0.31,
@@ -541,7 +541,7 @@ Move the 69% to cold storage after 90 days and your hot footprint drops from 380
 >
 > **“We just decided storage is cheap and then spent a whole slide on retention. Why?”**
 >
-> Because storage is cheap but queries are not. 380 GB of raw JSON in your hot path slows every dashboard and every scan that touches the table. Retention is rarely only about the disk bill. It keeps the working set small enough to stay fast.
+> Because storage is cheap but queries are not. Having 380 GB of raw JSON in your hot path slows down every dashboard and scan. Retention is rarely only about the disk bill. It keeps the working set small enough to stay fast.
 
 ---
 
@@ -563,7 +563,7 @@ Design asynchronous background execution, guard against five critical failure po
 
 Use a dry cleaner as the analogy. You hand over a shirt. They write ticket #47. You leave in thirty seconds. The cleaning takes two days. You come back with the ticket and ask if it is ready.
 
-Nobody would accept the other design: *standing at the counter for two days* because you must still be there when the shirt is ready. That is a synchronous design. At 200 disputes a minute, it fails in four ways at once: open connections time out, every server and LLM credit must be available at once, a crash loses work, and bursts have nowhere to wait.
+Nobody would accept the other design: *standing at the counter for two days* just to wait for the shirt. That is a synchronous design. At 200 disputes a minute, it fails in four ways at once: open connections time out, every server and LLM credit must be available at once, a crash loses work, and bursts have nowhere to wait.
 
 ```mermaid
 flowchart LR
@@ -576,7 +576,7 @@ flowchart LR
   APP -.->|GET status| API
 ```
 
-The counter clerk, the REST API, takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.
+The counter clerk (the REST API) takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.
 
 1. **APP**: You, standing at the counter
 2. **REST API**: The clerk. Writes the ticket, never cleans anything
@@ -847,7 +847,7 @@ Avoid common production pitfalls, evaluate high-value optimizations, and apply t
 
 - Section 11 · Next upgrades
 
-Three samples from one model share that model's blind spots. If a model often reads pickup-weight evidence badly, asking it three times can give three confident wrong rulings, and the vote makes them look like consensus. Use one GPT judge, one Claude judge, and one Kimi judge. The failures are less likely to match. This is the same idea as a random forest.
+Three samples from one model share that model's blind spots. If a model misreads pickup-weight evidence, asking it three times can yield three confident wrong rulings. The vote then looks like consensus. So, use one GPT judge, one Claude judge, and one Kimi judge. The failures are less likely to match. This is the same idea as a random forest.
 
 Then weight their votes. If one model is better at timestamp arithmetic and another is better at free-text quality complaints, weight votes by *category*. The weights come from your own evals, or tests, and remain somewhat subjective, but a weighted bench across different models estimates better than an unweighted bench of one model sampled three times.
 

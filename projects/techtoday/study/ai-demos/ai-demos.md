@@ -15,7 +15,7 @@ Small projects that show big AI ideas
 
 ### AI Playground
 
-A joke generator, travel suggestions, a website summarizer and an LLM Arena. Uses Groq (GPT OSS 120B) and OpenAI (GPT-4o mini), with a Flask web page.
+Features a joke generator, travel suggestions, a website summarizer, and an LLM Arena. Built with Groq (GPT OSS 120B), OpenAI (GPT-4o mini), and Flask.
 
 [Open project →](https://app.techtoday.click/basic/)
 
@@ -23,7 +23,7 @@ A joke generator, travel suggestions, a website summarizer and an LLM Arena. Use
 
 ### LangChain Lab
 
-Chains, memory and agents: a website summarizer, a chat that remembers, and a shop agent. Built with LangChain and OpenAI (GPT-4o mini), with a Flask web page.
+Explores chains, memory, and agents. Includes a website summarizer, a chat with memory, and a shop agent. Built with LangChain, OpenAI (GPT-4o mini), and Flask.
 
 [Open project →](https://app.techtoday.click/langchain/)
 
@@ -31,7 +31,7 @@ Chains, memory and agents: a website summarizer, a chat that remembers, and a sh
 
 ### RAG Lab
 
-The full RAG pipeline: embeddings, chunking, vector search, reranking and chat with a PDF. Built with LangChain, Chroma and GPT-4o mini, with a Flask web page.
+Shows the full RAG pipeline: embeddings, chunking, vector search, reranking, and PDF chat. Built with LangChain, Chroma, GPT-4o mini, and Flask.
 
 [Open project →](https://app.techtoday.click/rag/)
 
@@ -39,7 +39,7 @@ The full RAG pipeline: embeddings, chunking, vector search, reranking and chat w
 
 ### Docker Demo Lab
 
-Live demos of three Docker projects, from one ML container to an agent system that runs many services. Built with Flask and Docker Compose.
+Live demos of three Docker projects. Ranges from a single ML container to an agent system running multiple services. Built with Flask and Docker Compose.
 
 [Open project →](https://app.techtoday.click/docker/)
 
@@ -47,7 +47,7 @@ Live demos of three Docker projects, from one ML container to an agent system th
 
 ### AWS Strands Lab
 
-Agents that use tools and reason in several steps. Built with the AWS Strands Agents SDK on Amazon Bedrock (Converse API), with a Flask web page.
+Agents that use tools and reason in steps. Built with the AWS Strands Agents SDK on Amazon Bedrock (Converse API) and Flask.
 
 [Open project →](https://app.techtoday.click/aws-strands/)
 
@@ -55,7 +55,7 @@ Agents that use tools and reason in several steps. Built with the AWS Strands Ag
 
 ### InterviewIQ
 
-An AI coach for mock interviews. A ReAct agent calls tools to check each answer for STAR structure, relevance and filler words as you go. It remembers the session and gives tips during it. Uses OpenAI.
+An AI coach for mock interviews. A ReAct agent checks each answer for STAR structure, relevance, and filler words. It remembers the session and gives tips. Uses OpenAI.
 
 [Open project →](https://app.techtoday.click/interviewiq/)
 
@@ -63,7 +63,7 @@ An AI coach for mock interviews. A ReAct agent calls tools to check each answer 
 
 ### Shipment Exception Desk
 
-Sorts shipment problems by urgency. It applies a compensation policy, decides who to escalate to, drafts messages, and keeps a live daily ledger with KPI totals.
+Sorts shipment problems by urgency. Applies compensation policies, escalates issues, and drafts messages. Keeps a live daily ledger with KPI totals.
 
 [Open project →](https://app.techtoday.click/shipment-exception-desk/)
 
@@ -71,7 +71,7 @@ Sorts shipment problems by urgency. It applies a compensation policy, decides wh
 
 ### AI Systems Lab
 
-Trade-offs between prompting styles, and how models give in to pressure (sycophancy). Also The Refund Bench: a 4-stage agent pipeline that settles disputes, where 3 judges vote.
+Shows trade-offs between prompting styles and how models yield to pressure (sycophancy). Includes The Refund Bench: a 4-stage agent pipeline that settles disputes using three voting judges.
 
 [Open project →](https://app.techtoday.click/ai-systems/)
 
@@ -79,7 +79,7 @@ Trade-offs between prompting styles, and how models give in to pressure (sycopha
 
 ### AI Reliability Lab
 
-Measures what makes AI output reliable: forcing a schema, chain-of-thought, routing by tool schema, and whether a model admits a failed tool call or makes up data.
+Measures what makes AI reliable. Tests forcing a schema, chain-of-thought, and routing by tool schema. Checks if a model admits failed tool calls or invents data.
 
 [Open project →](https://app.techtoday.click/ai-reliability/)
 
@@ -87,6 +87,6 @@ Measures what makes AI output reliable: forcing a schema, chain-of-thought, rout
 
 ### MCP & Evals Lab
 
-A cricket-score MCP server you can call by hand, an agent that picks the right MCP tool by itself, and a small eval suite that scores the agent with and without tools.
+A cricket-score MCP server you can call manually. Includes an agent that picks the right MCP tool. Features a small eval suite that scores the agent with and without tools.
 
 [Open project →](https://app.techtoday.click/mcp-evals/)

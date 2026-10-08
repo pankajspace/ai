@@ -356,8 +356,7 @@
         <div class="unit-divider-text">
           <h2 class="unit-divider-title">Mental Models &amp; Adaptation<a class="headerlink" href="#unit-1"
               title="Permanent link">#</a></h2>
-          <p class="unit-divider-desc">Review core LLM limitations and compare prompt engineering, fine-tuning, and
-            tool-augmented workflows.</p>
+          <p class="unit-divider-desc">Review core LLM limits. Compare prompt engineering, fine-tuning, and tool workflows.</p>
         </div>
       </div>
 
@@ -447,8 +446,7 @@
                 </li>
                 <li><b>📚 2. RAG</b>Hand it <em>your</em> documents at question-time so it answers from real data.
                   Coming up next.</li>
-                <li><b>🎓 3. Fine-tuning</b>Actually re-train on examples. Powerful, costly, rarely needed. Reach for
-                  it last.</li>
+                <li><b>🎓 3. Fine-tuning</b>Re-train the model on examples. It is powerful and costly but rarely needed. Use this last.</li>
               </ul>
               <div class="callout callout-tip">
                 <p><strong>🧭 Why this matters here.</strong> Chains, tools, agents — it's all still <strong>option 1,
@@ -464,8 +462,7 @@
         <div class="unit-divider-text">
           <h2 class="unit-divider-title">LangChain Core &amp; LCEL<a class="headerlink" href="#unit-2"
               title="Permanent link">#</a></h2>
-          <p class="unit-divider-desc">Compose prompt templates, foundation models, and output parsers using LangChain
-            Expression Language (LCEL).</p>
+          <p class="unit-divider-desc">Build prompt templates, models, and parsers using LangChain Expression Language (LCEL).</p>
         </div>
       </div>
 
@@ -508,8 +505,7 @@
                 <span class="analogy-icon">🧰</span>
                 <div class="analogy-body">
                   <b>One-line intuition</b>
-                  <p>The raw OpenAI call is a Lego brick. LangChain is the box of connectors that snaps bricks into
-                    machines.</p>
+                  <p>The raw OpenAI call is a Lego brick. LangChain connects these bricks into machines.</p>
                 </div>
               </div>
               <h4>Install it</h4>
@@ -686,8 +682,7 @@ $ pip install langchain langchain-openai
                     <li><b>🤖 Model</b> The model goes in the middle. It does the thinking.</li>
                     <li><b>🧹 Parser</b> The parser comes last. It cleans the output into plain text.</li>
                   </ul>
-                  <p>The challenge tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a
-                    later piece too early, the feedback explained which piece was expected next.</p>
+                  <p>The tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a piece too early, feedback explained what was expected next.</p>
                   <div class="mono chain-out" id="cbOut" style="margin-top:12px">
                     <div class="d1">📝 prompt fills the blank → "Summarize this website: anthropic.com…"</div>
                     <div class="d2">🤖 model thinks… generates the summary</div>
@@ -716,8 +711,7 @@ $ pip install langchain langchain-openai
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-langchain-code">
-              <p>Rebuilding the earlier website summarizer the LangChain way. The numbered comments match the decoder
-                below — nothing here is mystery code:</p>
+              <p>Let's rebuild the website summarizer using LangChain. The numbered comments match the decoder below. There is no mystery code here:</p>
               <span class="code-tab-label">summarizer_langchain.py</span>
               <pre><code data-lang="python">
 from langchain_openai import ChatOpenAI
@@ -788,9 +782,7 @@ print(summarize("https://anthropic.com"))
                 words first:
               </p>
               <ul class="card-grid">
-                <li><b><code>HumanMessage</code> / <code>AIMessage</code> = labelled chat bubbles</b>Just a way to
-                  store "the human said X" and "the AI replied Y" — the same user/assistant roles from the raw OpenAI
-                  API, as Python objects.</li>
+                <li><b><code>HumanMessage</code> / <code>AIMessage</code> = labelled chat bubbles</b>These store 'the human said X' and 'the AI replied Y'. They are the user and assistant roles from the OpenAI API, as Python objects.</li>
                 <li><b><code>MessagesPlaceholder</code> = a parking spot for history</b>A blank in your prompt that
                   holds <em>a list of past messages</em> instead of one word. "Insert the whole conversation so far,
                   right here."</li>
@@ -833,8 +825,7 @@ print(chain.invoke({"history": history, "question": "What's my name?"}).content)
         <div class="unit-divider-text">
           <h2 class="unit-divider-title">Tool-Using Agents &amp; Capstone<a class="headerlink" href="#unit-3"
               title="Permanent link">#</a></h2>
-          <p class="unit-divider-desc">Define custom Python tools, run a ReAct reasoning loop, ship a Smart Shop
-            Assistant, and explore memory.</p>
+          <p class="unit-divider-desc">Define custom Python tools. Run a reasoning loop. Build a Smart Shop Assistant, and explore memory.</p>
         </div>
       </div>
 
@@ -955,10 +946,8 @@ tools = [{
 </code></pre>
               <p><strong>🔍 Decoder — the menu card, four facts</strong></p>
               <ol>
-                <li><strong>What kind of tool?</strong> A function. (That's the only kind you'll use for a long time —
-                  just write this line as-is.)</li>
-                <li><strong>Its name</strong> — must exactly match your Python function's name, so we can find it
-                  when the model asks for it.</li>
+                <li><strong>What kind of tool?</strong> A function. This is the only kind you will use for now. Just write this line as-is.</li>
+                <li><strong>Its name</strong> — This must exactly match the Python function's name. This helps find it when the model asks for it.</li>
                 <li><strong>When to use it</strong> — written for the <em>model</em> to read. This sentence is
                   literally how the model decides whether to call your tool. Write it clearly!</li>
                 <li><strong>What inputs it needs</strong> — one input called <code>item</code>, which is text
@@ -1048,19 +1037,16 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
                   </div>
                   <div class="mono" style="color:var(--muted)">]</div>
                   <ol>
-                    <li><strong>Step 1.</strong> The list starts with the user's question, plus the tools menu on the
-                      side.</li>
+                    <li><strong>Step 1.</strong> The list starts with the user's question and the tools menu.</li>
                     <li><strong>Step 2.</strong> The model does not answer yet. It asks to run <code>get_price</code>
                       for <code>shoes</code>. This is what <code>msg.tool_calls</code> holds.</li>
                     <li><strong>Step 3.</strong> Your Python runs <code>get_price("shoes")</code> and appends the result
                       with the new role: <code>tool</code>. The model never runs code. It asks, and your Python does the
                       work.</li>
-                    <li><strong>Step 4.</strong> You send the longer list back. Now the model writes a friendly answer
-                      using the real price.</li>
+                    <li><strong>Step 4.</strong> You send the longer list back. The model writes an answer using the real price.</li>
                   </ol>
                 </div>
-                <div class="viz-note" id="msExplain">That is the whole agent loop: user → tool request → tool result →
-                  answer.</div>
+                <div class="viz-note" id="msExplain">This is the agent loop: user → tool request → tool result → answer.</div>
               </div>
               <div class="callout callout-key">
                 <p><strong>🤯 <code>if msg.tool_calls</code> is the core check.</strong> The model asked to run
@@ -1098,16 +1084,14 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
                       <code>get_price("bag")</code>.
                     </li>
                     <li><strong>"Hi! How are you today?"</strong><br>Correct answer: <strong>Just
-                        answers.</strong><br>Reason: This is small talk. No shop facts are needed.</li>
+                        answers.</strong><br>Reason: This is small talk. It does not need shop facts.</li>
                     <li><strong>"Is the hat cheaper than the shorts?"</strong><br>Correct answer: <strong>Calls the
-                        tool.</strong><br>Reason: Comparing prices needs the real numbers, so it calls the tool twice.
+                        tool.</strong><br>Reason: Comparing prices requires real numbers. The model calls the tool twice.
                     </li>
                     <li><strong>"What's the capital of France?"</strong><br>Correct answer: <strong>Just
-                        answers.</strong><br>Reason: This is the trick question. The model already knows this, and the
-                      price tool cannot help.</li>
+                        answers.</strong><br>Reason: This is a trick question. The model knows this. The price tool cannot help.</li>
                     <li><strong>"I have ₹1500 — can I afford the pants?"</strong><br>Correct answer: <strong>Calls the
-                        tool.</strong><br>Reason: It must check the real price, ₹1699, before answering. It calls the
-                      tool and then says the budget is not quite enough.</li>
+                        tool.</strong><br>Reason: It must check the real price before answering. It calls the tool and explains the budget is too low.</li>
                   </ol>
                 </div>
                 <div class="viz-note" id="gmVerdict">The score text was either <strong>"Perfect 5/5 — you think like an
@@ -1115,8 +1099,7 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
                   available tool can improve the answer.</div>
               </div>
               <div class="callout callout-tip">
-                <p><strong>🎙️ Speaker note.</strong> Use these as class questions. The fourth question is useful
-                  because it shows that a tool should not run when it cannot help.</p>
+                <p><strong>🎙️ Speaker note.</strong> Use these as class questions. The fourth question shows that a tool should not run if it cannot help.</p>
               </div>
             </div>
           </div>
@@ -1212,8 +1195,7 @@ Shop: The pants are ₹1699.
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-project-demo">
-              <p>This trace shows a sample chat with the agent. Watch when the 🔧 tool line appears and when the
-                assistant answers directly.</p>
+              <p>This trace shows a sample chat. Watch when the tool line appears and when the assistant answers directly.</p>
               <div class="viz">
                 <div class="viz-head"><span class="viz-title">Example · Smart Shop Assistant</span><span
                     class="viz-step">preset traces</span></div>
@@ -1294,10 +1276,7 @@ Shop: The pants are ₹1699.
                 </div>
               </div>
               <div class="callout callout-interview">
-                <p><strong>Industry spotlight · real agents use this same loop.</strong> Today the assistant has one
-                  tool. Tomorrow you can add tools for your database, email, and calendar. Then it can handle tasks such
-                  as "find my order, refund it, email the customer." Production agents, including coding agents, use
-                  this loop with a bigger toolbox.</p>
+                <p><strong>Industry spotlight · real agents use this same loop.</strong> Today, the assistant has one tool. Tomorrow, you can add tools for a database, email, and calendar. Then, it can handle tasks like 'find my order, refund it, email the customer.' Production agents use this loop with a bigger toolbox.</p>
                 <ul class="meta-strip" style="margin:10px 0 0">
                   <li>Support bots</li>
                   <li>Booking assistants</li>
@@ -1341,10 +1320,10 @@ Shop: The pants are ₹1699.
             </div>
             <div class="part-body" id="body-next-recap">
               <ul class="card-grid">
-                <li><b>🧭 3 ways to steer</b>Prompting, RAG, fine-tuning — you'll mostly prompt.</li>
-                <li><b>🔗 LangChain</b>prompt | model | parser — chains you can snap together.</li>
-                <li><b>🤖 Agents</b>LLM + tool + loop. The model decides. You saw it.</li>
-                <li><b>🛍️ You shipped</b>A working tool-using agent. 🎉</li>
+                <li><b>🧭 3 ways to steer</b>Prompting, RAG, and fine-tuning. You will mostly use prompting.</li>
+                <li><b>🔗 LangChain</b>prompt | model | parser. These are chains you can connect.</li>
+                <li><b>🤖 Agents</b>LLM + tool + loop. The model decides.</li>
+                <li><b>🛍️ You shipped</b>A working tool-using agent.</li>
               </ul>
             </div>
           </div>
@@ -1370,8 +1349,7 @@ Shop: The pants are ₹1699.
                 <li><strong>RAG — chat with your own PDFs.</strong> The next big build: a model that answers from
                   <em>your</em> documents.
                 </li>
-                <li><strong>Multi-agent teams.</strong> Several agents handing work to each other — once one agent
-                  feels easy.</li>
+                <li><strong>Multi-agent teams.</strong> Several agents can hand work to each other.</li>
               </ol>
               <div class="callout callout-tip">
                 <p><strong>📚 A note on theory.</strong> We're deliberately deferring the deep "how models are built"

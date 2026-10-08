@@ -356,9 +356,7 @@
     </nav>
     <article class="study">
       <h1 id="the-refund-bench">The Refund Bench</h1>
-      <p class="lede">A customer writes one angry paragraph. It contains four separate claims. Some are true. Some are
-        false. One cannot be checked. An agent must find each claim, compare it with evidence, and decide the refund
-        amount in under fifteen seconds. It must never pay twice.</p>
+      <p class="lede">A customer writes one angry paragraph. It contains four claims. Some are true. Some are false. One cannot be checked. An agent must find each claim, check the evidence, and decide the refund in under 15 seconds. It must never pay twice.</p>
       <ul class="meta-strip">
         <li>Scale · <b>200 disputes/min at dinner peak</b></li>
         <li>Budget · <b>14 LLM calls per dispute</b></li>
@@ -404,9 +402,7 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-s1-judges-why-does-a-serious-court-seat-three-judges">
-              <p class="lede">Not because three people are always smarter than one. One judge can have a bad day. One
-                judge can misread a document or miss a detail. You cannot see that from the outside. So you seat three
-                judges, let each one decide alone, and count the votes.</p>
+              <p class="lede">Three people are not always smarter than one. A judge can have a bad day, misread a document, or miss a detail. You cannot see this from the outside. So, you use three judges. Each decides alone, and you count the votes.</p>
               <p>A <strong>2–1 split is information</strong>. It tells you the case was hard. A single confident ruling
                 cannot show that. A <strong>3–0 ruling is information too</strong> — it tells you the case was clear.
               </p>
@@ -415,9 +411,7 @@
                 the model samples from a distribution, which means it chooses from likely next tokens instead of looking
                 up one fixed answer. So use the court pattern: <strong>ask three times, independently, and
                   count.</strong></p>
-              <p>This is <strong>self-consistency</strong> (Wang et al., 2022). When the model has strong evidence, the
-                reasoning paths usually agree. When it is guessing, the answers spread out. The verdict you keep is the
-                majority; the spread becomes your confidence. The cost is simple: K samples cost K times as much.</p>
+              <p>This is <strong>self-consistency</strong> (Wang et al., 2022). When the model has strong evidence, the answers usually agree. When it guesses, the answers vary. The majority verdict is the one you keep. The spread of answers shows your confidence. The cost is simple: K samples cost K times as much.</p>
               <div class="callout callout-interview">
                 <p><strong>Ask the room</strong></p>
                 <p><strong><q>If the bench splits 2–1 on whether to refund ₹640, and you only get to keep one number:
@@ -484,7 +478,7 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-s2-case-one-angry-paragraph-four-separate-accusations">
-              <p>The rest of the page follows one dispute. Real disputes contain 1–8 grievances. This one has four.</p>
+              <p>The rest of the page follows a single dispute. Real disputes contain 1 to 8 grievances. This one has four.</p>
               <div class="casefile">
                 <div class="casefile-head">
                   <span><b>DISPUTE</b> d7a41…c39</span>
@@ -523,10 +517,8 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-s2-case-two-sentences-were-thrown-away-and-that-is-the-hardest-part">
-              <p>“We had guests over, it was embarrassing” gives context and feeling. There is no evidence to check
-                against it. “The worst experience I've had” is an opinion. “Refund everything” is a demand, not a claim.
-                None of these can be marked true or false, so they do not enter the pipeline.</p>
-              <p>That leaves the main design question. You must answer it before you write code: <strong>what counts as
+              <p>“We had guests over, it was embarrassing” gives context and feeling, but there is no evidence to check against it. “The worst experience I've had” is an opinion. “Refund everything” is a demand, not a claim. You cannot mark these as true or false, so they do not enter the pipeline.</p>
+              <p>This leaves the main design question. You must answer it before writing code: <strong>what counts as
                   a grievance?</strong></p>
               <div class="callout callout-interview">
                 <p><strong>Ask the room</strong></p>
@@ -1063,7 +1055,7 @@ message: "We've refunded…"</code></pre>
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-s5-calls-14-calls-and-where-they-go">
-              <p>The formula is small enough to remember:</p>
+              <p>The formula is simple to remember:</p>
 
               <pre><code data-lang="text">calls = 1 (extract) + N × K (judge) + 1 (settle)
 
@@ -1219,7 +1211,7 @@ Line D:  call 4   call 8   call 12   3 calls
                   </div>
                 </div>
               </div>
-              <p>Twelve lines per dispute looks free until you include concurrency. At peak there are roughly <strong>25
+              <p>Twelve lines per dispute look free until you include concurrency. At peak there are roughly <strong>25
                   disputes in flight at once</strong>. Four lines each is 100 simultaneous requests; twelve lines each
                 is 300. <strong>Your total rate limit divided by your concurrency sets how much parallelism each dispute
                   can use</strong> — not by what one dispute would prefer. </p>
@@ -1531,8 +1523,7 @@ settlement    1.0 sec
   API --&gt; DB[(Ledger&lt;br&gt;freeze evidence)]
   W --&gt;|checkpoint each stage| DB
   APP -.-&gt;|GET status| API</pre>
-                <figcaption>The counter clerk, the REST API, takes the complaint, writes it down, drops the ticket on
-                  the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The
+                <figcaption>The counter clerk (the REST API) takes the complaint, writes it down, drops the ticket on the pile, and gives you a receipt in 50 ms. Workers pull from the pile when they have capacity. The
                   ledger lets the app answer “is it ready yet?” and lets a crashed worker resume from the right place.
                 </figcaption>
               </figure>
@@ -2027,9 +2018,7 @@ Amount:    {{refund_amount}}</code></pre>
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-s11-extensions-seat-judges-from-different-courts">
-              <p>Three samples from one model share that model's blind spots. If a model often reads pickup-weight
-                evidence badly, asking it three times can give three confident wrong rulings, and the vote makes them
-                look like consensus. Use one GPT judge, one Claude judge, and one Kimi judge. The failures are less
+              <p>Three samples from one model share that model's blind spots. If a model misreads pickup-weight evidence, asking it three times can yield three confident wrong rulings. The vote then looks like consensus. So, use one GPT judge, one Claude judge, and one Kimi judge. The failures are less
                 likely to match. This is the same idea as a random forest.</p>
               <p>Then weight their votes. If one model is better at timestamp arithmetic and another is better at
                 free-text quality complaints, weight votes by <em>category</em>. The weights come from your own evals,

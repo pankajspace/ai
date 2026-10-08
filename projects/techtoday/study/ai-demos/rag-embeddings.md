@@ -14,7 +14,7 @@ RAG · Talk to your own documents
 
 # Stop letting your AI *guess*. Give it a library.
 
-LangChain agents can *act*, but they still do not know **your** data. RAG fixes that. You will build a system that reads your PDFs, finds the right passage for a question, and answers from **real text**. **RAG** is the pattern behind most "chat with your docs" apps.
+LangChain agents can *act*, but they do not know **your** data. RAG fixes this. You will build a system that reads your PDFs, finds the right passage, and answers from **real text**. **RAG** is the pattern behind most \"chat with your docs\" apps.
 
 📚 Embeddings, intuition first · ✂️ Chunking, explained simply · 🗂️ Vector databases · 🎯 Reranking + hybrid search · 📄 Chat-with-your-PDF, shipped
 
@@ -73,16 +73,16 @@ Understand why models hallucinate, how retrieval grounds generation, and trace t
 
 **Block 14** ~10 min · the hook
 
-An LLM is a smart intern who finished training a year ago and was never allowed inside your office. RAG fixes both — fresh data, *and* your private data — by handing the intern a relevant page **at question-time**.
+An LLM is like a smart intern. They finished training a year ago and have never seen your office. RAG gives the intern fresh and private data. It hands them a relevant page exactly when you ask a question.
 
 - 🗓️ Knowledge cutoff
    The model's training ended months ago. It doesn't know yesterday's RBI rate cut or last week's Budget numbers.
    ✓ RAG: fetch today's article
 - 🔒 Private / internal data
-   It has never seen your HR policy, your contracts, your product wiki, or your customer tickets — and you can't paste them all into one prompt.
+   It has never seen your HR policy, contracts, product wiki, or customer tickets. You cannot paste them all into one prompt.
    ✓ RAG: search your docs
 - 🌀 Hallucinations
-   When unsure, the model invents confident-sounding answers. Bad in customer support, dangerous in legal, fatal in healthcare.
+   When unsure, the model invents confident-sounding answers. This is bad in customer support, dangerous in legal, and fatal in healthcare.
    ✓ RAG: ground in real text
 - 🔗 No citations
    Ask "where did you get that?" and a raw LLM has nothing. Real products need
@@ -112,7 +112,7 @@ Forget the buzzwords. The whole pipeline is just **a smart librarian** sitting b
 
 > **Analogy** 📚 — **The library analogy that explains everything**
 >
-> Imagine you ask your friend a question about a 800-page book they've never read. Bad idea — they'll guess. Smart move? **You find the 3 most relevant pages, hand them over, and *then* ask.** They read the pages and answer confidently with the real text. That's RAG. The "librarian" who finds those 3 pages is the only new thing we're building today.
+> Imagine asking a friend a question about an 800-page book they have never read. They will guess. What is the smart move? **Find the 3 most relevant pages, hand them over, and *then* ask.** They will read the pages and answer confidently using the real text. That is RAG. The \"librarian\" who finds those 3 pages is the only new part we are building today.
 
 <a id="how-pipeline"></a>
 
@@ -155,7 +155,7 @@ Convert text to high-dimensional vectors, split documents into semantic chunks, 
 
 **Block 16** ~25 min · the key idea of this topic
 
-Before we can "search by meaning", we need a way to **turn meaning into numbers**. That's an *embedding*. And once you see what it does, every confusing thing about RAG becomes easier to understand.
+Before we can \"search by meaning\", we must **turn meaning into numbers**. This is called an *embedding*. Once you understand this, RAG becomes much easier to understand.
 
 > **Definition · keep this in your head.** An **embedding** is a list of numbers (a *vector*) that captures the meaning of a piece of text. Similar meanings ⟶ similar numbers ⟶ nearby points in space. Different meanings ⟶ far apart.
 
@@ -215,11 +215,11 @@ Before we can "search by meaning", we need a way to **turn meaning into numbers*
 
 ### Imagine a 2D World First — Height & Weight
 
-Forget AI for a second. If I plot people by *height vs weight*, people of similar build end up close together on the chart. Same idea, scaled up. Real embeddings have **384, 768 or even 3072 dimensions** — way more than we can draw — but the principle is identical: *similar ⟶ close, different ⟶ far.*
+Forget AI for a second. If you plot people by *height vs weight*, people with a similar build are close together on the chart. Embeddings use the same idea, just scaled up. Real embeddings have **384, 768 or even 3072 dimensions**. This is too many to draw, but the principle is identical: *similar ⟶ close, different ⟶ far.*
 
 > **Analogy** 📊 — **"Why so many dimensions?"**
 >
-> Because meaning is rich. Two words can be similar in many ways at once — *topic, tone, formality, language, sentiment*. Each dimension captures a different axis of similarity. 768 isn't arbitrary; it's just enough to separate millions of distinct ideas.
+> Meaning is rich. Two words can be similar in many ways, such as *topic, tone, formality, language, or sentiment*. Each dimension captures a different type of similarity. 768 dimensions is enough to separate millions of distinct ideas.
 
 <a id="emb-arithmetic"></a>
 
@@ -263,7 +263,7 @@ This is a real word-vector plot reduced from 768 dimensions to 2 so we can draw 
 
 ### The Score We Use: *Cosine Similarity*
 
-Two vectors close together = the *angle* between them is small. The cosine of that angle is our score. It ranges from **-1 (opposite) to +1 (identical)**. Practically: **above 0.7 means "very similar"**, below 0.3 means "barely related". No math needed to use it — just remember: *bigger number = more similar*.
+When two vectors are close together, the *angle* between them is small. The cosine of that angle is our score. It ranges from **-1 (opposite) to +1 (identical)**. In practice, **above 0.7 means \"very similar\"**, and below 0.3 means \"barely related\". You do not need to do the math. Just remember: *bigger number = more similar*.
 
 > **Analogy** 📐 — **The clock-hands intuition**
 >
@@ -360,7 +360,7 @@ This example compares pairs of sentences with cosine similarity. It shows the sc
 
 ### How Do We Actually Get an Embedding? One Function Call.
 
-You don't have to train anything — somebody else already did. Open-source models from Hugging Face (`sentence-transformers`) or APIs from OpenAI / Cohere give you embeddings in one line:
+You do not have to train anything. Somebody else already did it. Open-source models from Hugging Face (`sentence-transformers`) or APIs from OpenAI / Cohere give you embeddings in one line:
 
 *embeddings.py*
 
@@ -419,11 +419,11 @@ print(similarity)       # → 0.87 (very similar 🎉)
 
 **Block 17** ~15 min · the unglamorous part that decides everything
 
-Before we embed anything, we have to cut it up. You can't embed a 200-page PDF as one vector — meaning gets averaged away to mush. So we split it into *chunks*. **How** you chunk decides how good your RAG actually is. Engineers underestimate this; the best ones obsess over it.
+Before we embed anything, we must cut it up. You cannot embed a 200-page PDF as one vector. The meaning will turn to mush. Instead, we split it into *chunks*. **How** you chunk decides how well your RAG works. Many engineers underestimate this, but the best ones obsess over it.
 
 > **Analogy** 🍕 — **The pizza-slice analogy**
 >
-> One whole pizza is hard to share — too big. Cut it into 100 confetti-sized bits and nobody can taste anything. **Slice sizes matter.** Chunks are pizza slices: too big and you lose precision (the relevant bit is buried), too small and you lose context (each crumb is meaningless).
+> One whole pizza is too big to share. If you cut it into 100 tiny bits, nobody can taste anything. **Slice sizes matter.** Chunks are like pizza slices. If they are too big, you lose precision because the answer is buried. If they are too small, you lose context because each piece is meaningless.
 
 <a id="chunk-strategies"></a>
 
@@ -600,11 +600,11 @@ print(len(chunks))    # → e.g. 47 chunks ready to embed
 
 **Block 18** ~10 min
 
-You have thousands of embeddings. For every question, you need the top-k nearest ones — *fast*. That's what a vector database does, and that's **all** it does.
+You have thousands of embeddings. For every question, you need the top-k nearest ones *fast*. This is exactly what a vector database does.
 
 > **Analogy** 🗂️ — **One-line definition**
 >
-> A vector database is a *search engine* where instead of "find documents containing this word", the query is "find vectors closest to *this* vector". Same idea as Google, swapped engine.
+> A vector database is a *search engine*. Instead of searching for words, you search for vectors closest to *your* vector. It is the same idea as Google, but with a different engine.
 
 <a id="vdb-options"></a>
 
@@ -806,13 +806,13 @@ Here is what happens inside `rag_answer("How long do I have to return something?
 
 **Block 20** ~15 min · 80% of RAG quality lives here
 
-A vanilla RAG works. A *good* RAG works **well**. The two tricks that close that gap — and that every senior engineer asks about — are *reranking* and *hybrid search*. Both are easy to add.
+A basic RAG works. A *good* RAG works **well**. The two tricks that close that gap are *reranking* and *hybrid search*. Both are easy to add.
 
 Embedding similarity is fast, but it sometimes ranks shallow word-matches above deep semantic matches. So we use a **two-stage retrieval** — a fast first pass to narrow down, then a slow accurate pass to pick the real winners.
 
 > **Analogy** 📄 — **Imagine hiring for one open role — with 1,000 applicants**
 >
-> You can't interview 1,000 people (it would take a year). You also can't pick someone by gut feel from a stack of resumes (you'd hire badly). So you do **two passes**: a fast *resume scan* to shortlist 25, then a real *30-minute interview* with each of those 25. **Bi-encoder and cross-encoder are exactly these two passes.**
+> You cannot interview 1,000 people. You also cannot pick someone by gut feel from a stack of resumes. Instead, you do **two passes**. First, a fast *resume scan* to shortlist 25. Next, a real *30-minute interview* with each of those 25. **Bi-encoder and cross-encoder are exactly these two passes.**
 
 - 📋 Bi-encoder · like a resume scan
    Reads the query and the document
@@ -943,11 +943,11 @@ def retrieve_with_rerank(question, top_k=3):
 
 ### Problem 2: Sometimes You Need the *Exact Word*
 
-Pure semantic search ignores keywords. Ask "what's the price of **SKU-4429**?" and the embedding doesn't care about that specific code — it just sees "price" and "product". For codes, names, IDs, dates — **keyword search beats semantic** hands down. The fix isn't to pick one or the other. It's to use *both*, with very different strengths.
+Pure semantic search ignores keywords. If you ask \"what's the price of **SKU-4429**?\", the embedding does not care about the specific code. It just sees \"price\" and \"product\". For codes, names, IDs, and dates, **keyword search is better**. The fix is not to pick just one. The fix is to use *both*.
 
 > **Analogy** 📚 — **Two librarians, very different strengths**
 >
-> Remember our librarian from Block 15? She has **two assistants** who search the stacks completely differently. One is a literalist who lives for exact words. The other is a philosopher who lives for meaning. Send your query to the right one and you get great results. **Send your query to *both* — and let them merge their rankings — and you get strong results.** That's hybrid search.
+> Remember our librarian from Block 15? She has **two assistants** who search very differently. One is a literalist who looks for exact words. The other is a philosopher who looks for meaning. If you send your query to the right one, you get great results. **If you send your query to *both* and let them merge their rankings, you get strong results.** This is hybrid search.
 
 - 🔤 Librarian A · BM25 · the literalist
    Obsessed with
@@ -1000,13 +1000,13 @@ Pure semantic search ignores keywords. Ask "what's the price of **SKU-4429**?" a
 
 ### Hybrid = Both Librarians on the Case
 
-Send the same query to *both* librarians at the same time. Each ranks the docs by their own logic. You then **merge their two ranked lists into one** using a tiny formula called **Reciprocal Rank Fusion (RRF)**:
+Send the same query to *both* librarians at the same time. Each ranks the docs using their own logic. Then you **merge their two ranked lists into one** using a small formula called **Reciprocal Rank Fusion (RRF)**:
 
 > 🔑 **⚡ Reciprocal Rank Fusion in one line.** For each doc, final score = `1 / (60 + rank in BM25) + 1 / (60 + rank in Vector)`. Docs that *both* librarians ranked highly bubble to the top. Docs only one of them liked still get a fair shot. No tuning, no thresholds, no main idea numbers (well, 60 — but it almost never matters). *That's it.* Used by almost every production RAG system in the wild.
 
 > **Analogy** 🤝 — **Why this works so well in practice**
 >
-> Real user queries are *messy* — mostly natural language, but sprinkled with technical terms, product codes, names, or jargon the embedding model has never seen. Hybrid covers both halves of every messy query automatically: the natural-language part goes to Vector, the technical-term part goes to BM25, and RRF stitches the answers together. **You're not picking sides — you're using each tool for what it's actually good at.**
+> Real user queries are *messy*. They are mostly natural language, but they also contain technical terms, product codes, names, or jargon the embedding model has never seen. Hybrid covers both halves automatically. The natural-language part goes to Vector, the technical-term part goes to BM25, and RRF stitches the answers together. **You are not picking sides. You are using each tool for what it is good at.**
 
 <a id="rerank-hybrid-sim"></a>
 

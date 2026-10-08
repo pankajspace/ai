@@ -14,7 +14,7 @@ Future with Shivank · AI Agents on AWS
 
 # From LLM to a *working agent*
 
-This hands-on guide is for you if you already know the basics of LLMs and agents. It uses plain language, diagrams, and runnable commands after each idea. It also includes AWS setup from scratch and a capstone project.
+This guide helps if you know basic LLMs and agents. It uses simple words, diagrams, and runnable commands. It includes AWS setup and a capstone project.
 
 Level · **Beginner-friendly** · Framework · **AWS Strands SDK** · Model host · **Amazon Bedrock** · Region · **us-east-1**
 
@@ -63,7 +63,7 @@ Configure IAM credentials, request Amazon Bedrock model access, and verify the l
 
 Both modules run on your laptop and call AI models hosted on AWS. You need two things: **credentials**, which let your laptop talk to AWS, and **model access**, which lets your AWS account use the models. That is all.
 
-> 💡 **What this costs.** Running code locally is free. You pay only for model calls. AWS prices those calls per token, which means per small piece of text. The examples in this guide cost a fraction of a cent in total. Nothing keeps running in the background, so there is nothing to switch off later.
+> 💡 **What this costs.** Local code is free. You only pay for model calls per token. These examples cost a fraction of a cent. Nothing runs in the background, so there is nothing to turn off.
 
 Sign in to the AWS console as an admin. Then do this:
 
@@ -179,7 +179,7 @@ pip install -r requirements.txt
 
 ### 0.6 · Run the readiness check
 
-This is the most useful command in the project. It checks Python, packages, credentials, region, and Bedrock access. It also makes a real model call. If it passes, every example should run.
+This command checks Python, packages, credentials, region, and Bedrock access. It makes a real model call. If it passes, all examples should work.
 
 **Run it**
 
@@ -209,7 +209,7 @@ Understand why agents exist, how they extend RAG, the ReAct reasoning loop, and 
 
 ### Overview
 
-Start here because it frames the rest of the guide. A standard LLM has two hard limits:
+This section frames the guide. A standard LLM has two main limits:
 
 - Knowledge cutoff: it knows only what it learned during training. Ask about yesterday's news and it cannot help.
 - No access to your world: it cannot read your company database, check today's weather, or send an email.
@@ -217,12 +217,12 @@ Start here because it frames the rest of the guide. A standard LLM has two hard 
 You can fix this in two ways without retraining the model:
 
 1. **RAG**
-   - **What it adds**: Relevant context fetched from your data
-   - **The model becomes…**: A better-informed *knowledge retriever*
+   - **What it adds**: Context from your data
+   - **The model becomes…**: An informed *knowledge retriever*
 2. **Agents**
    - **What it adds**: The ability to reason and *use tools*
    - **The model becomes…**: An *actor* that gets things done
-Here is the key point. Many teams build a RAG system. Then users ask the AI to do the work: book the meeting, update the record, or run the workflow. Teams often get stuck when they move from a passive retriever to an active agent. These two modules help you make that move.
+Here is the key point. Many teams build a RAG system. Then users want the AI to do work, like booking meetings or updating records. Teams struggle to move from passive retrieval to active agents. These modules help you make that shift.
 
 <a id="s2"></a>
 
@@ -292,7 +292,7 @@ Diagram 2 — The RAG pipeline, from raw documents to a final answer
 - Filter & rerank: optionally re-sort results for quality. This can improve answers, but it adds cost and complexity.
 - Generate: give the retrieved chunks and the original question to the LLM. The LLM writes the final answer.
 
-RAG is an **open-book exam**. The model has not memorised the textbook. You let it open the three most relevant pages before it answers. Chunking decides how big each page is. Embedding is the index at the back that tells you which pages to open.
+RAG is an **open-book exam**. The model hasn't memorized the textbook. It reads relevant pages before answering. Chunking sizes each page. Embedding acts as the index.
 
 <a id="s3"></a>
 
@@ -328,10 +328,10 @@ Diagram 3 — An AI agent as a travel planner, using agentic RAG
 
 Follow this example closely. The agent receives *"What should I pack for New York summer?"*. It does not just look up one fact. It:
 
-1. Uses RAG to retrieve historical weather data.
-2. Checks a real-time forecast through an API.
-3. Analyses user preferences, such as packing light but avoiding cold weather.
-4. Combines everything into a personalised recommendation.
+1. Uses RAG to get past weather data.
+2. Checks live forecast via API.
+3. Analyzes user preferences (e.g., pack light, avoid cold).
+4. Combines everything into a custom recommendation.
 
 That final synthesis combines three sources into one judgement. This decision-making separates an agent from simple retrieval.
 
