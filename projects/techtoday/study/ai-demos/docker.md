@@ -8,7 +8,7 @@ Scripts: ../dsa/dsa-study.js
 
 Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
 
-FUTURE WITH SHIVANK · STUDENT REVISION GUIDE
+STUDENT REVISION GUIDE
 
 <a id="dockerize-everything"></a>
 
@@ -646,8 +646,8 @@ Orchestrate multi-service applications using Docker Compose, mount persistent vo
 >
 > This time the model isn't yours — it's OpenAI's. LLM projects bring three problems classic ML didn't have:
 >
-> 1️⃣ *Secrets* — bake your API key into the image and you've written your PIN on your ATM card. 
-> 2️⃣ *Multiple services* — an app plus a vector database. Two boxes, one order. 
+> 1️⃣ *Secrets* — bake your API key into the image and you've written your PIN on your ATM card.
+> 2️⃣ *Multiple services* — an app plus a vector database. Two boxes, one order.
 > 3️⃣ *State* — the database's data must survive even after its container dies.
 >
 > The three solutions you'll learn here: *.env files, docker compose, and volumes.*

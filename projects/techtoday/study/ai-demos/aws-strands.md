@@ -8,7 +8,7 @@ Scripts: ../dsa/dsa-study.js
 
 Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
 
-Future with Shivank · AI Agents on AWS
+AI Agents on AWS
 
 <a id="aws-strands"></a>
 
