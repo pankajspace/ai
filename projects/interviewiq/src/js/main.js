@@ -59,6 +59,7 @@ function renderQuestionNav() {
 
 function selectQuestion(idx) {
     currentQuestionIndex = idx;
+    hideInterviewerPick();
     renderQuestionNav();
     renderCurrentQuestion();
     document.getElementById("answerInput").value = "";
@@ -103,6 +104,7 @@ function setupEventListeners() {
     };
 
     document.getElementById("btnEvaluate").onclick = evaluateCurrentAnswer;
+    document.getElementById("btnInterviewerPick").onclick = askInterviewerForNext;
 
     // Chat listeners
     document.getElementById("btnSendChat").onclick = () => sendCoachMessage();
@@ -127,6 +129,55 @@ function setupEventListeners() {
     document.getElementById("resetModalOverlay").onclick = (e) => {
         if (e.target.id === "resetModalOverlay") closeResetModal();
     };
+}
+
+// Ask 4: the second (Interviewer) agent picks the next question from the
+// shared session memory; the Evaluator agent still scores the answer.
+async function askInterviewerForNext() {
+    const btn = document.getElementById("btnInterviewerPick");
+    const label = btn.innerHTML;
+    btn.innerText = "Interviewer thinking...";
+    btn.disabled = true;
+
+    try {
+        const res = await fetch(`${API}/next-question`);
+        const data = await parseResponse(res);
+        if (data.done) {
+            showInterviewerPick(`🏁 ${data.message}`);
+            return;
+        }
+        const idx = questions.findIndex(q => q.id === data.question_id);
+        if (idx === -1) throw new Error("The Interviewer picked an unknown question.");
+        selectQuestion(idx);
+        const source = data.source === "llm" ? "AI decision" : "rule-based fallback";
+        showInterviewerPick(
+            `🧭 <strong>Interviewer picked ${escapeHtml(data.category)}:</strong> ` +
+            `${escapeHtml(data.reason)}<span class="pick-source">(${source})</span>`
+        );
+    } catch (err) {
+        console.error("Interviewer error:", err);
+        alert(err.message || "The Interviewer agent could not pick a question.");
+    } finally {
+        btn.innerHTML = label;
+        btn.disabled = false;
+    }
+}
+
+function showInterviewerPick(html) {
+    const banner = document.getElementById("interviewerPick");
+    banner.innerHTML = html;
+    banner.hidden = false;
+}
+
+function hideInterviewerPick() {
+    const banner = document.getElementById("interviewerPick");
+    if (banner) banner.hidden = true;
+}
+
+function escapeHtml(text) {
+    const div = document.createElement("div");
+    div.textContent = text ?? "";
+    return div.innerHTML;
 }
 
 async function evaluateCurrentAnswer() {

@@ -25,6 +25,13 @@ Built from the best parts of two study implementations:
 3. **Session Report** — aggregated report across all answered questions with
    average relevance, weakest area, and total filler count.
 4. **Reset Session** — clear memory and start a fresh mock interview.
+5. **Interviewer Agent (Ask 4 bonus)** — a second agent picks the next
+   question's category from how the session has gone so far (after a weak
+   answer it stays in the same skill family; after a strong one it switches
+   for breadth).  Use the **🧭 Interviewer: Pick Next** button in the UI, or
+   the `run_multi_agent.py` CLI orchestrator.  The Evaluator agent is
+   unchanged; the two agents share session memory.  Without an API key the
+   Interviewer falls back to the same rule of thumb in plain Python.
 
 ---
 
@@ -50,6 +57,12 @@ Built from the best parts of two study implementations:
 4. `POST /coach` — handle a meta-question (`{message}`).
 5. `GET /report` — generate the aggregated session report.
 6. `POST /reset` — clear session memory.
+7. `GET /next-question` — ask the Interviewer agent to pick the next
+   unanswered question.  Returns `{done, question_id, category, reason,
+   source}` where `source` is `llm` or `rules`, or `{done: true, message}`
+   once every question has been answered.  It is a `GET` (it only reads
+   session memory), so it sits outside the POST rate limits in Flask and
+   Nginx, and a full 5-question run still leaves room for `/coach`.
 
 ---
 
@@ -69,6 +82,8 @@ projects/interviewiq/
     │   ├── app.py           # Flask server: Blueprint + PATH_PREFIX routing
     │   ├── config.py        # .env loader, Groq/OpenAI provider switch
     │   ├── agent.py         # Tool-calling evaluator agent + session memory
+    │   ├── interviewer_agent.py # Ask 4: second agent that picks the next category
+    │   ├── run_multi_agent.py   # Ask 4: CLI orchestrator (Interviewer → Evaluator)
     │   ├── tools.py         # Deterministic evaluation tools (regex-based)
     │   └── interview_bank.py # 5 categorized questions with keywords + samples
     ├── index.html           # single-page UI (served by Flask)
@@ -125,6 +140,16 @@ docker compose logs -f web          # follow logs
 docker compose run --rm web bash    # shell into the container
 docker compose ps                   # check running services
 docker compose down                 # stop and remove containers
+```
+
+Run the two-agent orchestrator (Ask 4) from the command line:
+
+```bash
+# Type your own answers (3 questions by default)
+docker compose run --rm web python src/python/run_multi_agent.py
+
+# Non-interactive: replay the bank's sample answers (strong | weak | mixed)
+docker compose run --rm web python src/python/run_multi_agent.py --auto mixed --turns 5
 ```
 
 ---

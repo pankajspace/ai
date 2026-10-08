@@ -22,6 +22,7 @@ from flask_cors import CORS
 
 from agent import EvaluatorAgent, InterviewSessionMemory
 from interview_bank import get_all_questions, get_question_by_id
+from interviewer_agent import InterviewerAgent
 from rate_limiter import check_rate_limit
 
 # ---------------------------------------------------------------------------
@@ -66,6 +67,8 @@ def enforce_rate_limit():
 # Shared session memory and evaluator agent (single-process, not multi-user).
 _memory = InterviewSessionMemory()
 _agent = EvaluatorAgent(memory=_memory)
+# Ask 4: a second agent that reads the same memory to pick the next category.
+_interviewer = InterviewerAgent()
 
 
 
@@ -163,6 +166,41 @@ def coach():
     except Exception as e:
         # ④ return agent errors as JSON for the frontend
         return jsonify({"error": str(e)}), 500
+
+
+@bp.route("/next-question", methods=["GET"])
+def next_question():
+    """Let the Interviewer agent pick the next question (Ask 4 orchestrator).
+
+    A GET because it only reads session memory; that also keeps it outside the
+    POST rate limits (Flask and Nginx), so a full 5-question run with the
+    Interviewer still leaves room for ``/coach``.
+
+    Response (JSON): ``{"done": false, "question_id": 5, "category": "...",
+        "reason": "...", "source": "llm" | "rules"}`` or ``{"done": true,
+        "message": "..."}`` once every question has been answered.
+    """
+    try:
+        # ① hand the shared session memory to the Interviewer agent
+        pick = _interviewer.choose_next(_memory)
+    except Exception as e:
+        # ② return agent errors as JSON for the frontend
+        return jsonify({"error": str(e)}), 500
+
+    # ③ signal the end of the bank so the UI can suggest the final report
+    if pick is None:
+        return jsonify({
+            "done": True,
+            "message": "Every question has been answered — pull the final report.",
+        })
+    # ④ return just the decision; the browser already has the question text
+    return jsonify({
+        "done": False,
+        "question_id": pick["question"]["id"],
+        "category": pick["category"],
+        "reason": pick["reason"],
+        "source": pick["source"],
+    })
 
 
 @bp.route("/scorecard", methods=["GET"])
