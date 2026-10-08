@@ -3272,7 +3272,7 @@ You will be asked to justify a stack in the first architecture review of every e
 | **AutoGen** | Conversational multi-agent: agents message each other, with a group chat manager | Research-style exploration, code-execution loops | Free-form conversation is the topology to avoid in customer work (§21.1) |
 | **DSPy** | A compiler for prompts (§8) | You have a metric and 50+ examples and want the small model to do the job | Needs data before it needs anything else |
 | **n8n / Zapier-class** | Visual workflow automation with LLM nodes | Genuinely useful for the customer's own ops team to own simple automations | Version control and testing are weak; keep the AI-critical path in code |
-| **Streamlit / Gradio** | Python-only UI for a demo or an internal review queue | Week one, and for human-approval screens that never leave the intranet | Not a production front end — say so before the customer assumes otherwise |
+| **Plain HTML / CSS / JS** | Simple web UI for a demo or an internal review queue | Week one, and for human-approval screens | The standard for production and simple demos alike |
 | **Tavily / search APIs** | A web-search tool shaped for LLM consumption | Public-information lookups inside an agent | Egress. In most regulated estates it will simply be blocked — check first |
 
 <a id="35-2-lcel-vs-plain"></a>
