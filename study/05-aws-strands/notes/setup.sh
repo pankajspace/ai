@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Setup — Future with Shivank AI Agents masterclass (macOS/Linux).  Run from this folder:   ./setup.sh
+# Setup — AI Agents masterclass (macOS/Linux).  Run from this folder:   ./setup.sh
 set -e
 
 echo "==> Checking Python version (need 3.10+)"

@@ -1,6 +1,6 @@
 [RESOURCES](RESOURCES.md)
 
-# Study AI : Shivank Agarwal
+# Study AI
 1. [LLMs - Prompting](study/01-llms-prompting/llms-prompting.md) : 27-06-2026
 2. [LangChain - Agents](study/02-langchain-agents/langchain-agents.md) : 04-07-2026
 3. [RAG - Embeddings](study/03-rag-embeddings/rag-embeddings.md) : 18-07-2026

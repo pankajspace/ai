@@ -1,4 +1,4 @@
-# Future with Shivank — AI Agents on AWS
+# AI Agents on AWS
 
 Hands-on masterclass code. Build agents with the AWS Strands SDK on Amazon Bedrock.
 
