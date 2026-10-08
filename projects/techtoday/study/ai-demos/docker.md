@@ -14,11 +14,7 @@ FUTURE WITH SHIVANK · STUDENT REVISION GUIDE
 
 # Dockerize Everything: ML → LLM → Agents
 
-This revision guide covers the full Docker lesson. Three real projects, every command decoded word by
-
-            word, and one tiffin-delivery analogy to remember. 🍱 Read it, run it, then test yourself at the
-
-            bottom.
+This guide covers the Docker lesson. It has three projects, explains every command, and uses a tiffin-delivery analogy. 🍱 Read it, run the code, and test yourself.
 
 🔰 No prior Docker needed · 💻 macOS (Apple Silicon ready) · 🐳 Docker Desktop + Compose · ✅ Tested code · 🧪 30 self-test questions
 
@@ -51,19 +47,19 @@ The tiffin-delivery mental model, image vs container lifecycle, and Apple Silico
 
 ### How to use this guide
 
-This is a revision document, not a video transcript. It works best if you go through it three times, with your terminal open beside it.
+This is a revision guide, not a transcript. Read it three times with your terminal open.
 
-- **Pass 1 — Read** Skim top to bottom without typing anything. Goal: recognise the vocabulary. Image, container, volume, compose, service name.
-- **Pass 2 — Build** Rebuild all three projects from scratch, copying commands from here. Use the self-check lists as you go.
-- **Pass 3 — Recall** Close this page. Review the questions and answers and interview questions at the bottom from memory. Whatever you miss, that's your revision list.
+- **Pass 1 — Read** Read top to bottom without typing. Goal: learn terms like image, container, volume, compose, and service name.
+- **Pass 2 — Build** Build all three projects from scratch. Copy the commands from this guide. Use the self-check lists.
+- **Pass 3 — Recall** Close this page. Answer the questions at the bottom from memory. Review what you missed.
 
-Every command block has a **Copy** button. Every command block is followed by a decoder that explains each flag — don't skip those, they're where the details are.
+Every command block has a **Copy** button. A decoder explains each flag. Do not skip them. They contain important details.
 
 <a id="port0-why-docker-exists-at-all"></a>
 
 ### Why Docker exists at all
 
-**What you'll get:** a clear mental model of Docker before you write a single command, plus a working setup on your Mac. By the end of Port 0 you should have run `hello-world`  and be able to explain what happened.
+**What you'll get:** A clear mental model of Docker and a working Mac setup. By the end of Port 0, you will run `hello-world` and explain what happened.
 
 > **🔑 Why Docker exists at all.**
 >
@@ -111,8 +107,8 @@ Every command block has a **Copy** button. Every command block is followed by a 
 
 Picture two kinds of housing:
 
-- **Virtual Machine = a standalone bungalow.** Every app gets an entire house: its own kitchen, bathroom, and security guard (a full operating system). Heavy, slow to start, expensive.
-- **Docker = apartment flats.** One building (the host operating system's core) is shared, but every flat (container) has its own lock, its own belongings, its own privacy. Lightweight, starts in seconds.
+- **Virtual Machine = a standalone bungalow.** Every app gets its own house with a full operating system. It is heavy, slow to start, and expensive.
+- **Docker = apartment flats.** The host operating system is shared. Every flat (container) has its own privacy. It is lightweight and starts in seconds.
 
 **The punchline:** a VM takes minutes to boot; a container takes milliseconds. That's why at Swiggy/Zomato scale you don't run VMs — you run containers. Traffic spike? Open 50 new flats in seconds.
 

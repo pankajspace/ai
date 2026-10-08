@@ -510,9 +510,7 @@
       <h1 id="rag-and-embeddings">Stop letting your AI <em>guess</em>. Give it a library.<a class="headerlink"
           href="#rag-and-embeddings" title="Permanent link">#</a></h1>
 
-      <p class="lede">LangChain agents can <em>act</em>, but they still do not know <strong>your</strong> data. RAG
-        fixes that. You will build a system that reads your PDFs, finds the right passage for a question, and answers
-        from <strong>real text</strong>. <strong>RAG</strong> is the pattern behind most "chat with your docs" apps.
+      <p class="lede">LangChain agents can <em>act</em>, but they do not know <strong>your</strong> data. RAG fixes this. You will build a system that reads your PDFs, finds the right passage, and answers from <strong>real text</strong>. <strong>RAG</strong> is the pattern behind most \"chat with your docs\" apps.
       </p>
 
       <ul class="meta-strip">
@@ -646,18 +644,14 @@
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-why-problems">
-              <p>An LLM is a smart intern who finished training a year ago and was never allowed inside your
-                office. RAG fixes both — fresh data, <em>and</em> your private data — by handing the intern a
-                relevant page <strong>at question-time</strong>.</p>
+              <p>An LLM is like a smart intern. They finished training a year ago and have never seen your office. RAG gives the intern fresh and private data. It hands them a relevant page exactly when you ask a question.</p>
               <ul class="card-grid">
                 <li><b>🗓️ Knowledge cutoff</b>The model's training ended months ago. It doesn't know yesterday's
                   RBI rate cut or last week's Budget numbers. <code>✓ RAG: fetch today's article</code></li>
-                <li><b>🔒 Private / internal data</b>It has never seen your HR policy, your contracts, your
-                  product wiki, or your customer tickets — and you can't paste them all into one prompt.
+                <li><b>🔒 Private / internal data</b>It has never seen your HR policy, contracts, product wiki, or customer tickets. You cannot paste them all into one prompt.
                   <code>✓ RAG: search your docs</code>
                 </li>
-                <li><b>🌀 Hallucinations</b>When unsure, the model invents confident-sounding answers. Bad in
-                  customer support, dangerous in legal, fatal in healthcare. <code>✓ RAG: ground in real
+                <li><b>🌀 Hallucinations</b>When unsure, the model invents confident-sounding answers. This is bad in customer support, dangerous in legal, and fatal in healthcare. <code>✓ RAG: ground in real
                     text</code></li>
                 <li><b>🔗 No citations</b>Ask "where did you get that?" and a raw LLM has nothing. Real products
                   need <em>"see source: page 14"</em>. <code>✓ RAG: return the source chunk</code></li>
@@ -735,11 +729,7 @@
                 <span class="analogy-icon">📚</span>
                 <div class="analogy-body">
                   <b>The library analogy that explains everything</b>
-                  <p>Imagine you ask your friend a question about a 800-page book they've never read. Bad idea —
-                    they'll guess. Smart move? <strong>You find the 3 most relevant pages, hand them over, and
-                      <em>then</em> ask.</strong> They read the pages and answer confidently with the real text.
-                    That's RAG. The "librarian" who finds those 3 pages is the only new thing we're building
-                    today.</p>
+                  <p>Imagine asking a friend a question about an 800-page book they have never read. They will guess. What is the smart move? <strong>Find the 3 most relevant pages, hand them over, and <em>then</em> ask.</strong> They will read the pages and answer confidently using the real text. That is RAG. The \"librarian\" who finds those 3 pages is the only new part we are building today.</p>
                 </div>
               </div>
             </div>
@@ -831,9 +821,7 @@ flowchart LR
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-emb-definition">
-              <p>Before we can "search by meaning", we need a way to <strong>turn meaning into
-                  numbers</strong>. That's an <em>embedding</em>. And once you see what it does, every confusing
-                thing about RAG becomes easier to understand.</p>
+              <p>Before we can \"search by meaning\", we must <strong>turn meaning into numbers</strong>. This is called an <em>embedding</em>. Once you understand this, RAG becomes much easier to understand.</p>
               <blockquote>
                 <p><strong>Definition · keep this in your head.</strong> An <strong>embedding</strong> is a list
                   of numbers (a <em>vector</em>) that captures the meaning of a piece of text. Similar meanings ⟶
@@ -1015,18 +1003,13 @@ flowchart LR
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-emb-2d-world">
-              <p>Forget AI for a second. If I plot people by <em>height vs weight</em>, people of similar build end
-                up close together on the chart. Same idea, scaled up. Real embeddings have <strong>384, 768 or even
-                  3072 dimensions</strong> — way more than we can draw — but the principle is identical:
-                <em>similar ⟶ close, different ⟶ far.</em>
+              <p>Forget AI for a second. If you plot people by <em>height vs weight</em>, people with a similar build are close together on the chart. Embeddings use the same idea, just scaled up. Real embeddings have <strong>384, 768 or even 3072 dimensions</strong>. This is too many to draw, but the principle is identical: <em>similar ⟶ close, different ⟶ far.</em>
               </p>
               <div class="analogy">
                 <span class="analogy-icon">📊</span>
                 <div class="analogy-body">
                   <b>"Why so many dimensions?"</b>
-                  <p>Because meaning is rich. Two words can be similar in many ways at once — <em>topic, tone,
-                      formality, language, sentiment</em>. Each dimension captures a different axis of
-                    similarity. 768 isn't arbitrary; it's just enough to separate millions of distinct ideas.</p>
+                  <p>Meaning is rich. Two words can be similar in many ways, such as <em>topic, tone, formality, language, or sentiment</em>. Each dimension captures a different type of similarity. 768 dimensions is enough to separate millions of distinct ideas.</p>
                 </div>
               </div>
             </div>
@@ -1195,10 +1178,7 @@ flowchart LR
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-emb-cosine">
-              <p>Two vectors close together = the <em>angle</em> between them is small. The cosine of that angle
-                is our score. It ranges from <strong>-1 (opposite) to +1 (identical)</strong>. Practically:
-                <strong>above 0.7 means "very similar"</strong>, below 0.3 means "barely related". No math needed
-                to use it — just remember: <em>bigger number = more similar</em>.
+              <p>When two vectors are close together, the <em>angle</em> between them is small. The cosine of that angle is our score. It ranges from <strong>-1 (opposite) to +1 (identical)</strong>. In practice, <strong>above 0.7 means \"very similar\"</strong>, and below 0.3 means \"barely related\". You do not need to do the math. Just remember: <em>bigger number = more similar</em>.
               </p>
               <div class="analogy">
                 <span class="analogy-icon">📐</span>
@@ -1433,9 +1413,7 @@ flowchart LR
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-emb-code">
-              <p>You don't have to train anything — somebody else already did. Open-source models from Hugging
-                Face (<code>sentence-transformers</code>) or APIs from OpenAI / Cohere give you embeddings in one
-                line:</p>
+              <p>You do not have to train anything. Somebody else already did it. Open-source models from Hugging Face (<code>sentence-transformers</code>) or APIs from OpenAI / Cohere give you embeddings in one line:</p>
               <span class="code-tab-label">embeddings.py</span>
               <pre><code data-lang="python">
 # pip install sentence-transformers
@@ -1513,18 +1491,12 @@ print(similarity)       # → 0.87 (very similar 🎉)
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-chunk-why">
-              <p>Before we embed anything, we have to cut it up. You can't embed a 200-page PDF as one vector —
-                meaning gets averaged away to mush. So we split it into <em>chunks</em>. <strong>How</strong> you
-                chunk decides how good your RAG actually is. Engineers underestimate this; the best ones obsess
-                over it.</p>
+              <p>Before we embed anything, we must cut it up. You cannot embed a 200-page PDF as one vector. The meaning will turn to mush. Instead, we split it into <em>chunks</em>. <strong>How</strong> you chunk decides how well your RAG works. Many engineers underestimate this, but the best ones obsess over it.</p>
               <div class="analogy">
                 <span class="analogy-icon">🍕</span>
                 <div class="analogy-body">
                   <b>The pizza-slice analogy</b>
-                  <p>One whole pizza is hard to share — too big. Cut it into 100 confetti-sized bits and nobody
-                    can taste anything. <strong>Slice sizes matter.</strong> Chunks are pizza slices: too big and
-                    you lose precision (the relevant bit is buried), too small and you lose context (each crumb is
-                    meaningless).</p>
+                  <p>One whole pizza is too big to share. If you cut it into 100 tiny bits, nobody can taste anything. <strong>Slice sizes matter.</strong> Chunks are like pizza slices. If they are too big, you lose precision because the answer is buried. If they are too small, you lose context because each piece is meaningless.</p>
                 </div>
               </div>
             </div>
@@ -1780,16 +1752,13 @@ print(len(chunks))    # → e.g. 47 chunks ready to embed
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-vdb-definition">
-              <p>You have thousands of embeddings. For every question, you need the top-k nearest ones —
-                <em>fast</em>. That's what a vector database does, and that's <strong>all</strong> it does.
+              <p>You have thousands of embeddings. For every question, you need the top-k nearest ones <em>fast</em>. This is exactly what a vector database does.
               </p>
               <div class="analogy">
                 <span class="analogy-icon">🗂️</span>
                 <div class="analogy-body">
                   <b>One-line definition</b>
-                  <p>A vector database is a <em>search engine</em> where instead of "find documents containing
-                    this word", the query is "find vectors closest to <em>this</em> vector". Same idea as Google,
-                    swapped engine.</p>
+                  <p>A vector database is a <em>search engine</em>. Instead of searching for words, you search for vectors closest to <em>your</em> vector. It is the same idea as Google, but with a different engine.</p>
                 </div>
               </div>
             </div>
@@ -2097,9 +2066,7 @@ print(rag_answer("How long do I have to return something?"))
               <ul class="meta-strip">
                 <li>80% of RAG quality lives here</li>
               </ul>
-              <p>A vanilla RAG works. A <em>good</em> RAG works <strong>well</strong>. The two tricks that close
-                that gap — and that every senior engineer asks about — are <em>reranking</em> and <em>hybrid
-                  search</em>. Both are easy to add.</p>
+              <p>A basic RAG works. A <em>good</em> RAG works <strong>well</strong>. The two tricks that close that gap are <em>reranking</em> and <em>hybrid search</em>. Both are easy to add.</p>
               <p>Embedding similarity is fast, but it sometimes ranks shallow word-matches above deep semantic
                 matches. So we use a <strong>two-stage retrieval</strong> — a fast first pass to narrow down, then
                 a slow accurate pass to pick the real winners.</p>
@@ -2107,10 +2074,7 @@ print(rag_answer("How long do I have to return something?"))
                 <span class="analogy-icon">📄</span>
                 <div class="analogy-body">
                   <b>Imagine hiring for one open role — with 1,000 applicants</b>
-                  <p>You can't interview 1,000 people (it would take a year). You also can't pick someone by gut
-                    feel from a stack of resumes (you'd hire badly). So you do <strong>two passes</strong>: a fast
-                    <em>resume scan</em> to shortlist 25, then a real <em>30-minute interview</em> with each of
-                    those 25. <strong>Bi-encoder and cross-encoder are exactly these two passes.</strong>
+                  <p>You cannot interview 1,000 people. You also cannot pick someone by gut feel from a stack of resumes. Instead, you do <strong>two passes</strong>. First, a fast <em>resume scan</em> to shortlist 25. Next, a real <em>30-minute interview</em> with each of those 25. <strong>Bi-encoder and cross-encoder are exactly these two passes.</strong>
                   </p>
                 </div>
               </div>
@@ -2239,19 +2203,12 @@ def retrieve_with_rerank(question, top_k=3):
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-rerank-keywords">
-              <p>Pure semantic search ignores keywords. Ask "what's the price of <strong>SKU-4429</strong>?" and the
-                embedding doesn't care about that specific code — it just sees "price" and "product". For codes,
-                names, IDs, dates — <strong>keyword search beats semantic</strong> hands down. The fix isn't to pick
-                one or the other. It's to use <em>both</em>, with very different strengths.</p>
+              <p>Pure semantic search ignores keywords. If you ask \"what's the price of <strong>SKU-4429</strong>?\", the embedding does not care about the specific code. It just sees \"price\" and \"product\". For codes, names, IDs, and dates, <strong>keyword search is better</strong>. The fix is not to pick just one. The fix is to use <em>both</em>.</p>
               <div class="analogy">
                 <span class="analogy-icon">📚</span>
                 <div class="analogy-body">
                   <b>Two librarians, very different strengths</b>
-                  <p>Remember our librarian from Block 15? She has <strong>two assistants</strong> who search the
-                    stacks completely differently. One is a literalist who lives for exact words. The other is a
-                    philosopher who lives for meaning. Send your query to the right one and you get great results.
-                    <strong>Send your query to <em>both</em> — and let them merge their rankings — and you get
-                      strong results.</strong> That's hybrid search.
+                  <p>Remember our librarian from Block 15? She has <strong>two assistants</strong> who search very differently. One is a literalist who looks for exact words. The other is a philosopher who looks for meaning. If you send your query to the right one, you get great results. <strong>If you send your query to <em>both</em> and let them merge their rankings, you get strong results.</strong> This is hybrid search.
                   </p>
                 </div>
               </div>
@@ -2293,9 +2250,7 @@ def retrieve_with_rerank(question, top_k=3):
                   </svg></span></div>
             </div>
             <div class="part-body" id="body-rerank-hybrid">
-              <p>Send the same query to <em>both</em> librarians at the same time. Each ranks the docs by their own
-                logic. You then <strong>merge their two ranked lists into one</strong> using a tiny formula called
-                <strong>Reciprocal Rank Fusion (RRF)</strong>:
+              <p>Send the same query to <em>both</em> librarians at the same time. Each ranks the docs using their own logic. Then you <strong>merge their two ranked lists into one</strong> using a small formula called <strong>Reciprocal Rank Fusion (RRF)</strong>:
               </p>
               <div class="callout callout-key">
                 <p><strong>⚡ Reciprocal Rank Fusion in one line.</strong> For each doc, final score =
@@ -2309,11 +2264,7 @@ def retrieve_with_rerank(question, top_k=3):
                 <span class="analogy-icon">🤝</span>
                 <div class="analogy-body">
                   <b>Why this works so well in practice</b>
-                  <p>Real user queries are <em>messy</em> — mostly natural language, but sprinkled with technical
-                    terms, product codes, names, or jargon the embedding model has never seen. Hybrid covers both
-                    halves of every messy query automatically: the natural-language part goes to Vector, the
-                    technical-term part goes to BM25, and RRF stitches the answers together. <strong>You're not
-                      picking sides — you're using each tool for what it's actually good at.</strong></p>
+                  <p>Real user queries are <em>messy</em>. They are mostly natural language, but they also contain technical terms, product codes, names, or jargon the embedding model has never seen. Hybrid covers both halves automatically. The natural-language part goes to Vector, the technical-term part goes to BM25, and RRF stitches the answers together. <strong>You are not picking sides. You are using each tool for what it is good at.</strong></p>
                 </div>
               </div>
             </div>

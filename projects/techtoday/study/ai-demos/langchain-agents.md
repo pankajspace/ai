@@ -14,7 +14,7 @@ Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
 
 # Make your AI answer questions and use tools.
 
-You already talked to a model. Now you give it **tools**. You will meet LangChain, build your first chain, and then build an **agent that decides when to use a tool.** The examples below show each step.
+You already talked to a model. Now you give it **tools**. You will learn LangChain, build your first chain, and create an **agent that decides when to use a tool.** The examples below show each step.
 
 - 🧭 3 ways to steer a model
 - 🔗 LangChain, hands-on
@@ -60,7 +60,7 @@ Concepts, Worked Examples & a Tool-Using Agent
 
 ## Unit 1 — Mental Models & Adaptation
 
-Review core LLM limitations and compare prompt engineering, fine-tuning, and tool-augmented workflows.
+Review core LLM limits. Compare prompt engineering, fine-tuning, and tool workflows.
 
 <a id="recap"></a>
 
@@ -91,14 +91,13 @@ Review core LLM limitations and compare prompt engineering, fine-tuning, and too
 
 - **Block 9** ~5 min · the map
 
-Before you build, remember the **three** main ways to steer a pre-trained model. You will use the first one most of the time. You will use the second one soon. You will rarely need the third.
+Remember the **three** main ways to steer a pre-trained model. You will use the first one most often. You will use the second one soon. You will rarely need the third.
 
-- **✍️ 1. Prompting**Just *tell* it clearly. Free, instant, no training.
-  **90% of real work lives here** — including everything on this page.
-- **📚 2. RAG**Hand it *your* documents at question-time so it answers from real data.
+- **✍️ 1. Prompting**Just *tell* it clearly. It is free, instant, and requires no training.
+  **90% of real work happens here** — including everything on this page.
+- **📚 2. RAG**Give it *your* documents at question-time. It will answer using real data.
   Coming up next.
-- **🎓 3. Fine-tuning**Actually re-train on examples. Powerful, costly, rarely needed. Reach for
-  it last.
+- **🎓 3. Fine-tuning**Re-train the model on examples. It is powerful and costly but rarely needed. Use this last.
 
 > **🧭 Why this matters here.** Chains, tools, agents — it's all still **option 1,
 > organised cleverly**. Nothing new to fear. Let's build.
@@ -109,7 +108,7 @@ Before you build, remember the **three** main ways to steer a pre-trained model.
 
 ## Unit 2 — LangChain Core & LCEL
 
-Compose prompt templates, foundation models, and output parsers using LangChain Expression Language (LCEL).
+Build prompt templates, models, and parsers using LangChain Expression Language (LCEL).
 
 <a id="langchain"></a>
 
@@ -121,13 +120,10 @@ Compose prompt templates, foundation models, and output parsers using LangChain 
 
 - **Block 10** ~35 min · hands-on
 
-With the raw OpenAI API you called the model by hand — perfect for one call. The moment you want
-**reusable prompts, multi-step pipelines, and memory**, you'd be rebuilding the same
-plumbing forever. **LangChain is that plumbing, pre-built.**
+You called the model by hand with the raw OpenAI API. This is perfect for one call. If you want **reusable prompts, pipelines, and memory**, you must build the plumbing yourself. **LangChain provides this plumbing.**
 
 > **Analogy** 🧰 — **One-line intuition**
-> The raw OpenAI call is a Lego brick. LangChain is the box of connectors that snaps bricks into
-machines.
+> The raw OpenAI call is a Lego brick. LangChain connects these bricks into machines.
 
 #### Install it
 
@@ -141,33 +137,25 @@ $ pip install langchain langchain-openai
 
 ### The 3 new words in plain English
 
-LangChain code uses three names that look scary. They aren't. Read these *before* we touch
-code — each one is a thing you already understand:
+LangChain code uses three names. They look scary, but they are simple. Read these *before* we write code. You already understand each one:
 
-- **`ChatPromptTemplate` = a prompt with blanks**A normal prompt where some parts are
-  left as `{blanks}` to fill in later. Like a wedding-invite template: "Dear
-  `{name}`, join us on `{date}`". Write once, reuse for every guest.
+- **`ChatPromptTemplate` = a prompt with blanks**This is a normal prompt with `{blanks}` to fill in later. It is like a wedding invite: 'Dear `{name}`, join us on `{date}`'. Write it once and reuse it.
   *say
   it as: "my reusable prompt"*
-- **`ChatOpenAI` = the model, in a LangChain wrapper**The exact same GPT you called
-  with the raw OpenAI API — just wrapped so it can snap onto other LangChain pieces. Same
-  `model=`, same `temperature=`.
+- **`ChatOpenAI` = the model, in a LangChain wrapper**This is the same GPT you called with the raw OpenAI API. It is wrapped to connect with LangChain pieces. It uses the same `model=` and `temperature=`.
   *say it as: "the model"*
-- **`StrOutputParser` = unwraps the answer**The model doesn't return plain text — it
-  returns a *package* (text + metadata like token counts). This piece opens the package and
-  hands you just the string. ("Str" = string, i.e. plain text.)
+- **`StrOutputParser` = unwraps the answer**The model returns a *package* with text and metadata, not plain text. This piece opens the package and gives you the text string.
   *say it as: "give me just the
   text"*
 
 > **Analogy** 🗣️ — **Why is it called "Chat"PromptTemplate?**
-> Because it builds prompts in the **chat format you already know** from the raw
-OpenAI API — system / user / assistant messages. Same grammar, now reusable.
+> It builds prompts in the **chat format you already know** from the raw OpenAI API. It uses system, user, and assistant messages. It is the same grammar, but reusable.
 
 <a id="langchain-template"></a>
 
 ### Feel a Template (Before Coding One)
 
-A template is text with blanks. You fill the blanks with a dict. The dict you pass to LangChain, such as `{"tone": "witty", ...}`, tells LangChain what value goes into each blank.
+A template is text with blanks. You fill the blanks with a dictionary. The dictionary tells LangChain what value goes into each blank.
 
 **Example · Template playground** — worked prompt fills
 
@@ -189,7 +177,7 @@ The keys in the dict match the blank names: `tone`, `length`, and `topic`.
 
 ### What the model returns and why the parser helps
 
-When the model replies, you do not get plain text. You get a **package called an `AIMessage`**. It holds the text and bookkeeping data. The parser opens the package and returns only the text.
+The model does not return plain text. It returns a **package called an `AIMessage`**. This holds the text and data. The parser opens the package and returns only the text.
 
 **Example · Open the package** — why StrOutputParser exists
 
@@ -207,13 +195,13 @@ finish_reason: "stop"
 
 "Anthropic builds safe AI…"Just the text. It is ready to print, show in your app, or save.
 
-Without the parser, you would write `response.content` by hand each time. With the raw OpenAI API, you wrote `response.choices[0].message.content`. The parser does that cleanup for you.
+Without the parser, you write `response.content` each time. With the OpenAI API, you wrote `response.choices[0].message.content`. The parser does this cleanup for you.
 
 <a id="langchain-builder"></a>
 
 ### Build the chain in order
 
-A chain is three pieces joined by `|`, the pipe. Read the pipe as **"then"**: prompt *then* model *then* parser.
+A chain joins three pieces with `|`, the pipe. Read the pipe as **'then'**: prompt *then* model *then* parser.
 
 **Example · Chain builder** — pieces, order, and output
 
@@ -230,7 +218,7 @@ A chain is three pieces joined by `|`, the pipe. Read the pipe as **"then"**: pr
 1. **📝 Prompt**: The prompt comes first. It shapes the request.
 2. **🤖 Model**: The model goes in the middle. It does the thinking.
 3. **🧹 Parser**: The parser comes last. It cleans the output into plain text.
-The challenge tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a later piece too early, the feedback explained which piece was expected next.
+The tray showed the pieces in this order: 🤖 Model, 🧹 Parser, 📝 Prompt. If you picked a piece too early, feedback explained what was expected next.
 
 📝 prompt fills the blank → "Summarize this website: anthropic.com…"🤖 model thinks… generates the summary🧹 parser returns clean text → "Anthropic builds safe AI systems, including Claude…" ✅
 
@@ -240,8 +228,7 @@ This is why `prompt | model | parser` reads like a small assembly line.
 
 ### The same chain in real code, decoded line by line
 
-Rebuilding the earlier website summarizer the LangChain way. The numbered comments match the decoder
-below — nothing here is mystery code:
+Let's rebuild the website summarizer using LangChain. The numbered comments match the decoder below. There is no mystery code here:
 
 **summarizer_langchain.py**
 
@@ -270,20 +257,11 @@ print(summarize("https://anthropic.com"))
 
 **🔍 Decoder — what each numbered line does**
 
-1. **`from_template(...)`** turns my text into a **reusable
-  prompt**. The `{website}` part is the blank — it will be filled in later, just
-  like the playground above.
-2. **The model.** The **same model you called with the raw OpenAI API**,
-  wrapped for LangChain. `temperature=0.3` = mostly focused (summaries shouldn't be wildly
-  creative).
-3. **The parser.** The **package-opener** you just saw in the animation:
-  takes the model's `AIMessage` package, hands back plain text.
-4. **The pipe `|`** means **"then"**. Read aloud: "the prompt,
-  *then* the model, *then* the parser." Data flows left → right, exactly like the
-  builder.
-5. **`invoke`** means **"run it"**. The dict
-  `{"website": ...}` says which blank gets what — the key `"website"` matches
-  the `{website}` blank by name.
+1. **`from_template(...)`** turns text into a **reusable prompt**. The `{website}` part is the blank. It will be filled in later.
+2. **The model.** This is the **same model you called with the OpenAI API**, wrapped for LangChain. A `temperature=0.3` makes it focused. Summaries should not be wildly creative.
+3. **The parser.** This is the **package-opener**. It takes the model's `AIMessage` package and returns plain text.
+4. **The pipe `|`** means **'then'**. Read it as: 'the prompt, *then* the model, *then* the parser.' Data flows left to right.
+5. **`invoke`** means **'run it'**. The dictionary `{"website": ...}` links the values to the blanks.
 
 > **✨ The unlock.** `chain` is now a **reusable building
 > block**. New task? Swap the template. Different model? Swap line ②. Hindi summaries? Add
@@ -293,16 +271,10 @@ print(summarize("https://anthropic.com"))
 
 ### Bonus piece: memory, decoded
 
-Remember the basic truth: models forget everything between calls. The fix is simple —
-**re-send the old messages every time**. LangChain gives that a tidy home. Two tiny new
-words first:
+Models forget everything between calls. The fix is simple: **re-send old messages every time**. LangChain makes this easy. Let's learn two new words:
 
-- **`HumanMessage` / `AIMessage` = labelled chat bubbles**Just a way to
-  store "the human said X" and "the AI replied Y" — the same user/assistant roles from the raw OpenAI
-  API, as Python objects.
-- **`MessagesPlaceholder` = a parking spot for history**A blank in your prompt that
-  holds *a list of past messages* instead of one word. "Insert the whole conversation so far,
-  right here."
+- **`HumanMessage` / `AIMessage` = labelled chat bubbles**These store 'the human said X' and 'the AI replied Y'. They are the user and assistant roles from the OpenAI API, as Python objects.
+- **`MessagesPlaceholder` = a parking spot for history**This is a blank in your prompt that holds *a list of past messages*. It inserts the conversation history.
 
 **memory_demo.py**
 
@@ -338,7 +310,7 @@ print(chain.invoke({"history": history, "question": "What's my name?"}).content)
 
 ## Unit 3 — Tool-Using Agents & Capstone
 
-Define custom Python tools, run a ReAct reasoning loop, ship a Smart Shop Assistant, and explore memory.
+Define custom Python tools. Run a reasoning loop. Build a Smart Shop Assistant, and explore memory.
 
 <a id="agent"></a>
 
@@ -350,14 +322,12 @@ Define custom Python tools, run a ReAct reasoning loop, ship a Smart Shop Assist
 
 - **Block 11** ~30 min · the leap
 
-Everything so far only *talks*. An **agent** is a model with a **tool** and the freedom to **decide when to use it**. You will build a small shop assistant with one skill: looking up real prices.
+Everything so far only *talks*. An **agent** is a model with a **tool** and the freedom to **decide when to use it**. You will build a shop assistant with one skill: looking up prices.
 
-> **agent = LLM + tool + loop.** The model checks, "Do I need a tool here?" If yes, it asks for the tool, reads the result, and answers. You do not hard-code *when*. **That decision is the difference between a chatbot and an agent.**
+> **agent = LLM + tool + loop.** The model asks, 'Do I need a tool here?' If yes, it calls the tool, reads the result, and answers. You do not hard-code *when*. **This decision makes it an agent, not just a chatbot.**
 
 > **Analogy** 🧮 — **Why tools?**
-> LLMs are great with language, terrible with facts they don't have — today's price, live stock,
-exact math. A tool lets the model *fetch truth* instead of guessing. Tools cure "confident
-but wrong."
+> LLMs are great with language, but terrible with unknown facts. They struggle with live prices, stock, and exact math. A tool lets the model *fetch truth* instead of guessing. Tools fix confident but wrong answers.
 
 <a id="agent-build"></a>
 
@@ -390,15 +360,11 @@ def get_price(item):
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 ```
 
-Two tiny notes for the Python: `PRICES` is an ordinary dict standing in for a database,
-and `.get(item, 'unknown')` means "look it up, and if it's not there, say
-*unknown* instead of crashing." That's the entire tool — **any function you can write
-can become an agent's tool.**
+`PRICES` is a dictionary acting as a database. `.get(item, 'unknown')` looks up an item. If it is not found, it returns *unknown* instead of crashing. **Any function can be an agent's tool.**
 
 #### Step 2 — describe the tool so the model knows it exists
 
-The model can't see your Python. You hand it a **menu card describing the tool** —
-written as a dict (the nested braces look busy, but it's only four facts). Decoder below:
+The model cannot see your Python code. You give it a **menu card describing the tool**. This is written as a dictionary with four facts. See the decoder below:
 
 **agent.py · part 2**
 
@@ -419,14 +385,10 @@ tools = [{
 
 **🔍 Decoder — the menu card, four facts**
 
-1. **What kind of tool?** A function. (That's the only kind you'll use for a long time —
-  just write this line as-is.)
-2. **Its name** — must exactly match your Python function's name, so we can find it
-  when the model asks for it.
-3. **When to use it** — written for the *model* to read. This sentence is
-  literally how the model decides whether to call your tool. Write it clearly!
-4. **What inputs it needs** — one input called `item`, which is text
-  (`"string"`), and it's `required`. That's all the nesting says.
+1. **What kind of tool?** A function. This is the only kind you will use for now. Just write this line as-is.
+2. **Its name** — This must exactly match the Python function's name. This helps find it when the model asks for it.
+3. **When to use it** — This is written for the *model* to read. The model uses this sentence to decide if it should call the tool. Write it clearly!
+4. **What inputs it needs** — It needs one input called `item`. It is text (`'string'`), and it is `required`.
 
 > **✍️ The non-obvious insight.** Line ③ is **prompt engineering in
 > disguise**. A vague description ("does stuff with items") → the model misuses the tool. A
@@ -462,25 +424,16 @@ print(agent("Hi! What can you help with?"))   # → no tool → just chats
 
 **🔍 Decoder — the loop, step by step**
 
-1. **Send message + menu.** We send the user's message *plus our tools menu*.
-  The model now knows a tool exists and may ask to use it.
-2. **Check for a tool request.** `msg.tool_calls` = "did the model ask to
-  run a tool?" If it did, this holds *which tool* and *with what input* — e.g.
-  `get_price`, `item="shoes"`. If not, it's empty and we skip straight to the
-  answer.
-3. **Run the tool.** The model's request arrives as text, so
-  `json.loads(...)` converts it into a Python dict we can read — then **we**
-  run the real function. (Important: the model never runs code itself. It *asks*; your Python
-  *does*.)
-4. **Send it all back.** We append the tool's result to the conversation with
-  `role: "tool"` (a third role, joining system/user/assistant!) and send everything back,
-  so the model can write a friendly final answer using the real data.
+1. **Send message + menu.** We send the user's message *and our tools menu*. The model knows a tool exists and may use it.
+2. **Check for a tool request.** `msg.tool_calls` checks if the model asked to run a tool. If yes, it holds *which tool* and *with what input*. If no, it is empty and we skip to the answer.
+3. **Run the tool.** The model's request arrives as text. `json.loads(...)` converts it into a Python dictionary. Then, **we** run the real function. The model never runs code itself. It *asks*, and your Python *does* the work.
+4. **Send it all back.** We append the tool's result to the conversation using `role: 'tool'`. Then, we send everything back. The model uses the real data to write a final answer.
 
 <a id="agent-messages"></a>
 
 ### Watch the message list grow
 
-The whole agent is **a list of messages that gets longer**. One question adds four records. These are the same records created by the `messages.append(...)` lines in the code.
+The agent builds **a list of messages**. One question adds four records. The `messages.append(...)` lines in the code create these records.
 
 **Example · The messages list** — "How much are the shoes?"
 
@@ -496,12 +449,12 @@ messages = [
 
 ]
 
-1. **Step 1.** The list starts with the user's question, plus the tools menu on the side.
-2. **Step 2.** The model does not answer yet. It asks to run `get_price` for `shoes`. This is what `msg.tool_calls` holds.
-3. **Step 3.** Your Python runs `get_price("shoes")` and appends the result with the new role: `tool`. The model never runs code. It asks, and your Python does the work.
-4. **Step 4.** You send the longer list back. Now the model writes a friendly answer using the real price.
+1. **Step 1.** The list starts with the user's question and the tools menu.
+2. **Step 2.** The model does not answer yet. It asks to run `get_price` for `shoes`. This is inside `msg.tool_calls`.
+3. **Step 3.** Your Python runs `get_price('shoes')`. It appends the result with the `tool` role. The model asks, and your Python works.
+4. **Step 4.** You send the longer list back. The model writes an answer using the real price.
 
-That is the whole agent loop: user → tool request → tool result → answer.
+This is the agent loop: user → tool request → tool result → answer.
 
 > **🤯 `if msg.tool_calls` is the core check.** The model asked to run `get_price("shoes")` by itself. If you give it ten tools, it can pick among them. Cursor, support bots, and many "AI agent" systems use this same pattern with a bigger toolbox.
 
@@ -509,29 +462,29 @@ That is the whole agent loop: user → tool request → tool result → answer.
 
 ### Quick check: think like the agent
 
-Before you trust the agent, check the rule. For each question, decide whether the model should **call the tool or answer directly**. The answers and reasons are below.
+Before you trust the agent, check its rules. Decide if the model should **call the tool or answer directly** for each question. The answers are below.
 
 **Example · Tool or No Tool?** — 5 questions with answers
 
 1. **"How much is the bag?"**
   Correct answer: **Calls the tool.**
-  Reason: A price question needs real data, so the model calls `get_price("bag")`.
+  Reason: A price question needs real data. The model calls `get_price('bag')`.
 2. **"Hi! How are you today?"**
   Correct answer: **Just answers.**
-  Reason: This is small talk. No shop facts are needed.
+  Reason: This is small talk. It does not need shop facts.
 3. **"Is the hat cheaper than the shorts?"**
   Correct answer: **Calls the tool.**
-  Reason: Comparing prices needs the real numbers, so it calls the tool twice.
+  Reason: Comparing prices requires real numbers. The model calls the tool twice.
 4. **"What's the capital of France?"**
   Correct answer: **Just answers.**
-  Reason: This is the trick question. The model already knows this, and the price tool cannot help.
+  Reason: This is a trick question. The model knows this. The price tool cannot help.
 5. **"I have ₹1500 — can I afford the pants?"**
   Correct answer: **Calls the tool.**
-  Reason: It must check the real price, ₹1699, before answering. It calls the tool and then says the budget is not quite enough.
+  Reason: It must check the real price before answering. It calls the tool and explains the budget is too low.
 
-The score text was either **"Perfect 5/5 — you think like an agent"** or **"Final score: X/5 — solid"**. The lesson is to ask whether the available tool can improve the answer.
+The lesson is to ask if the available tool can improve the answer.
 
-> **🎙️ Speaker note.** Use these as class questions. The fourth question is useful because it shows that a tool should not run when it cannot help.
+> **🎙️ Speaker note.** Use these as class questions. The fourth question shows that a tool should not run if it cannot help.
 
 <a id="project"></a>
 
@@ -543,8 +496,7 @@ The score text was either **"Perfect 5/5 — you think like an agent"** or **"Fi
 
 - **Block 12** ~25 min · 🏁 THE BUILD
 
-Same `agent()` from Block 11 — we give it a simple chat loop in the terminal, so this
-takes a few lines:
+We use the same `agent()` from Block 11. We add a simple chat loop in the terminal:
 
 **main.py**
 
@@ -560,12 +512,8 @@ while True:                          # ① keep chatting until the user types qu
 
 **🔍 Decoder**
 
-1. **The chat loop.** `input()` reads each new message you type, and the loop
-  keeps going until you type `quit`. We only pass the message today; *your homework
-  hint:* keep a `history` list of past turns and pass it into the agent and it gains
-  memory — exactly the trick from the memory section.
-2. **One agent turn.** `agent(message)` runs the full think → maybe-tool →
-  answer loop, and we print its reply.
+1. **The chat loop.** `input()` reads each message. The loop runs until you type `quit`. We only pass the message today. *Hint:* Keep a `history` list of past turns and pass it into the agent for memory.
+2. **One agent turn.** `agent(message)` runs the full loop, and we print its reply.
 
 #### Run it
 
@@ -591,7 +539,7 @@ Shop: The pants are ₹1699.
 
 ### Example run of the working agent
 
-This trace shows a sample chat with the agent. Watch when the 🔧 tool line appears and when the assistant answers directly.
+This trace shows a sample chat. Watch when the tool line appears and when the assistant answers directly.
 
 **Example · Smart Shop Assistant** — preset traces
 
@@ -619,11 +567,11 @@ This trace shows a sample chat with the agent. Watch when the 🔧 tool line app
    - **Assistant answer**: Hmm, that item isn't in my shop. I've got shoes, hat, bag, shorts and pants!
 **Shop data:** shoes ₹799, hat ₹399, bag ₹1420, shorts ₹1299, pants ₹1699.
 
-**How this sample trace was made:** keyword rules stand in for the model. They look for item names, including simple singular forms. They treat `price`, `cost`, `how much`, `cheap`, `expensive`, `afford`, and `₹` as price-related words. Each item found adds one tool call. A price question about an unknown item adds one "unknown" tool call. Anything else is a direct answer.
+**How this sample trace was made:** Keyword rules replace the model here. They look for item names and price words. Each item adds one tool call. A missing item adds an 'unknown' tool call. Everything else gets a direct answer.
 
-In this sample, keyword matching stands in for the model. In your real `agent.py`, GPT makes the decision more flexibly, but the loop and trace stay the same.
+In this sample, keyword matching replaces the model. In your real `agent.py`, GPT makes the decision. The loop stays the same.
 
-> **Industry spotlight · real agents use this same loop.** Today the assistant has one tool. Tomorrow you can add tools for your database, email, and calendar. Then it can handle tasks such as "find my order, refund it, email the customer." Production agents, including coding agents, use this loop with a bigger toolbox.
+> **Industry spotlight · real agents use this same loop.** Today, the assistant has one tool. Tomorrow, you can add tools for a database, email, and calendar. Then, it can handle tasks like 'find my order, refund it, email the customer.' Production agents use this loop with a bigger toolbox.
 >
 > - Support bots
 > - Booking assistants
@@ -640,21 +588,18 @@ In this sample, keyword matching stands in for the model. In your real `agent.py
 
 - **Block 14** ~10 min
 
-- **🧭 3 ways to steer**Prompting, RAG, fine-tuning — you'll mostly prompt.
-- **🔗 LangChain**prompt | model | parser — chains you can snap together.
-- **🤖 Agents**LLM + tool + loop. The model decides. You saw it.
-- **🛍️ You shipped**A working tool-using agent. 🎉
+- **🧭 3 ways to steer**Prompting, RAG, and fine-tuning. You will mostly use prompting.
+- **🔗 LangChain**prompt | model | parser. These are chains you can connect.
+- **🤖 Agents**LLM + tool + loop. The model decides.
+- **🛍️ You shipped**A working tool-using agent.
 
 <a id="next-road"></a>
 
 ### The road ahead, still hands-on
 
-1. **More tools (your homework).** Add `check_stock(item)` or
-  `apply_discount(item)` and watch the agent pick the right one.
-2. **RAG — chat with your own PDFs.** The next big build: a model that answers from
-  *your* documents.
-3. **Multi-agent teams.** Several agents handing work to each other — once one agent
-  feels easy.
+1. **More tools (your homework).** Add `check_stock(item)` or `apply_discount(item)`. The agent will pick the right tool.
+2. **RAG — chat with your own PDFs.** The next build is a model that answers from *your* documents.
+3. **Multi-agent teams.** Several agents can hand work to each other.
 
 > **📚 A note on theory.** We're deliberately deferring the deep "how models are built"
 > topics — attention, training, scaling — until you're comfortable building. They'll land as "*oh,

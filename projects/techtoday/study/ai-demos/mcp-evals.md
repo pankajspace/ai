@@ -14,11 +14,11 @@ MCP, tools, and evals
 
 # Give AI new abilities, then check the answers.
 
-A model can reason well, but it cannot see current data by itself. A tool gives it an ability. MCP gives tools one shared shape. Evals check whether the final answer is safe and useful.
+Models reason well but cannot see new data. Tools give them new abilities. MCP gives tools a shared shape. Evals check if answers are safe and useful.
 
 🛠️ Tool calling · 🔌 Model Context Protocol · 🏏 Cricket MCP demo · 🧪 Evals · 🔒 Tool-input safety
 
-> 🔑 **The promise.** You will understand why models get stuck, how an app gives them tools, how MCP reduces integration work, and how evals catch mistakes before users do.
+> 🔑 **The promise.** You will learn why models get stuck, how apps add tools, how MCP reduces work, and how evals catch mistakes.
 
 **TechToday Study Library** — each topic uses static examples, question-and-answer checks, and code snippets from the MCP and evals demo.
 
@@ -41,7 +41,7 @@ A model can reason well, but it cannot see current data by itself. A tool gives 
 
 ## Unit 1 — Tools & The Integration Challenge
 
-Understand why models require external tools, how tool calling works, and why bespoke integrations create an N-by-M scaling mess.
+Learn why models need tools, how tool calling works, and why custom integrations create a mess.
 
 <a id="stuck"></a>
 
@@ -71,28 +71,28 @@ Understand why models require external tools, how tool calling works, and why be
 
 **Question-and-answer list**
 
-1. What do people ask ChatGPT, Claude or Gemini? **Code, emails, trips, exam explanations, leave applications, and many other everyday tasks.** The exact answer varies. All of us use AI for time-consuming work.
-2. How much should you trust an AI answer? **Remember the number, then ask again after testing.** The goal is measured trust, not blind trust or zero trust.
-3. What two questions does this lesson answer? **How do you give an AI new powers, and how do you know it is not lying?** Tools give abilities. Evals check whether the abilities worked.
+1. What do people ask ChatGPT, Claude or Gemini? **Code, emails, trips, exam explanations, leave applications, and many other everyday tasks.** We all use AI for time-consuming work.
+2. How much should you trust AI? **Test it first.** The goal is measured trust, not blind trust.
+3. What does this lesson answer? **How to give AI new powers, and how to check its answers.** Tools give abilities. Evals check the work.
 
 <a id="stuck-cutoff"></a>
 
 ### A model is smart, but its memory is frozen
 
-Think of the model as your smartest friend after a year off the grid. He was the class topper. He read every book, every Wikipedia page, and every Stack Overflow answer. Then he spent one year in a village in the hills with no phone, no internet, and no newspaper.
+Think of the model as a smart friend off the grid. He read every book and webpage. Then he spent a year in the hills without a phone, internet, or news.
 
 > **Analogy** 🧠 — **Knowledge cutoff**
 >
-> The model read training data only up to a date. Anything after that date does not exist in its memory unless the app gives it fresh information.
+> The model only knows training data up to a past date. It cannot know newer facts unless the app provides fresh data.
 
 1. ChatGPT is the app. GPT is the brain inside. OpenAI trained it on books, websites, articles, and code.
 2. The brain is frozen after training.
 3. It is like your 10th standard ID card photo. It does not update when you grow a beard.
-4. A printed photo cannot update itself. A trained model does not update during a normal chat.
-5. India vs West Indies ODI series, Sep–Oct 2026 is after the cutoff. Not one ball of it is in the frozen brain unless the app supplies fresh data.
-6. If ChatGPT answers about a current match, the app probably used web search or another tool. OpenAI did not retrain the brain last night, just for us.
-7. The ChatGPT screen can show “Searched the web” plus source links. The flow is: brain says it does not know, brain asks for web search, the app searches and returns results, and the brain reads the results and answers.
-8. The model still has strengths: it understands messy questions, knows what fresh information is needed, and explains clearly once it has the information. The pattern is “give him a phone”: let it say what to look up, check it, then give the result back.
+4. A printed photo does not change. A trained model does not update during a chat.
+5. India vs West Indies ODI series, Sep–Oct 2026 is after the cutoff. The frozen brain knows nothing about it unless the app provides fresh data.
+6. If ChatGPT answers about a current match, the app used a web search or tool. OpenAI did not retrain the brain just for us.
+7. The ChatGPT screen can show “Searched the web” plus source links. The flow: the brain asks for a search, the app searches, and the brain reads the results to answer.
+8. The model still has strengths: it understands messy questions, knows what fresh information is needed, and explains clearly once it has the information. The pattern is “give him a phone”: let the model ask for data, fetch it, and return the result.
 
 <a id="stuck-tool"></a>
 
@@ -102,11 +102,11 @@ A **tool** is a function in your code plus a description the model can read.
 
 > **Analogy** 🍽️ — **Restaurant menu**
 >
-> A tool menu card works like a restaurant menu. You read it, you order, and the kitchen cooks. You never enter the kitchen.
+> A tool menu is like a restaurant menu. You order, and the kitchen cooks. You never enter the kitchen.
 
 > **Analogy** 👨‍⚕️ — **Doctor and chemist**
 >
-> The model is the doctor. It decides what is needed and writes the prescription. Your application is the chemist. It does the real work and keeps the keys.
+> The model is a doctor who writes a prescription. Your app is the chemist who does the work and keeps the keys.
 
 - Menu card: name `get_live_score`, description “Get the live score of a cricket match”, parameter `teams`.
 - Prescription: the model asks for a tool and fills arguments.
@@ -125,9 +125,9 @@ A **tool** is a function in your code plus a description the model can read.
 
 **Question-and-answer list**
 
-1. Who calls the cricket website? **Our application.** The model only writes text.
+1. Who calls the cricket website? **Our application.** The model only outputs text.
 2. Do we give the API key to the model? **No.** The key stays in the application.
-3. Will the model always catch bad tool data such as “India 28/6”? **Mostly no.** It usually trusts tool output.
+3. Will the model always catch bad tool data such as “India 28/6”? **Mostly no.** It usually trusts the tool's output.
 
 <a id="stuck-flow"></a>
 
@@ -149,8 +149,8 @@ flowchart LR
 2. App sends the question plus tool menu cards.
 3. Model asks for `get_live_score` with teams.
 4. App calls the tool and gets `287/6`.
-5. App returns that result to the model.
-6. Model writes the final answer.
+5. The app returns the result to the model.
+6. The model writes the final answer.
 
 > 🔑 **The rule.** The model is the brain that decides. Your app is the hands that do.
 
@@ -162,13 +162,13 @@ flowchart LR
 
 ### Every provider uses a different tool shape
 
-The cricket assistant works. Users love it. Then three requests arrive.
+The cricket app works. Users love it. Then three requests arrive.
 
 - The PM: “Superb! Add weather at the stadium. Ticket booking. Player stats. Highlights.”
 - The CTO: “Do not depend only on OpenAI. Make it work with Claude and Gemini too.”
 - Another team: “Nice tool! We want it in our Slack bot and our mobile app also.”
 
-Every provider describes tools differently.
+Each AI provider describes tools differently.
 
 ```javascript
 // ① tell OpenAI this menu item is a callable function
@@ -217,7 +217,7 @@ Every provider describes tools differently.
 }
 ```
 
-> ⚠️ **What changes.** OpenAI wraps the tool in `function`. Claude uses `input_schema`. Gemini uses `functionDeclarations`. Sending one provider’s shape to another provider breaks.
+> ⚠️ **What changes.** OpenAI wraps the tool in `function`. Claude uses `input_schema`. Gemini uses `functionDeclarations`. Sending one provider's format to another fails.
 
 <a id="integration-replies"></a>
 
@@ -240,7 +240,7 @@ Every provider describes tools differently.
 
 > **Analogy** 💸 — **UPI for AI tools**
 >
-> Before UPI, sending money from an HDFC account to a friend’s SBI account meant NEFT, IMPS, adding a beneficiary, IFSC codes, and waiting. Closed wallets also caused trouble: a Paytm wallet could not pay a PhonePe wallet. UPI said, “Everybody, follow one common standard.” Today a chaiwala’s QR code accepts money from any app and any bank. MCP gives AI apps and tools the same kind of shared language.
+> Before UPI, moving money between banks was hard. UPI created one standard. Today, any QR code accepts money from any app. MCP does this for AI apps and tools.
 
 MCP means **Model Context Protocol**.
 
@@ -256,9 +256,9 @@ With MCP, each tool is wrapped once as a server. Each app learns MCP once as a c
 
 **Question-and-answer list**
 
-1. Where is money kept when you pay with UPI? **In your bank.** UPI is only the agreed language.
+1. Where is your money when you pay with UPI? **In your bank.** UPI is just the standard.
 2. Does MCP run your tool? **No.** The MCP server runs normal code.
-3. Does MCP replace REST? **No.** An MCP server often calls an existing REST API inside.
+3. Does MCP replace REST? **No.** An MCP server often wraps a REST API.
 
 **Example · Moving work to the tool owner**
 
@@ -270,7 +270,7 @@ GitHub can build a GitHub MCP server once. Every MCP-speaking AI app can use Git
 
 ## Unit 2 — The Model Context Protocol & Demos
 
-Explore MCP architecture, build a cricket MCP server and client, and enforce runtime tool-input safety guardrails.
+Learn MCP architecture, build a cricket server and client, and add safety rules.
 
 <a id="inside"></a>
 
@@ -282,29 +282,29 @@ Explore MCP architecture, build a cricket MCP server and client, and enforce run
 
 > **Analogy** 🍛 — **Ordering biryani on Swiggy**
 >
-> You never talk to the kitchen directly. Everything goes through the app.
+> You do not talk to the kitchen. Everything goes through the app.
 
-- MCP Host: the app the user sees. It is the boss and security guard.
-- MCP Client: one connector inside the host for each server. It is one delivery partner per restaurant.
-- MCP Server: the separate program that does the work.
+- MCP Host: the app the user sees. It acts as the boss.
+- MCP Client: the host's connector for a server. It acts as the delivery partner.
+- MCP Server: the program that does the work.
 
 **Question-and-answer list**
 
-1. Does the server send the score directly to the model? **No.** The server never talks to the model and does not even know which model is used. The path is server → client → host → model, and the host enforces security.
+1. Does the server send the score directly to the model? **No.** The server never talks to the model. The path is server → client → host → model. The host handles security.
 2. Five servers need **five** clients. It is always 1:1. If weather crashes, cricket is unaffected.
 
 <a id="inside-offers"></a>
 
 ### Tools, resources, and prompts
 
-- Tools: the model decides. Example: `get_live_score`.
-- Resources: the app decides. Example: a file picker listing documents, like Swiggy’s home screen listing restaurants before you type anything.
+- Tools: chosen by the model. Example: `get_live_score`.
+- Resources: chosen by the app. Example: a file picker listing documents.
 - Prompts: the user decides. Example: Swiggy’s “Reorder” button or `/summarize report.pdf`.
 
 **Question-and-answer list**
 
-1. App shows a file picker before chat: **Resource.**
-2. Model needs to read the report mid-chat: **Tool.** It can be the same data; the difference is who decided to use it.
+1. An app shows a file picker: **Resource.**
+2. A model needs to read a report: **Tool.** It might be the same data, but the decision-maker differs.
 3. User types `/summarize report.pdf`: **Prompt.**
 
 **Trap 9 rule:** Do not look at *what* the data is. Look at **who decided** to use it.
@@ -345,12 +345,12 @@ MCP calls a tool name and passes `arguments`. REST discovery is usually document
 
 ### Two transports: stdio and streamable HTTP
 
-- stdio: same machine, like an intercom inside your house. The client starts the server as a child process. They talk through stdin/stdout, with no network and no ports.
-- Streamable HTTP: remote machine at a URL, like a phone call across the city. It uses HTTP plus Server-Sent Events so the server can push progress or logs.
+- stdio: same machine. The client runs the server as a child process. They use stdin/stdout, with no network.
+- Streamable HTTP: remote machine. It uses HTTP and Server-Sent Events so the server can stream data.
 
 **Question-and-answer list**
 
-A progress feature that works over stdio may fail silently behind stateless HTTP. Test on the same transport you deploy on.
+Always test on the transport you will deploy on.
 
 <a id="demo"></a>
 
@@ -367,7 +367,7 @@ A progress feature that works over stdio may fail silently behind stateless HTTP
 3. An agent where the model chooses the tool.
 4. A tiny eval suite.
 
-The real match starts at 2 PM after class, so the demo pretends the match is already live with made-up numbers. A real cricket API would use the same shape.
+The demo uses fake data to pretend the match is live. A real API works the same way.
 
 <a id="demo-server"></a>
 
@@ -466,11 +466,11 @@ TOOL RETURNED: { "india": "287/6 (50 overs)", "required": "90 runs from 70 balls
 FINAL ANSWER: India posted 287/6. West Indies need 90 runs from 70 balls.
 ```
 
-- With tools off, the model should say it does not have live data, or it may hallucinate.
+- Without tools, the model will say it lacks data or it will guess.
 - With tools on, the model asks for `get_live_score`. The trace includes `LLM SAYS: please call get_live_score with {'teams': 'India vs West Indies'}`, `[server] get_live_score called with teams='India vs West Indies'`, `TOOL RETURNED: { "india": "287/6 (50 overs)", "required": "90 runs from 70 balls", ... }`, and the final answer.
 - The AI filled `India vs West Indies` from the question and the tool description.
 - For “Shubman Gill runs”, the correct tool is `get_player_stats`. Nobody wrote an `if` condition; the model read both menu cards and picked.
-- For missing data such as Virat Kohli, the tool returns an error and the model should report that honestly.
+- If data is missing, the tool returns an error. The model should report it.
 
 <a id="demo-security"></a>
 
@@ -480,11 +480,11 @@ FINAL ANSWER: India posted 287/6. West Indies need 90 runs from 70 balls.
 
 Can you trust SQL from a model not to send `DROP TABLE users`? **Never.** Treat it like user input.
 
-- Validate table names with a regex, as in the Text2SQL notebook cell 29. Also check fields, IDs, and formats.
+- Validate table names, fields, and IDs strictly.
 - Restrict operations. For SQL, allow only safe `SELECT` queries, as in cell 35.
-- Use least privilege, such as a read-only database connection. Even if all else fails, it cannot delete data.
+- Use read-only connections so the AI cannot delete data.
 
-> ⚠️ **Important.** A hostile user may ask the model to delete data. The host and application must enforce the limits.
+> ⚠️ **Important.** Users may try to delete data. Your app must enforce safety limits.
 
 ---
 
@@ -492,7 +492,7 @@ Can you trust SQL from a model not to send `DROP TABLE users`? **Never.** Treat 
 
 ## Unit 3 — Application Evals & Production Takeaways
 
-Measure AI application accuracy with deterministic and model-based evals, and review core production practices.
+Test AI apps with code checks and LLM judges.
 
 <a id="evals"></a>
 
@@ -502,7 +502,7 @@ Measure AI application accuracy with deterministic and model-based evals, and re
 
 ### Three good answers are not enough
 
-Three hand-picked questions do not prove the app is ready. A manager might say, “Superb! Launch on Friday. India plays Saturday, lakhs of users will come.” That is like a new cook making perfect dal on day one and then being trusted with your sister’s wedding catering for 500 guests, 20 dishes, and an uncle who wants “less oil, no onion”.
+Three test questions are not enough to prove an app is ready. You need strict testing before launch.
 
 **Question-and-answer list**
 
@@ -513,7 +513,7 @@ Three hand-picked questions do not prove the app is ready. A manager might say, 
 
 > **Analogy** 🎓 — **Model evals vs product evals**
 >
-> Someone can get AIR 100 in JEE and still not be great at a specific job. Model evals are like JEE rank: general benchmarks such as MMLU help you pick a model. Product evals are job performance: your app, your tools, and your users’ questions. Nobody else will write these for you.
+> Model evals are like school grades: they help you pick a model. Product evals test how the AI handles your specific app and users.
 
 <a id="evals-checks"></a>
 
@@ -531,7 +531,7 @@ Exact string checks are too brittle. Many correct answers can say 287/6 in diffe
 
 1. Code checks: valid JSON, contains `287`, called `get_live_score`, under 100 words.
 2. Reference comparison: BLEU or ROUGE style word overlap.
-3. LLM-as-a-judge: another model checks meaning. Checking is easier than creating: writing a good movie is hard, but saying “this was boring” is easy — everyone in India is a film critic. Judges can like longer answers, so check a sample by hand. Your judge also needs testing.
+3. LLM-as-a-judge: use another model to check meaning. Since judges can make mistakes, test your judge manually.
 
 <a id="evals-suite"></a>
 
@@ -571,10 +571,10 @@ async def main():
 
 ### Offline and online evals
 
-- Offline evals run before release on a fixed test set, on every new prompt, model, or tool. This is like a board exam, or a CI test suite.
-- Online evals watch real users after release: thumbs down, complaints, slow answers, and rising bills. This is like Flipkart customer reviews.
+- Offline evals run on a fixed test set before release.
+- Online evals track user feedback, speed, and costs after release.
 
-A 100% score is not the end. Models change, users ask new things, and every real bug should become a regression test.
+A perfect score is just the start. Turn every new bug into a test.
 
 <a id="recap"></a>
 
@@ -599,12 +599,12 @@ A 100% score is not the end. Models change, users ask new things, and every real
 
 ### What to remember
 
-- Tools: the model asks; the app does.
-- MCP: one shared standard gives M + N instead of M × N.
-- Inside MCP: host → client → server. Tools are model-chosen, resources are app-chosen, prompts are user-chosen.
-- Evals: run code checks, reference checks, and LLM judges offline and online.
+- Tools: the model asks, the app acts.
+- MCP: a shared standard that reduces integrations.
+- MCP flow: host → client → server. The model chooses tools, the app chooses resources, the user chooses prompts.
+- Evals: test with code, reference checks, and LLM judges.
 
-> 🔑 **The trust rule.** Not “never trust AI”. Not “trust it blindly”. Trust it as much as you have tested it.
+> 🔑 **The trust rule.** Do not trust blindly. Trust AI as much as you test it.
 
 <a id="recap-homework"></a>
 
@@ -613,9 +613,9 @@ A 100% score is not the end. Models change, users ask new things, and every real
 1. Add a `get_weather(city)` tool with fake data.
 2. Add two test cases for it in `step3_evals.py`.
 3. Run the eval suite.
-4. If both pass, you built and tested your first MCP tool.
+4. If both pass, you made your first MCP tool.
 5. Save or share a screenshot in your group if you are learning with others.
 
-MCP gives your AI its hands. Evals tell you whether those hands did the right thing.
+MCP gives AI hands. Evals verify the work.
 
-If you have doubts, ask them. No question is a silly question.
+Ask questions if you have doubts.
