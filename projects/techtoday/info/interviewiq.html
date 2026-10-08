@@ -29,7 +29,11 @@
             <details class="topic-menu-panel">
                 <summary>Topics</summary>
                 <ol class="table-of-contents">
-                    <li><a href="#concept">Concept</a></li>
+                                        <li><a href="#problem">The problem</a></li>
+                    <li><a href="#asks">The asks</a></li>
+                    <li><a href="#approach">Suggested approach</a></li>
+                    <li><a href="#milestones">Milestones</a></li>
+<li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
@@ -51,9 +55,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>9 Topics</span>
+                    <span>13 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>8 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>5 Python Files in Full</span>
                 </div>
@@ -74,23 +78,160 @@
                     <span>Collapse All</span>
                 </button>
             </div>
-
             <div class="unit-divider" id="unit-1">
                 <div class="unit-divider-badge">Unit 1</div>
                 <div class="unit-divider-text">
-                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                    <h2 class="unit-divider-title">Project Brief<a class="headerlink" href="#unit-1"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                    <p class="unit-divider-desc">The problem statement, requirements, and development milestones.</p>
                 </div>
             </div>
 
 <!-- ============================================================ 1 -->
 
+            <section class="topic-section is-collapsed" id="sec-problem">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-problem">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="problem" class="topic-title">The problem<a class="headerlink" href="#problem"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-problem">
+                    <p>Hiring teams often want a fast, first-pass read on a candidate's interview answers before a human reviews them. Your task is to build <strong>InterviewIQ</strong>: an AI agent that acts as a mock-interview coach with a working browser interface. Given a candidate's spoken answer to an interview question, the agent evaluates it using a set of tools, produces short feedback, remembers the whole session well enough to answer questions about it at any point, and surfaces all of that through a UI &mdash; not just a terminal.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-asks">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-asks">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="asks" class="topic-title">The asks<a class="headerlink" href="#asks"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-asks">
+                    <p><strong>Ask 1 &mdash; Build a tool-calling evaluator agent.</strong><br>
+Implement three rule-based tools the agent can call, each returning a structured dict:</p>
+                    <ol>
+                        <li><code>detect_filler_words</code> &mdash; flags filler words like "um", "like", "basically".</li>
+                        <li><code>check_star_structure</code> &mdash; checks whether a behavioral answer covers Situation, Task, Action, Result.</li>
+                        <li><code>score_relevance</code> &mdash; scores (0&ndash;100) how many expected keywords/concepts for the question appear in the answer.</li>
+                    </ol>
+                    <p>The agent should read the candidate's answer, decide which tool(s) are relevant, call them, and turn the results into short, encouraging feedback.</p>
+                    
+                    <p><strong>Ask 2 &mdash; Session memory with a real aggregation, verified by a memory check.</strong><br>
+The agent must remember every answer's evaluation across the session &mdash; not just the current one &mdash; and be able to answer meta-questions at <em>any point</em> mid-session, such as "how am I doing so far?" or "what's my weakest area?", not only produce a report at the very end. The report must do real aggregation: an average relevance score and a named <strong>weakest area</strong> (the question with the lowest score), not a flat recap of everything scored so far.</p>
+                    <p>Run <code>memory_check.py</code> against your finished agent: it scores one strong answer and one deliberately weak one, then asks the meta-question. If your agent correctly names the weak answer's question as the weakest area &mdash; not whichever question was asked most recently &mdash; your memory and aggregation are working. If it gets this wrong, your agent is only looking at the last turn.</p>
+                    
+                    <p><strong>Ask 3 &mdash; A working Gradio interface (required).</strong><br>
+Wrap the agent in a Gradio app (<code>app.py</code>) with: the current question and an answer box, a feedback panel, a live scorecard showing every question answered so far, a free-form box to ask the coach meta-questions, and a button to pull the final report. This is the interface you'll demo &mdash; not optional, and not just a CLI print loop.</p>
+                    
+                    <p><strong>Ask 4 (bonus, not graded) &mdash; a second agent.</strong><br>
+None of the six classes actually built a multi-agent system &mdash; Class 6's guide only introduces the <em>vocabulary</em> (an "orchestrator" coordinating "specialized agents") and explicitly scopes out building one as "a larger topic for later." So this ask sits outside the core project on purpose: <code>interviewer_agent.py</code> and <code>run_multi_agent.py</code> are included <strong>fully worked, not as a TODO</strong> &mdash; a second agent (the "Interviewer") whose only job is to decide the next question's category based on how the candidate has done so far, handed off to the Evaluator agent from Asks 1&ndash;3 (completely unchanged) by a small orchestrator loop. Run <code>python run_multi_agent.py</code> to try it. Read it, run it, and extend it if you want to go further &mdash; there's nothing here you're required to build or that gets graded, since it goes beyond what was actually taught.</p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-approach">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-approach">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="approach" class="topic-title">Suggested approach<a class="headerlink" href="#approach"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-approach">
+                    <ol>
+                        <li>Get the plumbing working first (API key, one plain LLM call) before writing any tool logic.</li>
+                        <li>Write and test each tool as a standalone Python function &mdash; don't wire it to the agent until you're confident it works on its own.</li>
+                        <li>Wire the tools to the agent and get one full evaluated turn working via <code>main.py</code> before touching memory.</li>
+                        <li>Add memory and the aggregation report, then run <code>memory_check.py</code> to prove it actually uses more than the last turn.</li>
+                        <li>Only once <code>main.py</code> and <code>memory_check.py</code> both work should you move to <code>app.py</code> &mdash; the UI should be the last layer on top of an agent you already trust.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-milestones">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-milestones">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="milestones" class="topic-title">Milestones<a class="headerlink" href="#milestones"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-milestones">
+                    <ol>
+                        <li>Environment setup &mdash; venv, <code>pip install -r requirements.txt</code>, <code>.env</code> configured with your API key.</li>
+                        <li>First plain LLM call working (no tools yet) &mdash; sanity check that your key and provider are correct.</li>
+                        <li><code>detect_filler_words</code> implemented and tested directly.</li>
+                        <li><code>check_star_structure</code> implemented and tested directly.</li>
+                        <li><code>score_relevance</code> implemented and tested directly.</li>
+                        <li>All three tools wired into the agent's tool-calling loop; one full evaluated turn works end-to-end via <code>main.py</code>.</li>
+                        <li>Session memory added &mdash; running a few questions shows it accumulating.</li>
+                        <li><code>generate_final_report</code> implemented with real aggregation (average relevance + named weakest area).</li>
+                        <li><code>ask_agent</code> implemented so meta-questions work mid-session, not just at the end.</li>
+                        <li><code>python memory_check.py</code> passes &mdash; the weakest area named matches the deliberately weak answer, not the most recent turn.</li>
+                        <li><code>app.py</code> built &mdash; the full flow (question &rarr; answer &rarr; feedback &rarr; scorecard &rarr; meta-question &rarr; final report) works in the browser.</li>
+                        <li>(Bonus, ungraded) Run <code>python run_multi_agent.py</code> and read <code>interviewer_agent.py</code> &mdash; a second agent handed off to your Evaluator by a small orchestrator.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-concept">
                     <div class="topic-header-main">
-                        <span class="topic-badge">1</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -121,13 +262,13 @@
 
                 </div>
             </section>
-<!-- ============================================================ 2 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-theory-concepts">
                     <div class="topic-header-main">
-                        <span class="topic-badge">2</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -229,13 +370,13 @@
 
                 </div>
             </section>
-<!-- ============================================================ 3 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-request-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">3</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -284,13 +425,13 @@
 
                 </div>
             </section>
-<!-- ============================================================ 4 -->
+<!-- ============================================================ 8 -->
 
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">8</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -330,22 +471,22 @@
                 </div>
             </section>
 
-            <div class="unit-divider" id="unit-2">
-                <div class="unit-divider-badge">Unit 2</div>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
                 <div class="unit-divider-text">
-                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-3"
                             title="Permanent link">#</a></h2>
                     <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 9 -->
 
             <section class="topic-section is-collapsed" id="sec-source-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-agent-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">9</span>
                         <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink" href="#source-agent-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1024,13 +1165,13 @@ class EvaluatorAgent:
         }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 10 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">10</span>
                         <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1355,13 +1496,13 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 7 -->
+<!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interview-bank-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interview-bank-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">7</span>
+                        <span class="topic-badge">11</span>
                         <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a class="headerlink" href="#source-interview-bank-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1537,13 +1678,13 @@ def get_question_categories() -&gt; list[str]:
     return list(dict.fromkeys(q["category"] for q in QUESTIONS))</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 8 -->
+<!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-config-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-config-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
+                        <span class="topic-badge">12</span>
                         <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1624,13 +1765,13 @@ def get_openai_client():
     return None, None</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 9 -->
+<!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">9</span>
+                        <span class="topic-badge">13</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
