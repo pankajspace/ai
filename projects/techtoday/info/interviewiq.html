@@ -38,10 +38,12 @@
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-agent-py">agent.py</a></li>
+                    <li><a href="#source-interviewer-agent-py">interviewer_agent.py</a></li>
                     <li><a href="#source-tools-py">tools.py</a></li>
                     <li><a href="#source-interview-bank-py">interview_bank.py</a></li>
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#source-run-multi-agent-py">run_multi_agent.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -55,11 +57,11 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>13 Topics</span>
+                    <span>15 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>8 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>5 Python Files in Full</span>
+                    <span>7 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -258,6 +260,14 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         tracks candidate performance across all turns, applying deterministic mathematical ranking to
                         eliminate recency bias and power mid-session meta-coaching.
                     </p>
+                    <p>
+                        A second, much smaller <strong>Interviewer agent</strong> (Ask 4, the bonus) sits beside the
+                        Evaluator. Its only job is to read the shared session memory and pick the <em>category</em> of
+                        the next question. It never scores answers. A small orchestrator hands work between the two
+                        agents: the <code>GET /next-question</code> route behind the
+                        <strong>Interviewer: Pick Next</strong> button, or the <code>run_multi_agent.py</code> loop on the
+                        command line. The Evaluator stays exactly as it was.
+                    </p>
 
 
                 </div>
@@ -367,6 +377,29 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         </li>
                     </ul>
 
+                    <p><strong>4. Orchestrator + Specialised Agents (Ask 4)</strong></p>
+                    <p>
+                        A multi-agent system does not need a protocol to start with. Here it is just two agents, each
+                        with its own system prompt and one job, plus a loop that decides who acts next:
+                    </p>
+                    <ul>
+                        <li><strong>Interviewer agent</strong> (<code>InterviewerAgent.choose_next</code>): reads a
+                            short recap of every turn and returns JSON <code>{"category", "reason"}</code>. Its rule of
+                            thumb: after a weak answer (relevance below 60), stay in the same family (people =
+                            Behavioral, Leadership; engineering = Technical, System Design, Problem-Solving) so the
+                            candidate gets another try at similar skills. After a strong answer, switch family to test
+                            breadth.</li>
+                        <li><strong>Evaluator agent</strong> (<code>EvaluatorAgent.evaluate_answer</code>): the
+                            tool-calling agent from Asks 1&ndash;3, unchanged.</li>
+                        <li><strong>Shared memory as the hand-off:</strong> the Evaluator writes each turn into
+                            <code>InterviewSessionMemory</code> and the Interviewer only reads it, so neither agent calls
+                            the other directly.</li>
+                        <li><strong>Guard rails:</strong> the Interviewer may only pick a category that still has
+                            an unanswered question. If the model's reply is unusable, or there is no API key, the same
+                            rule of thumb runs in plain Python. The UI labels the decision as an "AI decision" or a
+                            "rule-based fallback".</li>
+                    </ul>
+
 
                 </div>
             </section>
@@ -422,6 +455,34 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         </div>
                     </div>
 
+                    <p><strong>Interviewer hand-off (Ask 4)</strong></p>
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Interviewer: Pick Next</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">GET /next-question</span>
+                            <span class="flow-detail">Orchestrator route</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">choose_next()</span>
+                            <span class="flow-detail">Reads session memory</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">LLM or rules</span>
+                            <span class="flow-detail">Pick next category</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Question selected + reason</span>
+                        </div>
+                    </div>
+
 
                 </div>
             </section>
@@ -464,6 +525,25 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                             C -->|record turn + raw results| I[InterviewSessionMemory<br />add_turn]
                             C -->|structured JSON evaluation| B
                             B -->|HTTP 200 JSON| A
+                        </div>
+                    </div>
+
+                    <p><strong>Interviewer hand-off (Ask 4)</strong></p>
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                            A[Browser<br />Pick Next click] -->|GET /next-question| B[app.py<br />next_question route]
+                            B -->|shared memory| C[interviewer_agent.py<br />InterviewerAgent.choose_next]
+                            C -->|read turns| M[InterviewSessionMemory<br />turns]
+                            M -->|scores per turn| C
+                            C -->|session recap + available categories| D[OpenAI API / LLM]
+                            D -->|category + reason JSON| C
+                            C -->|unusable reply or no key| R[_rule_based<br />weak = same family, strong = switch]
+                            R -->|category + reason| C
+                            C -->|first unanswered question| B
+                            B -->|question_id + category + reason| A
+                            A -->|POST /evaluate| E[agent.py<br />EvaluatorAgent, unchanged]
+                            E -->|add_turn| M
                         </div>
                     </div>
 
@@ -1165,13 +1245,255 @@ class EvaluatorAgent:
         }</code></pre>
                 </div>
             </section>
+
 <!-- ============================================================ 10 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-interviewer-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-interviewer-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 id="source-interviewer-agent-py" class="topic-title is-file">interviewer_agent.py<a class="headerlink" href="#source-interviewer-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">215 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-interviewer-agent-py">
+                    <span class="file-path">interviewiq/src/python/interviewer_agent.py</span>
+                    <p class="file-label">Interviewer agent — Ask 4 (bonus): a second, specialised agent.</p>
+                    <pre><code data-lang="python">"""Interviewer agent — Ask 4 (bonus): a second, specialised agent.
+
+The Evaluator agent in ``agent.py`` scores answers. This agent has a single,
+different job: look at how the candidate has done so far and decide which
+**category** the next question should come from. It never evaluates answers
+and never touches the Evaluator's tools — it only *reads* the shared session
+memory.
+
+Kept deliberately simple (no A2A protocol, no agent cards, no network hops
+between agents): a second agent with its own system prompt, called in
+sequence by a small orchestrator (``run_multi_agent.py`` on the CLI, the
+``GET /next-question`` route in ``app.py`` for the web UI). That is the
+"orchestrator + specialised agents" pattern in its smallest working form.
+
+When no LLM key is configured, a deterministic rule of thumb makes the same
+kind of decision so the feature still works offline.
+"""
+
+import json
+import re
+
+from config import get_openai_client
+from interview_bank import QUESTIONS
+
+# A relevance score below this counts as a weak answer (sample weak answers
+# score 0–22, sample strong answers score 98–100).
+WEAK_THRESHOLD = 60
+
+# Categories are grouped into two families so "stay close" vs "switch for
+# breadth" has a meaning even though the bank has one question per category.
+CATEGORY_FAMILIES = {
+    "Behavioral": "people",
+    "Leadership": "people",
+    "Technical": "engineering",
+    "System Design": "engineering",
+    "Problem-Solving": "engineering",
+}
+
+SYSTEM_PROMPT = (
+    "You are the Interviewer half of InterviewIQ's two-agent mock interview "
+    "system. A separate Evaluator agent scores every answer; you never score "
+    "answers yourself.\n"
+    "Your only job: choose the category of the NEXT question from the list of "
+    "categories that are still available, based on how the candidate has done "
+    "so far.\n"
+    "Category families: people = Behavioral, Leadership; engineering = "
+    "Technical, System Design, Problem-Solving.\n"
+    "Rule of thumb: after a weak answer (relevance below "
+    f"{WEAK_THRESHOLD}/100), stay in the same family so the candidate gets "
+    "another shot at similar skills; after a strong answer, switch family to "
+    "test breadth. For the very first question, start with Behavioral if it "
+    "is available.\n"
+    'Reply with JSON only: {"category": "&lt;one available category&gt;", '
+    '"reason": "&lt;one short sentence addressed to the candidate&gt;"}'
+)
+
+
+class InterviewerAgent:
+    """Chooses the next question's category from shared session memory."""
+
+    def __init__(self, client=None, model: str | None = None):
+        # ① reuse an injected client (tests) or the configured provider
+        if client is not None:
+            self._client, self._model = client, model
+        else:
+            self._client, self._model = get_openai_client()
+
+    # -- Public API ----------------------------------------------------------
+
+    def choose_next(self, memory) -&gt; dict | None:
+        """Pick the next unanswered question for the candidate.
+
+        Args:
+            memory: The Evaluator's ``InterviewSessionMemory`` (read-only).
+
+        Returns:
+            ``{"category", "reason", "source", "question"}`` where ``source``
+            is ``"llm"`` or ``"rules"``, or ``None`` when every question in the
+            bank has already been answered.
+        """
+        # ① work out which questions and categories are still unanswered
+        answered_ids = {t["question_id"] for t in memory.turns}
+        remaining = [q for q in QUESTIONS if q["id"] not in answered_ids]
+        if not remaining:
+            return None
+        available = list(dict.fromkeys(q["category"] for q in remaining))
+
+        # ② ask the LLM first; fall back to the rule of thumb on any problem
+        decision = None
+        if self._client and len(available) &gt; 1:
+            decision = self._ask_llm(memory, available)
+        if decision is None:
+            decision = self._rule_based(memory, available)
+
+        # ③ hand back the first unanswered question in the chosen category
+        question = next(q for q in remaining if q["category"] == decision["category"])
+        return {**decision, "question": question}
+
+    # -- Internal helpers ----------------------------------------------------
+
+    @staticmethod
+    def build_summary(memory, available: list[str]) -&gt; str:
+        """Plain-English recap of the session that the LLM reads."""
+        # ① describe the opening move when nothing has been answered yet
+        turns = memory.turns
+        lines = []
+        if not turns:
+            lines.append("This is the first question of the session.")
+        else:
+            # ② list each turn's category and headline scores in order
+            lines.append(f"Answers so far ({len(turns)}):")
+            for t in turns:
+                r = t["results"]
+                rel = r.get("score_relevance", {}).get("score", 0)
+                star = r.get("check_star_structure", {}).get("star_score", 0)
+                fillers = r.get("detect_filler_words", {}).get("total_filler_count", 0)
+                lines.append(
+                    f"- Turn {t['turn_id']} [{t['category']}]: relevance {rel}/100, "
+                    f"STAR {star}%, fillers {fillers}"
+                )
+            # ③ call out the most recent answer, which drives the rule of thumb
+            last = turns[-1]
+            last_rel = last["results"].get("score_relevance", {}).get("score", 0)
+            verdict = "weak" if last_rel &lt; WEAK_THRESHOLD else "strong"
+            lines.append(
+                f"Most recent answer: {last['category']} ({last_rel}/100, {verdict})."
+            )
+        # ④ list the only categories the agent is allowed to pick
+        lines.append(f"Available categories: {', '.join(available)}.")
+        return "\n".join(lines)
+
+    def _ask_llm(self, memory, available: list[str]) -&gt; dict | None:
+        """Let the LLM choose; return ``None`` if the reply is unusable."""
+        messages = [
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": self.build_summary(memory, available)},
+        ]
+        try:
+            # ① one plain chat call — this agent needs no tools
+            response = self._client.chat.completions.create(
+                model=self._model, messages=messages,
+            )
+            content = response.choices[0].message.content or ""
+        except Exception:
+            return None
+
+        # ② accept only a category that is actually still available
+        category, reason = self._parse_reply(content, available)
+        if not category:
+            return None
+        return {
+            "category": category,
+            "reason": reason or f"The Interviewer chose {category} next.",
+            "source": "llm",
+        }
+
+    @staticmethod
+    def _parse_reply(content: str, available: list[str]) -&gt; tuple[str | None, str]:
+        """Pull ``(category, reason)`` out of a JSON-ish or plain-text reply."""
+        lookup = {c.lower(): c for c in available}
+        # ① prefer a JSON object, even if the model wrapped it in extra text
+        match = re.search(r"\{.*\}", content, re.DOTALL)
+        if match:
+            try:
+                data = json.loads(match.group(0))
+                category = lookup.get(str(data.get("category", "")).strip().lower())
+                if category:
+                    return category, str(data.get("reason", "")).strip()
+            except (json.JSONDecodeError, AttributeError):
+                pass
+        # ② otherwise accept the first available category named in the text
+        lowered = content.lower()
+        for key, category in lookup.items():
+            if key in lowered:
+                return category, ""
+        return None, ""
+
+    @staticmethod
+    def _rule_based(memory, available: list[str]) -&gt; dict:
+        """Deterministic fallback that follows the same rule of thumb."""
+        turns = memory.turns
+        # ① open with Behavioral when possible
+        if not turns:
+            category = "Behavioral" if "Behavioral" in available else available[0]
+            return {
+                "category": category,
+                "reason": f"Opening with a {category} question to warm up.",
+                "source": "rules",
+            }
+
+        # ② stay in the family after a weak answer, switch after a strong one
+        last = turns[-1]
+        last_rel = last["results"].get("score_relevance", {}).get("score", 0)
+        last_family = CATEGORY_FAMILIES.get(last["category"])
+        weak = last_rel &lt; WEAK_THRESHOLD
+        if weak:
+            preferred = [c for c in available if CATEGORY_FAMILIES.get(c) == last_family]
+        else:
+            preferred = [c for c in available if CATEGORY_FAMILIES.get(c) != last_family]
+        category = (preferred or available)[0]
+
+        # ③ explain the choice in one short sentence
+        if weak and preferred:
+            reason = (
+                f"Your {last['category']} answer scored {last_rel}/100, so staying "
+                f"with {last_family} skills — try {category} next."
+            )
+        elif not weak and preferred:
+            reason = (
+                f"Strong {last['category']} answer ({last_rel}/100) — switching "
+                f"to {category} to test breadth."
+            )
+        else:
+            reason = f"{category} is the next unanswered category."
+        return {"category": category, "reason": reason, "source": "rules"}</code></pre>
+                </div>
+            </section>
+
+<!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">10</span>
+                        <span class="topic-badge">11</span>
                         <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1496,13 +1818,14 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 11 -->
+
+<!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interview-bank-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interview-bank-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">11</span>
+                        <span class="topic-badge">12</span>
                         <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a class="headerlink" href="#source-interview-bank-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1678,13 +2001,14 @@ def get_question_categories() -&gt; list[str]:
     return list(dict.fromkeys(q["category"] for q in QUESTIONS))</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 12 -->
+
+<!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-config-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-config-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">12</span>
+                        <span class="topic-badge">13</span>
                         <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1765,18 +2089,19 @@ def get_openai_client():
     return None, None</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 13 -->
+
+<!-- ============================================================ 14 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">13</span>
+                        <span class="topic-badge">14</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">224 lines</span>
+                        <span class="topic-meta-chip">262 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -1812,6 +2137,7 @@ from flask_cors import CORS
 
 from agent import EvaluatorAgent, InterviewSessionMemory
 from interview_bank import get_all_questions, get_question_by_id
+from interviewer_agent import InterviewerAgent
 from rate_limiter import check_rate_limit
 
 # ---------------------------------------------------------------------------
@@ -1856,6 +2182,8 @@ def enforce_rate_limit():
 # Shared session memory and evaluator agent (single-process, not multi-user).
 _memory = InterviewSessionMemory()
 _agent = EvaluatorAgent(memory=_memory)
+# Ask 4: a second agent that reads the same memory to pick the next category.
+_interviewer = InterviewerAgent()
 
 
 
@@ -1955,6 +2283,41 @@ def coach():
         return jsonify({"error": str(e)}), 500
 
 
+@bp.route("/next-question", methods=["GET"])
+def next_question():
+    """Let the Interviewer agent pick the next question (Ask 4 orchestrator).
+
+    A GET because it only reads session memory; that also keeps it outside the
+    POST rate limits (Flask and Nginx), so a full 5-question run with the
+    Interviewer still leaves room for ``/coach``.
+
+    Response (JSON): ``{"done": false, "question_id": 5, "category": "...",
+        "reason": "...", "source": "llm" | "rules"}`` or ``{"done": true,
+        "message": "..."}`` once every question has been answered.
+    """
+    try:
+        # ① hand the shared session memory to the Interviewer agent
+        pick = _interviewer.choose_next(_memory)
+    except Exception as e:
+        # ② return agent errors as JSON for the frontend
+        return jsonify({"error": str(e)}), 500
+
+    # ③ signal the end of the bank so the UI can suggest the final report
+    if pick is None:
+        return jsonify({
+            "done": True,
+            "message": "Every question has been answered — pull the final report.",
+        })
+    # ④ return just the decision; the browser already has the question text
+    return jsonify({
+        "done": False,
+        "question_id": pick["question"]["id"],
+        "category": pick["category"],
+        "reason": pick["reason"],
+        "source": pick["source"],
+    })
+
+
 @bp.route("/scorecard", methods=["GET"])
 def scorecard():
     """Return live session scorecard and running average.
@@ -2012,6 +2375,131 @@ if __name__ == "__main__":
     # outside the container; port 5000 is mapped to host port 8085 by
     # docker-compose.yml.
     app.run(host="0.0.0.0", port=5000)</code></pre>
+                </div>
+            </section>
+
+<!-- ============================================================ 15 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-run-multi-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-run-multi-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">15</span>
+                        <h2 id="source-run-multi-agent-py" class="topic-title is-file">run_multi_agent.py<a class="headerlink" href="#source-run-multi-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">99 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-run-multi-agent-py">
+                    <span class="file-path">interviewiq/src/python/run_multi_agent.py</span>
+                    <p class="file-label">run_multi_agent.py — Ask 4 (bonus): two agents, one orchestrator.</p>
+                    <pre><code data-lang="python">"""run_multi_agent.py — Ask 4 (bonus): two agents, one orchestrator.
+
+A small orchestrator loop that hands work between two specialised agents:
+
+- ``InterviewerAgent.choose_next`` (interviewer_agent.py) decides WHICH
+  category to ask next, based on the session so far.
+- ``EvaluatorAgent.evaluate_answer`` (agent.py — the agent from Asks 1–3,
+  completely unchanged) scores the answer and records it in session memory.
+
+Both agents share one ``InterviewSessionMemory``: the Evaluator writes to it,
+the Interviewer reads from it.
+
+Usage (from ``src/python``, or ``docker compose run --rm web python
+src/python/run_multi_agent.py``)::
+
+    python run_multi_agent.py                 # type your own answers
+    python run_multi_agent.py --auto mixed    # replay bank sample answers
+    python run_multi_agent.py --turns 5 --auto weak
+"""
+
+import argparse
+
+from agent import EvaluatorAgent, InterviewSessionMemory
+from config import GROQ_API_KEY, OPENAI_API_KEY
+from interviewer_agent import InterviewerAgent
+
+NUM_TURNS = 3  # keep it short — this is a bonus demo, not the full bank
+
+
+def pick_sample_answer(question: dict, mode: str, turn: int) -&gt; str:
+    """Return a bank sample answer for ``--auto`` mode."""
+    # ① "mixed" alternates strong / weak so the Interviewer sees both cases
+    if mode == "mixed":
+        mode = "strong" if turn % 2 == 1 else "weak"
+    return question[f"sample_{mode}_answer"]
+
+
+def read_answer() -&gt; str | None:
+    """Prompt until a non-empty answer is typed; ``None`` on Ctrl-D."""
+    while True:
+        try:
+            answer = input("Your answer: ").strip()
+        except EOFError:
+            return None
+        if answer:
+            return answer
+        print("(Please type an answer, or press Ctrl-D to stop.)")
+
+
+def main() -&gt; None:
+    parser = argparse.ArgumentParser(description="InterviewIQ two-agent mode")
+    parser.add_argument("--turns", type=int, default=NUM_TURNS,
+                        help=f"number of questions to ask (default {NUM_TURNS})")
+    parser.add_argument("--auto", choices=["strong", "weak", "mixed"],
+                        help="answer automatically with the bank's sample answers")
+    args = parser.parse_args()
+
+    # ① one shared memory: the Evaluator writes it, the Interviewer reads it
+    memory = InterviewSessionMemory()
+    evaluator = EvaluatorAgent(memory=memory)
+    interviewer = InterviewerAgent()
+
+    print("=== InterviewIQ — Two-Agent Mode (Interviewer + Evaluator) ===")
+    if not (GROQ_API_KEY or OPENAI_API_KEY):
+        print("(No API key found — both agents run in deterministic mode.)")
+    print()
+
+    for turn in range(1, args.turns + 1):
+        # ② hand-off 1: the Interviewer decides what to ask next
+        pick = interviewer.choose_next(memory)
+        if pick is None:
+            print("Every question in the bank has been answered — ending early.")
+            break
+        q = pick["question"]
+        print(f"[Interviewer → {pick['category']} ({pick['source']})] {pick['reason']}")
+        print(f"Q{turn}: {q['question']}")
+
+        if args.auto:
+            answer = pick_sample_answer(q, args.auto, turn)
+            print(f"Your answer: {answer}")
+        else:
+            answer = read_answer()
+            if answer is None:
+                print("\nStopping early.")
+                break
+
+        # ③ hand-off 2: the Evaluator scores the answer and updates memory
+        result = evaluator.evaluate_answer(q, answer)
+        score = result["relevance_evaluation"].get("score", 0)
+        print(f"\nCoach (relevance {score}/100): {result['feedback']}\n")
+        print("-" * 60)
+
+    # ④ the Evaluator's aggregated report covers every turn of the session
+    print("\n=== Final Report ===")
+    print(evaluator.generate_final_report())
+
+
+if __name__ == "__main__":
+    main()</code></pre>
                 </div>
             </section>
 
