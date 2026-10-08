@@ -19,18 +19,18 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 1. [Variables, Types & Casting](#1-variables-types-and-casting)
 2. [Type Hints](#2-type-hints)
 3. [Keywords in Python](#3-keywords-in-python)
-4. [Everyday String Operations](#4-everyday-string-operations)
-5. [Operators, Truthiness & Conditionals](#5-operators-truthiness-and-conditionals)
-6. [Loops & Iteration](#6-loops-and-iteration)
-7. [Lists & Slicing](#7-lists-and-slicing)
-8. [Dictionaries](#8-dictionaries)
-9. [Tuples & Sets](#9-tuples-and-sets)
-10. [Unpacking & Destructuring](#10-unpacking-and-destructuring)
-11. [List Comprehensions](#11-list-comprehensions)
-12. [Functions & Arguments](#12-functions-and-arguments)
-13. [Async / Await](#13-async-and-await)
-14. [Object-Oriented Programming (OOP)](#14-object-oriented-programming)
-15. [Everyday Error Handling](#15-everyday-error-handling)
+4. [Everyday Error Handling](#4-everyday-error-handling)
+5. [Everyday String Operations](#5-everyday-string-operations)
+6. [Operators, Truthiness & Conditionals](#6-operators-truthiness-and-conditionals)
+7. [Loops & Iteration](#7-loops-and-iteration)
+8. [Lists & Slicing](#8-lists-and-slicing)
+9. [Dictionaries](#9-dictionaries)
+10. [Tuples & Sets](#10-tuples-and-sets)
+11. [Unpacking & Destructuring](#11-unpacking-and-destructuring)
+12. [List Comprehensions](#12-list-comprehensions)
+13. [Functions & Arguments](#13-functions-and-arguments)
+14. [Async / Await](#14-async-and-await)
+15. [Object-Oriented Programming (OOP)](#15-object-oriented-programming)
 16. [Modules & Imports](#16-modules-and-imports)
 17. [Virtual Environments](#17-virtual-environments)
 
@@ -40,7 +40,7 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 
 ## Unit 1 — Daily Syntax & Logic
 
-The daily syntax: declaring variables, type hints, reserved keywords, strings, operators, truthiness, and loops.
+The daily syntax: declaring variables, type hints, reserved keywords, error handling, strings, operators, truthiness, and loops.
 
 <a id="1-variables-types-and-casting"></a>
 
@@ -322,9 +322,84 @@ print("Validate identifier name passed!")
 
 ---
 
-<a id="4-everyday-string-operations"></a>
+<a id="4-everyday-error-handling"></a>
 
-## 4. Everyday String Operations
+## 4. Everyday Error Handling
+
+- **Try / Except** `Catch specific exceptions safely` <!-- great -->
+- **Common Errors** `ValueError, KeyError, FileNotFoundError` <!-- great -->
+- **Cleanup** `finally block always runs` <!-- good -->
+
+Errors happen: an API returns bad text, a user types letters into a number field, or a file doesn't exist. Python uses `try / except` blocks so your program handles errors gracefully instead of crashing abruptly.
+
+> **Analogy** 🎬
+>
+> **Picture it — A Gymnast's Safety Net**
+>
+> The code inside `try:` is the gymnast performing high on the trapeze. If they perform the routine smoothly, they finish and dismount. If they slip (an error occurs), the `except:` safety net catches them safely so nobody gets hurt.
+
+Key patterns:
+1. `try ... except ValueError as e:`: Catches specific conversion errors
+2. `except (KeyError, IndexError):`: Catches multiple possible lookup errors
+3. `except Exception as e:`: Fallback for unexpected errors
+4. `finally:`: Code that is guaranteed to run (e.g. closing connections)
+5. `raise ValueError("Invalid value")`: Manually triggers an error
+
+```python
+# Catching specific parsing errors
+raw_input = "forty-two"
+
+try:
+    age = int(raw_input)
+    print(f"Age is {age}")
+except ValueError:
+    print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
+    age = 0
+
+# Safe dictionary lookups
+config = {"timeout": 30}
+try:
+    retries = config["retries"]
+except KeyError:
+    retries = 3
+
+print(f"Using {retries} retries.")
+```
+
+- **Strength — Prevents Application Crashes** Catching specific errors lets services log failures and return fallback responses without taking down the server.
+- **Weakness — Bare `except: pass` Anti-pattern** Writing `except: pass` silences every error, including keyboard interrupts and variable typos, making debugging impossible.
+
+**Interview question**
+
+*Write a function that safely divides two numbers and returns None if division by zero occurs.*
+
+Wrap the division operation `a / b` inside a `try / except ZeroDivisionError` block.
+
+**Answer — Safe Division**
+
+```python
+def safe_divide(a: float, b: float):
+    try:
+        return a / b
+    except ZeroDivisionError:
+        return None
+
+# Test cases
+assert safe_divide(10, 2) == 5.0
+assert safe_divide(5, 0) is None
+assert safe_divide(0, 5) == 0.0
+print("Safe divide passed!")
+```
+
+> **Key idea**
+>
+> Always specify the error you expect to catch (such as `except ValueError:`, not just `except:`).
+
+---
+
+<a id="5-everyday-string-operations"></a>
+
+## 5. Everyday String Operations
 
 - **Formatting & Operators** `f"{var}", +, *, in, not in` <!-- great -->
 - **Whitespace & Cleaning** `.strip(), .split(), .join()` <!-- great -->
@@ -425,9 +500,9 @@ print("Normalize name passed!")
 
 ---
 
-<a id="5-operators-truthiness-and-conditionals"></a>
+<a id="6-operators-truthiness-and-conditionals"></a>
 
-## 5. Operators, Truthiness & Conditionals
+## 6. Operators, Truthiness & Conditionals
 
 - **Division & Remainder** `/, //, %, divmod()` <!-- great -->
 - **Identity & Membership** `is, is not, in, not in` <!-- great -->
@@ -571,9 +646,9 @@ print("FizzBuzz passed!")
 
 ---
 
-<a id="6-loops-and-iteration"></a>
+<a id="7-loops-and-iteration"></a>
 
-## 6. Loops & Iteration
+## 7. Loops & Iteration
 
 - **Counting Loop** `for i in range(n):` <!-- great -->
 - **Index & Item** `for idx, item in enumerate(seq):` <!-- great -->
@@ -692,9 +767,9 @@ print("Find first negative passed!")
 
 The primary data structures used every day: ordered lists, fast key-value dictionaries, unique sets, and readable list comprehensions.
 
-<a id="7-lists-and-slicing"></a>
+<a id="8-lists-and-slicing"></a>
 
-## 7. Lists & Slicing
+## 8. Lists & Slicing
 
 - **Index Lookup** `O(1) instant access` <!-- great -->
 - **Append** `list.append(item) adds to end` <!-- great -->
@@ -772,9 +847,9 @@ print("Deduplicate passed!")
 
 ---
 
-<a id="8-dictionaries"></a>
+<a id="9-dictionaries"></a>
 
-## 8. Dictionaries
+## 9. Dictionaries
 
 - **Key Lookup** `Instant O(1) hash access` <!-- great -->
 - **Safe Retrieval** `d.get(key, default)` <!-- great -->
@@ -848,9 +923,9 @@ print("Word frequency passed!")
 
 ---
 
-<a id="9-tuples-and-sets"></a>
+<a id="10-tuples-and-sets"></a>
 
-## 9. Tuples & Sets
+## 10. Tuples & Sets
 
 - **Tuples** `Immutable fixed records: (x, y)` <!-- great -->
 - **Sets** `Unique values with fast in checks` <!-- great -->
@@ -924,9 +999,9 @@ print("Common users passed!")
 
 ---
 
-<a id="10-unpacking-and-destructuring"></a>
+<a id="11-unpacking-and-destructuring"></a>
 
-## 10. Unpacking & Destructuring
+## 11. Unpacking & Destructuring
 
 - **Multiple Assignment** `a, b = [10, 20]` <!-- great -->
 - **Starred Unpacking** `first, *rest = items` <!-- great -->
@@ -1012,9 +1087,9 @@ print("Extract successful totals passed!")
 
 ---
 
-<a id="11-list-comprehensions"></a>
+<a id="12-list-comprehensions"></a>
 
-## 11. List Comprehensions
+## 12. List Comprehensions
 
 - **Syntax** `[expression for item in iterable]` <!-- great -->
 - **With Filter** `[expr for item in iterable if condition]` <!-- great -->
@@ -1083,9 +1158,9 @@ print("Filter CSV files passed!")
 
 Writing clean reusable functions, argument packing, and non-blocking asynchronous coroutines.
 
-<a id="12-functions-and-arguments"></a>
+<a id="13-functions-and-arguments"></a>
 
-## 12. Functions & Arguments
+## 13. Functions & Arguments
 
 - **Definition & Defaults** `def fn(param=default):` <!-- great -->
 - **Variable Positional** `*args (packed as tuple)` <!-- great -->
@@ -1206,9 +1281,9 @@ print("Build query URL passed!")
 
 ---
 
-<a id="13-async-and-await"></a>
+<a id="14-async-and-await"></a>
 
-## 13. Async / Await
+## 14. Async / Await
 
 - **Coroutine Function** `async def fetch(): ...` <!-- great -->
 - **Yield Control** `await coroutine()` <!-- great -->
@@ -1315,9 +1390,9 @@ asyncio.run(run_tests())
 
 Modeling real-world entities, encapsulating state, and writing clean maintainable classes with methods and inheritance.
 
-<a id="14-object-oriented-programming"></a>
+<a id="15-object-oriented-programming"></a>
 
-## 14. Object-Oriented Programming (OOP)
+## 15. Object-Oriented Programming (OOP)
 
 - **Class & Instance** `class BankAccount: / acc = BankAccount()` <!-- great -->
 - **Initializer** `def __init__(self, ...):` <!-- great -->
@@ -1453,84 +1528,9 @@ print("Inventory item passed!")
 
 <a id="unit-5"></a>
 
-## Unit 5 — Error Handling, Modules & Environments
+## Unit 5 — Modules & Environments
 
-Catching runtime exceptions gracefully, structuring scripts, and managing isolated project environments.
-
-<a id="15-everyday-error-handling"></a>
-
-## 15. Everyday Error Handling
-
-- **Try / Except** `Catch specific exceptions safely` <!-- great -->
-- **Common Errors** `ValueError, KeyError, FileNotFoundError` <!-- great -->
-- **Cleanup** `finally block always runs` <!-- good -->
-
-Errors happen: an API returns bad text, a user types letters into a number field, or a file doesn't exist. Python uses `try / except` blocks so your program handles errors gracefully instead of crashing abruptly.
-
-> **Analogy** 🎬
->
-> **Picture it — A Gymnast's Safety Net**
->
-> The code inside `try:` is the gymnast performing high on the trapeze. If they perform the routine smoothly, they finish and dismount. If they slip (an error occurs), the `except:` safety net catches them safely so nobody gets hurt.
-
-Key patterns:
-1. `try ... except ValueError as e:`: Catches specific conversion errors
-2. `except (KeyError, IndexError):`: Catches multiple possible lookup errors
-3. `except Exception as e:`: Fallback for unexpected errors
-4. `finally:`: Code that is guaranteed to run (e.g. closing connections)
-5. `raise ValueError("Invalid value")`: Manually triggers an error
-
-```python
-# Catching specific parsing errors
-raw_input = "forty-two"
-
-try:
-    age = int(raw_input)
-    print(f"Age is {age}")
-except ValueError:
-    print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
-    age = 0
-
-# Safe dictionary lookups
-config = {"timeout": 30}
-try:
-    retries = config["retries"]
-except KeyError:
-    retries = 3
-
-print(f"Using {retries} retries.")
-```
-
-- **Strength — Prevents Application Crashes** Catching specific errors lets services log failures and return fallback responses without taking down the server.
-- **Weakness — Bare `except: pass` Anti-pattern** Writing `except: pass` silences every error, including keyboard interrupts and variable typos, making debugging impossible.
-
-**Interview question**
-
-*Write a function that safely divides two numbers and returns None if division by zero occurs.*
-
-Wrap the division operation `a / b` inside a `try / except ZeroDivisionError` block.
-
-**Answer — Safe Division**
-
-```python
-def safe_divide(a: float, b: float):
-    try:
-        return a / b
-    except ZeroDivisionError:
-        return None
-
-# Test cases
-assert safe_divide(10, 2) == 5.0
-assert safe_divide(5, 0) is None
-assert safe_divide(0, 5) == 0.0
-print("Safe divide passed!")
-```
-
-> **Key idea**
->
-> Always specify the error you expect to catch (such as `except ValueError:`, not just `except:`).
-
----
+Structuring scripts, and managing isolated project environments.
 
 <a id="16-modules-and-imports"></a>
 
