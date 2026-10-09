@@ -40,3 +40,4 @@ optional_value: int | None = None
 
 # type alias to give meaningful names to complex composite types.
 Point = tuple[float, float]
+location: Point = (40.7128, 74.0060)
