@@ -263,27 +263,6 @@ print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'ma
 print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
 print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
 
-# 2. Context management and error handling (with, try, except, finally)
-try:
-    with open("config.txt", "w") as file:
-        file.write("status=active")
-except OSError as error:
-    print(f"File error: {error}")
-finally:
-    print("Cleanup step complete.")
-
-# 3. Scope and deletion (global, nonlocal, del)
-counter = 0
-
-def increment():
-    global counter
-    counter += 1
-
-increment()
-print(f"Counter: {counter}")  # 1
-
-temp_data = [1, 2, 3]
-del temp_data  # Unbinds variable
 ```
 
 - **Strength — Compact, Readable Grammar** Python's concise keyword vocabulary reads like structured English, making control flow, error handling, and asynchronous code predictable and readable.
