@@ -379,7 +379,7 @@ print("Parse record with type hints passed!")
                                 <li><b>Control &amp; Logic</b> <code class="big-o o-great">if, for, while, def, return, and, or</code></li>
                                 <li><b>Inspection &amp; Testing</b> <code class="big-o o-good">import keyword; keyword.iskeyword()</code></li>
                             </ul>
-                            <p>Keywords in Python are reserved words that define the language's fundamental syntax, grammar, and control flow. You cannot use keywords as variable names, function names, or identifiers. Python provides 35 keywords that govern literals (<code>True</code>, <code>False</code>, <code>None</code>), conditional branching (<code>if</code>, <code>elif</code>, <code>else</code>), loops (<code>for</code>, <code>while</code>, <code>break</code>, <code>continue</code>, <code>pass</code>), functions and generators (<code>def</code>, <code>return</code>, <code>lambda</code>, <code>yield</code>), logic, identity and membership (<code>is</code>, <code>in</code>, <code>not</code>, <code>and</code>, <code>or</code>), and error handling (<code>try</code>, <code>except</code>, <code>finally</code>, <code>raise</code>).</p>
+                            <p>Python keywords are special reserved words that have predefined meanings and purposes within the language. Because they define the syntax and structure of Python programs, they cannot be used as identifiers (such as names for variables, functions, or classes). Doing so triggers a <code>SyntaxError</code>. Keywords are strictly case-sensitive (e.g. <code>True</code> is a keyword, but <code>true</code> is not), and they are always available built-in without needing to be imported.</p>
                             <div class="analogy">
                                 <span class="analogy-icon">🎬</span>
                                 <div class="analogy-body">
@@ -387,117 +387,70 @@ print("Parse record with type hints passed!")
                                     <p>Keywords are like official municipal traffic signs: STOP, ONE WAY, DO NOT ENTER, SPEED LIMIT, YIELD. A resident cannot paint their mailbox to look like a STOP sign or use traffic sign words as a street name because the traffic system relies on them having fixed, unambiguous rules. When Python's parser sees <code>def</code>, <code>if</code>, <code>while</code>, or <code>return</code>, it knows exactly what grammar rule to enforce without hesitation.</p>
                                 </div>
                             </div>
+                            <h4>How to View Keywords Programmatically</h4>
+                            <p>You can inspect the full list of keywords supported by your version of Python using the built-in <code>keyword</code> module:</p>
+                            <div class="highlight">
+                                <pre><code data-lang="python">import keyword
+
+# Print all standard reserved keywords (35 keywords)
+print(keyword.kwlist)
+
+# Print soft keywords (introduced in Python 3.10+, e.g. match, case, type)
+print(keyword.softkwlist)
+</code></pre>
+                            </div>
+                            <h4>Classification of Python Keywords</h4>
+                            <p>Python features 35 standard keywords and a few soft keywords (such as <code>match</code>, <code>case</code>, <code>_</code>, and <code>type</code>, which act as keywords only in specific contexts like pattern matching or type statements, while remaining valid variable names elsewhere). They are grouped by their functionality:</p>
                             <ol>
-                                <li><strong>Literals &amp; Singletons (<code>True</code>, <code>False</code>, <code>None</code>):</strong> Capitalized constants representing boolean truth and the absence of a value.</li>
-                                <li><strong>Branching &amp; Decisions (<code>if</code>, <code>elif</code>, <code>else</code>):</strong> Directs program execution based on boolean conditions.</li>
-                                <li><strong>Iteration &amp; Loop Control (<code>for</code>, <code>while</code>, <code>break</code>, <code>continue</code>, <code>pass</code>):</strong> <code>for</code> iterates sequences; <code>while</code> loops until a condition fails; <code>break</code> exits immediately; <code>continue</code> skips to next iteration; <code>pass</code> acts as a no-op placeholder.</li>
-                                <li><strong>Functions &amp; Generators (<code>def</code>, <code>return</code>, <code>lambda</code>, <code>yield</code>):</strong> <code>def</code> defines a function; <code>return</code> outputs a result; <code>lambda</code> creates an inline anonymous function; <code>yield</code> produces values lazily in a generator stream.</li>
-                                <li><strong>Logic, Identity &amp; Membership (<code>and</code>, <code>or</code>, <code>not</code>, <code>is</code>, <code>in</code>):</strong> Short-circuit logic, object identity checks (<code>x is None</code>), and containment tests (<code>item in sequence</code>).</li>
-                                <li><strong>Error Handling (<code>try</code>, <code>except</code>, <code>finally</code>, <code>raise</code>):</strong> Catches and recovers from exceptions gracefully, guarantees cleanup (<code>finally</code>), and raises errors.</li>
+                                <li><strong>Value Keywords (<code>True</code>, <code>False</code>, <code>None</code>):</strong> Represent boolean states and the absence of a value (singletons).</li>
+                                <li><strong>Control Flow (<code>if</code>, <code>elif</code>, <code>else</code>):</strong> Used for conditional branching logic.</li>
+                                <li><strong>Loops &amp; Iteration (<code>for</code>, <code>while</code>, <code>break</code>, <code>continue</code>, <code>pass</code>):</strong> Manage loops, exit loops prematurely (<code>break</code>), skip to the next iteration (<code>continue</code>), or provide null placeholders (<code>pass</code>).</li>
+                                <li><strong>Logical Operators (<code>and</code>, <code>or</code>, <code>not</code>):</strong> Standard boolean operators used to evaluate expressions.</li>
+                                <li><strong>Structural &amp; Definitions (<code>def</code>, <code>class</code>, <code>lambda</code>, <code>return</code>, <code>yield</code>):</strong> Define functions, classes, anonymous functions, and manage return output or generator streams.</li>
+                                <li><strong>Exception Handling (<code>try</code>, <code>except</code>, <code>finally</code>, <code>raise</code>, <code>assert</code>):</strong> Intercept and manage runtime errors, run debug assertions (<code>assert</code>), and guarantee cleanup (<code>finally</code>).</li>
+                                <li><strong>Namespace &amp; Scope (<code>global</code>, <code>nonlocal</code>, <code>del</code>):</strong> Alter variable scope rules or delete objects and variable bindings (<code>del</code>).</li>
+                                <li><strong>Imports (<code>import</code>, <code>from</code>, <code>as</code>):</strong> Pull in external modules, selective functions, or create shorthand aliases.</li>
+                                <li><strong>Pattern &amp; Identity (<code>in</code>, <code>is</code>):</strong> Check for membership inside collections or evaluate object identity in memory.</li>
+                                <li><strong>Context &amp; Concurrency (<code>with</code>, <code>async</code>, <code>await</code>):</strong> Clean up resource allocations (context managers) and write asynchronous, non-blocking coroutines.</li>
                             </ol>
                             <div class="highlight">
                                 <pre><code data-lang="python">import keyword
 
-# 1. Checking reserved keywords dynamically
-print(f"Total Python keywords: {len(keyword.kwlist)}")
-print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")            # True
-print(f"Is 'variable' a keyword? {keyword.iskeyword('variable')}")  # False
+# 1. Inspecting reserved and soft keywords dynamically
+print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
+print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
+print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
+print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
 
-# 2. Literals and conditional branching (True, False, None, if, elif, else)
-user_status = "active"
-is_admin = False
-token = None
+# 2. Context management and error handling (with, try, except, finally)
+try:
+    with open("config.txt", "w") as file:
+        file.write("status=active")
+except OSError as error:
+    print(f"File error: {error}")
+finally:
+    print("Cleanup step complete.")
 
-if user_status == "active" and (is_admin or token is None):
-    access = "standard"
-elif user_status == "banned":
-    access = "denied"
-else:
-    access = "guest"
-print(f"Access granted: {access}")
+# 3. Scope and deletion (global, nonlocal, del)
+counter = 0
 
-# 3. Loops, break, continue, and pass (placeholder)
-valid_numbers = []
-for n in [1, 2, -5, 4, 10]:
-    if n &lt; 0:
-        continue  # Skip negatives
-    if n &gt; 8:
-        break     # Stop processing
-    valid_numbers.append(n)
-print(f"Valid numbers: {valid_numbers}")  # [1, 2, 4]
+def increment():
+    global counter
+    counter += 1
 
-def placeholder_service():
-    pass  # Syntactically valid empty function
+increment()
+print(f"Counter: {counter}")  # 1
 
-# 4. Functions, return, lambda, and yield (generators)
-def calculate_tax(amount: float) -> float:
-    return amount * 0.08
-
-multiplier = lambda x, factor=2: x * factor
-print(f"Tax: {calculate_tax(100):.2f}, Double: {multiplier(5)}")
-
-def stream_batches(items: list, batch_size: int):
-    for i in range(0, len(items), batch_size):
-        yield items[i:i + batch_size]  # Generates batches lazily
-
-batches = list(stream_batches([1, 2, 3, 4, 5], 2))
-print(f"Batches: {batches}")  # [[1, 2], [3, 4], [5]]
+temp_data = [1, 2, 3]
+del temp_data  # Unbinds variable
 </code></pre>
                             </div>
                             <ul class="card-grid">
-                                <li class="is-good"><b>Strength — Compact, Readable Grammar:</b> Python's small keyword vocabulary (only 35 words) reads like structured English, making control flow instantly recognizable.</li>
+                                <li class="is-good"><b>Strength — Compact, Readable Grammar:</b> Python's concise keyword vocabulary reads like structured English, making control flow, error handling, and asynchronous code predictable and readable.</li>
                                 <li class="is-bad"><b>Weakness — SyntaxError on Keyword Identifiers:</b> Attempting to name a variable or JSON key after a keyword (e.g. <code>class = "math"</code> or <code>def = 5</code>) causes a fatal <code>SyntaxError</code>. In such cases, append a trailing underscore by convention (e.g. <code>class_ = "math"</code>).</li>
                             </ul>
                             <div class="callout callout-key">
-                                <p><strong>Key idea:</strong> Python has only 35 reserved keywords that cannot be used as variable or function names. Use <code>keyword.iskeyword(name)</code> to verify programmatically, and use a trailing underscore (such as <code>class_</code> or <code>type_</code>) if you must represent a domain concept named after a keyword.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-section is-collapsed" id="3-keywords-in-python-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-3-keywords-in-python-questions">
-                            <div class="part-header-left">
-                                <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink" href="#3-keywords-in-python-questions" title="Permanent link">#</a></h3>
-                            </div>
-                            <div class="part-header-right">
-                                <span class="part-counter">1</span>
-                                <span class="part-arrow" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="part-body" id="body-3-keywords-in-python-questions">
-                            <div class="worked">
-                                <b>Interview question</b>
-                                <p class="worked-q">Write a function <code>validate_identifier_name(name: str) -&gt; tuple[bool, str]</code> that checks if a proposed variable name is valid in Python. Return <code>(False, "Reserved keyword")</code> if it matches a Python keyword, <code>(False, "Invalid identifier syntax")</code> if it's not a valid Python identifier, and <code>(True, "Valid identifier")</code> if it is safe to use.</p>
-                                <p>Verify the input is a non-empty string, check <code>keyword.iskeyword(name)</code>, and verify <code>name.isidentifier()</code>.</p>
-                                <div class="code-tabs" data-label="Answer — Validate Identifier Name">
-                                    <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">import keyword
-
-def validate_identifier_name(name: str) -> tuple[bool, str]:
-    if not isinstance(name, str) or not name:
-        return (False, "Invalid identifier syntax")
-    if keyword.iskeyword(name):
-        return (False, "Reserved keyword")
-    if not name.isidentifier():
-        return (False, "Invalid identifier syntax")
-    return (True, "Valid identifier")
-
-# Test cases
-assert validate_identifier_name("user_id") == (True, "Valid identifier")
-assert validate_identifier_name("total_count") == (True, "Valid identifier")
-assert validate_identifier_name("for") == (False, "Reserved keyword")
-assert validate_identifier_name("class") == (False, "Reserved keyword")
-assert validate_identifier_name("2nd_place") == (False, "Invalid identifier syntax")
-assert validate_identifier_name("my-var") == (False, "Invalid identifier syntax")
-assert validate_identifier_name("") == (False, "Invalid identifier syntax")
-print("Validate identifier name passed!")
-</code></pre>
-                                    </div>
-                                </div>
+                                <p><strong>Key idea:</strong> Python has 35 reserved keywords and a few context-sensitive soft keywords (<code>match</code>, <code>case</code>, <code>_</code>, <code>type</code>). Standard keywords can never be used as variable, function, or class names. Use <code>keyword.iskeyword(name)</code> to verify programmatically, and append a trailing underscore (such as <code>class_</code> or <code>type_</code>) if you need to name a variable after a keyword.</p>
                             </div>
                         </div>
                     </div>
