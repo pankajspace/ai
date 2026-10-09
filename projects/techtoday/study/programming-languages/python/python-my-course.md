@@ -225,20 +225,6 @@ Python keywords are special reserved words that have predefined meanings and pur
 >
 > Keywords are like official municipal traffic signs: STOP, ONE WAY, DO NOT ENTER, SPEED LIMIT, YIELD. A resident cannot paint their mailbox to look like a STOP sign or use traffic sign words as a street name because the traffic system relies on them having fixed, unambiguous rules. When Python's parser sees `def`, `if`, `while`, or `return`, it knows exactly what grammar rule to enforce without hesitation.
 
-### How to View Keywords Programmatically
-
-You can inspect the full list of keywords supported by your version of Python using the built-in `keyword` module:
-
-```python
-import keyword
-
-# Print all standard reserved keywords (35 keywords)
-print(keyword.kwlist)
-
-# Print soft keywords (introduced in Python 3.10+, e.g. match, case, type)
-print(keyword.softkwlist)
-```
-
 ### Classification of Python Keywords
 
 Python features 35 standard keywords and a few soft keywords (such as `match`, `case`, `_`, and `type`, which act as keywords only in specific contexts like pattern matching or type statements, while remaining valid variable names elsewhere). They are grouped by their functionality:
@@ -258,11 +244,13 @@ Python features 35 standard keywords and a few soft keywords (such as `match`, `
 import keyword
 
 # 1. Inspecting reserved and soft keywords dynamically
+print(keyword.kwlist)
 print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
 print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
+
+# 2. Checking if a string is a keyword
 print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
 print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
-
 ```
 
 - **Strength — Compact, Readable Grammar** Python's concise keyword vocabulary reads like structured English, making control flow, error handling, and asynchronous code predictable and readable.
