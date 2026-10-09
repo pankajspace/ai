@@ -244,7 +244,7 @@ Python features 35 standard keywords and a few soft keywords (such as `match`, `
 import keyword
 
 # 1. Inspecting reserved and soft keywords dynamically
-print(keyword.kwlist)
+print(f"All standard keywords: {keyword.kwlist}")
 print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
 print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
 
