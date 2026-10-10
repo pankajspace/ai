@@ -217,7 +217,7 @@ print("Parse record with type hints passed!")
 - **Control & Logic** `if, for, while, def, return, and, or` <!-- great -->
 - **Inspection & Testing** `import keyword; keyword.iskeyword()` <!-- good -->
 
-Keywords in Python are reserved words that define the language's fundamental syntax, grammar, and control flow. You cannot use keywords as variable names, function names, or identifiers. Python provides 35 keywords that govern literals (`True`, `False`, `None`), conditional branching (`if`, `elif`, `else`), loops (`for`, `while`, `break`, `continue`, `pass`), functions and generators (`def`, `return`, `lambda`, `yield`), logic, identity and membership (`is`, `in`, `not`, `and`, `or`), and error handling (`try`, `except`, `finally`, `raise`).
+Python keywords are special reserved words that have predefined meanings and purposes within the language. Because they define the syntax and structure of Python programs, they cannot be used as identifiers (such as names for variables, functions, or classes). Doing so triggers a `SyntaxError`. Keywords are strictly case-sensitive (e.g. `True` is a keyword, but `true` is not), and they are always available built-in without needing to be imported.
 
 > **Analogy** 🎬
 >
@@ -225,100 +225,40 @@ Keywords in Python are reserved words that define the language's fundamental syn
 >
 > Keywords are like official municipal traffic signs: STOP, ONE WAY, DO NOT ENTER, SPEED LIMIT, YIELD. A resident cannot paint their mailbox to look like a STOP sign or use traffic sign words as a street name because the traffic system relies on them having fixed, unambiguous rules. When Python's parser sees `def`, `if`, `while`, or `return`, it knows exactly what grammar rule to enforce without hesitation.
 
-Key everyday keyword categories:
-1. **Literals & Singletons (`True`, `False`, `None`):** Capitalized constants representing boolean truth and the absence of a value.
-2. **Branching & Decisions (`if`, `elif`, `else`):** Directs program execution based on boolean conditions.
-3. **Iteration & Loop Control (`for`, `while`, `break`, `continue`, `pass`):** `for` iterates sequences; `while` loops until a condition fails; `break` exits immediately; `continue` skips to next iteration; `pass` acts as a no-op placeholder.
-4. **Functions & Generators (`def`, `return`, `lambda`, `yield`):** `def` defines a function; `return` outputs a result; `lambda` creates an inline anonymous function; `yield` produces values lazily in a generator stream.
-5. **Logic, Identity & Membership (`and`, `or`, `not`, `is`, `in`):** Short-circuit logic, object identity checks (`x is None`), and containment tests (`item in sequence`).
-6. **Error Handling (`try`, `except`, `finally`, `raise`):** Catches and recovers from exceptions gracefully, guarantees cleanup (`finally`), and raises errors.
+### Classification of Python Keywords
+
+Python features 35 standard keywords and a few soft keywords (such as `match`, `case`, `_`, and `type`, which act as keywords only in specific contexts like pattern matching or type statements, while remaining valid variable names elsewhere). They are grouped by their functionality:
+
+1. **Value Keywords (`True`, `False`, `None`):** Represent boolean states and the absence of a value (singletons).
+2. **Control Flow (`if`, `elif`, `else`):** Used for conditional branching logic.
+3. **Loops & Iteration (`for`, `while`, `break`, `continue`, `pass`):** Manage loops, exit loops prematurely (`break`), skip to the next iteration (`continue`), or provide null placeholders (`pass`).
+4. **Logical Operators (`and`, `or`, `not`):** Standard boolean operators used to evaluate expressions.
+5. **Structural & Definitions (`def`, `class`, `lambda`, `return`, `yield`):** Define functions, classes, anonymous functions, and manage return output or generator streams.
+6. **Exception Handling (`try`, `except`, `finally`, `raise`, `assert`):** Intercept and manage runtime errors, run debug assertions (`assert`), and guarantee cleanup (`finally`).
+7. **Namespace & Scope (`global`, `nonlocal`, `del`):** Alter variable scope rules or delete objects and variable bindings (`del`).
+8. **Imports (`import`, `from`, `as`):** Pull in external modules, selective functions, or create shorthand aliases.
+9. **Pattern & Identity (`in`, `is`):** Check for membership inside collections or evaluate object identity in memory.
+10. **Context & Concurrency (`with`, `async`, `await`):** Clean up resource allocations (context managers) and write asynchronous, non-blocking coroutines.
 
 ```python
 import keyword
 
-# 1. Checking reserved keywords dynamically
-print(f"Total Python keywords: {len(keyword.kwlist)}")
-print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")            # True
-print(f"Is 'variable' a keyword? {keyword.iskeyword('variable')}")  # False
+# 1. Inspecting reserved and soft keywords dynamically
+print(f"All standard keywords: {keyword.kwlist}")
+print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
+print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
 
-# 2. Literals and conditional branching (True, False, None, if, elif, else)
-user_status = "active"
-is_admin = False
-token = None
-
-if user_status == "active" and (is_admin or token is None):
-    access = "standard"
-elif user_status == "banned":
-    access = "denied"
-else:
-    access = "guest"
-print(f"Access granted: {access}")
-
-# 3. Loops, break, continue, and pass (placeholder)
-valid_numbers = []
-for n in [1, 2, -5, 4, 10]:
-    if n < 0:
-        continue  # Skip negatives
-    if n > 8:
-        break     # Stop processing
-    valid_numbers.append(n)
-print(f"Valid numbers: {valid_numbers}")  # [1, 2, 4]
-
-def placeholder_service():
-    pass  # Syntactically valid empty function
-
-# 4. Functions, return, lambda, and yield (generators)
-def calculate_tax(amount: float) -> float:
-    return amount * 0.08
-
-multiplier = lambda x, factor=2: x * factor
-print(f"Tax: {calculate_tax(100):.2f}, Double: {multiplier(5)}")
-
-def stream_batches(items: list, batch_size: int):
-    for i in range(0, len(items), batch_size):
-        yield items[i:i + batch_size]  # Generates batches lazily
-
-batches = list(stream_batches([1, 2, 3, 4, 5], 2))
-print(f"Batches: {batches}")  # [[1, 2], [3, 4], [5]]
+# 2. Checking if a string is a keyword
+print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
+print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
 ```
 
-- **Strength — Compact, Readable Grammar** Python's small keyword vocabulary (only 35 words) reads like structured English, making control flow instantly recognizable.
+- **Strength — Compact, Readable Grammar** Python's concise keyword vocabulary reads like structured English, making control flow, error handling, and asynchronous code predictable and readable.
 - **Weakness — SyntaxError on Keyword Identifiers** Attempting to name a variable or JSON key after a keyword (e.g. `class = "math"` or `def = 5`) causes a fatal `SyntaxError`. In such cases, append a trailing underscore by convention (e.g. `class_ = "math"`).
-
-**Interview question**
-
-*Write a function `validate_identifier_name(name: str) -> tuple[bool, str]` that checks if a proposed variable name is valid in Python. Return `(False, "Reserved keyword")` if it matches a Python keyword, `(False, "Invalid identifier syntax")` if it's not a valid Python identifier, and `(True, "Valid identifier")` if it is safe to use.*
-
-Verify the input is a non-empty string, check `keyword.iskeyword(name)`, and verify `name.isidentifier()`.
-
-**Answer — Validate Identifier Name**
-
-```python
-import keyword
-
-def validate_identifier_name(name: str) -> tuple[bool, str]:
-    if not isinstance(name, str) or not name:
-        return (False, "Invalid identifier syntax")
-    if keyword.iskeyword(name):
-        return (False, "Reserved keyword")
-    if not name.isidentifier():
-        return (False, "Invalid identifier syntax")
-    return (True, "Valid identifier")
-
-# Test cases
-assert validate_identifier_name("user_id") == (True, "Valid identifier")
-assert validate_identifier_name("total_count") == (True, "Valid identifier")
-assert validate_identifier_name("for") == (False, "Reserved keyword")
-assert validate_identifier_name("class") == (False, "Reserved keyword")
-assert validate_identifier_name("2nd_place") == (False, "Invalid identifier syntax")
-assert validate_identifier_name("my-var") == (False, "Invalid identifier syntax")
-assert validate_identifier_name("") == (False, "Invalid identifier syntax")
-print("Validate identifier name passed!")
-```
 
 > **Key idea**
 >
-> Python has only 35 reserved keywords that cannot be used as variable or function names. Use `keyword.iskeyword(name)` to verify programmatically, and use a trailing underscore (such as `class_` or `type_`) if you must represent a domain concept named after a keyword.
+> Python has 35 reserved keywords and a few context-sensitive soft keywords (`match`, `case`, `_`, `type`). Standard keywords can never be used as variable, function, or class names. Use `keyword.iskeyword(name)` to verify programmatically, and append a trailing underscore (such as `class_` or `type_`) if you need to name a variable after a keyword.
 
 ---
 
