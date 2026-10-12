@@ -68,28 +68,32 @@ Key everyday functions:
 6. `bool(x)`: Converts value to `True` or `False`
 
 ```python
-# Everyday variable assignment
-user_name = "Alex"
-user_age = 28
-user_score = 94.5
-is_active = True
-session_token = None
+# Variables
+user_name = "Pankaj"
+user_age = 30
+user_height = 5.10
+user_active = True
+user_session = None
+print(f"\nUser details are as follows: \nName: {user_name}, Age: {user_age}, Height: {user_height}\n")
+# User details are as follows: 
+# Name: Pankaj, Age: 30, Height: 5.1
 
-# Type inspection
-print(type(user_name))  # <class 'str'>
+# Types
+print(f"user_name: {type(user_name)}")        # user_name: <class 'str'>
+print(f"user_age: {type(user_age)}")          # user_age: <class 'int'>
+print(f"user_height: {type(user_height)}")    # user_height: <class 'float'>
+print(f"user_active: {type(user_active)}")    # user_active: <class 'bool'>
+print(f"user_session: {type(user_session)}")  # user_session: <class 'NoneType'>
 
-# Type conversion
-input_str = "150"
-total = int(input_str) + 50
-print(total)            # 200
-print(float("3.14"))    # 3.14
-print(str(100))         # 100
-print(bool(1))          # True
-print(bool(0))          # False
+# Type Conversion
+print(str(user_age), type(str(user_age)))          # "30" <class 'str'>
+print(int(user_height), type(int(user_height)))    # 5 <class 'int'>
+print(float(user_age), type(float(user_age)))      # 30.0 <class 'float'>
+print(bool(user_session), type(bool(user_session))) # False <class 'bool'>
 
 # Recommended type checking
-if isinstance(total, int):
-    print("total is an integer")  # total is an integer
+if isinstance(user_age, int):
+    print("user_age is an integer")  # user_age is an integer
 ```
 
 - **Strength — Fast Prototyping** Dynamic typing lets you assign and manipulate values without repetitive type declarations.
@@ -142,35 +146,56 @@ Python is dynamically typed, but modern Python (PEP 484 and Python 3.9+) support
 > Without type hints, all pipes in a building look identical from the outside; water, gas, or electrical wiring could be routed through any pipe until something leaks or sparks at runtime. Adding type hints is like stenciling labels on the pipes ("Cold Water Only", "Natural Gas", "Max 120V"). The pipes still carry whatever is pumped through them, but inspectors (static type checkers) and technicians (your IDE) immediately catch dangerous mismatches before opening the valve.
 
 Key everyday concepts and syntax:
-1. Basic variable annotations: `name: str = "Alice"`, `age: int = 30`, `is_active: bool = True`
+1. Basic variable annotations: `name: str = "Pankaj"`, `age: int = 30`, `is_active: bool = True`
 2. Function parameter and return types: `def greet(name: str) -> str:` and `def process() -> None:`
-3. Built-in generic collections (Python 3.9+): `list[str]`, `dict[str, int]`, `set[int]`, `tuple[str, int]` directly without importing from `typing`
-4. Modern Union and Optional syntax (Python 3.10+): `int | float` replaces legacy `Union[int, float]`, and `str | None` replaces `Optional[str]`
-5. Specialized types from `typing`: `Any` (opts out of type checking), `Callable[[int], bool]` (function arguments), `Literal["json", "csv"]` (exact allowed values)
-6. Type Aliases (Python 3.12+): `type Point = tuple[float, float]` to give meaningful names to complex composite types
+3. Built-in generic collections (Python 3.9+): `list[int]`, `dict[str, str]`, `set[int]`, `tuple[float, float]` directly without importing from `typing`
+4. Modern Union and Optional syntax (Python 3.10+): `int | str`, `int | None` replaces legacy `Union[int, str]` and `Optional[int]`
+5. Type Aliases (Python 3.12+): `Point = tuple[float, float]` to give meaningful names to complex composite types
+6. Specialized types from `typing`: `Callable[[int], int]` (function arguments), `Literal["json", "text"]` (exact allowed values)
 
 ```python
 from __future__ import annotations
 from typing import Callable, Any, Literal
 
-# 1. Variables and modern built-in generics (Python 3.9+)
-user_id: int = 101
-tags: list[str] = ["python", "backend"]
-unique_ids: set[int] = {1, 2, 3}
-coordinate: tuple[float, float] = (37.77, -122.42)
-metadata: dict[str, Any] = {"version": 1.2, "active": True}
+## 1. Basic variable annotations
+user_name: str = "Pankaj"
+user_age: int = 30
+user_height: float = 5.10
+user_active: bool = True
+user_session: None = None
 
-# Type alias
+## 2. Basic function annotations
+# Function return type annotation
+def greet(name: str) -> str:
+    return f"Hello, {name}!"
+print(greet("Pankaj"))  # Hello, Pankaj!
+
+# Function with no return value annotation
+def process() -> None:
+    print("Processing...")  # Processing...
+process()
+
+## 3. Built-in collection and generic type annotations (Python 3.9+)
+numbers: list[int] = [1, 2, 3, 4, 5]
+user_info: dict[str, str] = {"name": "Pankaj", "city": "New York"}
+coordinates: tuple[float, float] = (40.7128, 74.0060)
+unique_numbers: set[int] = {1, 2, 3, 4, 5}
+
+## 4. Union and optional type annotations (Python 3.10+)
+value: int | str = 42
+value = "Hello"
+optional_value: int | None = None
+
+## 5. Type alias to give meaningful names to complex composite types
 Point = tuple[float, float]
-origin: Point = (0.0, 0.0)
+location: Point = (40.7128, 74.0060)
 
-# 2. Modern union, optional, and literal syntax (Python 3.10+)
+## 6. Literal and Callable type annotations
 def find_user(user_id: int, format: Literal["json", "text"] = "json") -> dict[str, str] | None:
     if user_id == 101:
         return {"name": "Alice", "role": "engineer"}
     return None
 
-# 3. Callable parameter type hints
 def apply_operation(values: list[int], operation: Callable[[int], int]) -> list[int]:
     return [operation(x) for x in values]
 
@@ -267,8 +292,14 @@ print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'ma
 # 2. Checking if a string is a keyword
 print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
 print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
+print(keyword.iskeyword('True'))                             # True
+print(keyword.iskeyword('true'))                             # False
 
-# 3. Handling keyword collisions with trailing underscore
+# 3. Checking if a string is a soft keyword
+print(keyword.issoftkeyword('case'))                         # True
+print(keyword.issoftkeyword('def'))                          # False
+
+# 4. Handling keyword collisions with trailing underscore
 class_name = "Mathematics"
 type_ = "geometry"
 print(f"Variables: {class_name}, {type_}")  # Variables: Mathematics, geometry
@@ -307,32 +338,34 @@ Key patterns:
 5. `raise ValueError("Invalid value")`: Manually triggers an error
 
 ```python
-# 1. Catching specific parsing errors
-raw_input = "forty-two"
+from __future__ import annotations
 
-try:
-    age = int(raw_input)
-    print(f"Age is {age}")  # (skipped because int("forty-two") raises ValueError)
-except ValueError:
-    print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
-    # Could not convert 'forty-two' to an integer. Setting default age to 0.
-    age = 0
+# 1. Parsing with error handling (get_age)
+def get_age(age: str) -> int | None:
+    try:
+        return int(age)
+    except ValueError as e:
+        print("Cant covert age to int")  # Cant covert age to int
 
-# 2. Catching multiple lookup errors (KeyError, IndexError)
+print(f"get_age: {get_age('40')}")       # get_age: 40
+print(f"get_age: {get_age('fourty')}")   # get_age: None
+
+# 2. Dictionary key lookups with default fallback (get_retries)
+def get_retries(data: dict) -> int | None:
+    try:
+        return data["retries"]
+    except KeyError:
+        return 3
+
+print(f"get_retries: {get_retries({'retries': 5})}")  # get_retries: 5
+print(f"get_retries: {get_retries({})}")               # get_retries: 3
+
+# 3. Catching multiple lookup errors (KeyError, IndexError)
 items = [10, 20]
 try:
     val = items[5]
 except (KeyError, IndexError) as err:
     print(f"Lookup failed: {err}")  # Lookup failed: list index out of range
-
-# 3. Safe dictionary lookups
-config = {"timeout": 30}
-try:
-    retries = config["retries"]
-except KeyError:
-    retries = 3
-
-print(f"Using {retries} retries.")  # Using 3 retries.
 
 # 4. Cleanup with finally block and manual raise
 def parse_percentage(val: str) -> float:
@@ -539,7 +572,8 @@ print(-7 // 2)    # -4  (Rounds DOWN to -4, not -3!)
 print(7 % 2)      # 1   (Remainder)
 print(12 % 4)     # 0   (Evenly divisible)
 number = 14
-is_even = (number % 2 == 0)  # True
+is_even = (number % 2 == 0)
+print(is_even)    # True
 
 # Exponentiation (**)
 print(2 ** 8)     # 256 (Power operator)
@@ -548,15 +582,15 @@ print(2 ** 8)     # 256 (Power operator)
 total_records = 23
 per_page = 5
 total_pages = (total_records + per_page - 1) // per_page
-print(f"Total pages needed: {total_pages}")  # 5
+print(f"Total pages needed: {total_pages}")  # Total pages needed: 5
 
 # Practical 2: Converting seconds into minutes and seconds
 total_seconds = 145
 minutes = total_seconds // 60   # 2 minutes
 seconds = total_seconds % 60    # 25 seconds
-print(f"Formatted time: {minutes}m {seconds}s")  # 2m 25s
+print(f"Formatted time: {minutes}m {seconds}s")  # Formatted time: 2m 25s
 
-# Bonus: divmod() computes quotient and remainder together
+# divmod() computes quotient and remainder together
 mins, secs = divmod(total_seconds, 60)
 print(mins, secs)  # 2 25
 
@@ -1233,9 +1267,16 @@ print(f"Numbers sorted by factors (desc): {desc_by_factors}")
 # Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
 
 # 7. Comparators in Python 3: functools.cmp_to_key
+# In Python 2, sorted() had a direct `cmp` parameter: cmp(a, b) -> -1, 0, 1.
+# In Python 3, `cmp` was removed in favor of `key` because `key` is called once per element O(N),
+# whereas a comparator is called O(N log N) times during pairwise comparisons.
+# However, Python 3 provides functools.cmp_to_key() to bridge two-argument comparators into key functions.
 from functools import cmp_to_key
 
-# Comparator contract: -1 (a < b), 0 (a == b), 1 (a > b)
+# Comparator contract:
+# - return negative (e.g. -1) if a < b (a precedes b)
+# - return 0 if a == b (equal rank)
+# - return positive (e.g. 1) if a > b (a follows b)
 def factor_comparator(a: int, b: int) -> int:
     """Compare two numbers by factor count; break ties by numeric value."""
     fa, fb = count_factors(a), count_factors(b)
@@ -1250,6 +1291,11 @@ print(f"Numbers sorted with comparator: {numbers_by_cmp}")
 # Numbers sorted with comparator: [7, 9, 10, 16, 12]
 
 # Pairwise comparator example: Largest Number concatenation (LeetCode 179)
+# Why comparators are indispensable:
+# When determining whether "9" or "34" comes first in ["3", "30", "34", "5", "9"],
+# we compare relative combinations: "9"+"34" ("934") vs "34"+"9" ("349").
+# Since "934" > "349", "9" precedes "34".
+# This relative pairwise rule cannot be expressed with an isolated scalar key without comparing pairs.
 def largest_number_comparator(a: str, b: str) -> int:
     if a + b > b + a:
         return -1  # a should come first
@@ -1828,7 +1874,7 @@ class SavingsAccount(BankAccount):
 
 savings = SavingsAccount("Bob", 1000.0)
 savings.apply_interest()
-print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
+print(f"Savings balance: ${savings.balance:.2f}")  # Savings balance: $1030.00
 ```
 
 - **Strength — Encapsulation & Cohesion** Bundling state and behavior together keeps related logic organized, avoids scattered helper functions, and protects data integrity.
@@ -1932,7 +1978,7 @@ from pathlib import Path
 
 # 1. Standard library math functions
 root = math.isqrt(49)
-print(f"Square root: {root}")  # 7
+print(f"Square root: {root}")  # Square root: 7
 
 # 2. JSON serialization and deserialization
 user_data = {"username": "alex_dev", "role": "admin", "active": True}
@@ -2055,6 +2101,7 @@ Key everyday commands and workflow:
 6. Verify active environment in Python code: inspect `sys.prefix != sys.base_prefix` to confirm isolation at runtime.
 
 ```python
+import re
 import sys
 from pathlib import Path
 
