@@ -115,7 +115,7 @@ def sum_valid_integers(items: list) -> int:
 # Test cases
 print(sum_valid_integers([10, "20", "abc", 5, None, "30"]))  # 65
 print(sum_valid_integers(["1", "2", "3"]))                    # 6
-print("Sum valid integers passed!")
+print("Sum valid integers passed!")  # Sum valid integers passed!
 ```
 
 > **Key idea**
@@ -214,7 +214,7 @@ print(parse_record(record_bad))  # None
 
 empty_record = {}
 print(parse_record(empty_record))  # None
-print("Parse record with type hints passed!")
+print("Parse record with type hints passed!")  # Parse record with type hints passed!
 ```
 
 > **Key idea**
@@ -259,6 +259,7 @@ import keyword
 
 # 1. Inspecting reserved and soft keywords dynamically
 print(f"All standard keywords: {keyword.kwlist}")
+# All standard keywords: ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
 print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
 print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
 
@@ -310,7 +311,7 @@ raw_input = "forty-two"
 
 try:
     age = int(raw_input)
-    print(f"Age is {age}")
+    print(f"Age is {age}")  # (skipped because int("forty-two") raises ValueError)
 except ValueError:
     print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
     # Could not convert 'forty-two' to an integer. Setting default age to 0.
@@ -367,7 +368,7 @@ def safe_divide(a: float, b: float):
 print(safe_divide(10, 2))  # 5.0
 print(safe_divide(5, 0))   # None
 print(safe_divide(0, 5))   # 0.0
-print("Safe divide passed!")
+print("Safe divide passed!")  # Safe divide passed!
 ```
 
 > **Key idea**
@@ -477,7 +478,7 @@ print(normalize_name("  alex   MORGAN  "))  # Alex Morgan
 print(normalize_name("john"))                # John
 print(repr(normalize_name("   ")))           # ''
 print(repr(normalize_name(None)))            # ''
-print("Normalize name passed!")
+print("Normalize name passed!")  # Normalize name passed!
 ```
 
 > **Key idea**
@@ -644,11 +645,12 @@ is_admin = False
 if not is_admin:
     print("Regular user permissions.")  # Regular user permissions.
 
-# 7. Inline Ternary Conditional and Walrus operator (:=)
+# 7. Inline Ternary Conditional
 score = 82
 result = "Pass" if score >= 60 else "Fail"
 print(result)  # Pass
 
+## 8. Walrus operator (:=) for assignment expressions
 payload = "sensor_alpha_online"
 if (length := len(payload)) > 10:
     print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
@@ -681,7 +683,7 @@ print(fizz_buzz(15))  # FizzBuzz
 print(fizz_buzz(9))   # Fizz
 print(fizz_buzz(10))  # Buzz
 print(fizz_buzz(7))   # 7
-print("FizzBuzz passed!")
+print("FizzBuzz passed!")  # FizzBuzz passed!
 ```
 
 > **Key idea**
@@ -793,7 +795,7 @@ for n in [1, 2, 3, 4, 5]:
 # While loop for conditions
 count = 3
 while count > 0:
-    print(f"Countdown: {count}")
+    print(f"Countdown: {count}")  # Countdown: 3, 2, 1
     count -= 1
 # Countdown: 3
 # Countdown: 2
@@ -822,7 +824,7 @@ def find_first_negative(numbers: list[int]) -> int:
 print(find_first_negative([3, 5, -2, 8]))  # 2
 print(find_first_negative([1, 2, 3]))       # -1
 print(find_first_negative([-10, 0, 10]))   # 0
-print("Find first negative passed!")
+print("Find first negative passed!")  # Find first negative passed!
 ```
 
 > **Key idea**
@@ -910,7 +912,7 @@ def deduplicate_preserve_order(items: list) -> list:
 # Test cases
 print(deduplicate_preserve_order([1, 2, 2, 3, 1, 4]))  # [1, 2, 3, 4]
 print(deduplicate_preserve_order(["a", "b", "a"]))      # ['a', 'b']
-print("Deduplicate passed!")
+print("Deduplicate passed!")  # Deduplicate passed!
 ```
 
 > **Key idea**
@@ -1002,7 +1004,7 @@ def count_word_frequencies(words: list[str]) -> dict[str, int]:
 words = ["apple", "banana", "apple", "orange", "banana", "apple"]
 result = count_word_frequencies(words)
 print(result)  # {'apple': 3, 'banana': 2, 'orange': 1}
-print("Word frequency passed!")
+print("Word frequency passed!")  # Word frequency passed!
 ```
 
 > **Key idea**
@@ -1088,7 +1090,7 @@ users_1 = ["alice", "bob", "charlie"]
 users_2 = ["bob", "david", "alice"]
 common = find_common_users(users_1, users_2)
 print(sorted(common))  # ['alice', 'bob']
-print("Common users passed!")
+print("Common users passed!")  # Common users passed!
 ```
 
 > **Key idea**
@@ -1177,7 +1179,7 @@ records = [
     ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
 ]
 print(extract_successful_totals(records))  # {'USD': 200.75, 'EUR': 30.0}
-print("Extract successful totals passed!")
+print("Extract successful totals passed!")  # Extract successful totals passed!
 ```
 
 > **Key idea**
@@ -1246,7 +1248,7 @@ def get_csv_files(filenames: list[str]) -> list[str]:
 # Test cases
 files = ["data.CSV", "report.pdf", "users.csv", "image.png"]
 print(get_csv_files(files))  # ['data.csv', 'users.csv']
-print("Filter CSV files passed!")
+print("Filter CSV files passed!")  # Filter CSV files passed!
 ```
 
 > **Key idea**
@@ -1364,7 +1366,7 @@ def calculate_tip(bill: float, percentage: float = 15.0) -> float:
 print(calculate_tip(100.0))        # 15.0
 print(calculate_tip(50.0, 20.0))   # 10.0
 print(calculate_tip(0.0))          # 0.0
-print("Calculate tip passed!")
+print("Calculate tip passed!")  # Calculate tip passed!
 ```
 
 **Interview question**
@@ -1392,7 +1394,7 @@ print(build_query_url("https://api.example.com", status="active"))
 # https://api.example.com?status=active
 print(build_query_url("https://api.example.com/", "health"))
 # https://api.example.com/health
-print("Build query URL passed!")
+print("Build query URL passed!")  # Build query URL passed!
 ```
 
 > **Key idea**
@@ -1454,6 +1456,7 @@ async def main():
 
     # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
     print(f"Concurrent fetch completed in {elapsed:.3f}s")
+    # Concurrent fetch completed in 0.052s
 
     # Running a background task independently with create_task
     task = asyncio.create_task(fetch_service_data("metrics-collector", 0.02))
@@ -1499,7 +1502,7 @@ async def run_tests():
     # Empty list test
     empty_res = await check_all_services([])
     print(empty_res)  # {}
-    print("Service health checker passed!")
+    print("Service health checker passed!")  # Service health checker passed!
 
 asyncio.run(run_tests())
 ```
@@ -1646,7 +1649,7 @@ try:
 except ValueError as e:
     print(e)  # Cannot sell 20; only 12 in stock.
 
-print("Inventory item passed!")
+print("Inventory item passed!")  # Inventory item passed!
 ```
 
 > **Key idea**
@@ -1769,7 +1772,7 @@ try:
 except ValueError as e:
     print("Invalid JSON caught")  # Invalid JSON caught
 
-print("Load config passed!")
+print("Load config passed!")  # Load config passed!
 ```
 
 > **Key idea**
@@ -1826,15 +1829,20 @@ def is_virtual_env() -> bool:
     return sys.prefix != sys.base_prefix
 
 print(f"Python Executable: {sys.executable}")
+# Python Executable: /Users/pankaj/Workspace/ai/.venv/bin/python3
 print(f"Active Environment Path: {sys.prefix}")
+# Active Environment Path: /Users/pankaj/Workspace/ai/.venv
 print(f"Base System Python Path: {sys.base_prefix}")
+# Base System Python Path: /usr/local
 print(f"Running inside virtual environment: {is_virtual_env()}")
+# Running inside virtual environment: True
 
 # Check for requirements.txt in project root
 req_file = Path("requirements.txt")
 if req_file.exists():
     dependencies = [line.strip() for line in req_file.read_text().splitlines() if line.strip() and not line.startswith("#")]
     print(f"Project requirements ({len(dependencies)} packages): {dependencies}")
+    # Project requirements (3 packages): ['fastapi>=0.110.0', 'uvicorn~=0.28.0', 'requests==2.31.0']
 ```
 
 - **Strength — Clean Project Isolation & Reproducibility** Keeps conflicting package versions strictly separated per project and enables deterministic, zero-surprise builds across team members and CI/CD pipelines.
@@ -1883,7 +1891,7 @@ print(parsed["requests"])      # ==2.31.0
 print(parsed["fastapi"])       # >=0.110.0
 print(parsed["uvicorn"])       # ~=0.28.0
 print(repr(parsed["pytest"]))  # ''
-print("Parse requirements passed!")
+print("Parse requirements passed!")  # Parse requirements passed!
 ```
 
 > **Key idea**

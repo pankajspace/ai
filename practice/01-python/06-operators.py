@@ -117,11 +117,12 @@ is_admin = False
 if not is_admin:
     print("Regular user permissions.")  # Regular user permissions.
 
-# 7. Inline Ternary Conditional and Walrus operator (:=)
+# 7. Inline Ternary Conditional
 score = 82
 result = "Pass" if score >= 60 else "Fail"
 print(result)  # Pass
 
+# 8. Walrus operator (:=) for assignment expressions
 payload = "sensor_alpha_online"
 if (length := len(payload)) > 10:
     print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
@@ -142,4 +143,4 @@ print(fizz_buzz(15))  # FizzBuzz
 print(fizz_buzz(9))   # Fizz
 print(fizz_buzz(10))  # Buzz
 print(fizz_buzz(7))   # 7
-print("FizzBuzz passed!")
+print("FizzBuzz passed!")  # FizzBuzz passed!

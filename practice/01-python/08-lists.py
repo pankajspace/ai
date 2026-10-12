@@ -32,5 +32,5 @@ def deduplicate_preserve_order(items: list) -> list:
 # Test cases
 print(deduplicate_preserve_order([1, 2, 2, 3, 1, 4]))  # [1, 2, 3, 4]
 print(deduplicate_preserve_order(["a", "b", "a"]))      # ['a', 'b']
-print("Deduplicate passed!")
+print("Deduplicate passed!")  # Deduplicate passed!
 

@@ -62,7 +62,7 @@ for n in [1, 2, 3, 4, 5]:
 # While loop for conditions
 count = 3
 while count > 0:
-    print(f"Countdown: {count}")
+    print(f"Countdown: {count}")  # Countdown: 3, 2, 1
     count -= 1
 # Countdown: 3
 # Countdown: 2
@@ -80,5 +80,5 @@ def find_first_negative(numbers: list[int]) -> int:
 print(find_first_negative([3, 5, -2, 8]))  # 2
 print(find_first_negative([1, 2, 3]))       # -1
 print(find_first_negative([-10, 0, 10]))   # 0
-print("Find first negative passed!")
+print("Find first negative passed!")       # Find first negative passed!
 

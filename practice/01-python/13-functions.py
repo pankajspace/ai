@@ -57,7 +57,7 @@ def calculate_tip(bill: float, percentage: float = 15.0) -> float:
 print(calculate_tip(100.0))        # 15.0
 print(calculate_tip(50.0, 20.0))   # 10.0
 print(calculate_tip(0.0))          # 0.0
-print("Calculate tip passed!")
+print("Calculate tip passed!")     # Calculate tip passed!
 
 
 # Interview question 2: Build query URL with *args and **kwargs
@@ -77,5 +77,5 @@ print(build_query_url("https://api.example.com", status="active"))
 # https://api.example.com?status=active
 print(build_query_url("https://api.example.com/", "health"))
 # https://api.example.com/health
-print("Build query URL passed!")
+print("Build query URL passed!")   # Build query URL passed!
 

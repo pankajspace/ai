@@ -41,5 +41,5 @@ records = [
     ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
 ]
 print(extract_successful_totals(records))  # {'USD': 200.75, 'EUR': 30.0}
-print("Extract successful totals passed!")
+print("Extract successful totals passed!")  # Extract successful totals passed!
 

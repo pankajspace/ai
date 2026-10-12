@@ -44,5 +44,5 @@ def count_word_frequencies(words: list[str]) -> dict[str, int]:
 words = ["apple", "banana", "apple", "orange", "banana", "apple"]
 result = count_word_frequencies(words)
 print(result)  # {'apple': 3, 'banana': 2, 'orange': 1}
-print("Word frequency passed!")
+print("Word frequency passed!")  # Word frequency passed!
 

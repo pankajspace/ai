@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # 1. Modern f-strings and string operators (+, *)
 product = "Coffee Mug"
 price = 12.994
@@ -12,10 +14,10 @@ print(f"{header}\n{divider}")
 # 2. Membership operators (in and not in)
 user_email = "alex@company.com"
 if "@" in user_email and "." in user_email:
-    print("Valid email structure.")
+    print("Valid email structure.")  # Valid email structure.
 
 if "admin" not in user_email:
-    print("Standard user account.")
+    print("Standard user account.")  # Standard user account.
 
 # 3. Cleaning user inputs
 raw_email = "   Alex@Company.COM \n"
@@ -33,7 +35,7 @@ print(joined)  # laptop -> electronics -> 999
 # 5. Safe None check vs value equality
 user_input = None
 if user_input is None:
-    print("No input provided.")
+    print("No input provided.")  # No input provided.
 
 # Value equality vs identity
 status = "active"
@@ -48,8 +50,8 @@ def normalize_name(raw_name: str | None) -> str:
     return " ".join(w.capitalize() for w in words)
 
 # Test cases
-print(normalize_name("  alex   MORGAN  ") == "Alex Morgan") # True
-print(normalize_name("john") == "John") # True
-print(normalize_name("   ") == "") # True
-print(normalize_name(None) == "") # True
-print("Normalize name passed!")
+print(normalize_name("  alex   MORGAN  "))  # Alex Morgan
+print(normalize_name("john"))                # John
+print(repr(normalize_name("   ")))           # ''
+print(repr(normalize_name(None)))            # ''
+print("Normalize name passed!")              # Normalize name passed!

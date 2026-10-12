@@ -38,5 +38,5 @@ users_1 = ["alice", "bob", "charlie"]
 users_2 = ["bob", "david", "alice"]
 common = find_common_users(users_1, users_2)
 print(sorted(common))  # ['alice', 'bob']
-print("Common users passed!")
+print("Common users passed!")  # Common users passed!
 

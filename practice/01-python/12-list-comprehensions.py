@@ -24,5 +24,5 @@ def get_csv_files(filenames: list[str]) -> list[str]:
 # Test cases
 files = ["data.CSV", "report.pdf", "users.csv", "image.png"]
 print(get_csv_files(files))  # ['data.csv', 'users.csv']
-print("Filter CSV files passed!")
+print("Filter CSV files passed!")  # Filter CSV files passed!
 

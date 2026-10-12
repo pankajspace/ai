@@ -68,5 +68,5 @@ try:
 except ValueError as e:
     print("Invalid JSON caught")  # Invalid JSON caught
 
-print("Load config passed!")
+print("Load config passed!")  # Load config passed!
 

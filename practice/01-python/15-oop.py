@@ -89,5 +89,5 @@ try:
 except ValueError as e:
     print(e)  # Cannot sell 20; only 12 in stock.
 
-print("Inventory item passed!")
+print("Inventory item passed!")  # Inventory item passed!
 

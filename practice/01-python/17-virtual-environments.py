@@ -9,15 +9,20 @@ def is_virtual_env() -> bool:
     return sys.prefix != sys.base_prefix
 
 print(f"Python Executable: {sys.executable}")
+# Python Executable: /Users/pankaj/Workspace/ai/.venv/bin/python3
 print(f"Active Environment Path: {sys.prefix}")
+# Active Environment Path: /Users/pankaj/Workspace/ai/.venv
 print(f"Base System Python Path: {sys.base_prefix}")
+# Base System Python Path: /usr/local
 print(f"Running inside virtual environment: {is_virtual_env()}")
+# Running inside virtual environment: True
 
 # Check for requirements.txt in project root
 req_file = Path("requirements.txt")
 if req_file.exists():
     dependencies = [line.strip() for line in req_file.read_text().splitlines() if line.strip() and not line.startswith("#")]
     print(f"Project requirements ({len(dependencies)} packages): {dependencies}")
+    # Project requirements (3 packages): ['fastapi>=0.110.0', 'uvicorn~=0.28.0', 'requests==2.31.0']
 
 
 # Interview question: Parse Requirements File
@@ -53,5 +58,5 @@ print(parsed["requests"])      # ==2.31.0
 print(parsed["fastapi"])       # >=0.110.0
 print(parsed["uvicorn"])       # ~=0.28.0
 print(repr(parsed["pytest"]))  # ''
-print("Parse requirements passed!")
+print("Parse requirements passed!")  # Parse requirements passed!
 

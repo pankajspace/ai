@@ -24,6 +24,7 @@ async def main():
 
     # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
     print(f"Concurrent fetch completed in {elapsed:.3f}s")
+    # Concurrent fetch completed in 0.052s
 
     # Running a background task independently with create_task
     task = asyncio.create_task(fetch_service_data("metrics-collector", 0.02))
@@ -55,7 +56,7 @@ async def run_tests():
     # Empty list test
     empty_res = await check_all_services([])
     print(empty_res)  # {}
-    print("Service health checker passed!")
+    print("Service health checker passed!")  # Service health checker passed!
 
 asyncio.run(run_tests())
 

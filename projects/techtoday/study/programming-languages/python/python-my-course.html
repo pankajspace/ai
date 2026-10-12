@@ -163,7 +163,7 @@ is_active = True
 session_token = None
 
 # Type inspection
-print(type(user_name))  # <class 'str'>
+print(type(user_name))  # &lt;class 'str'&gt;
 
 # Type conversion
 input_str = "150"
@@ -224,7 +224,7 @@ if isinstance(total, int):
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Sum Valid Integers">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def sum_valid_integers(items: list) -> int:
+                                        <pre><code data-lang="python">def sum_valid_integers(items: list) -&gt; int:
     total = 0
     for item in items:
         try:
@@ -236,7 +236,7 @@ if isinstance(total, int):
 # Test cases
 print(sum_valid_integers([10, "20", "abc", 5, None, "30"]))  # 65
 print(sum_valid_integers(["1", "2", "3"]))                    # 6
-print("Sum valid integers passed!")
+print("Sum valid integers passed!")  # Sum valid integers passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -352,13 +352,13 @@ Point = tuple[float, float]
 origin: Point = (0.0, 0.0)
 
 # 2. Modern union, optional, and literal syntax (Python 3.10+)
-def find_user(user_id: int, format: Literal["json", "text"] = "json") -> dict[str, str] | None:
+def find_user(user_id: int, format: Literal["json", "text"] = "json") -&gt; dict[str, str] | None:
     if user_id == 101:
         return {"name": "Alice", "role": "engineer"}
     return None
 
 # 3. Callable parameter type hints
-def apply_operation(values: list[int], operation: Callable[[int], int]) -> list[int]:
+def apply_operation(values: list[int], operation: Callable[[int], int]) -&gt; list[int]:
     return [operation(x) for x in values]
 
 squared = apply_operation([1, 2, 3], lambda x: x ** 2)
@@ -424,7 +424,7 @@ if user is not None:
                                     <div class="tab-pane" data-lang="python">
                                         <pre><code data-lang="python">from typing import Any
 
-def parse_record(raw: dict[str, Any]) -> tuple[str, int, float] | None:
+def parse_record(raw: dict[str, Any]) -&gt; tuple[str, int, float] | None:
     try:
         name = str(raw["name"])
         age = int(raw["age"])
@@ -443,7 +443,7 @@ print(parse_record(record_bad))  # None
 
 empty_record = {}
 print(parse_record(empty_record))  # None
-print("Parse record with type hints passed!")
+print("Parse record with type hints passed!")  # Parse record with type hints passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -561,6 +561,7 @@ print("Parse record with type hints passed!")
 
 # 1. Inspecting reserved and soft keywords dynamically
 print(f"All standard keywords: {keyword.kwlist}")
+# All standard keywords: ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
 print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
 print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
 
@@ -661,7 +662,7 @@ raw_input = "forty-two"
 
 try:
     age = int(raw_input)
-    print(f"Age is {age}")
+    print(f"Age is {age}")  # (skipped because int("forty-two") raises ValueError)
 except ValueError:
     print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
     # Could not convert 'forty-two' to an integer. Setting default age to 0.
@@ -684,10 +685,10 @@ except KeyError:
 print(f"Using {retries} retries.")  # Using 3 retries.
 
 # 4. Cleanup with finally block and manual raise
-def parse_percentage(val: str) -> float:
+def parse_percentage(val: str) -&gt; float:
     try:
         num = float(val)
-        if num < 0 or num > 100:
+        if num &lt; 0 or num &gt; 100:
             raise ValueError(f"Percentage out of range: {num}")
         return num
     finally:
@@ -750,7 +751,7 @@ print(parse_percentage("85.5"))  # 85.5
 print(safe_divide(10, 2))  # 5.0
 print(safe_divide(5, 0))   # None
 print(safe_divide(0, 5))   # 0.0
-print("Safe divide passed!")
+print("Safe divide passed!")  # Safe divide passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -854,8 +855,7 @@ print(f"Item: {product} | Cost: ${price:.2f}")  # Item: Coffee Mug | Cost: $12.9
 
 divider = "=" * 30
 header = "[ " + product.upper() + " ]"
-print(f"{header}
-{divider}")
+print(f"{header}\n{divider}")
 # [ COFFEE MUG ]
 # ==============================
 
@@ -868,8 +868,7 @@ if "admin" not in user_email:
     print("Standard user account.")  # Standard user account.
 
 # 3. Cleaning user inputs
-raw_email = "   Alex@Company.COM 
-"
+raw_email = "   Alex@Company.COM \n"
 clean_email = raw_email.strip().lower()
 print(clean_email)  # alex@company.com
 
@@ -878,8 +877,8 @@ csv_row = "laptop,electronics,999"
 parts = csv_row.split(",")
 print(parts)  # ['laptop', 'electronics', '999']
 
-joined = " -> ".join(parts)
-print(joined)  # laptop -> electronics -> 999
+joined = " -&gt; ".join(parts)
+print(joined)  # laptop -&gt; electronics -&gt; 999
 
 # 5. Substring replacement and prefix/suffix checks
 sentence = "Hello World"
@@ -947,7 +946,7 @@ print(status == "active")  # True (always use == for string comparisons)
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Normalize Name">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def normalize_name(raw_name: str) -> str:
+                                        <pre><code data-lang="python">def normalize_name(raw_name: str) -&gt; str:
     if raw_name is None:
         return ""
     words = raw_name.split()
@@ -958,7 +957,7 @@ print(normalize_name("  alex   MORGAN  "))  # Alex Morgan
 print(normalize_name("john"))                # John
 print(repr(normalize_name("   ")))           # ''
 print(repr(normalize_name(None)))            # ''
-print("Normalize name passed!")
+print("Normalize name passed!")  # Normalize name passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -1141,7 +1140,7 @@ print(mins, secs)  # 2 25
 total_slides = 5
 for current_slide in range(5):
     next_slide = (current_slide + 1) % total_slides
-    # Wraps: 0->1, 1->2, 2->3, 3->4, 4->0
+    # Wraps: 0-&gt;1, 1-&gt;2, 2-&gt;3, 3-&gt;4, 4-&gt;0
 
 # 2. Identity operators (is, is not) vs Equality (==, !=)
 list_a = [1, 2, 3]
@@ -1223,11 +1222,12 @@ is_admin = False
 if not is_admin:
     print("Regular user permissions.")  # Regular user permissions.
 
-# 7. Inline Ternary Conditional and Walrus operator (:=)
+# 7. Inline Ternary Conditional
 score = 82
 result = "Pass" if score &gt;= 60 else "Fail"
 print(result)  # Pass
 
+## 8. Walrus operator (:=) for assignment expressions
 payload = "sensor_alpha_online"
 if (length := len(payload)) &gt; 10:
     print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
@@ -1282,7 +1282,7 @@ if (length := len(payload)) &gt; 10:
                                     and 5 individually.</p>
                                 <div class="code-tabs" data-label="Answer — FizzBuzz">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def fizz_buzz(n: int) -> str:
+                                        <pre><code data-lang="python">def fizz_buzz(n: int) -&gt; str:
     if n % 15 == 0:
         return "FizzBuzz"
     elif n % 3 == 0:
@@ -1297,7 +1297,7 @@ print(fizz_buzz(15))  # FizzBuzz
 print(fizz_buzz(9))   # Fizz
 print(fizz_buzz(10))  # Buzz
 print(fizz_buzz(7))   # 7
-print("FizzBuzz passed!")
+print("FizzBuzz passed!")  # FizzBuzz passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -1469,7 +1469,7 @@ for n in [1, 2, 3, 4, 5]:
 # While loop for conditions
 count = 3
 while count &gt; 0:
-    print(f"Countdown: {count}")
+    print(f"Countdown: {count}")  # Countdown: 3, 2, 1
     count -= 1
 # Countdown: 3
 # Countdown: 2
@@ -1525,7 +1525,7 @@ while count &gt; 0:
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Find First Negative Index">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def find_first_negative(numbers: list[int]) -> int:
+                                        <pre><code data-lang="python">def find_first_negative(numbers: list[int]) -&gt; int:
     for idx, num in enumerate(numbers):
         if num &lt; 0:
             return idx
@@ -1535,7 +1535,7 @@ while count &gt; 0:
 print(find_first_negative([3, 5, -2, 8]))  # 2
 print(find_first_negative([1, 2, 3]))       # -1
 print(find_first_negative([-10, 0, 10]))   # 0
-print("Find first negative passed!")
+print("Find first negative passed!")  # Find first negative passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -1673,7 +1673,7 @@ if "buy groceries" in todos:
                                     appending items only when they haven't been seen yet.</p>
                                 <div class="code-tabs" data-label="Answer — Deduplicate While Preserving Order">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def deduplicate_preserve_order(items: list) -> list:
+                                        <pre><code data-lang="python">def deduplicate_preserve_order(items: list) -&gt; list:
     seen = set()
     result = []
     for item in items:
@@ -1685,7 +1685,7 @@ if "buy groceries" in todos:
 # Test cases
 print(deduplicate_preserve_order([1, 2, 2, 3, 1, 4]))  # [1, 2, 3, 4]
 print(deduplicate_preserve_order(["a", "b", "a"]))      # ['a', 'b']
-print("Deduplicate passed!")
+print("Deduplicate passed!")  # Deduplicate passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -1828,7 +1828,7 @@ print("level" in user)  # False
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Word Frequency Counter">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def count_word_frequencies(words: list[str]) -> dict[str, int]:
+                                        <pre><code data-lang="python">def count_word_frequencies(words: list[str]) -&gt; dict[str, int]:
     counts = {}
     for word in words:
         counts[word] = counts.get(word, 0) + 1
@@ -1838,7 +1838,7 @@ print("level" in user)  # False
 words = ["apple", "banana", "apple", "orange", "banana", "apple"]
 result = count_word_frequencies(words)
 print(result)  # {'apple': 3, 'banana': 2, 'orange': 1}
-print("Word frequency passed!")
+print("Word frequency passed!")  # Word frequency passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -1936,7 +1936,7 @@ if "admin" in unique_roles:
 # Set operations: union and intersection
 dev_team = {"alice", "bob", "charlie"}
 ops_team = {"bob", "david"}
-print(dev_team & ops_team)  # {'bob'}
+print(dev_team &amp; ops_team)  # {'bob'}
 print(dev_team | ops_team)  # {'alice', 'bob', 'charlie', 'david'}
 </code></pre>
                             </div>
@@ -1980,7 +1980,7 @@ print(dev_team | ops_team)  # {'alice', 'bob', 'charlie', 'david'}
                                     operator.</p>
                                 <div class="code-tabs" data-label="Answer — Find Common Users">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def find_common_users(group_a: list[str], group_b: list[str]) -> list[str]:
+                                        <pre><code data-lang="python">def find_common_users(group_a: list[str], group_b: list[str]) -&gt; list[str]:
     return list(set(group_a) &amp; set(group_b))
 
 # Test cases
@@ -1988,7 +1988,7 @@ users_1 = ["alice", "bob", "charlie"]
 users_2 = ["bob", "david", "alice"]
 common = find_common_users(users_1, users_2)
 print(sorted(common))  # ['alice', 'bob']
-print("Common users passed!")
+print("Common users passed!")  # Common users passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -2159,7 +2159,7 @@ records = [
     ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
 ]
 print(extract_successful_totals(records))  # {'USD': 200.75, 'EUR': 30.0}
-print("Extract successful totals passed!")
+print("Extract successful totals passed!")  # Extract successful totals passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -2288,13 +2288,13 @@ print(labels)  # ['Odd', 'Even', 'Odd', 'Even', 'Odd']
                                     transforming with <code>.lower()</code>.</p>
                                 <div class="code-tabs" data-label="Answer — Filter CSV Files">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def get_csv_files(filenames: list[str]) -> list[str]:
+                                        <pre><code data-lang="python">def get_csv_files(filenames: list[str]) -&gt; list[str]:
     return [name.lower() for name in filenames if name.lower().endswith(".csv")]
 
 # Test cases
 files = ["data.CSV", "report.pdf", "users.csv", "image.png"]
 print(get_csv_files(files))  # ['data.csv', 'users.csv']
-print("Filter CSV files passed!")
+print("Filter CSV files passed!")  # Filter CSV files passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -2417,14 +2417,14 @@ print("Filter CSV files passed!")
                             </ol>
                             <div class="highlight">
                                 <pre><code data-lang="python"># 1. Default parameters and multiple return values
-def calculate_total(subtotal: float, tax_rate: float = 0.08) -> float:
+def calculate_total(subtotal: float, tax_rate: float = 0.08) -&gt; float:
     return round(subtotal * (1 + tax_rate), 2)
 
 print(calculate_total(100.0))         # 108.0 (default 8% tax)
 print(calculate_total(100.0, 0.05))   # 105.0 (overrides tax rate)
 
-# 2. Variable positional arguments (*args -> tuple)
-def calculate_average(*numbers: float) -> float:
+# 2. Variable positional arguments (*args -&gt; tuple)
+def calculate_average(*numbers: float) -&gt; float:
     if not numbers:
         return 0.0
     return sum(numbers) / len(numbers)
@@ -2433,8 +2433,8 @@ print(calculate_average(10, 20, 30))  # 20.0
 scores = [85, 90, 95]
 print(calculate_average(*scores))     # 90.0 (unpacking list with *)
 
-# 3. Variable keyword arguments (**kwargs -> dict)
-def build_profile(username: str, **attributes) -> dict:
+# 3. Variable keyword arguments (**kwargs -&gt; dict)
+def build_profile(username: str, **attributes) -&gt; dict:
     profile = {"username": username}
     profile.update(attributes)
     return profile
@@ -2452,7 +2452,7 @@ print(connect("db.internal", **extra_opts))
 # Connecting to db.internal with {'retries': 3, 'timeout': 15}
 
 # 5. Multiple return values (unpacked as a tuple)
-def get_dimensions() -> tuple[int, int]:
+def get_dimensions() -&gt; tuple[int, int]:
     return 1920, 1080
 
 width, height = get_dimensions()
@@ -2514,7 +2514,7 @@ print(log_call(calculate_total, 200.0, 0.10))  # 220.0
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Calculate Tip">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def calculate_tip(bill: float, percentage: float = 15.0) -> float:
+                                        <pre><code data-lang="python">def calculate_tip(bill: float, percentage: float = 15.0) -&gt; float:
     if bill &lt; 0:
         raise ValueError("Bill cannot be negative.")
     return round(bill * (percentage / 100), 2)
@@ -2523,7 +2523,7 @@ print(log_call(calculate_total, 200.0, 0.10))  # 220.0
 print(calculate_tip(100.0))        # 15.0
 print(calculate_tip(50.0, 20.0))   # 10.0
 print(calculate_tip(0.0))          # 0.0
-print("Calculate tip passed!")
+print("Calculate tip passed!")  # Calculate tip passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -2539,7 +2539,7 @@ print("Calculate tip passed!")
                                 </p>
                                 <div class="code-tabs" data-label="Answer — Build Query URL with *args and **kwargs">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def build_query_url(base_url: str, *paths: str, **params: str) -> str:
+                                        <pre><code data-lang="python">def build_query_url(base_url: str, *paths: str, **params: str) -&gt; str:
     url = base_url.rstrip("/")
     if paths:
         url += "/" + "/".join(p.strip("/") for p in paths)
@@ -2550,12 +2550,12 @@ print("Calculate tip passed!")
 
 # Test cases
 print(build_query_url("https://api.example.com", "v1", "users", page="1", sort="desc"))
-# https://api.example.com/v1/users?page=1&sort=desc
+# https://api.example.com/v1/users?page=1&amp;sort=desc
 print(build_query_url("https://api.example.com", status="active"))
 # https://api.example.com?status=active
 print(build_query_url("https://api.example.com/", "health"))
 # https://api.example.com/health
-print("Build query URL passed!")
+print("Build query URL passed!")  # Build query URL passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -2683,6 +2683,7 @@ async def main():
 
     # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
     print(f"Concurrent fetch completed in {elapsed:.3f}s")
+    # Concurrent fetch completed in 0.052s
 
     # Running a background task independently with create_task
     task = asyncio.create_task(fetch_service_data("metrics-collector", 0.02))
@@ -2772,7 +2773,7 @@ async def run_tests():
     # Empty list test
     empty_res = await check_all_services([])
     print(empty_res)  # {}
-    print("Service health checker passed!")
+    print("Service health checker passed!")  # Service health checker passed!
 
 asyncio.run(run_tests())
 </code></pre>
@@ -2889,22 +2890,22 @@ class BankAccount:
         self.owner = owner          # Instance attribute
         self.balance = balance      # Instance attribute
 
-    def deposit(self, amount: float) -> float:
+    def deposit(self, amount: float) -&gt; float:
         if amount &lt;= 0:
             raise ValueError("Deposit amount must be positive.")
         self.balance += amount
         return self.balance
 
-    def withdraw(self, amount: float) -> float:
+    def withdraw(self, amount: float) -&gt; float:
         if amount &gt; self.balance:
             raise ValueError("Insufficient funds.")
         self.balance -= amount
         return self.balance
 
-    def __str__(self) -> str:
+    def __str__(self) -&gt; str:
         return f"BankAccount(owner='{self.owner}', balance=${self.balance:.2f})"
 
-    def __repr__(self) -> str:
+    def __repr__(self) -&gt; str:
         return f"BankAccount(owner='{self.owner}', balance={self.balance})"
 
 # 2. Creating instances and invoking methods
@@ -2919,7 +2920,7 @@ class SavingsAccount(BankAccount):
         super().__init__(owner, balance)
         self.interest_rate = interest_rate
 
-    def apply_interest(self) -> float:
+    def apply_interest(self) -&gt; float:
         earned = self.balance * self.interest_rate
         self.balance += earned
         return self.balance
@@ -2990,13 +2991,13 @@ print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
         self.quantity = quantity
         self.unit_price = unit_price
 
-    def restock(self, amount: int) -> int:
+    def restock(self, amount: int) -&gt; int:
         if amount &lt;= 0:
             raise ValueError("Restock amount must be positive.")
         self.quantity += amount
         return self.quantity
 
-    def sell(self, amount: int) -> int:
+    def sell(self, amount: int) -&gt; int:
         if amount &lt;= 0:
             raise ValueError("Sale amount must be positive.")
         if amount &gt; self.quantity:
@@ -3004,10 +3005,10 @@ print(f"Savings balance: ${savings.balance:.2f}")  # $1030.00
         self.quantity -= amount
         return self.quantity
 
-    def total_value(self) -> float:
+    def total_value(self) -&gt; float:
         return round(self.quantity * self.unit_price, 2)
 
-    def __repr__(self) -> str:
+    def __repr__(self) -&gt; str:
         return f"InventoryItem(name='{self.name}', qty={self.quantity}, price={self.unit_price})"
 
 # Test cases
@@ -3024,7 +3025,7 @@ try:
 except ValueError as e:
     print(e)  # Cannot sell 20; only 12 in stock.
 
-print("Inventory item passed!")
+print("Inventory item passed!")  # Inventory item passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -3258,7 +3259,7 @@ try:
 except ValueError as e:
     print("Invalid JSON caught")  # Invalid JSON caught
 
-print("Load config passed!")
+print("Load config passed!")  # Load config passed!
 </code></pre>
                                     </div>
                                 </div>
@@ -3372,21 +3373,26 @@ pip install -r requirements.txt
 from pathlib import Path
 
 # Verify whether the current script is running inside a virtual environment
-def is_virtual_env() -> bool:
+def is_virtual_env() -&gt; bool:
     # In a virtual environment, sys.prefix points to the .venv directory,
     # while sys.base_prefix points to the global system Python installation.
     return sys.prefix != sys.base_prefix
 
 print(f"Python Executable: {sys.executable}")
+# Python Executable: /Users/pankaj/Workspace/ai/.venv/bin/python3
 print(f"Active Environment Path: {sys.prefix}")
+# Active Environment Path: /Users/pankaj/Workspace/ai/.venv
 print(f"Base System Python Path: {sys.base_prefix}")
+# Base System Python Path: /usr/local
 print(f"Running inside virtual environment: {is_virtual_env()}")
+# Running inside virtual environment: True
 
 # Check for requirements.txt in project root
 req_file = Path("requirements.txt")
 if req_file.exists():
     dependencies = [line.strip() for line in req_file.read_text().splitlines() if line.strip() and not line.startswith("#")]
     print(f"Project requirements ({len(dependencies)} packages): {dependencies}")
+    # Project requirements (3 packages): ['fastapi&gt;=0.110.0', 'uvicorn~=0.28.0', 'requests==2.31.0']
 </code></pre>
                             </div>
                             <ul class="card-grid">
@@ -3443,9 +3449,9 @@ if req_file.exists():
                                     <div class="tab-pane" data-lang="python">
                                         <pre><code data-lang="python">import re
 
-def parse_requirements(requirements_content: str) -> dict[str, str]:
+def parse_requirements(requirements_content: str) -&gt; dict[str, str]:
     requirements = {}
-    pattern = re.compile(r"^([A-Za-z0-9_.\-]+)\s*([<>=!~].*)?$")
+    pattern = re.compile(r"^([A-Za-z0-9_.\-]+)\s*([&lt;&gt;=!~].*)?$")
 
     for line in requirements_content.splitlines():
         cleaned = line.strip()
@@ -3465,17 +3471,17 @@ def parse_requirements(requirements_content: str) -> dict[str, str]:
 sample_reqs = """
 # Production dependencies
 requests==2.31.0
-fastapi>=0.110.0
+fastapi&gt;=0.110.0
 uvicorn~=0.28.0
 pytest
 """
 
 parsed = parse_requirements(sample_reqs)
 print(parsed["requests"])      # ==2.31.0
-print(parsed["fastapi"])       # >=0.110.0
+print(parsed["fastapi"])       # &gt;=0.110.0
 print(parsed["uvicorn"])       # ~=0.28.0
 print(repr(parsed["pytest"]))  # ''
-print("Parse requirements passed!")
+print("Parse requirements passed!")  # Parse requirements passed!
 </code></pre>
                                     </div>
                                 </div>
