@@ -128,7 +128,7 @@ if (length := len(payload)) > 10:
     print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
 
 
-# Given an integer, return "Fizz" if it's divisible by 3, "Buzz" if divisible by 5, "FizzBuzz" if divisible by both, or the number as a string otherwise.
+# Interview question: Given an integer, return "Fizz" if it's divisible by 3, "Buzz" if divisible by 5, "FizzBuzz" if divisible by both, or the number as a string otherwise.
 def fizz_buzz(n: int) -> str:
     if n % 15 == 0:
         return "FizzBuzz"

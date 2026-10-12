@@ -23,6 +23,7 @@ print(f"get_retries: {get_retries({'retries': 5})}")  # get_retries: 5
 print(f"get_retries: {get_retries({})}")               # get_retries: 3
 
 
+# Interview question: Write a function that safely divides two numbers and returns None if division by zero occurs.
 def safe_divide(a: int, b: int) -> float | None:
     try:
         return a / b

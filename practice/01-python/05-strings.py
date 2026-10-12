@@ -42,7 +42,7 @@ status = "active"
 print(status == "active")  # True (always use == for string comparisons)
 
 
-# Write a function that normalizes a full name by removing extra spaces and capitalizing each word. Safely handle None input.
+# Interview question: Write a function that normalizes a full name by removing extra spaces and capitalizing each word. Safely handle None input.
 def normalize_name(raw_name: str | None) -> str:
     if raw_name is None:
         return ""
