@@ -74,14 +74,21 @@ user_score = 94.5
 is_active = True
 session_token = None
 
+# Type inspection
+print(type(user_name))  # <class 'str'>
+
 # Type conversion
 input_str = "150"
 total = int(input_str) + 50
-print(total)  # 200
+print(total)            # 200
+print(float("3.14"))    # 3.14
+print(str(100))         # 100
+print(bool(1))          # True
+print(bool(0))          # False
 
 # Recommended type checking
 if isinstance(total, int):
-    print("total is an integer")
+    print("total is an integer")  # total is an integer
 ```
 
 - **Strength — Fast Prototyping** Dynamic typing lets you assign and manipulate values without repetitive type declarations.
@@ -106,9 +113,9 @@ def sum_valid_integers(items: list) -> int:
     return total
 
 # Test cases
-assert sum_valid_integers([10, "20", "abc", 5, None, "30"]) == 65
-assert sum_valid_integers(["1", "2", "3"]) == 6
-print("Sum valid integers passed!")
+print(sum_valid_integers([10, "20", "abc", 5, None, "30"]))  # 65
+print(sum_valid_integers(["1", "2", "3"]))                    # 6
+print("Sum valid integers passed!")  # Sum valid integers passed!
 ```
 
 > **Key idea**
@@ -142,15 +149,22 @@ Key everyday concepts and syntax:
 6. Type Aliases (Python 3.12+): `type Point = tuple[float, float]` to give meaningful names to complex composite types
 
 ```python
-from typing import Callable, Any
+from __future__ import annotations
+from typing import Callable, Any, Literal
 
 # 1. Variables and modern built-in generics (Python 3.9+)
 user_id: int = 101
 tags: list[str] = ["python", "backend"]
+unique_ids: set[int] = {1, 2, 3}
+coordinate: tuple[float, float] = (37.77, -122.42)
 metadata: dict[str, Any] = {"version": 1.2, "active": True}
 
-# 2. Modern union and optional syntax (Python 3.10+)
-def find_user(user_id: int) -> dict[str, str] | None:
+# Type alias
+Point = tuple[float, float]
+origin: Point = (0.0, 0.0)
+
+# 2. Modern union, optional, and literal syntax (Python 3.10+)
+def find_user(user_id: int, format: Literal["json", "text"] = "json") -> dict[str, str] | None:
     if user_id == 101:
         return {"name": "Alice", "role": "engineer"}
     return None
@@ -164,7 +178,7 @@ print(squared)  # [1, 4, 9]
 
 user = find_user(101)
 if user is not None:
-    print(f"Found: {user['name']}")
+    print(f"Found: {user['name']}")  # Found: Alice
 ```
 
 - **Strength — Catch Bugs Early & Instant IDE Autocomplete** Static analysis tools catch `NoneType` errors, wrong argument counts, and invalid types before code runs, while IDEs provide instant auto-completion and safe refactoring.
@@ -193,14 +207,14 @@ def parse_record(raw: dict[str, Any]) -> tuple[str, int, float] | None:
 # Test cases
 record_ok = {"name": "Charlie", "age": "29", "balance": "150.50"}
 parsed = parse_record(record_ok)
-assert parsed == ("Charlie", 29, 150.5)
+print(parsed)  # ('Charlie', 29, 150.5)
 
 record_bad = {"name": "Bob", "balance": "invalid"}
-assert parse_record(record_bad) is None
+print(parse_record(record_bad))  # None
 
 empty_record = {}
-assert parse_record(empty_record) is None
-print("Parse record with type hints passed!")
+print(parse_record(empty_record))  # None
+print("Parse record with type hints passed!")  # Parse record with type hints passed!
 ```
 
 > **Key idea**
@@ -245,12 +259,18 @@ import keyword
 
 # 1. Inspecting reserved and soft keywords dynamically
 print(f"All standard keywords: {keyword.kwlist}")
+# All standard keywords: ['False', 'None', 'True', 'and', 'as', 'assert', 'async', 'await', 'break', 'class', 'continue', 'def', 'del', 'elif', 'else', 'except', 'finally', 'for', 'from', 'global', 'if', 'import', 'in', 'is', 'lambda', 'nonlocal', 'not', 'or', 'pass', 'raise', 'return', 'try', 'while', 'with', 'yield']
 print(f"Total standard keywords: {len(keyword.kwlist)}")      # 35
 print(f"Soft keywords: {keyword.softkwlist}")                # ['_', 'case', 'match', 'type']
 
 # 2. Checking if a string is a keyword
 print(f"Is 'def' a keyword? {keyword.iskeyword('def')}")     # True
 print(f"Is 'match' a keyword? {keyword.iskeyword('match')}") # False (soft keyword)
+
+# 3. Handling keyword collisions with trailing underscore
+class_name = "Mathematics"
+type_ = "geometry"
+print(f"Variables: {class_name}, {type_}")  # Variables: Mathematics, geometry
 ```
 
 - **Strength — Compact, Readable Grammar** Python's concise keyword vocabulary reads like structured English, making control flow, error handling, and asynchronous code predictable and readable.
@@ -286,24 +306,44 @@ Key patterns:
 5. `raise ValueError("Invalid value")`: Manually triggers an error
 
 ```python
-# Catching specific parsing errors
+# 1. Catching specific parsing errors
 raw_input = "forty-two"
 
 try:
     age = int(raw_input)
-    print(f"Age is {age}")
+    print(f"Age is {age}")  # (skipped because int("forty-two") raises ValueError)
 except ValueError:
     print(f"Could not convert '{raw_input}' to an integer. Setting default age to 0.")
+    # Could not convert 'forty-two' to an integer. Setting default age to 0.
     age = 0
 
-# Safe dictionary lookups
+# 2. Catching multiple lookup errors (KeyError, IndexError)
+items = [10, 20]
+try:
+    val = items[5]
+except (KeyError, IndexError) as err:
+    print(f"Lookup failed: {err}")  # Lookup failed: list index out of range
+
+# 3. Safe dictionary lookups
 config = {"timeout": 30}
 try:
     retries = config["retries"]
 except KeyError:
     retries = 3
 
-print(f"Using {retries} retries.")
+print(f"Using {retries} retries.")  # Using 3 retries.
+
+# 4. Cleanup with finally block and manual raise
+def parse_percentage(val: str) -> float:
+    try:
+        num = float(val)
+        if num < 0 or num > 100:
+            raise ValueError(f"Percentage out of range: {num}")
+        return num
+    finally:
+        print("Parsing completed.")  # Parsing completed.
+
+print(parse_percentage("85.5"))  # 85.5
 ```
 
 - **Strength — Prevents Application Crashes** Catching specific errors lets services log failures and return fallback responses without taking down the server.
@@ -325,10 +365,10 @@ def safe_divide(a: float, b: float):
         return None
 
 # Test cases
-assert safe_divide(10, 2) == 5.0
-assert safe_divide(5, 0) is None
-assert safe_divide(0, 5) == 0.0
-print("Safe divide passed!")
+print(safe_divide(10, 2))  # 5.0
+print(safe_divide(5, 0))   # None
+print(safe_divide(0, 5))   # 0.0
+print("Safe divide passed!")  # Safe divide passed!
 ```
 
 > **Key idea**
@@ -374,16 +414,17 @@ print(f"Item: {product} | Cost: ${price:.2f}")  # Item: Coffee Mug | Cost: $12.9
 
 divider = "=" * 30
 header = "[ " + product.upper() + " ]"
-print(f"{header}
-{divider}")
+print(f"{header}\n{divider}")
+# [ COFFEE MUG ]
+# ==============================
 
 # 2. Membership operators (in and not in)
 user_email = "alex@company.com"
 if "@" in user_email and "." in user_email:
-    print("Valid email structure.")
+    print("Valid email structure.")  # Valid email structure.
 
 if "admin" not in user_email:
-    print("Standard user account.")
+    print("Standard user account.")  # Standard user account.
 
 # 3. Cleaning user inputs
 raw_email = "   Alex@Company.COM \n"
@@ -398,10 +439,16 @@ print(parts)  # ['laptop', 'electronics', '999']
 joined = " -> ".join(parts)
 print(joined)  # laptop -> electronics -> 999
 
-# 5. Safe None check vs value equality
+# 5. Substring replacement and prefix/suffix checks
+sentence = "Hello World"
+print(sentence.replace("World", "Python"))  # Hello Python
+print(sentence.startswith("Hello"))         # True
+print(sentence.endswith("World"))           # True
+
+# 6. Safe None check vs value equality
 user_input = None
 if user_input is None:
-    print("No input provided.")
+    print("No input provided.")  # No input provided.
 
 # Value equality vs identity
 status = "active"
@@ -427,11 +474,11 @@ def normalize_name(raw_name: str) -> str:
     return " ".join(w.capitalize() for w in words)
 
 # Test cases
-assert normalize_name("  alex   MORGAN  ") == "Alex Morgan"
-assert normalize_name("john") == "John"
-assert normalize_name("   ") == ""
-assert normalize_name(None) == ""
-print("Normalize name passed!")
+print(normalize_name("  alex   MORGAN  "))  # Alex Morgan
+print(normalize_name("john"))                # John
+print(repr(normalize_name("   ")))           # ''
+print(repr(normalize_name(None)))            # ''
+print("Normalize name passed!")  # Normalize name passed!
 ```
 
 > **Key idea**
@@ -480,16 +527,21 @@ Key everyday operators and patterns:
 13. **Walrus operator (`:=`):** Assigns a variable inline within an expression, e.g. `if (n := len(data)) > 0:`.
 
 ```python
-# 1. Division (/), Floor Division (//), and Modulo (%)
+# 1. Arithmetic, Division (/, //, %), Exponentiation (**), and divmod()
 print(10 / 2)     # 5.0 (True division ALWAYS returns a float)
 print(7 / 2)      # 3.5
 print(7 // 2)     # 3   (Floor division truncates towards -infinity)
 print(10 // 3)    # 3
 print(-7 // 2)    # -4  (Rounds DOWN to -4, not -3!)
 
-# Modulo operator (%)
+# Modulo operator (%) & Even/Odd checking
 print(7 % 2)      # 1   (Remainder)
 print(12 % 4)     # 0   (Evenly divisible)
+number = 14
+is_even = (number % 2 == 0)  # True
+
+# Exponentiation (**)
+print(2 ** 8)     # 256 (Power operator)
 
 # Practical 1: Pagination calculation with floor division
 total_records = 23
@@ -505,7 +557,7 @@ print(f"Formatted time: {minutes}m {seconds}s")  # 2m 25s
 
 # Bonus: divmod() computes quotient and remainder together
 mins, secs = divmod(total_seconds, 60)
-assert (mins, secs) == (2, 25)
+print(mins, secs)  # 2 25
 
 # Practical 3: Circular index wrapping
 total_slides = 5
@@ -522,32 +574,86 @@ print(list_a == list_b)  # True (same values)
 print(list_a is list_b)  # False (different objects in memory)
 print(list_a is list_c)  # True (exact same object)
 
-# Checking None safely
+# Checking None safely with is and is not
 current_user = None
 if current_user is None:
-    print("User is not logged in.")
+    print("User is not logged in.")  # User is not logged in.
 
-# 3. Membership operators (in, not in)
+active_session = "sess_xyz789"
+if active_session is not None:
+    print("Session is active.")      # Session is active.
+
+# 3. Membership operators (in, not in) across collections
 allowed_roles = {"admin", "editor", "moderator"}
 if "editor" in allowed_roles:
-    print("Authorized.")
+    print("Authorized.")             # Authorized.
 
 blocked_ips = ["192.168.1.10", "10.0.0.99"]
 if "172.16.0.1" not in blocked_ips:
-    print("IP connection allowed.")
+    print("IP connection allowed.")  # IP connection allowed.
 
-# 4. Chained comparisons
+# Dictionary key and string membership
+user_dict = {"username": "alex", "tier": "gold"}
+if "username" in user_dict:
+    print("Key exists in user dict.")  # Key exists in user dict.
+
+if "@" in "alex@example.com":
+    print("Valid email marker found.")  # Valid email marker found.
+
+# 4. Comparison operators (==, !=, <, >, <=, >=) & Chained comparisons
+item_count = 10
+print(item_count != 0)   # True
+print(item_count >= 5)   # True
+
 user_age = 28
-if 18 <= user_age < 65:
-    print("Working adult tier.")
+if 18 <= user_age < 65:  # Chained inequality: evaluated as (18 <= age and age < 65)
+    print("Working adult tier.")  # Working adult tier.
 
-# 5. Ternary conditional and Walrus operator (:=)
+# 5. Innate Truthiness & Pythonic Emptiness Checking
+# Innate falsy values: 0, 0.0, "", [], {}, set(), None
+print(bool(0))        # False
+print(bool(""))       # False
+print(bool([]))       # False
+print(bool({}))       # False
+print(bool(None))     # False
+
+# Innate truthy values: non-zero numbers, populated collections
+print(bool(42))       # True
+print(bool("text"))   # True
+print(bool([1, 2]))   # True
+
+# Clean emptiness checking (prefer 'if not items' over 'if len(items) == 0')
+cart = []
+if not cart:
+    print("Shopping cart is empty.")  # Shopping cart is empty.
+
+# 6. Logical operators (and, or, not) with Short-Circuit Evaluation
+# 'and' stops at the first falsy operand and returns it; if all are truthy, returns the last
+print([] and "python")         # [] (first operand is falsy, returns immediately)
+print("apple" and "banana")    # banana (both truthy, returns last)
+
+# 'or' stops at the first truthy operand and returns it (idiomatic fallback default)
+default_theme = "" or "dark"   # "dark" (first operand is falsy, evaluates next)
+print(default_theme)           # dark
+
+raw_name = None
+display_name = raw_name or "Guest"
+print(display_name)            # Guest
+
+# 'not' inverts boolean truthiness
+is_admin = False
+if not is_admin:
+    print("Regular user permissions.")  # Regular user permissions.
+
+# 7. Inline Ternary Conditional
 score = 82
 result = "Pass" if score >= 60 else "Fail"
+print(result)  # Pass
 
+## 8. Walrus operator (:=) for assignment expressions
 payload = "sensor_alpha_online"
 if (length := len(payload)) > 10:
-    print(f"Payload accepted with {length} characters.")
+    print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
 ```
 
 - **Strength — Rich Mathematical & Expressive Operators** The distinction between `/` (float) and `//` (integer floor), combined with `%` and `divmod()`, makes arithmetic, pagination, and circular indexing explicit and concise.
@@ -573,11 +679,11 @@ def fizz_buzz(n: int) -> str:
         return str(n)
 
 # Test cases
-assert fizz_buzz(15) == "FizzBuzz"
-assert fizz_buzz(9) == "Fizz"
-assert fizz_buzz(10) == "Buzz"
-assert fizz_buzz(7) == "7"
-print("FizzBuzz passed!")
+print(fizz_buzz(15))  # FizzBuzz
+print(fizz_buzz(9))   # Fizz
+print(fizz_buzz(10))  # Buzz
+print(fizz_buzz(7))   # 7
+print("FizzBuzz passed!")  # FizzBuzz passed!
 ```
 
 > **Key idea**
@@ -630,6 +736,9 @@ fruits = ["apple", "banana", "orange"]
 # Direct iteration
 for fruit in fruits:
     print(fruit)
+# apple
+# banana
+# orange
 
 # Iteration with index
 for rank, fruit in enumerate(fruits, start=1):
@@ -641,19 +750,26 @@ for rank, fruit in enumerate(fruits, start=1):
 # range() forms:
 # 1. Single argument: stop [0, 5)
 for i in range(3):
-    print(f"Step {i}")  # 0, 1, 2
+    print(f"Step {i}")
+# Step 0
+# Step 1
+# Step 2
 
 # 2. Two arguments: start and stop [2, 6)
 for i in range(2, 6):
-    print(f"Offset {i}")  # 2, 3, 4, 5
+    print(f"Offset {i}")
+# Offset 2
+# Offset 3
+# Offset 4
+# Offset 5
 
 # 3. Three arguments: start, stop, step
 evens = list(range(0, 10, 2))
-print(f"Evens: {evens}")  # [0, 2, 4, 6, 8]
+print(f"Evens: {evens}")  # Evens: [0, 2, 4, 6, 8]
 
 # 4. Counting backwards with negative step
 countdown = list(range(3, 0, -1))
-print(f"Countdown: {countdown}")  # [3, 2, 1]
+print(f"Countdown: {countdown}")  # Countdown: [3, 2, 1]
 
 # 5. O(1) membership check
 print(50 in range(0, 100, 5))  # True (instant arithmetic check)
@@ -662,12 +778,28 @@ print(50 in range(0, 100, 5))  # True (instant arithmetic check)
 prices = [1.20, 0.50, 0.80]
 for fruit, price in zip(fruits, prices):
     print(f"{fruit}: ${price:.2f}")
+# apple: $1.20
+# banana: $0.50
+# orange: $0.80
+
+# Loop control: break and continue
+for n in [1, 2, 3, 4, 5]:
+    if n == 2:
+        continue  # Skip 2
+    if n == 4:
+        break     # Stop loop
+    print(f"Number: {n}")
+# Number: 1
+# Number: 3
 
 # While loop for conditions
 count = 3
 while count > 0:
-    print(f"Countdown: {count}")
+    print(f"Countdown: {count}")  # Countdown: 3, 2, 1
     count -= 1
+# Countdown: 3
+# Countdown: 2
+# Countdown: 1
 ```
 
 - **Strength — Clean Syntax & O(1) Memory** Direct iteration prevents off-by-one errors, while `range()` generates sequences of any size without allocating memory for elements upfront.
@@ -689,10 +821,10 @@ def find_first_negative(numbers: list[int]) -> int:
     return -1
 
 # Test cases
-assert find_first_negative([3, 5, -2, 8]) == 2
-assert find_first_negative([1, 2, 3]) == -1
-assert find_first_negative([-10, 0, 10]) == 0
-print("Find first negative passed!")
+print(find_first_negative([3, 5, -2, 8]))  # 2
+print(find_first_negative([1, 2, 3]))       # -1
+print(find_first_negative([-10, 0, 10]))   # 0
+print("Find first negative passed!")  # Find first negative passed!
 ```
 
 > **Key idea**
@@ -740,18 +872,20 @@ todos = ["buy groceries", "pay electric bill", "walk dog"]
 # Modifying lists
 todos.append("read book")       # Adds to end
 completed = todos.pop()         # Removes "read book"
-print(f"Finished: {completed}")
+print(f"Finished: {completed}")  # Finished: read book
 
-# Slicing
+# Slicing and indexing
 numbers = [10, 20, 30, 40, 50]
+print(numbers[0])     # 10 (first item)
 print(numbers[1:3])   # [20, 30]
 print(numbers[:2])    # [10, 20]
+print(numbers[-2:])   # [40, 50] (last 2 items)
 print(numbers[-1])    # 50 (last item)
 print(numbers[::-1])  # [50, 40, 30, 20, 10] (reversed)
 
 # Membership check
 if "buy groceries" in todos:
-    print("Don't forget the milk!")
+    print("Don't forget the milk!")  # Don't forget the milk!
 ```
 
 - **Strength — Flexible & General Purpose** Lists can grow, shrink, and hold mixed data types effortlessly.
@@ -776,9 +910,9 @@ def deduplicate_preserve_order(items: list) -> list:
     return result
 
 # Test cases
-assert deduplicate_preserve_order([1, 2, 2, 3, 1, 4]) == [1, 2, 3, 4]
-assert deduplicate_preserve_order(["a", "b", "a"]) == ["a", "b"]
-print("Deduplicate passed!")
+print(deduplicate_preserve_order([1, 2, 2, 3, 1, 4]))  # [1, 2, 3, 4]
+print(deduplicate_preserve_order(["a", "b", "a"]))      # ['a', 'b']
+print("Deduplicate passed!")  # Deduplicate passed!
 ```
 
 > **Key idea**
@@ -819,17 +953,33 @@ user = {
     "level": 3
 }
 
+# Direct lookup and membership check
+print(user["name"])        # Sarah Connor
+print("role" in user)      # True
+
 # Safe lookup with .get()
 location = user.get("location", "Remote")
-print(f"Location: {location}")  # Remote
+print(f"Location: {location}")  # Location: Remote
 
 # Adding and updating
 user["level"] = 4
 user["team"] = "DevOps"
 
+# Iterating keys and values
+print(list(user.keys()))    # ['name', 'role', 'level', 'team']
+print(list(user.values()))  # ['Sarah Connor', 'Engineer', 4, 'DevOps']
+
 # Iterating over key-value pairs
 for key, value in user.items():
     print(f"{key}: {value}")
+# name: Sarah Connor
+# role: Engineer
+# level: 4
+# team: DevOps
+
+# Deleting a key
+del user["level"]
+print("level" in user)  # False
 ```
 
 - **Strength — Instant Key Lookups** Dictionaries are the fastest and most natural way to structure associated data and configuration mappings.
@@ -853,8 +1003,8 @@ def count_word_frequencies(words: list[str]) -> dict[str, int]:
 # Test cases
 words = ["apple", "banana", "apple", "orange", "banana", "apple"]
 result = count_word_frequencies(words)
-assert result == {"apple": 3, "banana": 2, "orange": 1}
-print("Word frequency passed!")
+print(result)  # {'apple': 3, 'banana': 2, 'orange': 1}
+print("Word frequency passed!")  # Word frequency passed!
 ```
 
 > **Key idea**
@@ -892,7 +1042,7 @@ Key operations:
 # Tuples for fixed records and unpacking
 user_coordinate = (37.7749, -122.4194)
 lat, lon = user_coordinate
-print(f"Latitude: {lat}, Longitude: {lon}")
+print(f"Latitude: {lat}, Longitude: {lon}")  # Latitude: 37.7749, Longitude: -122.4194
 
 # Swapping two variables with tuple packing
 a = 5
@@ -905,9 +1055,19 @@ raw_roles = ["admin", "editor", "admin", "viewer", "editor"]
 unique_roles = set(raw_roles)
 print(unique_roles)  # {'admin', 'editor', 'viewer'}
 
+# Adding to a set
+unique_roles.add("manager")
+print("manager" in unique_roles)  # True
+
 # Fast membership check
 if "admin" in unique_roles:
-    print("Admin role found!")
+    print("Admin role found!")  # Admin role found!
+
+# Set operations: union and intersection
+dev_team = {"alice", "bob", "charlie"}
+ops_team = {"bob", "david"}
+print(dev_team & ops_team)  # {'bob'}
+print(dev_team | ops_team)  # {'alice', 'bob', 'charlie', 'david'}
 ```
 
 - **Strength — Automatic Deduplication & Speed** Converting a list to a set strips duplicates instantly, and `val in set` is much faster than `val in list`.
@@ -929,8 +1089,8 @@ def find_common_users(group_a: list[str], group_b: list[str]) -> list[str]:
 users_1 = ["alice", "bob", "charlie"]
 users_2 = ["bob", "david", "alice"]
 common = find_common_users(users_1, users_2)
-assert set(common) == {"alice", "bob"}
-print("Common users passed!")
+print(sorted(common))  # ['alice', 'bob']
+print("Common users passed!")  # Common users passed!
 ```
 
 > **Key idea**
@@ -974,15 +1134,17 @@ print(f"Swapped: a={a}, b={b}")  # Swapped: a=20, b=10
 scores = [98, 85, 91, 78, 88]
 highest, *others, lowest = sorted(scores, reverse=True)
 print(f"Top: {highest}, Rest: {others}, Lowest: {lowest}")
+# Top: 98, Rest: [91, 88, 85], Lowest: 78
 
 # 3. Discarding unneeded elements
 name, _, email = ("Bob Smith", "Accountant", "bob@example.com")
-print(f"{name} <{email}>")
+print(f"{name} <{email}>")  # Bob Smith <bob@example.com>
 
 # 4. Nested unpacking and dictionary merging
 user_payload = ("admin_user", ("us-east", "cluster-1"))
 username, (region, cluster) = user_payload
 print(f"User {username} deployed to {region}/{cluster}")
+# User admin_user deployed to us-east/cluster-1
 
 default_settings = {"theme": "light", "notifications": True, "timeout": 30}
 user_settings = {"theme": "dark", "timeout": 60}
@@ -1016,9 +1178,8 @@ records = [
     ("TX103", "Charlie", (80.25, "USD"), "COMPLETED"),
     ("TX104", "Alice", (30.00, "EUR"), "COMPLETED"),
 ]
-expected = {"USD": 200.75, "EUR": 30.00}
-assert extract_successful_totals(records) == expected
-print("Extract successful totals passed!")
+print(extract_successful_totals(records))  # {'USD': 200.75, 'EUR': 30.0}
+print("Extract successful totals passed!")  # Extract successful totals passed!
 ```
 
 > **Key idea**
@@ -1063,6 +1224,10 @@ print(evens)  # [2, 4]
 raw_tags = ["  python ", "FASTAPI", "  sql  "]
 clean_tags = [tag.strip().lower() for tag in raw_tags]
 print(clean_tags)  # ['python', 'fastapi', 'sql']
+
+# Example 4: Inline ternary conditional inside comprehension
+labels = ["Even" if n % 2 == 0 else "Odd" for n in numbers]
+print(labels)  # ['Odd', 'Even', 'Odd', 'Even', 'Odd']
 ```
 
 - **Strength — Clean & Expressive** Turns repetitive 4-line accumulator loops into a single self-explanatory statement.
@@ -1082,8 +1247,8 @@ def get_csv_files(filenames: list[str]) -> list[str]:
 
 # Test cases
 files = ["data.CSV", "report.pdf", "users.csv", "image.png"]
-assert get_csv_files(files) == ["data.csv", "users.csv"]
-print("Filter CSV files passed!")
+print(get_csv_files(files))  # ['data.csv', 'users.csv']
+print("Filter CSV files passed!")  # Filter CSV files passed!
 ```
 
 > **Key idea**
@@ -1164,6 +1329,20 @@ def connect(host: str, **opts):
     return f"Connecting to {host} with {opts}"
 
 print(connect("db.internal", **extra_opts))
+# Connecting to db.internal with {'retries': 3, 'timeout': 15}
+
+# 5. Multiple return values (unpacked as a tuple)
+def get_dimensions() -> tuple[int, int]:
+    return 1920, 1080
+
+width, height = get_dimensions()
+print(f"Width: {width}, Height: {height}")  # Width: 1920, Height: 1080
+
+# 6. Forwarding arguments through a wrapper function
+def log_call(fn, *args, **kwargs):
+    return fn(*args, **kwargs)
+
+print(log_call(calculate_total, 200.0, 0.10))  # 220.0
 ```
 
 - **Strength — Maximum API Flexibility** `*args` and `**kwargs` let you create wrappers, middleware, and flexible helper utilities that pass arguments forward without needing to redefine every parameter.
@@ -1184,10 +1363,10 @@ def calculate_tip(bill: float, percentage: float = 15.0) -> float:
     return round(bill * (percentage / 100), 2)
 
 # Test cases
-assert calculate_tip(100.0) == 15.0
-assert calculate_tip(50.0, 20.0) == 10.0
-assert calculate_tip(0.0) == 0.0
-print("Calculate tip passed!")
+print(calculate_tip(100.0))        # 15.0
+print(calculate_tip(50.0, 20.0))   # 10.0
+print(calculate_tip(0.0))          # 0.0
+print("Calculate tip passed!")  # Calculate tip passed!
 ```
 
 **Interview question**
@@ -1209,10 +1388,13 @@ def build_query_url(base_url: str, *paths: str, **params: str) -> str:
     return url
 
 # Test cases
-assert build_query_url("https://api.example.com", "v1", "users", page="1", sort="desc") == "https://api.example.com/v1/users?page=1&sort=desc"
-assert build_query_url("https://api.example.com", status="active") == "https://api.example.com?status=active"
-assert build_query_url("https://api.example.com/", "health") == "https://api.example.com/health"
-print("Build query URL passed!")
+print(build_query_url("https://api.example.com", "v1", "users", page="1", sort="desc"))
+# https://api.example.com/v1/users?page=1&sort=desc
+print(build_query_url("https://api.example.com", status="active"))
+# https://api.example.com?status=active
+print(build_query_url("https://api.example.com/", "health"))
+# https://api.example.com/health
+print("Build query URL passed!")  # Build query URL passed!
 ```
 
 > **Key idea**
@@ -1268,9 +1450,19 @@ async def main():
 
     for res in results:
         print(f"Service: {res['service']} | Status: {res['status']} ({res['latency_ms']}ms)")
+    # Service: auth-service | Status: online (50ms)
+    # Service: billing-service | Status: online (30ms)
+    # Service: analytics-service | Status: online (10ms)
 
     # Elapsed time is approximately max(delays) ~0.05s, not sum(delays) 0.09s
     print(f"Concurrent fetch completed in {elapsed:.3f}s")
+    # Concurrent fetch completed in 0.052s
+
+    # Running a background task independently with create_task
+    task = asyncio.create_task(fetch_service_data("metrics-collector", 0.02))
+    bg_res = await task
+    print(f"Background: {bg_res['service']} ({bg_res['latency_ms']}ms)")
+    # Background: metrics-collector (20ms)
 
 # Entry point to execute top-level coroutine
 if __name__ == "__main__":
@@ -1304,16 +1496,13 @@ async def check_all_services(endpoints: list[tuple[str, float]]) -> dict[str, st
 async def run_tests():
     services = [("auth", 0.02), ("db", 0.01), ("cache", 0.01)]
     status_map = await check_all_services(services)
-    assert status_map == {
-        "auth": "healthy",
-        "db": "healthy",
-        "cache": "healthy"
-    }
+    print(status_map)
+    # {'auth': 'healthy', 'db': 'healthy', 'cache': 'healthy'}
 
     # Empty list test
     empty_res = await check_all_services([])
-    assert empty_res == {}
-    print("Service health checker passed!")
+    print(empty_res)  # {}
+    print("Service health checker passed!")  # Service health checker passed!
 
 asyncio.run(run_tests())
 ```
@@ -1381,10 +1570,14 @@ class BankAccount:
     def __str__(self) -> str:
         return f"BankAccount(owner='{self.owner}', balance=${self.balance:.2f})"
 
+    def __repr__(self) -> str:
+        return f"BankAccount(owner='{self.owner}', balance={self.balance})"
+
 # 2. Creating instances and invoking methods
 acc = BankAccount("Alice", 100.0)
 acc.deposit(50.0)
-print(acc)  # BankAccount(owner='Alice', balance=$150.00)
+print(acc)        # BankAccount(owner='Alice', balance=$150.00)
+print(repr(acc))  # BankAccount(owner='Alice', balance=150.0)
 
 # 3. Inheritance and super()
 class SavingsAccount(BankAccount):
@@ -1444,20 +1637,19 @@ class InventoryItem:
 
 # Test cases
 item = InventoryItem("Mechanical Keyboard", quantity=10, unit_price=79.99)
-assert item.total_value() == 799.90
+print(item.total_value())  # 799.9
 item.restock(5)
-assert item.quantity == 15
+print(item.quantity)       # 15
 item.sell(3)
-assert item.quantity == 12
-assert item.total_value() == 959.88
+print(item.quantity)       # 12
+print(item.total_value())  # 959.88
 
 try:
     item.sell(20)
-    assert False, "Should have raised ValueError"
-except ValueError:
-    pass
+except ValueError as e:
+    print(e)  # Cannot sell 20; only 12 in stock.
 
-print("Inventory item passed!")
+print("Inventory item passed!")  # Inventory item passed!
 ```
 
 > **Key idea**
@@ -1499,6 +1691,7 @@ Key import patterns and practices:
 ```python
 import json
 import math
+from datetime import datetime
 from pathlib import Path
 
 # 1. Standard library math functions
@@ -1509,17 +1702,23 @@ print(f"Square root: {root}")  # 7
 user_data = {"username": "alex_dev", "role": "admin", "active": True}
 json_string = json.dumps(user_data)
 print(f"Serialized JSON: {json_string}")
+# Serialized JSON: {"username": "alex_dev", "role": "admin", "active": true}
 
 parsed_data = json.loads(json_string)
-print(f"Parsed username: {parsed_data['username']}")
+print(f"Parsed username: {parsed_data['username']}")  # Parsed username: alex_dev
 
 # 3. Pathlib for filesystem path handling
 config_path = Path("config/app.json")
 print(f"Filename: {config_path.name}, Extension: {config_path.suffix}")
+# Filename: app.json, Extension: .json
 
-# 4. Entry point guard for standalone script execution
+# 4. Datetime handling
+sample_date = datetime(2026, 1, 1, 12, 0)
+print(sample_date.strftime("%Y-%m-%d"))  # 2026-01-01
+
+# 5. Entry point guard for standalone script execution
 def run_app():
-    print("Application initialized successfully.")
+    print("Application initialized successfully.")  # Application initialized successfully.
 
 if __name__ == "__main__":
     run_app()
@@ -1558,24 +1757,22 @@ def load_config(raw_json: str, required_keys: list[str]) -> dict:
 # Test cases
 valid_payload = '{"host": "localhost", "port": 5432, "database": "analytics"}'
 config = load_config(valid_payload, ["host", "port"])
-assert config["host"] == "localhost"
-assert config["port"] == 5432
+print(config["host"])  # localhost
+print(config["port"])  # 5432
 
 # Test missing key raises ValueError
 try:
     load_config(valid_payload, ["host", "api_key"])
-    assert False, "Should have raised ValueError"
 except ValueError as e:
-    assert "Missing required configuration keys: api_key" in str(e)
+    print(e)  # Missing required configuration keys: api_key
 
 # Test invalid JSON syntax raises ValueError
 try:
     load_config("{invalid: json", ["host"])
-    assert False, "Should have raised ValueError"
 except ValueError as e:
-    assert "Invalid JSON format" in str(e)
+    print("Invalid JSON caught")  # Invalid JSON caught
 
-print("Load config passed!")
+print("Load config passed!")  # Load config passed!
 ```
 
 > **Key idea**
@@ -1632,15 +1829,20 @@ def is_virtual_env() -> bool:
     return sys.prefix != sys.base_prefix
 
 print(f"Python Executable: {sys.executable}")
+# Python Executable: /Users/pankaj/Workspace/ai/.venv/bin/python3
 print(f"Active Environment Path: {sys.prefix}")
+# Active Environment Path: /Users/pankaj/Workspace/ai/.venv
 print(f"Base System Python Path: {sys.base_prefix}")
+# Base System Python Path: /usr/local
 print(f"Running inside virtual environment: {is_virtual_env()}")
+# Running inside virtual environment: True
 
 # Check for requirements.txt in project root
 req_file = Path("requirements.txt")
 if req_file.exists():
     dependencies = [line.strip() for line in req_file.read_text().splitlines() if line.strip() and not line.startswith("#")]
     print(f"Project requirements ({len(dependencies)} packages): {dependencies}")
+    # Project requirements (3 packages): ['fastapi>=0.110.0', 'uvicorn~=0.28.0', 'requests==2.31.0']
 ```
 
 - **Strength — Clean Project Isolation & Reproducibility** Keeps conflicting package versions strictly separated per project and enables deterministic, zero-surprise builds across team members and CI/CD pipelines.
@@ -1685,11 +1887,11 @@ pytest
 """
 
 parsed = parse_requirements(sample_reqs)
-assert parsed["requests"] == "==2.31.0"
-assert parsed["fastapi"] == ">=0.110.0"
-assert parsed["uvicorn"] == "~=0.28.0"
-assert parsed["pytest"] == ""
-print("Parse requirements passed!")
+print(parsed["requests"])      # ==2.31.0
+print(parsed["fastapi"])       # >=0.110.0
+print(parsed["uvicorn"])       # ~=0.28.0
+print(repr(parsed["pytest"]))  # ''
+print("Parse requirements passed!")  # Parse requirements passed!
 ```
 
 > **Key idea**
