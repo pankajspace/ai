@@ -25,8 +25,8 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 7. [Loops & Iteration](#7-loops-and-iteration)
 8. [Lists & Slicing](#8-lists-and-slicing)
 9. [Dictionaries](#9-dictionaries)
-10. [Sorting in Python](#10-sorting-in-python)
-11. [Tuples & Sets](#11-tuples-and-sets)
+10. [Tuples & Sets](#10-tuples-and-sets)
+11. [Sorting in Python](#11-sorting-in-python)
 12. [Unpacking & Destructuring](#12-unpacking-and-destructuring)
 13. [List Comprehensions](#13-list-comprehensions)
 14. [Functions & Arguments](#14-functions-and-arguments)
@@ -1014,181 +1014,9 @@ print("Word frequency passed!")  # Word frequency passed!
 
 ---
 
-<a id="10-sorting-in-python"></a>
+<a id="10-tuples-and-sets"></a>
 
-## 10. Sorting in Python
-
-- **In-Place vs New List** `list.sort() vs sorted(iter)` <!-- great -->
-- **Order Flag** `reverse=True for descending` <!-- great -->
-- **Custom Sort Key** `key=func or key=lambda x: ...` <!-- good -->
-
-Python provides two primary mechanisms for ordering data: the built-in `sorted()` function (which accepts any iterable and returns a brand-new sorted list) and the `list.sort()` method (which mutates a list in place and returns `None`). Both mechanisms sort elements in ascending (asc) order by default using the standard `<` comparison operator, and both accept `reverse=True` to sort in descending (desc) order. You can completely customize how elements are evaluated and ordered by passing a custom transformation function to the `key` parameter.
-
-> **Analogy** 🎬
->
-> **Picture it — Organizing a Physical Bookshelf vs Printing an Ordered Catalog**
->
-> Using `list.sort()` is like physically walking up to your bookcase and rearranging the books directly on the shelf into alphabetical order: the original arrangement is altered in-place, and no new bookcase is created. Using `sorted()` is like leaving the shelf untouched and printing out a fresh, organized index on paper. You can generate that printed index from any collection — books on a shelf, a box of loose bookmarks (set), an immutable display case (tuple), or an index card drawer (dictionary) — and choose whether to print them A-to-Z or Z-to-A.
-
-Key everyday sorting patterns across basic data structures:
-
-1. **Lists (In-Place vs New List):**
-   - In-place mutation: `scores.sort()` orders the list directly and returns `None`. Use `scores.sort(reverse=True)` for descending order.
-   - Non-destructive sorting: `sorted(scores)` returns a brand-new list, leaving `scores` intact. Use `sorted(scores, reverse=True)` for descending order.
-2. **Tuples (Immutable Sequences):**
-   - Tuples cannot be modified, so they do not provide a `.sort()` method.
-   - Calling `sorted(my_tuple)` returns a sorted `list`.
-   - Wrap with `tuple()` to restore tuple immutability: `tuple(sorted(my_tuple))` for ascending order, and `tuple(sorted(my_tuple, reverse=True))` for descending order.
-3. **Sets (Unordered Collections):**
-   - Sets do not maintain insertion or numerical order and have no `.sort()` method.
-   - Calling `sorted(my_set)` extracts and orders the unique elements into a `list` in ascending order (`sorted(my_set)`) or descending order (`sorted(my_set, reverse=True)`).
-   - Re-wrapping the result in `set()` loses the sorted order because sets are fundamentally hash-based and unordered.
-4. **Strings (Character Sequences):**
-   - Strings are immutable. `sorted("python")` sorts individual characters alphabetically into a list of characters: `['h', 'n', 'o', 'p', 't', 'y']`.
-   - Recombine the characters into a string using `"".join()`: `"".join(sorted("python"))` for ascending order, or `"".join(sorted("python", reverse=True))` for descending order.
-5. **Dictionaries (Keys vs Values):**
-   - Iterating over a dictionary yields its keys. Calling `sorted(my_dict)` returns a list of sorted keys: `['apple', 'banana', 'orange']`.
-   - Sorting by key: Rebuild an ordered dictionary using `dict(sorted(my_dict.items()))` for ascending keys, or `dict(sorted(my_dict.items(), reverse=True))` for descending keys.
-   - Sorting by value: Pass a key lambda to extract the dictionary value: `dict(sorted(my_dict.items(), key=lambda item: item[1]))` for ascending values, or `dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))` for descending values.
-6. **Custom Sorting by Factors (`key` parameter):**
-   - The `key` parameter takes a one-argument function applied to each element before comparison.
-   - A factor (or divisor) of a positive integer $n$ is any integer $d \ge 1$ where $n \pmod d == 0$. For example, 12 has 6 factors (`[1, 2, 3, 4, 6, 12]`), 10 has 4 factors (`[1, 2, 5, 10]`), 7 has 2 factors (`[1, 7]`), and 9 has 3 factors (`[1, 3, 9]`).
-   - Ascending by factor count: `sorted(numbers, key=count_factors)` orders numbers from fewest factors to most factors.
-   - Descending by factor count: `sorted(numbers, key=count_factors, reverse=True)` orders numbers from most factors to fewest factors.
-   - Multi-key tie-breaking: Pass a tuple `(count_factors(x), x)` to sort first by the number of factors, and break ties using the number's own numeric value.
-
-```python
-# 1. Lists: in-place .sort() vs sorted()
-scores = [45, 12, 89, 33, 70]
-asc_scores = sorted(scores)
-desc_scores = sorted(scores, reverse=True)
-print(f"Original list: {scores}")        # Original list: [45, 12, 89, 33, 70]
-print(f"Sorted asc: {asc_scores}")       # Sorted asc: [12, 33, 45, 70, 89]
-print(f"Sorted desc: {desc_scores}")     # Sorted desc: [89, 70, 45, 33, 12]
-
-# In-place list mutation
-scores.sort()
-print(f"In-place sorted: {scores}")      # In-place sorted: [12, 33, 45, 70, 89]
-
-# 2. Tuples: immutable sequence
-coords = (40, 10, 50, 20, 30)
-asc_coords = tuple(sorted(coords))
-desc_coords = tuple(sorted(coords, reverse=True))
-print(f"Tuple asc: {asc_coords}")        # Tuple asc: (10, 20, 30, 40, 50)
-print(f"Tuple desc: {desc_coords}")      # Tuple desc: (50, 40, 30, 20, 10)
-
-# 3. Sets: unordered unique collection
-unique_tags = {"golang", "python", "rust", "c"}
-asc_tags = sorted(unique_tags)
-desc_tags = sorted(unique_tags, reverse=True)
-print(f"Set sorted asc: {asc_tags}")     # Set sorted asc: ['c', 'golang', 'python', 'rust']
-print(f"Set sorted desc: {desc_tags}")   # Set sorted desc: ['rust', 'python', 'golang', 'c']
-
-# 4. Strings: sorting characters
-word = "python"
-asc_chars = "".join(sorted(word))
-desc_chars = "".join(sorted(word, reverse=True))
-print(f"String asc: '{asc_chars}'")      # String asc: 'hnopty'
-print(f"String desc: '{desc_chars}'")    # String desc: 'ytponh'
-
-# 5. Dictionaries: sorting by keys and values
-inventory = {"banana": 30, "apple": 10, "orange": 25, "mango": 15}
-
-# Sort by keys (asc and desc)
-by_key_asc = dict(sorted(inventory.items()))
-by_key_desc = dict(sorted(inventory.items(), reverse=True))
-print(f"Dict by keys asc: {by_key_asc}")
-# Dict by keys asc: {'apple': 10, 'banana': 30, 'mango': 15, 'orange': 25}
-print(f"Dict by keys desc: {by_key_desc}")
-# Dict by keys desc: {'orange': 25, 'mango': 15, 'banana': 30, 'apple': 10}
-
-# Sort by values (asc and desc)
-by_val_asc = dict(sorted(inventory.items(), key=lambda item: item[1]))
-by_val_desc = dict(sorted(inventory.items(), key=lambda item: item[1], reverse=True))
-print(f"Dict by values asc: {by_val_asc}")
-# Dict by values asc: {'apple': 10, 'mango': 15, 'orange': 25, 'banana': 30}
-print(f"Dict by values desc: {by_val_desc}")
-# Dict by values desc: {'banana': 30, 'orange': 25, 'mango': 15, 'apple': 10}
-
-# 6. Custom sorting: Sorting list of numbers by factors count
-def count_factors(n: int) -> int:
-    """Return the total number of positive divisors/factors of n."""
-    count = 0
-    for i in range(1, int(n ** 0.5) + 1):
-        if n % i == 0:
-            count += 1 if i * i == n else 2
-    return count
-
-numbers = [12, 7, 9, 10, 16]
-# Factor breakdown:
-# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
-# 7  -> 2 factors (1, 7)
-# 9  -> 3 factors (1, 3, 9)
-# 10 -> 4 factors (1, 2, 5, 10)
-# 16 -> 5 factors (1, 2, 4, 8, 16)
-
-asc_by_factors = sorted(numbers, key=count_factors)
-desc_by_factors = sorted(numbers, key=count_factors, reverse=True)
-print(f"Numbers sorted by factors (asc): {asc_by_factors}")
-# Numbers sorted by factors (asc): [7, 9, 10, 16, 12]
-print(f"Numbers sorted by factors (desc): {desc_by_factors}")
-# Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
-```
-
-- **Strength — Stable & Universal Timsort** Python uses Timsort ($O(n \log n)$), which is guaranteed to be stable (preserving the relative order of elements with equal keys) and works universally across any iterable via `sorted()`.
-- **Weakness — list.sort() Returns None & Type Homogeneity** Calling `x = my_list.sort()` assigns `None` to `x`, wiping out references by mistake. Furthermore, comparing elements with incompatible types (such as `[1, "2"]`) raises a `TypeError` at runtime.
-
-**Interview question**
-
-*Given a list of positive integers, sort the list in ascending order by their number of factors. If two numbers have the same number of factors, break the tie by sorting them by their numeric value in ascending order. Also support descending order.*
-
-Count the divisors of each integer efficiently up to $\sqrt{n}$. To sort by factor count and resolve ties using the number's own value, pass a tuple `(count_factors(x), x)` to the `key` parameter. Python compares tuples element by element: if the factor counts match, it automatically compares the second tuple element.
-
-**Answer — Sort Numbers by Factors**
-
-```python
-def count_factors(n: int) -> int:
-    """Count positive divisors of n in O(sqrt(n)) time."""
-    if n <= 0:
-        return 0
-    count = 0
-    for i in range(1, int(n ** 0.5) + 1):
-        if n % i == 0:
-            count += 1 if i * i == n else 2
-    return count
-
-def sort_by_factors(nums: list[int], reverse: bool = False) -> list[int]:
-    """Sort numbers by their factor count; ties broken by numeric value."""
-    return sorted(nums, key=lambda x: (count_factors(x), x), reverse=reverse)
-
-# Test cases
-test_list = [12, 10, 7, 16, 9, 8]
-# 7  -> 2 factors (1, 7)
-# 9  -> 3 factors (1, 3, 9)
-# 8  -> 4 factors (1, 2, 4, 8)
-# 10 -> 4 factors (1, 2, 5, 10)  <- 8 and 10 tie on factors (4); tie broken: 8 < 10
-# 16 -> 5 factors (1, 2, 4, 8, 16)
-# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
-
-asc_sorted = sort_by_factors(test_list)
-print(asc_sorted)  # [7, 9, 8, 10, 16, 12]
-
-desc_sorted = sort_by_factors(test_list, reverse=True)
-print(desc_sorted)  # [12, 16, 10, 8, 9, 7]
-
-print(sort_by_factors([2, 4, 6, 8, 1]))  # [1, 2, 4, 6, 8]
-print("Sorting by factors passed!")      # Sorting by factors passed!
-```
-
-> **Key idea**
->
-> Remember that `list.sort()` operates in-place and returns `None`, while `sorted()` returns a new list and leaves the original iterable unmodified. For immutable data structures like tuples and strings, or unordered structures like sets, always use `sorted()`. When sorting with multiple criteria, return a tuple from your `key` function to achieve deterministic tie-breaking.
-
----
-
-<a id="11-tuples-and-sets"></a>
-
-## 11. Tuples & Sets
+## 10. Tuples & Sets
 
 - **Tuples** `Immutable fixed records: (x, y)` <!-- great -->
 - **Sets** `Unique values with fast in checks` <!-- great -->
@@ -1269,6 +1097,241 @@ print("Common users passed!")  # Common users passed!
 > **Key idea**
 >
 > Writing `x = {}` creates an empty dictionary, not an empty set. To create an empty set, you must write `x = set()`.
+
+---
+
+<a id="11-sorting-in-python"></a>
+
+## 11. Sorting in Python
+
+- **In-Place vs New List** `list.sort() vs sorted(iter)` <!-- great -->
+- **Order Flag** `reverse=True for descending` <!-- great -->
+- **Custom Keys & Comparators** `key=func or cmp_to_key(cmp_fn)` <!-- good -->
+
+Python provides two primary mechanisms for ordering data: the built-in `sorted()` function (which accepts any iterable and returns a brand-new sorted list) and the `list.sort()` method (which mutates a list in place and returns `None`). Both mechanisms sort elements in ascending (asc) order by default using the standard `<` comparison operator, and both accept `reverse=True` to sort in descending (desc) order. You can completely customize how elements are evaluated and ordered by passing a custom transformation function to the `key` parameter, or adapt traditional two-argument comparators via `functools.cmp_to_key`.
+
+> **Analogy** 🎬
+>
+> **Picture it — Organizing a Physical Bookshelf vs Printing an Ordered Catalog**
+>
+> Using `list.sort()` is like physically walking up to your bookcase and rearranging the books directly on the shelf into alphabetical order: the original arrangement is altered in-place, and no new bookcase is created. Using `sorted()` is like leaving the shelf untouched and printing out a fresh, organized index on paper. You can generate that printed index from any collection — books on a shelf, a box of loose bookmarks (set), an immutable display case (tuple), or an index card drawer (dictionary) — and choose whether to print them A-to-Z or Z-to-A.
+
+Key everyday sorting patterns across basic data structures:
+
+1. **Lists (In-Place vs New List):**
+   - In-place mutation: `scores.sort()` orders the list directly and returns `None`. Use `scores.sort(reverse=True)` for descending order.
+   - Non-destructive sorting: `sorted(scores)` returns a brand-new list, leaving `scores` intact. Use `sorted(scores, reverse=True)` for descending order.
+2. **Tuples (Immutable Sequences):**
+   - Tuples cannot be modified, so they do not provide a `.sort()` method.
+   - Calling `sorted(my_tuple)` returns a sorted `list`.
+   - Wrap with `tuple()` to restore tuple immutability: `tuple(sorted(my_tuple))` for ascending order, and `tuple(sorted(my_tuple, reverse=True))` for descending order.
+3. **Sets (Unordered Collections):**
+   - Sets do not maintain insertion or numerical order and have no `.sort()` method.
+   - Calling `sorted(my_set)` extracts and orders the unique elements into a `list` in ascending order (`sorted(my_set)`) or descending order (`sorted(my_set, reverse=True)`).
+   - Re-wrapping the result in `set()` loses the sorted order because sets are fundamentally hash-based and unordered.
+4. **Strings (Character Sequences):**
+   - Strings are immutable. `sorted("python")` sorts individual characters alphabetically into a list of characters: `['h', 'n', 'o', 'p', 't', 'y']`.
+   - Recombine the characters into a string using `"".join()`: `"".join(sorted("python"))` for ascending order, or `"".join(sorted("python", reverse=True))` for descending order.
+5. **Dictionaries (Keys vs Values):**
+   - Iterating over a dictionary yields its keys. Calling `sorted(my_dict)` returns a list of sorted keys: `['apple', 'banana', 'orange']`.
+   - Sorting by key: Rebuild an ordered dictionary using `dict(sorted(my_dict.items()))` for ascending keys, or `dict(sorted(my_dict.items(), reverse=True))` for descending keys.
+   - Sorting by value: Pass a key lambda to extract the dictionary value: `dict(sorted(my_dict.items(), key=lambda item: item[1]))` for ascending values, or `dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))` for descending values.
+6. **Custom Sorting by Factors (`key` parameter):**
+   - The `key` parameter takes a one-argument function applied to each element before comparison.
+   - A factor (or divisor) of a positive integer $n$ is any integer $d \ge 1$ where $n \pmod d == 0$. For example, 12 has 6 factors (`[1, 2, 3, 4, 6, 12]`), 10 has 4 factors (`[1, 2, 5, 10]`), 7 has 2 factors (`[1, 7]`), and 9 has 3 factors (`[1, 3, 9]`).
+   - Ascending by factor count: `sorted(numbers, key=count_factors)` orders numbers from fewest factors to most factors.
+   - Descending by factor count: `sorted(numbers, key=count_factors, reverse=True)` orders numbers from most factors to fewest factors.
+   - Multi-key tie-breaking: Pass a tuple `(count_factors(x), x)` to sort first by the number of factors, and break ties using the number's own numeric value.
+7. **Comparators in Python 3 (`functools.cmp_to_key`):**
+   - **Does Python have comparators?** Yes, but with an important architecture transition:
+     - In Python 2, `sort()` and `sorted()` supported a direct `cmp=func(a, b)` argument returning negative (`a < b`), zero (`a == b`), or positive (`a > b`).
+     - In Python 3, `cmp=` was removed to eliminate runtime overhead. A `key` function transforms each element exactly once ($O(n)$ calls), whereas a comparator evaluates pairwise during sorting ($O(n \log n)$ calls).
+     - To use traditional two-argument comparator logic in Python 3, import `cmp_to_key` from `functools`: `from functools import cmp_to_key`.
+     - Define a standard two-argument comparator `compare(a, b) -> int`:
+       - Return negative (e.g. `-1`) if `a < b` (`a` should appear before `b`).
+       - Return `0` if `a == b` (both items have equal rank).
+       - Return positive (e.g. `1`) if `a > b` (`a` should appear after `b`).
+     - Plug it in as `sorted(items, key=cmp_to_key(compare))`.
+     - **Why comparators are indispensable:** When a sorting rule depends on pairwise relationships between two elements rather than an isolated scalar attribute, a comparator is required. For example, in the classic "Largest Number" concatenation puzzle, deciding whether `"9"` or `"34"` goes first requires comparing `"9" + "34"` (`"934"`) vs `"34" + "9"` (`"349"`). Because `"934" > "349"`, `"9"` precedes `"34"`.
+     - **OOP / Class Comparators:** Custom classes can implement rich comparison dunder methods (`__lt__`, `__gt__`, `__eq__`, `__le__`, `__ge__`), optionally decorated with `@functools.total_ordering`.
+
+```python
+# 1. Lists: in-place .sort() vs sorted()
+scores = [45, 12, 89, 33, 70]
+asc_scores = sorted(scores)
+desc_scores = sorted(scores, reverse=True)
+print(f"Original list: {scores}")        # Original list: [45, 12, 89, 33, 70]
+print(f"Sorted asc: {asc_scores}")       # Sorted asc: [12, 33, 45, 70, 89]
+print(f"Sorted desc: {desc_scores}")     # Sorted desc: [89, 70, 45, 33, 12]
+
+# In-place list mutation
+scores.sort()
+print(f"In-place sorted: {scores}")      # In-place sorted: [12, 33, 45, 70, 89]
+
+# 2. Tuples: immutable sequence
+coords = (40, 10, 50, 20, 30)
+asc_coords = tuple(sorted(coords))
+desc_coords = tuple(sorted(coords, reverse=True))
+print(f"Tuple asc: {asc_coords}")        # Tuple asc: (10, 20, 30, 40, 50)
+print(f"Tuple desc: {desc_coords}")      # Tuple desc: (50, 40, 30, 20, 10)
+
+# 3. Sets: unordered unique collection
+unique_tags = {"golang", "python", "rust", "c"}
+asc_tags = sorted(unique_tags)
+desc_tags = sorted(unique_tags, reverse=True)
+print(f"Set sorted asc: {asc_tags}")     # Set sorted asc: ['c', 'golang', 'python', 'rust']
+print(f"Set sorted desc: {desc_tags}")   # Set sorted desc: ['rust', 'python', 'golang', 'c']
+
+# 4. Strings: sorting characters
+word = "python"
+asc_chars = "".join(sorted(word))
+desc_chars = "".join(sorted(word, reverse=True))
+print(f"String asc: '{asc_chars}'")      # String asc: 'hnopty'
+print(f"String desc: '{desc_chars}'")    # String desc: 'ytponh'
+
+# 5. Dictionaries: sorting by keys and values
+inventory = {"banana": 30, "apple": 10, "orange": 25, "mango": 15}
+
+# Sort by keys (asc and desc)
+by_key_asc = dict(sorted(inventory.items()))
+by_key_desc = dict(sorted(inventory.items(), reverse=True))
+print(f"Dict by keys asc: {by_key_asc}")
+# Dict by keys asc: {'apple': 10, 'banana': 30, 'mango': 15, 'orange': 25}
+print(f"Dict by keys desc: {by_key_desc}")
+# Dict by keys desc: {'orange': 25, 'mango': 15, 'banana': 30, 'apple': 10}
+
+# Sort by values (asc and desc)
+by_val_asc = dict(sorted(inventory.items(), key=lambda item: item[1]))
+by_val_desc = dict(sorted(inventory.items(), key=lambda item: item[1], reverse=True))
+print(f"Dict by values asc: {by_val_asc}")
+# Dict by values asc: {'apple': 10, 'mango': 15, 'orange': 25, 'banana': 30}
+print(f"Dict by values desc: {by_val_desc}")
+# Dict by values desc: {'banana': 30, 'orange': 25, 'mango': 15, 'apple': 10}
+
+# 6. Custom sorting: Sorting list of numbers by factors count
+def count_factors(n: int) -> int:
+    """Return the total number of positive divisors/factors of n."""
+    count = 0
+    for i in range(1, int(n ** 0.5) + 1):
+        if n % i == 0:
+            count += 1 if i * i == n else 2
+    return count
+
+numbers = [12, 7, 9, 10, 16]
+# Factor breakdown:
+# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
+# 7  -> 2 factors (1, 7)
+# 9  -> 3 factors (1, 3, 9)
+# 10 -> 4 factors (1, 2, 5, 10)
+# 16 -> 5 factors (1, 2, 4, 8, 16)
+
+asc_by_factors = sorted(numbers, key=count_factors)
+desc_by_factors = sorted(numbers, key=count_factors, reverse=True)
+print(f"Numbers sorted by factors (asc): {asc_by_factors}")
+# Numbers sorted by factors (asc): [7, 9, 10, 16, 12]
+print(f"Numbers sorted by factors (desc): {desc_by_factors}")
+# Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
+
+# 7. Comparators in Python 3: functools.cmp_to_key
+from functools import cmp_to_key
+
+# Comparator contract: -1 (a < b), 0 (a == b), 1 (a > b)
+def factor_comparator(a: int, b: int) -> int:
+    """Compare two numbers by factor count; break ties by numeric value."""
+    fa, fb = count_factors(a), count_factors(b)
+    if fa != fb:
+        return -1 if fa < fb else 1
+    if a != b:
+        return -1 if a < b else 1
+    return 0
+
+numbers_by_cmp = sorted(numbers, key=cmp_to_key(factor_comparator))
+print(f"Numbers sorted with comparator: {numbers_by_cmp}")
+# Numbers sorted with comparator: [7, 9, 10, 16, 12]
+
+# Pairwise comparator example: Largest Number concatenation (LeetCode 179)
+def largest_number_comparator(a: str, b: str) -> int:
+    if a + b > b + a:
+        return -1  # a should come first
+    elif a + b < b + a:
+        return 1   # b should come first
+    return 0
+
+str_nums = ["3", "30", "34", "5", "9"]
+largest_num = "".join(sorted(str_nums, key=cmp_to_key(largest_number_comparator)))
+print(f"Largest number arrangement: {largest_num}")
+# Largest number arrangement: 9534330
+```
+
+- **Strength — Stable & Universal Timsort** Python uses Timsort ($O(n \log n)$), which is guaranteed to be stable (preserving the relative order of elements with equal keys) and works universally across any iterable via `sorted()`.
+- **Weakness — list.sort() Returns None & Type Homogeneity** Calling `x = my_list.sort()` assigns `None` to `x`, wiping out references by mistake. Furthermore, comparing elements with incompatible types (such as `[1, "2"]`) raises a `TypeError` at runtime.
+
+**Interview question**
+
+*Given a list of positive integers, sort the list in ascending order by their number of factors. If two numbers have the same number of factors, break the tie by sorting them by their numeric value in ascending order. Also support descending order.*
+
+Count the divisors of each integer efficiently up to $\sqrt{n}$. In Python, this can be implemented in two ways:
+1. **Idiomatic Key Function (Recommended):** Return a tuple `(count_factors(x), x)` from `key`. Python compares tuples element by element: if factor counts tie, the numeric value breaks the tie.
+2. **Two-Argument Comparator:** Define a comparator function taking `(a, b)` that returns `-1`, `0`, or `1`, and convert it with `functools.cmp_to_key()`.
+
+**Answer — Sort Numbers by Factors**
+
+```python
+from functools import cmp_to_key
+
+def count_factors(n: int) -> int:
+    """Count positive divisors of n in O(sqrt(n)) time."""
+    if n <= 0:
+        return 0
+    count = 0
+    for i in range(1, int(n ** 0.5) + 1):
+        if n % i == 0:
+            count += 1 if i * i == n else 2
+    return count
+
+# Method 1: Idiomatic key function with tuple tie-breaking
+def sort_by_factors(nums: list[int], reverse: bool = False) -> list[int]:
+    """Sort numbers by their factor count; ties broken by numeric value."""
+    return sorted(nums, key=lambda x: (count_factors(x), x), reverse=reverse)
+
+# Method 2: Two-argument comparator via functools.cmp_to_key
+def factor_cmp(a: int, b: int) -> int:
+    fa, fb = count_factors(a), count_factors(b)
+    if fa != fb:
+        return -1 if fa < fb else 1
+    if a != b:
+        return -1 if a < b else 1
+    return 0
+
+def sort_by_factors_cmp(nums: list[int], reverse: bool = False) -> list[int]:
+    """Sort numbers using a 2-argument comparator and cmp_to_key."""
+    return sorted(nums, key=cmp_to_key(factor_cmp), reverse=reverse)
+
+# Test cases
+test_list = [12, 10, 7, 16, 9, 8]
+# 7  -> 2 factors (1, 7)
+# 9  -> 3 factors (1, 3, 9)
+# 8  -> 4 factors (1, 2, 4, 8)
+# 10 -> 4 factors (1, 2, 5, 10)  <- 8 and 10 tie on factors (4); tie broken: 8 < 10
+# 16 -> 5 factors (1, 2, 4, 8, 16)
+# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
+
+asc_sorted = sort_by_factors(test_list)
+print(asc_sorted)  # [7, 9, 8, 10, 16, 12]
+
+desc_sorted = sort_by_factors(test_list, reverse=True)
+print(desc_sorted)  # [12, 16, 10, 8, 9, 7]
+
+assert sort_by_factors_cmp(test_list) == asc_sorted
+assert sort_by_factors_cmp(test_list, reverse=True) == desc_sorted
+
+print(sort_by_factors([2, 4, 6, 8, 1]))  # [1, 2, 4, 6, 8]
+print("Sorting by factors passed!")      # Sorting by factors passed!
+```
+
+> **Key idea**
+>
+> Remember that `list.sort()` operates in-place and returns `None`, while `sorted()` returns a new list and leaves the original iterable unmodified. While Python 3 removed the legacy `cmp=` parameter in favor of $O(n)$ `key=` extractions, you can bridge any two-argument comparator using `from functools import cmp_to_key`. For deterministic multi-criteria sorting, return a tuple from your `key` function or resolve ties inside your comparator.
 
 ---
 
@@ -2086,8 +2149,8 @@ A quick checklist of the most common daily syntax:
 7. **Loops:** Iterate cleanly with `for item in items:` or `for i, item in enumerate(items):`. Use `zip()` for parallel iteration, and `break` / `continue` for control flow.
 8. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`, remove with `.pop()`. Slice with `seq[start:stop:step]` and reverse with `[::-1]`.
 9. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`. Iterate over `items()` for `(key, value)` pairs.
-10. **Sorting:** Sort in-place with `list.sort()` or create a new sorted list with `sorted(iterable)`. Pass `reverse=True` for descending order. Works on lists, tuples, sets, strings, and dictionaries. Supply `key=func` (e.g. `key=count_factors` or lambda) for custom sorting rules and tie-breaking.
-11. **Tuples & Sets:** Use immutable tuples for fixed records and instant hash keys. Use `set(items)` to strip duplicates with $O(1)$ membership checks, union (`|`), and intersection (`&`).
+10. **Tuples & Sets:** Use immutable tuples for fixed records and instant hash keys. Use `set(items)` to strip duplicates with $O(1)$ membership checks, union (`|`), and intersection (`&`).
+11. **Sorting:** Sort in-place with `list.sort()` or create a new sorted list with `sorted(iterable)`. Pass `reverse=True` for descending order. Works on lists, tuples, sets, strings, and dictionaries. Supply `key=func` for $O(n)$ single-element keys, or use `from functools import cmp_to_key` with `key=cmp_to_key(compare_func)` for custom two-argument pairwise comparators (-1, 0, 1).
 12. **Unpacking & Destructuring:** Multiple assignment (`a, b = b, a`), capture leftovers with `*` (`head, *tail = items`), ignore values (`first, *_ = items`), and merge dictionaries with `{**defaults, **custom}`.
 13. **Comprehensions:** Transform and filter concisely: `[x.lower() for x in names if x]`. Use dictionary comprehensions `{k: v for ...}` and set comprehensions similarly.
 14. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary.

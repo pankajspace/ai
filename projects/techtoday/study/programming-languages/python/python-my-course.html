@@ -39,8 +39,8 @@
                     <li><a href="#7-loops-and-iteration">Loops &amp; Iteration</a></li>
                     <li><a href="#8-lists-and-slicing">Lists &amp; Slicing</a></li>
                     <li><a href="#9-dictionaries">Dictionaries</a></li>
-                    <li><a href="#10-sorting-in-python">Sorting in Python</a></li>
-                    <li><a href="#11-tuples-and-sets">Tuples &amp; Sets</a></li>
+                    <li><a href="#10-tuples-and-sets">Tuples &amp; Sets</a></li>
+                    <li><a href="#11-sorting-in-python">Sorting in Python</a></li>
                     <li><a href="#12-unpacking-and-destructuring">Unpacking &amp; Destructuring</a></li>
                     <li><a href="#13-list-comprehensions">List Comprehensions</a></li>
                     <li><a href="#14-functions-and-arguments">Functions &amp; Arguments</a></li>
@@ -1850,14 +1850,13 @@ print("Word frequency passed!")  # Word frequency passed!
             </section>
 
             <!-- ============================================================ 10 -->
-            <section class="topic-section is-collapsed" id="sec-10-sorting-in-python"
-                data-topic="10-sorting-in-python">
+            <section class="topic-section is-collapsed" id="sec-10-tuples-and-sets" data-topic="10-tuples-and-sets">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-10-sorting-in-python">
+                    aria-controls="content-10-tuples-and-sets">
                     <div class="topic-header-main">
                         <span class="topic-badge">10</span>
-                        <h2 id="10-sorting-in-python" class="topic-title">Sorting in Python<a class="headerlink"
-                                href="#10-sorting-in-python" title="Permanent link">#</a></h2>
+                        <h2 id="10-tuples-and-sets" class="topic-title">Tuples &amp; Sets<a class="headerlink"
+                                href="#10-tuples-and-sets" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-chevron" aria-hidden="true">
@@ -1868,13 +1867,13 @@ print("Word frequency passed!")  # Word frequency passed!
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-10-sorting-in-python">
-                    <div class="part-section is-collapsed" id="10-sorting-in-python-theory">
+                <div class="topic-content" id="content-10-tuples-and-sets">
+                    <div class="part-section is-collapsed" id="10-tuples-and-sets-theory">
                         <div class="part-header" role="button" tabindex="0" aria-expanded="false"
-                            aria-controls="body-10-sorting-in-python-theory">
+                            aria-controls="body-10-tuples-and-sets-theory">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-sorting-in-python-theory"
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#10-tuples-and-sets-theory"
                                         title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
@@ -1886,11 +1885,162 @@ print("Word frequency passed!")  # Word frequency passed!
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-10-sorting-in-python-theory">
+                        <div class="part-body" id="body-10-tuples-and-sets-theory">
+                            <ul class="meta-strip">
+                                <li><b>Tuples</b> <code class="big-o o-great">Immutable records: (x, y)</code></li>
+                                <li><b>Sets</b> <code class="big-o o-great">Unique items, fast in check</code></li>
+                                <li><b>Set Operators</b> <code class="big-o o-good">Union |, Intersection &amp;</code>
+                                </li>
+                            </ul>
+                            <p>A <code>tuple</code> is an ordered, immutable sequence written with parentheses
+                                <code>(1, 2)</code>. Once created, you cannot add, remove, or modify items in a tuple. A
+                                <code>set</code> is an unordered collection of unique elements written with curly braces
+                                <code>{1, 2}</code>. Sets automatically eliminate duplicates and offer instant O(1)
+                                membership checks.
+                            </p>
+                            <div class="analogy">
+                                <span class="analogy-icon">🎬</span>
+                                <div class="analogy-body">
+                                    <b>Picture it — A GPS Coordinate vs A Unique Badge Scanner</b>
+                                    <p>A GPS location <code>(latitude, longitude)</code> is a tuple: latitude and
+                                        longitude are permanently paired together; changing one without the other makes
+                                        no sense. A security gate scanner is a set: it holds a list of authorized
+                                        employee badge IDs; duplicate scans are ignored, and checking if an ID is valid
+                                        takes a fraction of a second.</p>
+                                </div>
+                            </div>
+                            <div class="highlight">
+                                <pre><code data-lang="python"># Tuples for fixed records and unpacking
+user_coordinate = (37.7749, -122.4194)
+lat, lon = user_coordinate
+print(f"Latitude: {lat}, Longitude: {lon}")  # Latitude: 37.7749, Longitude: -122.4194
+
+# Swapping two variables with tuple packing
+a = 5
+b = 10
+a, b = b, a
+print(a, b)  # 10 5
+
+# Sets for unique elements
+raw_roles = ["admin", "editor", "admin", "viewer", "editor"]
+unique_roles = set(raw_roles)
+print(unique_roles)  # {'admin', 'editor', 'viewer'}
+
+# Adding to a set
+unique_roles.add("manager")
+print("manager" in unique_roles)  # True
+
+# Fast membership check
+if "admin" in unique_roles:
+    print("Admin role found!")  # Admin role found!
+
+# Set operations: union and intersection
+dev_team = {"alice", "bob", "charlie"}
+ops_team = {"bob", "david"}
+print(dev_team &amp; ops_team)  # {'bob'}
+print(dev_team | ops_team)  # {'alice', 'bob', 'charlie', 'david'}
+</code></pre>
+                            </div>
+                            <ul class="card-grid">
+                                <li class="is-good"><b>Strength — Automatic Deduplication &amp; Speed:</b> Converting a
+                                    list to a set strips duplicates instantly, and <code>val in set</code> is much
+                                    faster than <code>val in list</code>.</li>
+                                <li class="is-bad"><b>Weakness — Unordered Sets:</b> Sets do not preserve order; if you
+                                    need both order and uniqueness, use a list alongside a set.</li>
+                            </ul>
+                            <div class="callout callout-warn">
+                                <p><strong>Gotcha:</strong> Writing <code>x = {}</code> creates an empty dictionary, not
+                                    an empty set. To create an empty set, you must write <code>x = set()</code>.</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="part-section is-collapsed" id="10-tuples-and-sets-questions">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-10-tuples-and-sets-questions">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading">Questions<a class="headerlink"
+                                        href="#10-tuples-and-sets-questions" title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-counter">1</span>
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-10-tuples-and-sets-questions">
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Given two lists of user IDs, return a list of all user IDs that
+                                    appear in both lists.</p>
+                                <p>Convert both lists to sets and take their intersection using the <code>&amp;</code>
+                                    operator.</p>
+                                <div class="code-tabs" data-label="Answer — Find Common Users">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">def find_common_users(group_a: list[str], group_b: list[str]) -&gt; list[str]:
+    return list(set(group_a) &amp; set(group_b))
+
+# Test cases
+users_1 = ["alice", "bob", "charlie"]
+users_2 = ["bob", "david", "alice"]
+common = find_common_users(users_1, users_2)
+print(sorted(common))  # ['alice', 'bob']
+print("Common users passed!")  # Common users passed!
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ============================================================ 11 -->
+            <section class="topic-section is-collapsed" id="sec-11-sorting-in-python"
+                data-topic="11-sorting-in-python">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-11-sorting-in-python">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 id="11-sorting-in-python" class="topic-title">Sorting in Python<a class="headerlink"
+                                href="#11-sorting-in-python" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-sorting-in-python">
+                    <div class="part-section is-collapsed" id="11-sorting-in-python-theory">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
+                            aria-controls="body-11-sorting-in-python-theory">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-sorting-in-python-theory"
+                                        title="Permanent link">#</a></h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
+                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-11-sorting-in-python-theory">
                             <ul class="meta-strip">
                                 <li><b>In-Place vs New List</b> <code class="big-o o-great">list.sort() vs sorted()</code></li>
                                 <li><b>Order Flag</b> <code class="big-o o-great">reverse=True</code></li>
-                                <li><b>Custom Key</b> <code class="big-o o-good">key=func</code></li>
+                                <li><b>Custom Keys &amp; Comparators</b> <code class="big-o o-good">key=func or cmp_to_key()</code></li>
                             </ul>
                             <p>Python provides two primary mechanisms for ordering data: the built-in
                                 <code>sorted()</code> function (which accepts any iterable and returns a brand-new
@@ -1899,7 +2049,8 @@ print("Word frequency passed!")  # Word frequency passed!
                                 default using the standard <code>&lt;</code> comparison operator, and both accept
                                 <code>reverse=True</code> to sort in descending (desc) order. You can completely
                                 customize how elements are evaluated and ordered by passing a custom transformation
-                                function to the <code>key</code> parameter.</p>
+                                function to the <code>key</code> parameter, or adapt traditional two-argument comparators
+                                via <code>functools.cmp_to_key</code>.</p>
                             <div class="analogy">
                                 <span class="analogy-icon">🎬</span>
                                 <div class="analogy-body">
@@ -1942,6 +2093,16 @@ print("Word frequency passed!")  # Word frequency passed!
                                 <li><strong>Custom Sorting by Factors:</strong> A factor (divisor) of $n$ divides $n$ with no remainder.
                                     Pass <code>key=count_factors</code> to <code>sorted()</code> to order numbers by their
                                     number of divisors (asc or desc). Use a tuple key <code>(count_factors(x), x)</code> to break ties.
+                                </li>
+                                <li><strong>Comparators in Python 3 (<code>functools.cmp_to_key</code>):</strong>
+                                    Python 2 supported a direct <code>cmp=func(a, b)</code> parameter returning negative (<code>a &lt; b</code>),
+                                    zero (<code>a == b</code>), or positive (<code>a &gt; b</code>). Python 3 removed <code>cmp=</code>
+                                    for performance because <code>key=</code> transforms elements once ($O(n)$) while comparators execute
+                                    pairwise during comparisons ($O(n \log n)$). In Python 3, import
+                                    <code>from functools import cmp_to_key</code> and pass <code>key=cmp_to_key(compare_func)</code>.
+                                    Comparators are essential when sorting logic depends on pairwise relationships that cannot be
+                                    isolated into a single-element scalar key (e.g. comparing string concatenations <code>a+b vs b+a</code>
+                                    in the "Largest Number" problem).
                                 </li>
                             </ol>
                             <div class="highlight">
@@ -2020,6 +2181,36 @@ print(f"Numbers sorted by factors (asc): {asc_by_factors}")
 # Numbers sorted by factors (asc): [7, 9, 10, 16, 12]
 print(f"Numbers sorted by factors (desc): {desc_by_factors}")
 # Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
+
+# 7. Comparators in Python 3: functools.cmp_to_key
+from functools import cmp_to_key
+
+# Comparator contract: -1 (a &lt; b), 0 (a == b), 1 (a &gt; b)
+def factor_comparator(a: int, b: int) -&gt; int:
+    """Compare two numbers by factor count; break ties by numeric value."""
+    fa, fb = count_factors(a), count_factors(b)
+    if fa != fb:
+        return -1 if fa &lt; fb else 1
+    if a != b:
+        return -1 if a &lt; b else 1
+    return 0
+
+numbers_by_cmp = sorted(numbers, key=cmp_to_key(factor_comparator))
+print(f"Numbers sorted with comparator: {numbers_by_cmp}")
+# Numbers sorted with comparator: [7, 9, 10, 16, 12]
+
+# Pairwise comparator example: Largest Number concatenation (LeetCode 179)
+def largest_number_comparator(a: str, b: str) -&gt; int:
+    if a + b &gt; b + a:
+        return -1  # a should come first
+    elif a + b &lt; b + a:
+        return 1   # b should come first
+    return 0
+
+str_nums = ["3", "30", "34", "5", "9"]
+largest_num = "".join(sorted(str_nums, key=cmp_to_key(largest_number_comparator)))
+print(f"Largest number arrangement: {largest_num}")
+# Largest number arrangement: 9534330
 </code></pre>
                             </div>
                             <ul class="card-grid">
@@ -2036,20 +2227,20 @@ print(f"Numbers sorted by factors (desc): {desc_by_factors}")
                             <div class="callout callout-key">
                                 <p><strong>Key idea:</strong> Remember that <code>list.sort()</code> operates in-place
                                     and returns <code>None</code>, while <code>sorted()</code> returns a new list and
-                                    leaves the original iterable unmodified. For immutable data structures like tuples
-                                    and strings, or unordered structures like sets, always use <code>sorted()</code>.
-                                    When sorting with multiple criteria, return a tuple from your <code>key</code>
-                                    function to achieve deterministic tie-breaking.</p>
+                                    leaves the original iterable unmodified. While Python 3 removed the legacy <code>cmp=</code>
+                                    parameter in favor of $O(n)$ <code>key=</code> extractions, you can bridge any two-argument
+                                    comparator using <code>from functools import cmp_to_key</code>. For deterministic multi-criteria
+                                    sorting, return a tuple from your <code>key</code> function or resolve ties inside your comparator.</p>
                             </div>
                         </div>
                     </div>
-                    <div class="part-section is-collapsed" id="10-sorting-in-python-questions">
+                    <div class="part-section is-collapsed" id="11-sorting-in-python-questions">
                         <div class="part-header" role="button" tabindex="0" aria-expanded="false"
-                            aria-controls="body-10-sorting-in-python-questions">
+                            aria-controls="body-11-sorting-in-python-questions">
                             <div class="part-header-left">
                                 <span class="part-indicator ind-questions"></span>
                                 <h3 class="part-heading">Questions<a class="headerlink"
-                                        href="#10-sorting-in-python-questions" title="Permanent link">#</a></h3>
+                                        href="#11-sorting-in-python-questions" title="Permanent link">#</a></h3>
                             </div>
                             <div class="part-header-right">
                                 <span class="part-counter">1</span>
@@ -2061,21 +2252,29 @@ print(f"Numbers sorted by factors (desc): {desc_by_factors}")
                                 </span>
                             </div>
                         </div>
-                        <div class="part-body" id="body-10-sorting-in-python-questions">
+                        <div class="part-body" id="body-11-sorting-in-python-questions">
                             <div class="worked">
                                 <b>Interview question</b>
                                 <p class="worked-q">Given a list of positive integers, sort the list in ascending order
                                     by their number of factors. If two numbers have the same number of factors, break the
                                     tie by sorting them by their numeric value in ascending order. Also support
                                     descending order.</p>
-                                <p>Count the divisors of each integer efficiently up to <code>&radic;n</code>. To sort by
-                                    factor count and resolve ties using the number's own value, pass a tuple
-                                    <code>(count_factors(x), x)</code> to the <code>key</code> parameter. Python
-                                    compares tuples element by element: if the factor counts match, it automatically
-                                    compares the second tuple element.</p>
+                                <p>Count the divisors of each integer efficiently up to <code>&radic;n</code>. In Python,
+                                    this can be implemented in two ways:
+                                    <ol>
+                                        <li><strong>Idiomatic Key Function (Recommended):</strong> Return a tuple
+                                            <code>(count_factors(x), x)</code> to the <code>key</code> parameter. Python
+                                            compares tuples element by element to break ties automatically.</li>
+                                        <li><strong>Two-Argument Comparator:</strong> Define a comparator taking
+                                            <code>(a, b)</code> returning <code>-1</code>, <code>0</code>, or <code>1</code>,
+                                            and adapt it using <code>functools.cmp_to_key()</code>.</li>
+                                    </ol>
+                                </p>
                                 <div class="code-tabs" data-label="Answer — Sort Numbers by Factors">
                                     <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def count_factors(n: int) -&gt; int:
+                                        <pre><code data-lang="python">from functools import cmp_to_key
+
+def count_factors(n: int) -&gt; int:
     """Count positive divisors of n in O(sqrt(n)) time."""
     if n &lt;= 0:
         return 0
@@ -2085,9 +2284,23 @@ print(f"Numbers sorted by factors (desc): {desc_by_factors}")
             count += 1 if i * i == n else 2
     return count
 
+# Method 1: Idiomatic key function with tuple tie-breaking
 def sort_by_factors(nums: list[int], reverse: bool = False) -&gt; list[int]:
     """Sort numbers by their factor count; ties broken by numeric value."""
     return sorted(nums, key=lambda x: (count_factors(x), x), reverse=reverse)
+
+# Method 2: Two-argument comparator via functools.cmp_to_key
+def factor_cmp(a: int, b: int) -&gt; int:
+    fa, fb = count_factors(a), count_factors(b)
+    if fa != fb:
+        return -1 if fa &lt; fb else 1
+    if a != b:
+        return -1 if a &lt; b else 1
+    return 0
+
+def sort_by_factors_cmp(nums: list[int], reverse: bool = False) -&gt; list[int]:
+    """Sort numbers using a 2-argument comparator and cmp_to_key."""
+    return sorted(nums, key=cmp_to_key(factor_cmp), reverse=reverse)
 
 # Test cases
 test_list = [12, 10, 7, 16, 9, 8]
@@ -2104,158 +2317,11 @@ print(asc_sorted)  # [7, 9, 8, 10, 16, 12]
 desc_sorted = sort_by_factors(test_list, reverse=True)
 print(desc_sorted)  # [12, 16, 10, 8, 9, 7]
 
+assert sort_by_factors_cmp(test_list) == asc_sorted
+assert sort_by_factors_cmp(test_list, reverse=True) == desc_sorted
+
 print(sort_by_factors([2, 4, 6, 8, 1]))  # [1, 2, 4, 6, 8]
 print("Sorting by factors passed!")      # Sorting by factors passed!
-</code></pre>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- ============================================================ 11 -->
-            <section class="topic-section is-collapsed" id="sec-11-tuples-and-sets" data-topic="11-tuples-and-sets">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-11-tuples-and-sets">
-                    <div class="topic-header-main">
-                        <span class="topic-badge">11</span>
-                        <h2 id="11-tuples-and-sets" class="topic-title">Tuples &amp; Sets<a class="headerlink"
-                                href="#11-tuples-and-sets" title="Permanent link">#</a></h2>
-                    </div>
-                    <div class="topic-header-meta">
-                        <span class="topic-chevron" aria-hidden="true">
-                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
-                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="6 9 12 15 18 9"></polyline>
-                            </svg>
-                        </span>
-                    </div>
-                </div>
-                <div class="topic-content" id="content-11-tuples-and-sets">
-                    <div class="part-section is-collapsed" id="11-tuples-and-sets-theory">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
-                            aria-controls="body-11-tuples-and-sets-theory">
-                            <div class="part-header-left">
-                                <span class="part-indicator ind-theory"></span>
-                                <h3 class="part-heading">Theory<a class="headerlink" href="#11-tuples-and-sets-theory"
-                                        title="Permanent link">#</a></h3>
-                            </div>
-                            <div class="part-header-right">
-                                <span class="part-arrow" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="part-body" id="body-11-tuples-and-sets-theory">
-                            <ul class="meta-strip">
-                                <li><b>Tuples</b> <code class="big-o o-great">Immutable records: (x, y)</code></li>
-                                <li><b>Sets</b> <code class="big-o o-great">Unique items, fast in check</code></li>
-                                <li><b>Set Operators</b> <code class="big-o o-good">Union |, Intersection &amp;</code>
-                                </li>
-                            </ul>
-                            <p>A <code>tuple</code> is an ordered, immutable sequence written with parentheses
-                                <code>(1, 2)</code>. Once created, you cannot add, remove, or modify items in a tuple. A
-                                <code>set</code> is an unordered collection of unique elements written with curly braces
-                                <code>{1, 2}</code>. Sets automatically eliminate duplicates and offer instant O(1)
-                                membership checks.
-                            </p>
-                            <div class="analogy">
-                                <span class="analogy-icon">🎬</span>
-                                <div class="analogy-body">
-                                    <b>Picture it — A GPS Coordinate vs A Unique Badge Scanner</b>
-                                    <p>A GPS location <code>(latitude, longitude)</code> is a tuple: latitude and
-                                        longitude are permanently paired together; changing one without the other makes
-                                        no sense. A security gate scanner is a set: it holds a list of authorized
-                                        employee badge IDs; duplicate scans are ignored, and checking if an ID is valid
-                                        takes a fraction of a second.</p>
-                                </div>
-                            </div>
-                            <div class="highlight">
-                                <pre><code data-lang="python"># Tuples for fixed records and unpacking
-user_coordinate = (37.7749, -122.4194)
-lat, lon = user_coordinate
-print(f"Latitude: {lat}, Longitude: {lon}")  # Latitude: 37.7749, Longitude: -122.4194
-
-# Swapping two variables with tuple packing
-a = 5
-b = 10
-a, b = b, a
-print(a, b)  # 10 5
-
-# Sets for unique elements
-raw_roles = ["admin", "editor", "admin", "viewer", "editor"]
-unique_roles = set(raw_roles)
-print(unique_roles)  # {'admin', 'editor', 'viewer'}
-
-# Adding to a set
-unique_roles.add("manager")
-print("manager" in unique_roles)  # True
-
-# Fast membership check
-if "admin" in unique_roles:
-    print("Admin role found!")  # Admin role found!
-
-# Set operations: union and intersection
-dev_team = {"alice", "bob", "charlie"}
-ops_team = {"bob", "david"}
-print(dev_team &amp; ops_team)  # {'bob'}
-print(dev_team | ops_team)  # {'alice', 'bob', 'charlie', 'david'}
-</code></pre>
-                            </div>
-                            <ul class="card-grid">
-                                <li class="is-good"><b>Strength — Automatic Deduplication &amp; Speed:</b> Converting a
-                                    list to a set strips duplicates instantly, and <code>val in set</code> is much
-                                    faster than <code>val in list</code>.</li>
-                                <li class="is-bad"><b>Weakness — Unordered Sets:</b> Sets do not preserve order; if you
-                                    need both order and uniqueness, use a list alongside a set.</li>
-                            </ul>
-                            <div class="callout callout-warn">
-                                <p><strong>Gotcha:</strong> Writing <code>x = {}</code> creates an empty dictionary, not
-                                    an empty set. To create an empty set, you must write <code>x = set()</code>.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="part-section is-collapsed" id="11-tuples-and-sets-questions">
-                        <div class="part-header" role="button" tabindex="0" aria-expanded="false"
-                            aria-controls="body-11-tuples-and-sets-questions">
-                            <div class="part-header-left">
-                                <span class="part-indicator ind-questions"></span>
-                                <h3 class="part-heading">Questions<a class="headerlink"
-                                        href="#11-tuples-and-sets-questions" title="Permanent link">#</a></h3>
-                            </div>
-                            <div class="part-header-right">
-                                <span class="part-counter">1</span>
-                                <span class="part-arrow" aria-hidden="true">
-                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
-                                        stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                                        <polyline points="6 9 12 15 18 9"></polyline>
-                                    </svg>
-                                </span>
-                            </div>
-                        </div>
-                        <div class="part-body" id="body-11-tuples-and-sets-questions">
-                            <div class="worked">
-                                <b>Interview question</b>
-                                <p class="worked-q">Given two lists of user IDs, return a list of all user IDs that
-                                    appear in both lists.</p>
-                                <p>Convert both lists to sets and take their intersection using the <code>&amp;</code>
-                                    operator.</p>
-                                <div class="code-tabs" data-label="Answer — Find Common Users">
-                                    <div class="tab-pane" data-lang="python">
-                                        <pre><code data-lang="python">def find_common_users(group_a: list[str], group_b: list[str]) -&gt; list[str]:
-    return list(set(group_a) &amp; set(group_b))
-
-# Test cases
-users_1 = ["alice", "bob", "charlie"]
-users_2 = ["bob", "david", "alice"]
-common = find_common_users(users_1, users_2)
-print(sorted(common))  # ['alice', 'bob']
-print("Common users passed!")  # Common users passed!
 </code></pre>
                                     </div>
                                 </div>

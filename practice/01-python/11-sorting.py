@@ -74,6 +74,48 @@ print(f"Numbers sorted by factors (asc): {asc_by_factors}")
 print(f"Numbers sorted by factors (desc): {desc_by_factors}")
 # Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
 
+# 7. Comparators in Python 3: functools.cmp_to_key
+# In Python 2, sorted() had a direct `cmp` parameter: cmp(a, b) -> -1, 0, 1.
+# In Python 3, `cmp` was removed in favor of `key` because `key` is called once per element O(N),
+# whereas a comparator is called O(N log N) times during pairwise comparisons.
+# However, Python 3 provides functools.cmp_to_key() to bridge two-argument comparators into key functions.
+from functools import cmp_to_key
+
+# Comparator contract:
+# - return negative (e.g. -1) if a < b (a precedes b)
+# - return 0 if a == b (equal rank)
+# - return positive (e.g. 1) if a > b (a follows b)
+def factor_comparator(a: int, b: int) -> int:
+    """Compare two numbers by factor count; break ties by numeric value."""
+    fa, fb = count_factors(a), count_factors(b)
+    if fa != fb:
+        return -1 if fa < fb else 1
+    if a != b:
+        return -1 if a < b else 1
+    return 0
+
+numbers_by_cmp = sorted(numbers, key=cmp_to_key(factor_comparator))
+print(f"Numbers sorted with comparator: {numbers_by_cmp}")
+# Numbers sorted with comparator: [7, 9, 10, 16, 12]
+
+# Pairwise comparator example: Largest Number concatenation (LeetCode 179)
+# Why comparators are indispensable:
+# When determining whether "9" or "34" comes first in ["3", "30", "34", "5", "9"],
+# we compare relative combinations: "9"+"34" ("934") vs "34"+"9" ("349").
+# Since "934" > "349", "9" precedes "34".
+# This relative pairwise rule cannot be expressed with an isolated scalar key without comparing pairs.
+def largest_number_comparator(a: str, b: str) -> int:
+    if a + b > b + a:
+        return -1  # a should come first
+    elif a + b < b + a:
+        return 1   # b should come first
+    return 0
+
+str_nums = ["3", "30", "34", "5", "9"]
+largest_num = "".join(sorted(str_nums, key=cmp_to_key(largest_number_comparator)))
+print(f"Largest number arrangement: {largest_num}")
+# Largest number arrangement: 9534330
+
 
 # Interview question: Given a list of positive integers, sort the list in ascending order
 # by their number of factors. If two numbers have the same number of factors, sort them by
@@ -81,6 +123,10 @@ print(f"Numbers sorted by factors (desc): {desc_by_factors}")
 def sort_by_factors(nums: list[int], reverse: bool = False) -> list[int]:
     """Sort numbers by their factor count; ties broken by numeric value."""
     return sorted(nums, key=lambda x: (count_factors(x), x), reverse=reverse)
+
+def sort_by_factors_comparator(nums: list[int], reverse: bool = False) -> list[int]:
+    """Alternative comparator-based solution using functools.cmp_to_key."""
+    return sorted(nums, key=cmp_to_key(factor_comparator), reverse=reverse)
 
 # Test cases
 test_list = [12, 10, 7, 16, 9, 8]
@@ -97,6 +143,10 @@ print(asc_sorted)  # [7, 9, 8, 10, 16, 12]
 desc_sorted = sort_by_factors(test_list, reverse=True)
 print(desc_sorted)  # [12, 16, 10, 8, 9, 7]
 
+assert sort_by_factors_comparator(test_list) == asc_sorted
+assert sort_by_factors_comparator(test_list, reverse=True) == desc_sorted
+
 print(sort_by_factors([2, 4, 6, 8, 1]))  # [1, 2, 4, 6, 8]
 print("Sorting by factors passed!")      # Sorting by factors passed!
+
 
