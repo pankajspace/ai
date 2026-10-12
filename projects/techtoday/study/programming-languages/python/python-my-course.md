@@ -1,7 +1,7 @@
 <!--
 Source: python-my-course.html
 Title: Python My Course | TechToday
-Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, modules & imports, and virtual environments.
+Description: Fast-track Python essentials for everyday programming — variables, type hints, keywords, strings, operators, loops, lists, dictionaries, sorting, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, modules & imports, and virtual environments.
 -->
 
 Navigation: [TechToday](../../../index.html) · [← Programming Languages](../programming-languages.html)
@@ -25,14 +25,15 @@ The high-yield Python course reference: common everyday syntax, type hints, keyw
 7. [Loops & Iteration](#7-loops-and-iteration)
 8. [Lists & Slicing](#8-lists-and-slicing)
 9. [Dictionaries](#9-dictionaries)
-10. [Tuples & Sets](#10-tuples-and-sets)
-11. [Unpacking & Destructuring](#11-unpacking-and-destructuring)
-12. [List Comprehensions](#12-list-comprehensions)
-13. [Functions & Arguments](#13-functions-and-arguments)
-14. [Async / Await](#14-async-and-await)
-15. [Object-Oriented Programming (OOP)](#15-object-oriented-programming)
-16. [Modules & Imports](#16-modules-and-imports)
-17. [Virtual Environments](#17-virtual-environments)
+10. [Sorting in Python](#10-sorting-in-python)
+11. [Tuples & Sets](#11-tuples-and-sets)
+12. [Unpacking & Destructuring](#12-unpacking-and-destructuring)
+13. [List Comprehensions](#13-list-comprehensions)
+14. [Functions & Arguments](#14-functions-and-arguments)
+15. [Async / Await](#15-async-and-await)
+16. [Object-Oriented Programming (OOP)](#16-object-oriented-programming)
+17. [Modules & Imports](#17-modules-and-imports)
+18. [Virtual Environments](#18-virtual-environments)
 
 ---
 
@@ -650,7 +651,7 @@ score = 82
 result = "Pass" if score >= 60 else "Fail"
 print(result)  # Pass
 
-## 8. Walrus operator (:=) for assignment expressions
+# 8. Walrus operator (:=) for assignment expressions
 payload = "sensor_alpha_online"
 if (length := len(payload)) > 10:
     print(f"Payload accepted with {length} characters.")  # Payload accepted with 19 characters.
@@ -837,7 +838,7 @@ print("Find first negative passed!")  # Find first negative passed!
 
 ## Unit 2 — Core Data Collections
 
-The primary data structures used every day: ordered lists, fast key-value dictionaries, unique sets, and readable list comprehensions.
+The primary data structures used every day: ordered lists, fast key-value dictionaries, sorting collections, unique sets, and readable list comprehensions.
 
 <a id="8-lists-and-slicing"></a>
 
@@ -1013,9 +1014,181 @@ print("Word frequency passed!")  # Word frequency passed!
 
 ---
 
-<a id="10-tuples-and-sets"></a>
+<a id="10-sorting-in-python"></a>
 
-## 10. Tuples & Sets
+## 10. Sorting in Python
+
+- **In-Place vs New List** `list.sort() vs sorted(iter)` <!-- great -->
+- **Order Flag** `reverse=True for descending` <!-- great -->
+- **Custom Sort Key** `key=func or key=lambda x: ...` <!-- good -->
+
+Python provides two primary mechanisms for ordering data: the built-in `sorted()` function (which accepts any iterable and returns a brand-new sorted list) and the `list.sort()` method (which mutates a list in place and returns `None`). Both mechanisms sort elements in ascending (asc) order by default using the standard `<` comparison operator, and both accept `reverse=True` to sort in descending (desc) order. You can completely customize how elements are evaluated and ordered by passing a custom transformation function to the `key` parameter.
+
+> **Analogy** 🎬
+>
+> **Picture it — Organizing a Physical Bookshelf vs Printing an Ordered Catalog**
+>
+> Using `list.sort()` is like physically walking up to your bookcase and rearranging the books directly on the shelf into alphabetical order: the original arrangement is altered in-place, and no new bookcase is created. Using `sorted()` is like leaving the shelf untouched and printing out a fresh, organized index on paper. You can generate that printed index from any collection — books on a shelf, a box of loose bookmarks (set), an immutable display case (tuple), or an index card drawer (dictionary) — and choose whether to print them A-to-Z or Z-to-A.
+
+Key everyday sorting patterns across basic data structures:
+
+1. **Lists (In-Place vs New List):**
+   - In-place mutation: `scores.sort()` orders the list directly and returns `None`. Use `scores.sort(reverse=True)` for descending order.
+   - Non-destructive sorting: `sorted(scores)` returns a brand-new list, leaving `scores` intact. Use `sorted(scores, reverse=True)` for descending order.
+2. **Tuples (Immutable Sequences):**
+   - Tuples cannot be modified, so they do not provide a `.sort()` method.
+   - Calling `sorted(my_tuple)` returns a sorted `list`.
+   - Wrap with `tuple()` to restore tuple immutability: `tuple(sorted(my_tuple))` for ascending order, and `tuple(sorted(my_tuple, reverse=True))` for descending order.
+3. **Sets (Unordered Collections):**
+   - Sets do not maintain insertion or numerical order and have no `.sort()` method.
+   - Calling `sorted(my_set)` extracts and orders the unique elements into a `list` in ascending order (`sorted(my_set)`) or descending order (`sorted(my_set, reverse=True)`).
+   - Re-wrapping the result in `set()` loses the sorted order because sets are fundamentally hash-based and unordered.
+4. **Strings (Character Sequences):**
+   - Strings are immutable. `sorted("python")` sorts individual characters alphabetically into a list of characters: `['h', 'n', 'o', 'p', 't', 'y']`.
+   - Recombine the characters into a string using `"".join()`: `"".join(sorted("python"))` for ascending order, or `"".join(sorted("python", reverse=True))` for descending order.
+5. **Dictionaries (Keys vs Values):**
+   - Iterating over a dictionary yields its keys. Calling `sorted(my_dict)` returns a list of sorted keys: `['apple', 'banana', 'orange']`.
+   - Sorting by key: Rebuild an ordered dictionary using `dict(sorted(my_dict.items()))` for ascending keys, or `dict(sorted(my_dict.items(), reverse=True))` for descending keys.
+   - Sorting by value: Pass a key lambda to extract the dictionary value: `dict(sorted(my_dict.items(), key=lambda item: item[1]))` for ascending values, or `dict(sorted(my_dict.items(), key=lambda item: item[1], reverse=True))` for descending values.
+6. **Custom Sorting by Factors (`key` parameter):**
+   - The `key` parameter takes a one-argument function applied to each element before comparison.
+   - A factor (or divisor) of a positive integer $n$ is any integer $d \ge 1$ where $n \pmod d == 0$. For example, 12 has 6 factors (`[1, 2, 3, 4, 6, 12]`), 10 has 4 factors (`[1, 2, 5, 10]`), 7 has 2 factors (`[1, 7]`), and 9 has 3 factors (`[1, 3, 9]`).
+   - Ascending by factor count: `sorted(numbers, key=count_factors)` orders numbers from fewest factors to most factors.
+   - Descending by factor count: `sorted(numbers, key=count_factors, reverse=True)` orders numbers from most factors to fewest factors.
+   - Multi-key tie-breaking: Pass a tuple `(count_factors(x), x)` to sort first by the number of factors, and break ties using the number's own numeric value.
+
+```python
+# 1. Lists: in-place .sort() vs sorted()
+scores = [45, 12, 89, 33, 70]
+asc_scores = sorted(scores)
+desc_scores = sorted(scores, reverse=True)
+print(f"Original list: {scores}")        # Original list: [45, 12, 89, 33, 70]
+print(f"Sorted asc: {asc_scores}")       # Sorted asc: [12, 33, 45, 70, 89]
+print(f"Sorted desc: {desc_scores}")     # Sorted desc: [89, 70, 45, 33, 12]
+
+# In-place list mutation
+scores.sort()
+print(f"In-place sorted: {scores}")      # In-place sorted: [12, 33, 45, 70, 89]
+
+# 2. Tuples: immutable sequence
+coords = (40, 10, 50, 20, 30)
+asc_coords = tuple(sorted(coords))
+desc_coords = tuple(sorted(coords, reverse=True))
+print(f"Tuple asc: {asc_coords}")        # Tuple asc: (10, 20, 30, 40, 50)
+print(f"Tuple desc: {desc_coords}")      # Tuple desc: (50, 40, 30, 20, 10)
+
+# 3. Sets: unordered unique collection
+unique_tags = {"golang", "python", "rust", "c"}
+asc_tags = sorted(unique_tags)
+desc_tags = sorted(unique_tags, reverse=True)
+print(f"Set sorted asc: {asc_tags}")     # Set sorted asc: ['c', 'golang', 'python', 'rust']
+print(f"Set sorted desc: {desc_tags}")   # Set sorted desc: ['rust', 'python', 'golang', 'c']
+
+# 4. Strings: sorting characters
+word = "python"
+asc_chars = "".join(sorted(word))
+desc_chars = "".join(sorted(word, reverse=True))
+print(f"String asc: '{asc_chars}'")      # String asc: 'hnopty'
+print(f"String desc: '{desc_chars}'")    # String desc: 'ytponh'
+
+# 5. Dictionaries: sorting by keys and values
+inventory = {"banana": 30, "apple": 10, "orange": 25, "mango": 15}
+
+# Sort by keys (asc and desc)
+by_key_asc = dict(sorted(inventory.items()))
+by_key_desc = dict(sorted(inventory.items(), reverse=True))
+print(f"Dict by keys asc: {by_key_asc}")
+# Dict by keys asc: {'apple': 10, 'banana': 30, 'mango': 15, 'orange': 25}
+print(f"Dict by keys desc: {by_key_desc}")
+# Dict by keys desc: {'orange': 25, 'mango': 15, 'banana': 30, 'apple': 10}
+
+# Sort by values (asc and desc)
+by_val_asc = dict(sorted(inventory.items(), key=lambda item: item[1]))
+by_val_desc = dict(sorted(inventory.items(), key=lambda item: item[1], reverse=True))
+print(f"Dict by values asc: {by_val_asc}")
+# Dict by values asc: {'apple': 10, 'mango': 15, 'orange': 25, 'banana': 30}
+print(f"Dict by values desc: {by_val_desc}")
+# Dict by values desc: {'banana': 30, 'orange': 25, 'mango': 15, 'apple': 10}
+
+# 6. Custom sorting: Sorting list of numbers by factors count
+def count_factors(n: int) -> int:
+    """Return the total number of positive divisors/factors of n."""
+    count = 0
+    for i in range(1, int(n ** 0.5) + 1):
+        if n % i == 0:
+            count += 1 if i * i == n else 2
+    return count
+
+numbers = [12, 7, 9, 10, 16]
+# Factor breakdown:
+# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
+# 7  -> 2 factors (1, 7)
+# 9  -> 3 factors (1, 3, 9)
+# 10 -> 4 factors (1, 2, 5, 10)
+# 16 -> 5 factors (1, 2, 4, 8, 16)
+
+asc_by_factors = sorted(numbers, key=count_factors)
+desc_by_factors = sorted(numbers, key=count_factors, reverse=True)
+print(f"Numbers sorted by factors (asc): {asc_by_factors}")
+# Numbers sorted by factors (asc): [7, 9, 10, 16, 12]
+print(f"Numbers sorted by factors (desc): {desc_by_factors}")
+# Numbers sorted by factors (desc): [12, 16, 10, 9, 7]
+```
+
+- **Strength — Stable & Universal Timsort** Python uses Timsort ($O(n \log n)$), which is guaranteed to be stable (preserving the relative order of elements with equal keys) and works universally across any iterable via `sorted()`.
+- **Weakness — list.sort() Returns None & Type Homogeneity** Calling `x = my_list.sort()` assigns `None` to `x`, wiping out references by mistake. Furthermore, comparing elements with incompatible types (such as `[1, "2"]`) raises a `TypeError` at runtime.
+
+**Interview question**
+
+*Given a list of positive integers, sort the list in ascending order by their number of factors. If two numbers have the same number of factors, break the tie by sorting them by their numeric value in ascending order. Also support descending order.*
+
+Count the divisors of each integer efficiently up to $\sqrt{n}$. To sort by factor count and resolve ties using the number's own value, pass a tuple `(count_factors(x), x)` to the `key` parameter. Python compares tuples element by element: if the factor counts match, it automatically compares the second tuple element.
+
+**Answer — Sort Numbers by Factors**
+
+```python
+def count_factors(n: int) -> int:
+    """Count positive divisors of n in O(sqrt(n)) time."""
+    if n <= 0:
+        return 0
+    count = 0
+    for i in range(1, int(n ** 0.5) + 1):
+        if n % i == 0:
+            count += 1 if i * i == n else 2
+    return count
+
+def sort_by_factors(nums: list[int], reverse: bool = False) -> list[int]:
+    """Sort numbers by their factor count; ties broken by numeric value."""
+    return sorted(nums, key=lambda x: (count_factors(x), x), reverse=reverse)
+
+# Test cases
+test_list = [12, 10, 7, 16, 9, 8]
+# 7  -> 2 factors (1, 7)
+# 9  -> 3 factors (1, 3, 9)
+# 8  -> 4 factors (1, 2, 4, 8)
+# 10 -> 4 factors (1, 2, 5, 10)  <- 8 and 10 tie on factors (4); tie broken: 8 < 10
+# 16 -> 5 factors (1, 2, 4, 8, 16)
+# 12 -> 6 factors (1, 2, 3, 4, 6, 12)
+
+asc_sorted = sort_by_factors(test_list)
+print(asc_sorted)  # [7, 9, 8, 10, 16, 12]
+
+desc_sorted = sort_by_factors(test_list, reverse=True)
+print(desc_sorted)  # [12, 16, 10, 8, 9, 7]
+
+print(sort_by_factors([2, 4, 6, 8, 1]))  # [1, 2, 4, 6, 8]
+print("Sorting by factors passed!")      # Sorting by factors passed!
+```
+
+> **Key idea**
+>
+> Remember that `list.sort()` operates in-place and returns `None`, while `sorted()` returns a new list and leaves the original iterable unmodified. For immutable data structures like tuples and strings, or unordered structures like sets, always use `sorted()`. When sorting with multiple criteria, return a tuple from your `key` function to achieve deterministic tie-breaking.
+
+---
+
+<a id="11-tuples-and-sets"></a>
+
+## 11. Tuples & Sets
 
 - **Tuples** `Immutable fixed records: (x, y)` <!-- great -->
 - **Sets** `Unique values with fast in checks` <!-- great -->
@@ -1099,9 +1272,9 @@ print("Common users passed!")  # Common users passed!
 
 ---
 
-<a id="11-unpacking-and-destructuring"></a>
+<a id="12-unpacking-and-destructuring"></a>
 
-## 11. Unpacking & Destructuring
+## 12. Unpacking & Destructuring
 
 - **Multiple Assignment** `a, b = [10, 20]` <!-- great -->
 - **Starred Unpacking** `first, *rest = items` <!-- great -->
@@ -1188,9 +1361,9 @@ print("Extract successful totals passed!")  # Extract successful totals passed!
 
 ---
 
-<a id="12-list-comprehensions"></a>
+<a id="13-list-comprehensions"></a>
 
-## 12. List Comprehensions
+## 13. List Comprehensions
 
 - **Syntax** `[expression for item in iterable]` <!-- great -->
 - **With Filter** `[expr for item in iterable if condition]` <!-- great -->
@@ -1263,9 +1436,9 @@ print("Filter CSV files passed!")  # Filter CSV files passed!
 
 Writing clean reusable functions, argument packing, and non-blocking asynchronous coroutines.
 
-<a id="13-functions-and-arguments"></a>
+<a id="14-functions-and-arguments"></a>
 
-## 13. Functions & Arguments
+## 14. Functions & Arguments
 
 - **Definition & Defaults** `def fn(param=default):` <!-- great -->
 - **Variable Positional** `*args (packed as tuple)` <!-- great -->
@@ -1403,9 +1576,9 @@ print("Build query URL passed!")  # Build query URL passed!
 
 ---
 
-<a id="14-async-and-await"></a>
+<a id="15-async-and-await"></a>
 
-## 14. Async / Await
+## 15. Async / Await
 
 - **Coroutine Function** `async def fetch(): ...` <!-- great -->
 - **Yield Control** `await coroutine()` <!-- great -->
@@ -1519,9 +1692,9 @@ asyncio.run(run_tests())
 
 Modeling real-world entities, encapsulating state, and writing clean maintainable classes with methods and inheritance.
 
-<a id="15-object-oriented-programming"></a>
+<a id="16-object-oriented-programming"></a>
 
-## 15. Object-Oriented Programming (OOP)
+## 16. Object-Oriented Programming (OOP)
 
 - **Class & Instance** `class BankAccount: / acc = BankAccount()` <!-- great -->
 - **Initializer** `def __init__(self, ...):` <!-- great -->
@@ -1664,9 +1837,9 @@ print("Inventory item passed!")  # Inventory item passed!
 
 Structuring scripts, and managing isolated project environments.
 
-<a id="16-modules-and-imports"></a>
+<a id="17-modules-and-imports"></a>
 
-## 16. Modules & Imports
+## 17. Modules & Imports
 
 - **Import Syntax** `import mod / from mod import fn` <!-- great -->
 - **Script Guard** `if __name__ == "__main__":` <!-- great -->
@@ -1781,9 +1954,9 @@ print("Load config passed!")  # Load config passed!
 
 ---
 
-<a id="17-virtual-environments"></a>
+<a id="18-virtual-environments"></a>
 
-## 17. Virtual Environments
+## 18. Virtual Environments
 
 - **Environment Creation** `python3 -m venv .venv` <!-- great -->
 - **Activation** `source .venv/bin/activate` <!-- great -->
@@ -1904,23 +2077,24 @@ print("Parse requirements passed!")  # Parse requirements passed!
 
 A quick checklist of the most common daily syntax:
 
-1. **Variables & None:** Python is dynamically typed. Check for emptiness with `if items:` or `if not items:`. Compare singletons with `if val is None:`.
+1. **Variables, Types & Casting:** Python is dynamically typed. Check for emptiness with `if items:` or `if not items:`. Compare singletons with `if val is None:`. Cast explicitly with `int()`, `float()`, `str()`, `bool()`.
 2. **Type Hints:** Annotate variables and functions: `def fn(x: int) -> str | None:`. Use `list[str]` and `dict[str, int]` for generic collections.
 3. **Keywords:** Only 35 reserved words in Python (`keyword.kwlist`). Check with `keyword.iskeyword()`. Never name variables after keywords.
-4. **Strings:** Format with `f"Hello {name}"`. Clean with `.strip()`, split into lists with `.split()`, join with `", ".join(list)`, and test substrings with `in` and `not in`.
-5. **Conditionals & Operators:** Use `/` for float division, `//` for floor division, `%` for modulo, and `divmod()` for both. Use `is` and `is not` for identity (`val is None`), `==` and `!=` for values. Test membership with `in` and `not in`. Chain comparisons: `18 <= age < 65`.
-6. **Loops:** Iterate cleanly with `for item in items:` or `for i, item in enumerate(items):`. Use `break`, `continue`, and `pass`.
-7. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`. Reverse with `[::-1]`.
-8. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`.
-9. **Tuples & Sets:** Use immutable tuples for fixed records. Use `set(items)` to instantly remove duplicates with $O(1)$ membership checks.
-10. **Unpacking & Destructuring:** Multiple assignment (`a, b = b, a`), capture leftovers (`head, *tail = items`), ignore values (`first, *_ = items`), and merge dictionaries with `{**defaults, **custom}`.
-11. **Comprehensions:** Transform cleanly: `[x.lower() for x in names if x]`.
-12. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary. Unpack with `*` and `**`.
-13. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
-14. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
-15. **Errors:** Catch expected issues with `try / except SpecificError:`. Never write bare `except: pass`.
-16. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
-17. **Virtual Environments:** Create isolated project environments with `python3 -m venv .venv`, activate with `source .venv/bin/activate` (or `.venv\Scripts\activate` on Windows), install dependencies from `requirements.txt` via `pip install -r requirements.txt`, and check with `sys.prefix != sys.base_prefix`. Never commit `.venv` to git.
+4. **Error Handling:** Catch expected issues with `try / except SpecificError:`. Use `else` for code that runs only when no exception occurs, and `finally` for cleanup. Never write bare `except: pass`.
+5. **Strings:** Format with `f"Hello {name}"`. Clean with `.strip()`, split into lists with `.split()`, join with `", ".join(list)`, and test substrings with `in` and `not in`.
+6. **Conditionals & Operators:** Use `/` for float division, `//` for floor division, `%` for modulo, and `divmod()` for both. Use `is` and `is not` for identity (`val is None`), `==` and `!=` for values. Chain comparisons: `18 <= age < 65`.
+7. **Loops:** Iterate cleanly with `for item in items:` or `for i, item in enumerate(items):`. Use `zip()` for parallel iteration, and `break` / `continue` for control flow.
+8. **Lists:** Access with `items[0]` and `items[-1]`. Append with `.append()`, remove with `.pop()`. Slice with `seq[start:stop:step]` and reverse with `[::-1]`.
+9. **Dictionaries:** Use `.get(key, default)` for safe lookups that never crash with `KeyError`. Iterate over `items()` for `(key, value)` pairs.
+10. **Sorting:** Sort in-place with `list.sort()` or create a new sorted list with `sorted(iterable)`. Pass `reverse=True` for descending order. Works on lists, tuples, sets, strings, and dictionaries. Supply `key=func` (e.g. `key=count_factors` or lambda) for custom sorting rules and tie-breaking.
+11. **Tuples & Sets:** Use immutable tuples for fixed records and instant hash keys. Use `set(items)` to strip duplicates with $O(1)$ membership checks, union (`|`), and intersection (`&`).
+12. **Unpacking & Destructuring:** Multiple assignment (`a, b = b, a`), capture leftovers with `*` (`head, *tail = items`), ignore values (`first, *_ = items`), and merge dictionaries with `{**defaults, **custom}`.
+13. **Comprehensions:** Transform and filter concisely: `[x.lower() for x in names if x]`. Use dictionary comprehensions `{k: v for ...}` and set comprehensions similarly.
+14. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary.
+15. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
+16. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
+17. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
+18. **Virtual Environments:** Create isolated project environments with `python3 -m venv .venv`, activate with `source .venv/bin/activate` (or `.venv\Scripts\activate` on Windows), install dependencies from `requirements.txt` via `pip install -r requirements.txt`, and check with `sys.prefix != sys.base_prefix`. Never commit `.venv` to git.
 
 ---
 
