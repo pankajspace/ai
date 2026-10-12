@@ -25,7 +25,7 @@ def safe_divide(a:int, b:int) -> float | None:
     try:
         return a / b
     except ZeroDivisionError as e:
-        print("Cannot divide by zero")
+        print("Cannot divide by zero", end=". ")
 
 print(f"safe_divide: {safe_divide(4, 2)}")
 print(f"safe_divide: {safe_divide(2, 4)}")
