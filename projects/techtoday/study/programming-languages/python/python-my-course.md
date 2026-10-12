@@ -1809,10 +1809,11 @@ Modeling real-world entities, encapsulating state, and writing clean maintainabl
 - **Initializer** `def __init__(self, ...):` <!-- great -->
 - **Special Methods** `__str__, __repr__` <!-- good -->
 - **Inheritance** `class Savings(BankAccount): super()` <!-- good -->
+- **Multiple Inheritance & MRO** `class Copier(Scanner, Printer): super()` <!-- great -->
 
 In Python, Object-Oriented Programming (OOP) is a programming paradigm that organizes code around objects rather than just isolated functions. A **class** is a blueprint defining attributes (data) and methods (behavior). An **object** (or instance) is a concrete realization of that blueprint with its own state.
 
-Python passes the instance itself explicitly as the first parameter to methods, conventionally named `self`. The `__init__` constructor sets up initial instance state when an object is instantiated. Classes also support inheritance, allowing child classes to reuse, extend, or override parent methods using `super()`.
+Python passes the instance itself explicitly as the first parameter to methods, conventionally named `self`. The `__init__` constructor sets up initial instance state when an object is instantiated. Classes also support single and multiple inheritance, allowing child classes to reuse, extend, or override parent methods using `super()`.
 
 > **Analogy** 🎬
 >
@@ -1826,7 +1827,14 @@ Key everyday OOP concepts:
 3. `self`: A reference to the current instance, used to read or modify its attributes (`self.balance = 0.0`).
 4. Instance attributes vs Class attributes: Attributes assigned to `self` belong to that specific instance; attributes defined at the class level are shared across all instances.
 5. Special dunder methods: `__str__` returns a friendly string for end users (used by `print()`), while `__repr__` returns an unambiguous representation for developers and debugging.
-6. Inheritance and `super()`: `class Child(Parent):` inherits behavior from a parent class, and `super().__init__(...)` delegates initialization to the parent class.
+6. Single inheritance and `super()`: `class Child(Parent):` inherits behavior from a parent class, and `super().__init__(...)` delegates initialization to the parent class.
+7. Multiple Inheritance: Python allows a class to inherit from multiple parent classes: `class Child(ParentA, ParentB):`.
+8. The Diamond Problem: A diamond inheritance hierarchy occurs when class `D` inherits from both `B` and `C`, and both `B` and `C` inherit from the same common base class `A`. In naive implementations, calling base classes directly (`A.__init__(self)`) causes grandparent `A`'s initializer to execute twice, corrupting state and duplicating side-effects.
+9. Method Resolution Order (MRO) & C3 Linearization: Python solves the diamond problem using the **C3 linearization** algorithm. It flattens the inheritance graph into a deterministic, linear search order (e.g., `D -> B -> C -> A -> object`) where subclasses always precede parents, parent ordering is preserved, and every ancestor is visited exactly once. Inspect it anytime via `ClassName.__mro__` or `ClassName.mro()`.
+10. Cooperative `super()` and `**kwargs`: In Python, `super()` does not simply mean "my direct parent" — it dynamically calls the **next class in the instance's runtime MRO**. In a diamond (`D(B, C)`), calling `super()` inside `B` delegates to sibling `C`, not grandparent `A`! To work properly, all classes in the hierarchy must:
+    - Call `super().__init__(**kwargs)` rather than hardcoding parent names like `ParentA.__init__(self)`.
+    - Accept `**kwargs` and pass remaining unconsumed keyword arguments up the chain so sibling classes receive their needed parameters.
+    - Let the top-level base class pass any remaining keyword arguments to `object.__init__(**kwargs)`.
 
 ```python
 # 1. Defining a class with __init__ and methods
@@ -1875,10 +1883,48 @@ class SavingsAccount(BankAccount):
 savings = SavingsAccount("Bob", 1000.0)
 savings.apply_interest()
 print(f"Savings balance: ${savings.balance:.2f}")  # Savings balance: $1030.00
+
+# 4. Multiple Inheritance & The Diamond Problem solved properly with super()
+#
+#       Device
+#       /    \
+#   Scanner  Printer
+#       \    /
+#       Copier
+#
+class Device:
+    def __init__(self, device_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.device_id = device_id
+
+class Scanner(Device):
+    def __init__(self, resolution_dpi: int, **kwargs):
+        super().__init__(**kwargs)
+        self.resolution_dpi = resolution_dpi
+
+class Printer(Device):
+    def __init__(self, print_speed_ppm: int, **kwargs):
+        super().__init__(**kwargs)
+        self.print_speed_ppm = print_speed_ppm
+
+class Copier(Scanner, Printer):
+    def __init__(self, is_color: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.is_color = is_color
+
+# Copier MRO: Copier -> Scanner -> Printer -> Device -> object
+print([cls.__name__ for cls in Copier.__mro__])
+# ['Copier', 'Scanner', 'Printer', 'Device', 'object']
+
+copier = Copier(device_id="DEV-101", resolution_dpi=1200, print_speed_ppm=35, is_color=True)
+print(copier.device_id, copier.resolution_dpi, copier.print_speed_ppm, copier.is_color)
+# DEV-101 1200 35 True
 ```
 
 - **Strength — Encapsulation & Cohesion** Bundling state and behavior together keeps related logic organized, avoids scattered helper functions, and protects data integrity.
+- **Strength — Cooperative Multiple Inheritance & Mixins** Python's C3 Linearization MRO allows clean composability through mixins and multiple inheritance without duplicate base execution when `super()` is used consistently.
 - **Weakness — Avoid Over-Engineering** Don't create complex 5-level inheritance hierarchies or write classes for simple tasks where a plain dictionary, namedtuple, or pure function is simpler and faster.
+- **Weakness — Brittle Diamond Coupling with Direct Class Calls** Hardcoding `BaseClass.__init__(self)` bypasses the MRO chain, causing grandparent initializers to execute multiple times, state to be clobbered, and cooperative siblings to be skipped.
 
 **Interview question**
 
@@ -1934,9 +1980,95 @@ except ValueError as e:
 print("Inventory item passed!")  # Inventory item passed!
 ```
 
+**Interview question**
+
+*Design a diamond inheritance hierarchy for a smart document workstation with a base class Device, intermediate classes Scanner and Printer, and a derived class Copier that inherits from both Scanner and Printer. Implement cooperative multiple inheritance using super() and **kwargs so that each class initializes its specific attributes properly, the root Device initializer executes exactly once without duplicate calls, and a cooperative diagnostics method delegates across the entire Method Resolution Order (MRO).*
+
+In Python multiple inheritance, when a derived class `Copier` inherits from both `Scanner` and `Printer`, and both inherit from `Device`, the inheritance hierarchy forms a diamond shape (`Copier -> Scanner, Printer -> Device`).
+
+To solve the diamond problem properly:
+1. **Linearize Ancestors with MRO:** Inspect `Copier.__mro__` to verify the resolution path: `Copier -> Scanner -> Printer -> Device -> object`.
+2. **Cooperative Initialization with `**kwargs`:** Each class accepts its own specific keyword arguments (`device_id` and `brand` in `Device`, `resolution_dpi` in `Scanner`, `print_speed_ppm` in `Printer`, and `has_duplex` in `Copier`). Each class extracts what it needs and forwards `**kwargs` via `super().__init__(**kwargs)`.
+3. **Avoid Explicit Class Calls:** Never invoke `Device.__init__(self, ...)` directly. Using `super().__init__(**kwargs)` guarantees that `Device.__init__` is reached exactly once at the end of the MRO.
+4. **Cooperative Method Delegation:** In `diagnostics() -> list[str]`, each class prepends its status and delegates to `super().diagnostics()`. When `Scanner` calls `super().diagnostics()`, MRO directs the call to sibling `Printer`, not `Device`, ensuring every subsystem is tested.
+
+**Answer — Diamond Inheritance with Cooperative super()**
+
+```python
+class Device:
+    init_count = 0
+
+    def __init__(self, device_id: str, brand: str = "Generic", **kwargs):
+        super().__init__(**kwargs)
+        self.device_id = device_id
+        self.brand = brand
+        Device.init_count += 1
+
+    def diagnostics(self) -> list[str]:
+        return [f"Device({self.device_id}, brand={self.brand}) OK"]
+
+class Scanner(Device):
+    def __init__(self, resolution_dpi: int = 600, **kwargs):
+        super().__init__(**kwargs)
+        self.resolution_dpi = resolution_dpi
+
+    def diagnostics(self) -> list[str]:
+        return [f"Scanner({self.resolution_dpi} DPI) OK"] + super().diagnostics()
+
+class Printer(Device):
+    def __init__(self, print_speed_ppm: int = 30, **kwargs):
+        super().__init__(**kwargs)
+        self.print_speed_ppm = print_speed_ppm
+
+    def diagnostics(self) -> list[str]:
+        return [f"Printer({self.print_speed_ppm} PPM) OK"] + super().diagnostics()
+
+class Copier(Scanner, Printer):
+    def __init__(self, has_duplex: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.has_duplex = has_duplex
+
+    def diagnostics(self) -> list[str]:
+        return [f"Copier(duplex={self.has_duplex}) OK"] + super().diagnostics()
+
+# Test cases
+copier = Copier(
+    device_id="DEV-200",
+    brand="Canon",
+    resolution_dpi=2400,
+    print_speed_ppm=40,
+    has_duplex=True
+)
+
+# 1. Verify attributes from all classes in diamond
+print(copier.device_id)        # DEV-200
+print(copier.brand)            # Canon
+print(copier.resolution_dpi)   # 2400
+print(copier.print_speed_ppm)  # 40
+print(copier.has_duplex)       # True
+
+# 2. Verify root Device.__init__ ran exactly once
+print(Device.init_count)       # 1
+
+# 3. Verify MRO order
+mro_order = [cls.__name__ for cls in Copier.__mro__]
+print(mro_order)
+# ['Copier', 'Scanner', 'Printer', 'Device', 'object']
+
+# 4. Verify cooperative diagnostics method execution
+for status in copier.diagnostics():
+    print(status)
+# Copier(duplex=True) OK
+# Scanner(2400 DPI) OK
+# Printer(40 PPM) OK
+# Device(DEV-200, brand=Canon) OK
+
+print("Diamond problem solution passed!")  # Diamond problem solution passed!
+```
+
 > **Key idea**
 >
-> In Python, prefer composition over deep inheritance ("has-a" over "is-a"). Only inherit when a child genuinely is a specialized version of the parent, and always call `super().__init__(...)` so base classes are initialized properly.
+> In Python, multiple inheritance solves the diamond problem via **C3 linearization (MRO)** and **cooperative `super()`**. Never call parent initializers explicitly by class name like `Base.__init__(self)`; always use `super().__init__(**kwargs)` and forward `**kwargs` across the entire hierarchy so every ancestor is visited exactly once in deterministic order.
 
 ---
 
@@ -2202,7 +2334,7 @@ A quick checklist of the most common daily syntax:
 13. **Comprehensions:** Transform and filter concisely: `[x.lower() for x in names if x]`. Use dictionary comprehensions `{k: v for ...}` and set comprehensions similarly.
 14. **Functions & Arguments:** Define with `def fn(a, b=default, *args, **kwargs):`. `*args` captures extra positional arguments into a tuple, while `**kwargs` captures keyword arguments into a dictionary.
 15. **Async & Await:** Concurrency for I/O-bound tasks. Declare with `async def`, yield with `await`, run with `asyncio.run()`, and execute concurrently with `asyncio.gather()`. Never execute blocking synchronous code inside coroutines.
-16. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. Use `super().__init__(...)` in child classes to inherit parent state safely.
+16. **Classes & OOP:** Define classes with `class Item:`, initialize attributes inside `def __init__(self, ...):`, and provide `__str__` or `__repr__` for clean display. For single or multiple inheritance (the diamond problem), resolve ancestors safely using cooperative `super().__init__(**kwargs)` and C3 Linearization MRO (`ClassName.__mro__`) rather than calling base classes directly.
 17. **Modules & Imports:** Organize code into `.py` files. Use `from module import func` or `import module as alias`. Guard scripts with `if __name__ == "__main__":` and avoid `from module import *`.
 18. **Virtual Environments:** Create isolated project environments with `python3 -m venv .venv`, activate with `source .venv/bin/activate` (or `.venv\Scripts\activate` on Windows), install dependencies from `requirements.txt` via `pip install -r requirements.txt`, and check with `sys.prefix != sys.base_prefix`. Never commit `.venv` to git.
 

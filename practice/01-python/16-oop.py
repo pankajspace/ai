@@ -91,3 +91,75 @@ except ValueError as e:
 
 print("Inventory item passed!")  # Inventory item passed!
 
+
+# 4. Multiple Inheritance, the Diamond Problem & cooperative super()
+#
+#       Device
+#       /    \
+#   Scanner  Printer
+#       \    /
+#       Copier
+#
+class Device:
+    init_count = 0
+
+    def __init__(self, device_id: str, brand: str = "Generic", **kwargs):
+        super().__init__(**kwargs)
+        self.device_id = device_id
+        self.brand = brand
+        Device.init_count += 1
+
+    def diagnostics(self) -> list[str]:
+        return [f"Device({self.device_id}, brand={self.brand}) OK"]
+
+class Scanner(Device):
+    def __init__(self, resolution_dpi: int = 600, **kwargs):
+        super().__init__(**kwargs)
+        self.resolution_dpi = resolution_dpi
+
+    def diagnostics(self) -> list[str]:
+        return [f"Scanner({self.resolution_dpi} DPI) OK"] + super().diagnostics()
+
+class Printer(Device):
+    def __init__(self, print_speed_ppm: int = 30, **kwargs):
+        super().__init__(**kwargs)
+        self.print_speed_ppm = print_speed_ppm
+
+    def diagnostics(self) -> list[str]:
+        return [f"Printer({self.print_speed_ppm} PPM) OK"] + super().diagnostics()
+
+class Copier(Scanner, Printer):
+    def __init__(self, has_duplex: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.has_duplex = has_duplex
+
+    def diagnostics(self) -> list[str]:
+        return [f"Copier(duplex={self.has_duplex}) OK"] + super().diagnostics()
+
+# Test cases
+copier = Copier(
+    device_id="DEV-200",
+    brand="Canon",
+    resolution_dpi=2400,
+    print_speed_ppm=40,
+    has_duplex=True
+)
+
+print(copier.device_id)        # DEV-200
+print(copier.brand)            # Canon
+print(copier.resolution_dpi)   # 2400
+print(copier.print_speed_ppm)  # 40
+print(copier.has_duplex)       # True
+print(Device.init_count)       # 1
+print([cls.__name__ for cls in Copier.__mro__])
+# ['Copier', 'Scanner', 'Printer', 'Device', 'object']
+
+for status in copier.diagnostics():
+    print(status)
+# Copier(duplex=True) OK
+# Scanner(2400 DPI) OK
+# Printer(40 PPM) OK
+# Device(DEV-200, brand=Canon) OK
+
+print("Diamond problem passed!")  # Diamond problem passed!
+

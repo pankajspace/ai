@@ -3220,6 +3220,8 @@ asyncio.run(run_tests())
                                 <li><b>Special Methods</b> <code class="big-o o-good">__str__, __repr__</code></li>
                                 <li><b>Inheritance</b> <code
                                         class="big-o o-good">class Savings(BankAccount): super()</code></li>
+                                <li><b>Multiple Inheritance &amp; MRO</b> <code
+                                        class="big-o o-great">class Copier(Scanner, Printer): super()</code></li>
                             </ul>
                             <p>In Python, Object-Oriented Programming (OOP) is a programming paradigm that organizes
                                 code around objects rather than just isolated functions. A <strong>class</strong> is a
@@ -3227,9 +3229,9 @@ asyncio.run(run_tests())
                                 (or instance) is a concrete realization of that blueprint with its own state.</p>
                             <p>Python passes the instance itself explicitly as the first parameter to methods,
                                 conventionally named <code>self</code>. The <code>__init__</code> constructor sets up
-                                initial instance state when an object is instantiated. Classes also support inheritance,
-                                allowing child classes to reuse, extend, or override parent methods using
-                                <code>super()</code>.
+                                initial instance state when an object is instantiated. Classes also support single and
+                                multiple inheritance, allowing child classes to reuse, extend, or override parent
+                                methods using <code>super()</code>.
                             </p>
                             <div class="analogy">
                                 <span class="analogy-icon">🎬</span>
@@ -3256,9 +3258,35 @@ asyncio.run(run_tests())
                                 <li>Special dunder methods: <code>__str__</code> returns a friendly string for end users
                                     (used by <code>print()</code>), while <code>__repr__</code> returns an unambiguous
                                     representation for developers and debugging.</li>
-                                <li>Inheritance and <code>super()</code>: <code>class Child(Parent):</code> inherits
+                                <li>Single inheritance and <code>super()</code>: <code>class Child(Parent):</code> inherits
                                     behavior from a parent class, and <code>super().__init__(...)</code> delegates
                                     initialization to the parent class.</li>
+                                <li>Multiple Inheritance: Python allows a class to inherit from multiple parent classes:
+                                    <code>class Child(ParentA, ParentB):</code>.</li>
+                                <li>The Diamond Problem: A diamond inheritance hierarchy occurs when class <code>D</code>
+                                    inherits from both <code>B</code> and <code>C</code>, and both <code>B</code> and
+                                    <code>C</code> inherit from the same common base class <code>A</code>. In naive
+                                    implementations, calling base classes directly (<code>A.__init__(self)</code>) causes
+                                    grandparent <code>A</code>'s initializer to execute twice, corrupting state and
+                                    duplicating side-effects.</li>
+                                <li>Method Resolution Order (MRO) &amp; C3 Linearization: Python solves the diamond
+                                    problem using the <strong>C3 linearization</strong> algorithm. It flattens the
+                                    inheritance graph into a deterministic, linear search order (e.g.,
+                                    <code>D &rarr; B &rarr; C &rarr; A &rarr; object</code>) where subclasses always
+                                    precede parents, parent ordering is preserved, and every ancestor is visited exactly
+                                    once. Inspect it anytime via <code>ClassName.__mro__</code> or <code>ClassName.mro()</code>.</li>
+                                <li>Cooperative <code>super()</code> and <code>**kwargs</code>: In Python,
+                                    <code>super()</code> does not simply mean &ldquo;my direct parent&rdquo; &mdash; it
+                                    dynamically calls the <strong>next class in the instance's runtime MRO</strong>.
+                                    In a diamond (<code>D(B, C)</code>), calling <code>super()</code> inside <code>B</code>
+                                    delegates to sibling <code>C</code>, not grandparent <code>A</code>! To work properly,
+                                    all classes in the hierarchy must:
+                                    <ul>
+                                        <li>Call <code>super().__init__(**kwargs)</code> rather than hardcoding parent names like <code>ParentA.__init__(self)</code>.</li>
+                                        <li>Accept <code>**kwargs</code> and pass remaining unconsumed keyword arguments up the chain so sibling classes receive their needed parameters.</li>
+                                        <li>Let the top-level base class pass any remaining keyword arguments to <code>object.__init__(**kwargs)</code>.</li>
+                                    </ul>
+                                </li>
                             </ol>
                             <div class="highlight">
                                 <pre><code data-lang="python"># 1. Defining a class with __init__ and methods
@@ -3307,21 +3335,67 @@ class SavingsAccount(BankAccount):
 savings = SavingsAccount("Bob", 1000.0)
 savings.apply_interest()
 print(f"Savings balance: ${savings.balance:.2f}")  # Savings balance: $1030.00
+
+# 4. Multiple Inheritance &amp; The Diamond Problem solved properly with super()
+#
+#       Device
+#       /    \
+#   Scanner  Printer
+#       \    /
+#       Copier
+#
+class Device:
+    def __init__(self, device_id: str, **kwargs):
+        super().__init__(**kwargs)
+        self.device_id = device_id
+
+class Scanner(Device):
+    def __init__(self, resolution_dpi: int, **kwargs):
+        super().__init__(**kwargs)
+        self.resolution_dpi = resolution_dpi
+
+class Printer(Device):
+    def __init__(self, print_speed_ppm: int, **kwargs):
+        super().__init__(**kwargs)
+        self.print_speed_ppm = print_speed_ppm
+
+class Copier(Scanner, Printer):
+    def __init__(self, is_color: bool, **kwargs):
+        super().__init__(**kwargs)
+        self.is_color = is_color
+
+# Copier MRO: Copier -&gt; Scanner -&gt; Printer -&gt; Device -&gt; object
+print([cls.__name__ for cls in Copier.__mro__])
+# ['Copier', 'Scanner', 'Printer', 'Device', 'object']
+
+copier = Copier(device_id="DEV-101", resolution_dpi=1200, print_speed_ppm=35, is_color=True)
+print(copier.device_id, copier.resolution_dpi, copier.print_speed_ppm, copier.is_color)
+# DEV-101 1200 35 True
 </code></pre>
                             </div>
                             <ul class="card-grid">
                                 <li class="is-good"><b>Strength — Encapsulation &amp; Cohesion:</b> Bundling state and
                                     behavior together keeps related logic organized, avoids scattered helper functions,
                                     and protects data integrity.</li>
+                                <li class="is-good"><b>Strength — Cooperative Multiple Inheritance &amp; Mixins:</b>
+                                    Python's C3 Linearization MRO allows clean composability through mixins and multiple
+                                    inheritance without duplicate base execution when <code>super()</code> is used
+                                    consistently.</li>
                                 <li class="is-bad"><b>Weakness — Avoid Over-Engineering:</b> Don't create complex
                                     5-level inheritance hierarchies or write classes for simple tasks where a plain
                                     dictionary, namedtuple, or pure function is simpler and faster.</li>
+                                <li class="is-bad"><b>Weakness — Brittle Diamond Coupling with Direct Class Calls:</b>
+                                    Hardcoding <code>BaseClass.__init__(self)</code> bypasses the MRO chain, causing
+                                    grandparent initializers to execute multiple times, state to be clobbered, and
+                                    cooperative siblings to be skipped.</li>
                             </ul>
                             <div class="callout callout-key">
-                                <p><strong>Key idea:</strong> In Python, prefer <strong>composition</strong> over deep
-                                    inheritance (&ldquo;has-a&rdquo; over &ldquo;is-a&rdquo;). Only inherit when a child
-                                    genuinely is a specialized version of the parent, and always call
-                                    <code>super().__init__(...)</code> so base classes are initialized properly.
+                                <p><strong>Key idea:</strong> In Python, multiple inheritance solves the diamond problem
+                                    via <strong>C3 linearization (MRO)</strong> and <strong>cooperative <code>super()</code></strong>.
+                                    Never call parent initializers explicitly by class name like <code>Base.__init__(self)</code>;
+                                    always use <code>super().__init__(**kwargs)</code> and forward <code>**kwargs</code>
+                                    across the entire hierarchy so every ancestor is visited exactly once in deterministic
+                                    order.
                                 </p>
                             </div>
                         </div>
@@ -3336,7 +3410,7 @@ print(f"Savings balance: ${savings.balance:.2f}")  # Savings balance: $1030.00
                                 </h3>
                             </div>
                             <div class="part-header-right">
-                                <span class="part-counter">1</span>
+                                <span class="part-counter">2</span>
                                 <span class="part-arrow" aria-hidden="true">
                                     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor"
                                         stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -3409,10 +3483,118 @@ print("Inventory item passed!")  # Inventory item passed!
                                     </div>
                                 </div>
                             </div>
+                            <div class="worked">
+                                <b>Interview question</b>
+                                <p class="worked-q">Design a diamond inheritance hierarchy for a smart document workstation
+                                    with a base class Device, intermediate classes Scanner and Printer, and a derived class
+                                    Copier that inherits from both Scanner and Printer. Implement cooperative multiple
+                                    inheritance using super() and **kwargs so that each class initializes its specific
+                                    attributes properly, the root Device initializer executes exactly once without duplicate
+                                    calls, and a cooperative diagnostics method delegates across the entire Method Resolution
+                                    Order (MRO).</p>
+                                <p>In Python multiple inheritance, when a derived class <code>Copier</code> inherits from
+                                    both <code>Scanner</code> and <code>Printer</code>, and both inherit from <code>Device</code>,
+                                    the inheritance hierarchy forms a diamond shape (<code>Copier &rarr; Scanner, Printer &rarr; Device</code>).
+                                </p>
+                                <p>To solve the diamond problem properly:
+                                    <ol>
+                                        <li><strong>Linearize Ancestors with MRO:</strong> Inspect <code>Copier.__mro__</code>
+                                            to verify the resolution path: <code>Copier &rarr; Scanner &rarr; Printer &rarr; Device &rarr; object</code>.</li>
+                                        <li><strong>Cooperative Initialization with <code>**kwargs</code>:</strong> Each class
+                                            accepts its own specific keyword arguments (<code>device_id</code> and <code>brand</code>
+                                            in <code>Device</code>, <code>resolution_dpi</code> in <code>Scanner</code>,
+                                            <code>print_speed_ppm</code> in <code>Printer</code>, and <code>has_duplex</code> in
+                                            <code>Copier</code>). Each class extracts what it needs and forwards <code>**kwargs</code>
+                                            via <code>super().__init__(**kwargs)</code>.</li>
+                                        <li><strong>Avoid Explicit Class Calls:</strong> Never invoke <code>Device.__init__(self, ...)</code>
+                                            directly. Using <code>super().__init__(**kwargs)</code> guarantees that <code>Device.__init__</code>
+                                            is reached exactly once at the end of the MRO.</li>
+                                        <li><strong>Cooperative Method Delegation:</strong> In <code>diagnostics() -&gt; list[str]</code>,
+                                            each class prepends its status and delegates to <code>super().diagnostics()</code>.
+                                            When <code>Scanner</code> calls <code>super().diagnostics()</code>, MRO directs the call
+                                            to sibling <code>Printer</code>, not <code>Device</code>, ensuring every subsystem is tested.</li>
+                                    </ol>
+                                </p>
+                                <div class="code-tabs" data-label="Answer — Diamond Inheritance with Cooperative super()">
+                                    <div class="tab-pane" data-lang="python">
+                                        <pre><code data-lang="python">class Device:
+    init_count = 0
+
+    def __init__(self, device_id: str, brand: str = "Generic", **kwargs):
+        super().__init__(**kwargs)
+        self.device_id = device_id
+        self.brand = brand
+        Device.init_count += 1
+
+    def diagnostics(self) -&gt; list[str]:
+        return [f"Device({self.device_id}, brand={self.brand}) OK"]
+
+class Scanner(Device):
+    def __init__(self, resolution_dpi: int = 600, **kwargs):
+        super().__init__(**kwargs)
+        self.resolution_dpi = resolution_dpi
+
+    def diagnostics(self) -&gt; list[str]:
+        return [f"Scanner({self.resolution_dpi} DPI) OK"] + super().diagnostics()
+
+class Printer(Device):
+    def __init__(self, print_speed_ppm: int = 30, **kwargs):
+        super().__init__(**kwargs)
+        self.print_speed_ppm = print_speed_ppm
+
+    def diagnostics(self) -&gt; list[str]:
+        return [f"Printer({self.print_speed_ppm} PPM) OK"] + super().diagnostics()
+
+class Copier(Scanner, Printer):
+    def __init__(self, has_duplex: bool = True, **kwargs):
+        super().__init__(**kwargs)
+        self.has_duplex = has_duplex
+
+    def diagnostics(self) -&gt; list[str]:
+        return [f"Copier(duplex={self.has_duplex}) OK"] + super().diagnostics()
+
+# Test cases
+copier = Copier(
+    device_id="DEV-200",
+    brand="Canon",
+    resolution_dpi=2400,
+    print_speed_ppm=40,
+    has_duplex=True
+)
+
+# 1. Verify attributes from all classes in diamond
+print(copier.device_id)        # DEV-200
+print(copier.brand)            # Canon
+print(copier.resolution_dpi)   # 2400
+print(copier.print_speed_ppm)  # 40
+print(copier.has_duplex)       # True
+
+# 2. Verify root Device.__init__ ran exactly once
+print(Device.init_count)       # 1
+
+# 3. Verify MRO order
+mro_order = [cls.__name__ for cls in Copier.__mro__]
+print(mro_order)
+# ['Copier', 'Scanner', 'Printer', 'Device', 'object']
+
+# 4. Verify cooperative diagnostics method execution
+for status in copier.diagnostics():
+    print(status)
+# Copier(duplex=True) OK
+# Scanner(2400 DPI) OK
+# Printer(40 PPM) OK
+# Device(DEV-200, brand=Canon) OK
+
+print("Diamond problem solution passed!")  # Diamond problem solution passed!
+</code></pre>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </section>
+
             <!-- ============================================================ Unit 5 -->
             <div class="unit-divider" id="unit-5">
                 <div class="unit-divider-badge">Unit 5</div>
