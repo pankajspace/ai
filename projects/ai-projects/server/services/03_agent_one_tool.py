@@ -106,8 +106,15 @@ def run_agent_with_tool(user_message: str = "How much are the shoes?") -> str:
     Returns:
         Final response text from the LLM.
     """
-    model = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-    client = OpenAI()
+
+    base_url = os.getenv("OPENAI_BASE_URL")
+    api_key = os.getenv("OPENAI_API_KEY")
+
+    client = OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        timeout=15.0,
+    )
 
     # Initialize conversation history with the user's prompt
     messages = [{"role": "user", "content": user_message}]
@@ -115,6 +122,7 @@ def run_agent_with_tool(user_message: str = "How much are the shoes?") -> str:
     # Phase 1: Send user message along with available tool definitions.
     # The model inspects the prompt and decides whether to respond directly
     # or request a tool invocation.
+    model = os.getenv("OPENAI_MODEL")
     response = client.chat.completions.create(
         model=model,
         messages=messages,
