@@ -12,9 +12,8 @@ Run directly:
 
 import os
 import sys
-from typing import List, Optional, Union
+from typing import List, Optional
 from dotenv import find_dotenv, load_dotenv
-from langchain_core.messages import AIMessage, BaseMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
@@ -63,62 +62,11 @@ class MemoryChatResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Helpers for Message Serialization & Conversion
-# ---------------------------------------------------------------------------
-def _to_langchain_messages(
-    messages: List[Union[ChatMessage, dict, BaseMessage]],
-) -> List[BaseMessage]:
-    """Convert input messages into LangChain BaseMessage objects."""
-    lc_messages: List[BaseMessage] = []
-    for msg in messages:
-        if isinstance(msg, BaseMessage):
-            lc_messages.append(msg)
-            continue
-
-        role = ""
-        content = ""
-        if isinstance(msg, ChatMessage):
-            role = msg.role
-            content = msg.content
-        elif isinstance(msg, dict):
-            role = msg.get("role", "")
-            content = msg.get("content", "")
-
-        if role.lower() in ("user", "human"):
-            lc_messages.append(HumanMessage(content=content))
-        elif role.lower() in ("assistant", "ai"):
-            lc_messages.append(AIMessage(content=content))
-    return lc_messages
-
-
-def _to_chat_messages(
-    messages: List[Union[ChatMessage, dict, BaseMessage]],
-) -> List[ChatMessage]:
-    """Convert input messages into Pydantic ChatMessage objects."""
-    chat_messages: List[ChatMessage] = []
-    for msg in messages:
-        if isinstance(msg, ChatMessage):
-            chat_messages.append(msg)
-        elif isinstance(msg, dict):
-            chat_messages.append(
-                ChatMessage(
-                    role=msg.get("role", "user"),
-                    content=msg.get("content", ""),
-                )
-            )
-        elif isinstance(msg, HumanMessage):
-            chat_messages.append(ChatMessage(role="user", content=str(msg.content)))
-        elif isinstance(msg, AIMessage):
-            chat_messages.append(ChatMessage(role="assistant", content=str(msg.content)))
-    return chat_messages
-
-
-# ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
 def chat_with_memory(
     question: str = "My favorite color is navy blue.",
-    history: Optional[List[Union[ChatMessage, dict, BaseMessage]]] = None,
+    history: Optional[List[ChatMessage]] = None,
 ) -> tuple[str, List[ChatMessage]]:
     """Execute a conversational chat turn with memory retention.
 
@@ -130,7 +78,7 @@ def chat_with_memory(
         Tuple of (assistant_response, updated_chat_history).
     """
     history_list = history or []
-    lc_history = _to_langchain_messages(history_list)
+    lc_history = [(msg.role, msg.content) for msg in history_list]
 
     model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     base_url = os.getenv("OPENAI_BASE_URL")
@@ -157,7 +105,7 @@ def chat_with_memory(
     answer = str(result.content) if hasattr(result, "content") else str(result)
 
     updated_history = [
-        *_to_chat_messages(history_list),
+        *history_list,
         ChatMessage(role="user", content=question),
         ChatMessage(role="assistant", content=answer),
     ]
