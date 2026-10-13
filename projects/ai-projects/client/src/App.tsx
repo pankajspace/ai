@@ -1,6 +1,7 @@
 import './App.css'
 import { TravelGuideCard } from './components/TravelGuideCard'
 import { JokeGeneratorCard } from './components/JokeGeneratorCard'
+import { AgentOneToolCard } from './components/AgentOneToolCard'
 
 function App() {
   return (
@@ -33,6 +34,9 @@ function App() {
 
               {/* Tile 2: Joke Generator Service (Groq) */}
               <JokeGeneratorCard />
+
+              {/* Tile 3: Single-Tool Agent Service (OpenAI) */}
+              <AgentOneToolCard />
             </div>
           </div>
         </section>

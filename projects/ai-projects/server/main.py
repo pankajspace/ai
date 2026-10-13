@@ -2,12 +2,15 @@ from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from services import (
+    AgentRequest,
+    AgentResponse,
     JokeRequest,
     JokeResponse,
     TravelRequest,
     TravelResponse,
     get_groq_joke,
     get_travel_suggestion,
+    run_agent_with_tool,
 )
 
 # Load environment variables from root .env
@@ -53,6 +56,18 @@ def joke_generator(req: JokeRequest):
     try:
         joke_text = get_groq_joke(topic_name)
         return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/agent", response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    message_text = req.message.strip() if req.message else "How much are the shoes?"
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    try:
+        reply = run_agent_with_tool(message_text)
+        return AgentResponse(message=message_text, response=reply)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

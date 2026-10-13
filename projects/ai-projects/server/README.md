@@ -14,10 +14,11 @@ Minimal FastAPI backend service hosting the OpenAI Travel Guide service in a mul
 2. `services/__init__.py`: Package entrypoint dynamically loading numbered services and exporting schemas.
 3. `services/01_chat_openai.py`: Self-contained service module holding schemas and OpenAI travel guide logic.
 4. `services/02_chat_groq.py`: Self-contained service module holding schemas and Groq joke generator logic.
-5. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
-6. `Dockerfile`: Container image build instructions for Python 3.12-slim.
-7. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
-8. `.env.example`: Configuration variables for port, host, and API keys.
+5. `services/03_agent_one_tool.py`: Self-contained service module implementing an autonomous agent with local tool calling (`get_price`).
+6. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
+7. `Dockerfile`: Container image build instructions for Python 3.12-slim.
+8. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
+9. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -69,3 +70,4 @@ From the `projects/ai-projects/server` directory:
 2. `GET /health`: Healthcheck endpoint for Docker and monitoring.
 3. `POST /api/travel`: Accepts JSON with a city (`{"city": "Bangalore"}`) and returns a witty activity suggestion from GPT-4o mini.
 4. `POST /api/joke`: Accepts JSON with a topic (`{"topic": "programming"}`) and returns a funny joke from Groq.
+5. `POST /api/agent`: Accepts JSON with a message (`{"message": "How much are the shoes?"}`) and returns a response generated via the autonomous agent tool-calling loop.
