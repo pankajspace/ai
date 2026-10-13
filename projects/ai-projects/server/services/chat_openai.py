@@ -1,3 +1,4 @@
+import os
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
@@ -15,10 +16,11 @@ class TravelResponse(BaseModel):
 
 
 def get_travel_suggestion(city: str = "Bangalore") -> str:
-    """Suggest one thing to do in a given city using GPT-4o mini."""
+    """Suggest one thing to do in a given city using OpenAI."""
+
     client = OpenAI()
     response = client.chat.completions.create(
-        model="gpt-4o-mini",
+        model=os.getenv("OPENAI_MODEL"),
         messages=[
             {"role": "system", "content": "You are a witty travel guide."},
             {"role": "user", "content": f"Suggest one thing to do in {city}."},
@@ -29,4 +31,3 @@ def get_travel_suggestion(city: str = "Bangalore") -> str:
 
 if __name__ == "__main__":
     print(get_travel_suggestion("Bangalore"))
-
