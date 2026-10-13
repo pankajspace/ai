@@ -82,7 +82,7 @@ function App() {
       setJoke(data.joke)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setJokeError('Request timed out after 20 seconds. Please verify Gemini API key and network connection.')
+        setJokeError('Request timed out after 20 seconds. Please verify Groq API key and network connection.')
       } else {
         setJokeError(err instanceof Error ? err.message : 'Failed to fetch joke')
       }
@@ -167,14 +167,14 @@ function App() {
                 )}
               </div>
 
-              {/* Tile 2: Joke Generator Service (Gemini) */}
+              {/* Tile 2: Joke Generator Service (Groq) */}
               <div className="card card-half">
                 <h2>
                   <span className="card-title">😂 Joke Generator</span>
-                  <span className="badge badge-healthy">Gemini</span>
+                  <span className="badge badge-healthy">Groq</span>
                 </h2>
                 <p>
-                  Ask Google Gemini for a funny joke on any topic.
+                  Ask Groq for a funny joke on any topic.
                 </p>
                 <form onSubmit={handleGetJoke} className="form-row">
                   <input

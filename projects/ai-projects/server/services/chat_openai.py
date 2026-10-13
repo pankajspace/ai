@@ -18,18 +18,9 @@ class TravelResponse(BaseModel):
 def get_travel_suggestion(city: str = "Bangalore") -> str:
     """Suggest one thing to do in a given city using OpenAI."""
 
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        raise ValueError("OPENAI_API_KEY is not configured in .env")
+    model = os.getenv("OPENAI_MODEL")
 
-    base_url = os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
-    model = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-
-    client = OpenAI(
-        api_key=api_key,
-        base_url=base_url,
-        timeout=15.0,
-    )
+    client = OpenAI()
     response = client.chat.completions.create(
         model=model,
         messages=[

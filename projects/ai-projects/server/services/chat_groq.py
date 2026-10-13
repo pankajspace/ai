@@ -15,15 +15,15 @@ class JokeResponse(BaseModel):
     joke: str
 
 
-def get_gemini_joke(topic: str = "programming") -> str:
-    """Tell a funny joke on a topic using Google Gemini."""
+def get_groq_joke(topic: str = "programming") -> str:
+    """Tell a funny joke on a topic using Groq (Llama 3.3 70B)."""
 
-    api_key = os.getenv("GEMINI_API_KEY")
+    api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
-        raise ValueError("GEMINI_API_KEY is not configured in .env")
+        raise ValueError("GROQ_API_KEY is not configured in .env")
 
-    base_url = os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
-    model = os.getenv("GEMINI_MODEL") or "gemini-1.5-flash"
+    base_url = os.getenv("GROQ_BASE_URL")
+    model = os.getenv("GROQ_MODEL")
 
     client = OpenAI(
         api_key=api_key,
@@ -42,4 +42,4 @@ def get_gemini_joke(topic: str = "programming") -> str:
 
 
 if __name__ == "__main__":
-    print(get_gemini_joke())
+    print(get_groq_joke("programming"))
