@@ -1,20 +1,21 @@
 # AI Projects Server (FastAPI)
 
-Minimal FastAPI backend service designed for a multi-container Docker Compose architecture.
+Minimal FastAPI backend service hosting the OpenAI Travel Guide service in a multi-container architecture.
 
 ## Overview
 
-1. Service: FastAPI application serving HTTP endpoints.
+1. Service: FastAPI application serving HTTP endpoints and integrating OpenAI `gpt-4o-mini`.
 2. Architecture: Multi-container setup where each project backend runs as an isolated service alongside a single shared React client container.
 3. Development mode: Supports hot-reload both locally and via Docker volume mounts.
 
 ## File Structure
 
-1. `main.py`: Single-file FastAPI app with CORS middleware and sample endpoints.
-2. `requirements.txt`: Minimal dependencies (`fastapi` and `uvicorn`).
-3. `Dockerfile`: Container image build instructions for Python 3.12-slim.
-4. `.dockerignore`: Excludes virtual environments and temporary files from container builds.
-5. `.env.example`: Configuration variables for port and host.
+1. `main.py`: FastAPI app with CORS middleware, health check, and travel guide endpoint.
+2. `services/chat_openai.py`: Self-contained service module holding the Pydantic schemas and OpenAI travel guide logic.
+3. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
+4. `Dockerfile`: Container image build instructions for Python 3.12-slim.
+5. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
+6. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -40,7 +41,7 @@ From the `projects/ai-projects/server` directory:
    ```
 2. Run the container:
    ```bash
-   docker run -p 8000:8000 ai-projects-server
+   docker run -p 8000:8000 -e OPENAI_API_KEY="$OPENAI_API_KEY" ai-projects-server
    ```
 
 ### Option 3: Local Python Execution
@@ -54,7 +55,8 @@ From the `projects/ai-projects/server` directory:
    ```bash
    pip install -r requirements.txt
    ```
-3. Run the development server:
+3. Ensure your OpenAI key is configured in the root `.env` (`projects/ai-projects/.env`).
+4. Run the development server:
    ```bash
    uvicorn main:app --reload --port 8000
    ```
@@ -63,7 +65,4 @@ From the `projects/ai-projects/server` directory:
 
 1. `GET /`: Basic service status check.
 2. `GET /health`: Healthcheck endpoint for Docker and monitoring.
-3. `GET /api/items`: Returns sample list of items.
-4. `POST /api/items`: Accepts a JSON item (`{"title": "...", "description": "..."}`) and adds it to the list.
-5. `GET /api/items/{item_id}`: Retrieves an item by its ID.
-
+3. `POST /api/travel`: Accepts JSON with a city (`{"city": "Bangalore"}`) and returns a witty activity suggestion from GPT-4o mini.

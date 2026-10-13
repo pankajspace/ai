@@ -1,32 +1,30 @@
 import { useEffect, useState } from 'react'
 import './App.css'
 
-interface Item {
-  id: number
-  title: string
-  description?: string
-}
-
 interface HealthData {
   status: string
   message?: string
 }
 
+interface TravelResponse {
+  city: string
+  suggestion: string
+}
+
 const API_BASE = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'
+
+const CITY_PRESETS = ['Bangalore', 'Tokyo', 'Paris', 'New York', 'London']
 
 function App() {
   const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking')
   const [healthInfo, setHealthInfo] = useState<HealthData | null>(null)
-  const [items, setItems] = useState<Item[]>([])
-  const [loadingItems, setLoadingItems] = useState<boolean>(false)
   const [checkingHealth, setCheckingHealth] = useState<boolean>(false)
-  const [lastCreated, setLastCreated] = useState<Item | null>(null)
 
-  // Form state
-  const [title, setTitle] = useState<string>('')
-  const [description, setDescription] = useState<string>('')
+  // Travel state
+  const [city, setCity] = useState<string>('Bangalore')
   const [submitting, setSubmitting] = useState<boolean>(false)
-  const [createError, setCreateError] = useState<string | null>(null)
+  const [suggestion, setSuggestion] = useState<string | null>(null)
+  const [travelError, setTravelError] = useState<string | null>(null)
 
   const checkHealth = async () => {
     setCheckingHealth(true)
@@ -48,29 +46,11 @@ function App() {
     }
   }
 
-  const fetchItems = async () => {
-    setLoadingItems(true)
-    try {
-      const res = await fetch(`${API_BASE}/api/items`)
-      if (res.ok) {
-        const data = await res.json()
-        setItems(data)
-      }
-    } catch {
-      // Keep existing items if offline
-    } finally {
-      setLoadingItems(false)
-    }
-  }
-
   useEffect(() => {
     let ignore = false
     const init = async () => {
       try {
-        const [healthRes, itemsRes] = await Promise.all([
-          fetch(`${API_BASE}/health`),
-          fetch(`${API_BASE}/api/items`),
-        ])
+        const healthRes = await fetch(`${API_BASE}/health`)
         if (!ignore) {
           if (healthRes.ok) {
             const hData = await healthRes.json()
@@ -78,10 +58,6 @@ function App() {
             setHealthInfo(hData)
           } else {
             setServerStatus('offline')
-          }
-          if (itemsRes.ok) {
-            const iData = await itemsRes.json()
-            setItems(iData)
           }
         }
       } catch {
@@ -96,27 +72,27 @@ function App() {
     }
   }, [])
 
-  const handleCreateItem = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title.trim()) return
+  const handleGetSuggestion = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!city.trim()) return
 
     setSubmitting(true)
-    setCreateError(null)
+    setTravelError(null)
     try {
-      const res = await fetch(`${API_BASE}/api/items`, {
+      const res = await fetch(`${API_BASE}/api/travel`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), description: description.trim() || undefined }),
+        body: JSON.stringify({ city: city.trim() }),
       })
 
-      if (!res.ok) throw new Error(`Server returned HTTP ${res.status}`)
-      const newItem: Item = await res.json()
-      setItems((prev) => [...prev, newItem])
-      setLastCreated(newItem)
-      setTitle('')
-      setDescription('')
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null)
+        throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
+      }
+      const data: TravelResponse = await res.json()
+      setSuggestion(data.suggestion)
     } catch (err) {
-      setCreateError(err instanceof Error ? err.message : 'Failed to create item')
+      setTravelError(err instanceof Error ? err.message : 'Failed to fetch travel suggestion')
     } finally {
       setSubmitting(false)
     }
@@ -140,14 +116,14 @@ function App() {
         <section className="hero">
           <div className="container">
             <h1>AI Projects</h1>
-            <p className="subtitle">FastAPI + React multi-container project</p>
+            <p className="subtitle">FastAPI + React multi-container travel guide</p>
           </div>
         </section>
 
         <section id="tools">
           <div className="container">
             <div className="grid">
-              {/* Card 1: Server Status */}
+              {/* Card 1: Server Diagnostics */}
               <div className="card card-half">
                 <h2>
                   <span className="card-title">⚡ Server Diagnostics</span>
@@ -179,75 +155,56 @@ function App() {
                 </div>
               </div>
 
-              {/* Card 2: Create Item */}
+              {/* Card 2: Travel Guide Service */}
               <div className="card card-half">
                 <h2>
-                  <span className="card-title">🧩 Add Item</span>
+                  <span className="card-title">✈️ Travel Guide</span>
+                  <span className="badge badge-healthy">GPT-4o mini</span>
                 </h2>
                 <p>
-                  Create an item via <code>POST /api/items</code> to verify full-stack API flow.
+                  Ask GPT-4o mini for a witty suggestion of what to do in any city via{' '}
+                  <code>POST /api/travel</code>.
                 </p>
-                <form onSubmit={handleCreateItem} className="form-row">
+                <form onSubmit={handleGetSuggestion} className="form-row">
                   <input
                     type="text"
-                    placeholder="Item title (e.g. Prompt Optimizer)…"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
+                    placeholder="Enter a city (e.g. Bangalore, Tokyo, Paris)…"
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
                     required
                   />
-                  <input
-                    type="text"
-                    placeholder="Item description (optional)…"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                  <span className="validation">{createError}</span>
+
+                  <div className="preset-row">
+                    <span className="preset-label">Quick pick:</span>
+                    {CITY_PRESETS.map((preset) => (
+                      <button
+                        type="button"
+                        key={preset}
+                        className="preset-chip"
+                        onClick={() => setCity(preset)}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+
+                  <span className="validation">{travelError}</span>
+
                   <div className="card-actions">
-                    <button type="submit" disabled={submitting || !title.trim()}>
+                    <button type="submit" disabled={submitting || !city.trim()}>
                       {submitting && <span className="spinner" />}
-                      {submitting ? 'Saving…' : 'Create Item'}
+                      {submitting ? 'Suggesting…' : 'Suggest Activity'}
                     </button>
                   </div>
                 </form>
-                {lastCreated && (
+
+                {suggestion && (
                   <div className="result visible">
-                    Created item #{lastCreated.id}: &ldquo;{lastCreated.title}&rdquo;
+                    <strong>Suggestion for {city}:</strong>
+                    {'\n\n'}
+                    {suggestion}
                   </div>
                 )}
-              </div>
-
-              {/* Card 3: Items Explorer */}
-              <div className="card card-wide">
-                <h2>
-                  <span className="card-title">📦 Project Items</span>
-                  <span className="badge badge-healthy">{items.length} items</span>
-                </h2>
-                <p>
-                  Items retrieved from the server via <code>GET /api/items</code>.
-                </p>
-                <div className="card-actions">
-                  <button type="button" onClick={fetchItems} disabled={loadingItems}>
-                    {loadingItems && <span className="spinner" />}
-                    {loadingItems ? 'Refreshing…' : 'Refresh Items'}
-                  </button>
-                </div>
-
-                <div className="items-container">
-                  {items.length === 0 && (
-                    <div className="result visible">No items yet. Create one above!</div>
-                  )}
-                  {items.map((item) => (
-                    <div key={item.id} className="item-entry">
-                      <div className="item-entry-header">
-                        <span className="item-entry-id">#{item.id}</span>
-                        <span className="item-entry-title">{item.title}</span>
-                      </div>
-                      {item.description && (
-                        <p className="item-entry-desc">{item.description}</p>
-                      )}
-                    </div>
-                  ))}
-                </div>
               </div>
             </div>
           </div>
