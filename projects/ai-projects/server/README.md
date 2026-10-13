@@ -10,8 +10,9 @@ Minimal FastAPI backend service hosting the OpenAI Travel Guide service in a mul
 
 ## File Structure
 
-1. `main.py`: FastAPI app with CORS middleware, health check, and travel guide endpoint.
-2. `services/chat_openai.py`: Self-contained service module holding the Pydantic schemas and OpenAI travel guide logic.
+1. `main.py`: FastAPI app with CORS middleware, health check, and route endpoints.
+2. `services/chat_openai.py`: Self-contained service module holding schemas and OpenAI travel guide logic.
+3. `services/chat_gemini.py`: Self-contained service module holding schemas and Google Gemini joke generator logic.
 3. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
 4. `Dockerfile`: Container image build instructions for Python 3.12-slim.
 5. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
@@ -66,3 +67,4 @@ From the `projects/ai-projects/server` directory:
 1. `GET /`: Basic service status check.
 2. `GET /health`: Healthcheck endpoint for Docker and monitoring.
 3. `POST /api/travel`: Accepts JSON with a city (`{"city": "Bangalore"}`) and returns a witty activity suggestion from GPT-4o mini.
+4. `POST /api/joke`: Accepts JSON with a topic (`{"topic": "programming"}`) and returns a funny joke from Google Gemini.

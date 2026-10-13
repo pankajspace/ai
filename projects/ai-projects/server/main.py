@@ -1,6 +1,7 @@
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from services.chat_gemini import JokeRequest, JokeResponse, get_gemini_joke
 from services.chat_openai import TravelRequest, TravelResponse, get_travel_suggestion
 
 # Load environment variables from root .env
@@ -36,6 +37,16 @@ def travel_suggestion(req: TravelRequest):
     try:
         suggestion = get_travel_suggestion(city_name)
         return TravelResponse(city=city_name, suggestion=suggestion)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/joke", response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    topic_name = req.topic.strip() if req.topic else "programming"
+    try:
+        joke_text = get_gemini_joke(topic_name)
+        return JokeResponse(topic=topic_name, joke=joke_text)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

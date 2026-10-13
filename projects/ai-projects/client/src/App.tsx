@@ -1,82 +1,39 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
-
-interface HealthData {
-  status: string
-  message?: string
-}
 
 interface TravelResponse {
   city: string
   suggestion: string
 }
 
+interface JokeResponse {
+  topic: string
+  joke: string
+}
+
 const API_BASE = import.meta.env.VITE_SERVER_URL || 'http://localhost:8000'
 
 const CITY_PRESETS = ['Bangalore', 'Tokyo', 'Paris', 'New York', 'London']
+const TOPIC_PRESETS = ['Programming', 'Cats', 'Coffee', 'AI', 'Work']
 
 function App() {
-  const [serverStatus, setServerStatus] = useState<'checking' | 'online' | 'offline'>('checking')
-  const [healthInfo, setHealthInfo] = useState<HealthData | null>(null)
-  const [checkingHealth, setCheckingHealth] = useState<boolean>(false)
-
   // Travel state
   const [city, setCity] = useState<string>('Bangalore')
-  const [submitting, setSubmitting] = useState<boolean>(false)
+  const [submittingTravel, setSubmittingTravel] = useState<boolean>(false)
   const [suggestion, setSuggestion] = useState<string | null>(null)
   const [travelError, setTravelError] = useState<string | null>(null)
 
-  const checkHealth = async () => {
-    setCheckingHealth(true)
-    try {
-      const res = await fetch(`${API_BASE}/health`)
-      if (res.ok) {
-        const data = await res.json()
-        setServerStatus('online')
-        setHealthInfo(data)
-      } else {
-        setServerStatus('offline')
-        setHealthInfo(null)
-      }
-    } catch {
-      setServerStatus('offline')
-      setHealthInfo(null)
-    } finally {
-      setCheckingHealth(false)
-    }
-  }
-
-  useEffect(() => {
-    let ignore = false
-    const init = async () => {
-      try {
-        const healthRes = await fetch(`${API_BASE}/health`)
-        if (!ignore) {
-          if (healthRes.ok) {
-            const hData = await healthRes.json()
-            setServerStatus('online')
-            setHealthInfo(hData)
-          } else {
-            setServerStatus('offline')
-          }
-        }
-      } catch {
-        if (!ignore) {
-          setServerStatus('offline')
-        }
-      }
-    }
-    init()
-    return () => {
-      ignore = true
-    }
-  }, [])
+  // Joke state
+  const [topic, setTopic] = useState<string>('Programming')
+  const [submittingJoke, setSubmittingJoke] = useState<boolean>(false)
+  const [joke, setJoke] = useState<string | null>(null)
+  const [jokeError, setJokeError] = useState<string | null>(null)
 
   const handleGetSuggestion = async (e?: React.FormEvent) => {
     if (e) e.preventDefault()
     if (!city.trim()) return
 
-    setSubmitting(true)
+    setSubmittingTravel(true)
     setTravelError(null)
     try {
       const res = await fetch(`${API_BASE}/api/travel`, {
@@ -94,7 +51,33 @@ function App() {
     } catch (err) {
       setTravelError(err instanceof Error ? err.message : 'Failed to fetch travel suggestion')
     } finally {
-      setSubmitting(false)
+      setSubmittingTravel(false)
+    }
+  }
+
+  const handleGetJoke = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!topic.trim()) return
+
+    setSubmittingJoke(true)
+    setJokeError(null)
+    try {
+      const res = await fetch(`${API_BASE}/api/joke`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ topic: topic.trim() }),
+      })
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null)
+        throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
+      }
+      const data: JokeResponse = await res.json()
+      setJoke(data.joke)
+    } catch (err) {
+      setJokeError(err instanceof Error ? err.message : 'Failed to fetch joke')
+    } finally {
+      setSubmittingJoke(false)
     }
   }
 
@@ -116,46 +99,14 @@ function App() {
         <section className="hero">
           <div className="container">
             <h1>AI Projects</h1>
-            <p className="subtitle">FastAPI + React multi-container travel guide</p>
+            <p className="subtitle">FastAPI + React multi-container AI services</p>
           </div>
         </section>
 
         <section id="tools">
           <div className="container">
             <div className="grid">
-              {/* Card 1: Server Diagnostics */}
-              <div className="card card-half">
-                <h2>
-                  <span className="card-title">⚡ Server Diagnostics</span>
-                  <span
-                    className={`badge ${
-                      serverStatus === 'online' ? 'badge-healthy' : 'badge-offline'
-                    }`}
-                  >
-                    {serverStatus === 'online'
-                      ? '● Connected'
-                      : serverStatus === 'offline'
-                        ? '● Disconnected'
-                        : '● Checking...'}
-                  </span>
-                </h2>
-                <p>
-                  Health check probe calling <code>GET /health</code> on the FastAPI service.
-                </p>
-                <div className="card-actions">
-                  <button type="button" onClick={checkHealth} disabled={checkingHealth}>
-                    {checkingHealth && <span className="spinner" />}
-                    {checkingHealth ? 'Checking…' : 'Ping Server'}
-                  </button>
-                </div>
-                <div className="result visible">
-                  {serverStatus === 'online'
-                    ? JSON.stringify(healthInfo || { status: 'healthy' }, null, 2)
-                    : 'Server is currently offline. Ensure docker compose up or uvicorn is running.'}
-                </div>
-              </div>
-
-              {/* Card 2: Travel Guide Service */}
+              {/* Tile 1: Travel Guide Service (OpenAI) */}
               <div className="card card-half">
                 <h2>
                   <span className="card-title">✈️ Travel Guide</span>
@@ -191,9 +142,9 @@ function App() {
                   <span className="validation">{travelError}</span>
 
                   <div className="card-actions">
-                    <button type="submit" disabled={submitting || !city.trim()}>
-                      {submitting && <span className="spinner" />}
-                      {submitting ? 'Suggesting…' : 'Suggest Activity'}
+                    <button type="submit" disabled={submittingTravel || !city.trim()}>
+                      {submittingTravel && <span className="spinner" />}
+                      {submittingTravel ? 'Suggesting…' : 'Suggest Activity'}
                     </button>
                   </div>
                 </form>
@@ -203,6 +154,58 @@ function App() {
                     <strong>Suggestion for {city}:</strong>
                     {'\n\n'}
                     {suggestion}
+                  </div>
+                )}
+              </div>
+
+              {/* Tile 2: Joke Generator Service (Gemini) */}
+              <div className="card card-half">
+                <h2>
+                  <span className="card-title">😂 Joke Generator</span>
+                  <span className="badge badge-healthy">Gemini</span>
+                </h2>
+                <p>
+                  Ask Google Gemini for a funny joke on any topic via{' '}
+                  <code>POST /api/joke</code>.
+                </p>
+                <form onSubmit={handleGetJoke} className="form-row">
+                  <input
+                    type="text"
+                    placeholder="Enter a topic (e.g. Programming, Cats, Coffee)…"
+                    value={topic}
+                    onChange={(e) => setTopic(e.target.value)}
+                    required
+                  />
+
+                  <div className="preset-row">
+                    <span className="preset-label">Quick pick:</span>
+                    {TOPIC_PRESETS.map((preset) => (
+                      <button
+                        type="button"
+                        key={preset}
+                        className="preset-chip"
+                        onClick={() => setTopic(preset)}
+                      >
+                        {preset}
+                      </button>
+                    ))}
+                  </div>
+
+                  <span className="validation">{jokeError}</span>
+
+                  <div className="card-actions">
+                    <button type="submit" disabled={submittingJoke || !topic.trim()}>
+                      {submittingJoke && <span className="spinner" />}
+                      {submittingJoke ? 'Thinking…' : 'Tell Me a Joke'}
+                    </button>
+                  </div>
+                </form>
+
+                {joke && (
+                  <div className="result visible">
+                    <strong>Joke about {topic}:</strong>
+                    {'\n\n'}
+                    {joke}
                   </div>
                 )}
               </div>
