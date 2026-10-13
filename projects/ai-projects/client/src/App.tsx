@@ -40,6 +40,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ city: city.trim() }),
+        signal: AbortSignal.timeout(20000),
       })
 
       if (!res.ok) {
@@ -48,8 +49,12 @@ function App() {
       }
       const data: TravelResponse = await res.json()
       setSuggestion(data.suggestion)
-    } catch (err) {
-      setTravelError(err instanceof Error ? err.message : 'Failed to fetch travel suggestion')
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'TimeoutError') {
+        setTravelError('Request timed out after 20 seconds. Please verify server connection and API credentials.')
+      } else {
+        setTravelError(err instanceof Error ? err.message : 'Failed to fetch travel suggestion')
+      }
     } finally {
       setSubmittingTravel(false)
     }
@@ -66,6 +71,7 @@ function App() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ topic: topic.trim() }),
+        signal: AbortSignal.timeout(20000),
       })
 
       if (!res.ok) {
@@ -74,8 +80,12 @@ function App() {
       }
       const data: JokeResponse = await res.json()
       setJoke(data.joke)
-    } catch (err) {
-      setJokeError(err instanceof Error ? err.message : 'Failed to fetch joke')
+    } catch (err: unknown) {
+      if (err instanceof DOMException && err.name === 'TimeoutError') {
+        setJokeError('Request timed out after 20 seconds. Please verify Gemini API key and network connection.')
+      } else {
+        setJokeError(err instanceof Error ? err.message : 'Failed to fetch joke')
+      }
     } finally {
       setSubmittingJoke(false)
     }
@@ -113,8 +123,7 @@ function App() {
                   <span className="badge badge-healthy">GPT-4o mini</span>
                 </h2>
                 <p>
-                  Ask GPT-4o mini for a witty suggestion of what to do in any city via{' '}
-                  <code>POST /api/travel</code>.
+                  Ask GPT-4o mini for a witty suggestion of what to do in any city.
                 </p>
                 <form onSubmit={handleGetSuggestion} className="form-row">
                   <input
@@ -165,8 +174,7 @@ function App() {
                   <span className="badge badge-healthy">Gemini</span>
                 </h2>
                 <p>
-                  Ask Google Gemini for a funny joke on any topic via{' '}
-                  <code>POST /api/joke</code>.
+                  Ask Google Gemini for a funny joke on any topic.
                 </p>
                 <form onSubmit={handleGetJoke} className="form-row">
                   <input

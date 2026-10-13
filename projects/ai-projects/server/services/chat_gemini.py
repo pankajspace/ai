@@ -18,16 +18,25 @@ class JokeResponse(BaseModel):
 def get_gemini_joke(topic: str = "programming") -> str:
     """Tell a funny joke on a topic using Google Gemini."""
 
+    api_key = os.getenv("GEMINI_API_KEY")
+    if not api_key:
+        raise ValueError("GEMINI_API_KEY is not configured in .env")
+
+    base_url = os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
+    model = os.getenv("GEMINI_MODEL") or "gemini-1.5-flash"
+
     client = OpenAI(
-        api_key=os.getenv("GEMINI_API_KEY"),
-        base_url=os.getenv("GEMINI_BASE_URL"),
+        api_key=api_key,
+        base_url=base_url,
+        timeout=15.0,
     )
     response = client.chat.completions.create(
-        model=os.getenv("GEMINI_MODEL"),
+        model=model,
         messages=[
             {"role": "system", "content": "You are a funny joke teller."},
             {"role": "user", "content": f"Tell me a joke about {topic}."},
         ],
+        timeout=15.0,
     )
     return response.choices[0].message.content or ""
 
