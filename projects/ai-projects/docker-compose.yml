@@ -1,39 +1,64 @@
+# ==============================================================================
+# AI Projects: Multi-Container Docker Compose Configuration
+# Orchestrates the React + Vite frontend client and FastAPI backend service.
+# ==============================================================================
+
 services:
-  # Single common container for React client
+  # ----------------------------------------------------------------------------
+  # Client: Frontend React + Vite single-page application
+  # Accessible on host at http://localhost:5173
+  # ----------------------------------------------------------------------------
   client:
     build:
       context: ./client
       dockerfile: Dockerfile
     container_name: ai-projects-client
     ports:
+      # Map host port 5173 to Vite dev server port 5173 inside container
       - "5173:5173"
     volumes:
+      # Bind mount client source code for hot module replacement (HMR)
       - ./client:/app
+      # Anonymous volume to isolate node_modules within the container
       - /app/node_modules
     environment:
+      # Backend API URL used by the browser to fetch AI service responses
       - VITE_SERVER_URL=${VITE_SERVER_URL:-http://localhost:8000}
     depends_on:
+      # Ensure backend server container starts before the frontend client
       - server
 
-  # Server service for this project (FastAPI)
+  # ----------------------------------------------------------------------------
+  # Server: Backend FastAPI service exposing AI endpoints and Swagger docs
+  # Accessible on host at http://localhost:8000 (docs at /docs)
+  # ----------------------------------------------------------------------------
   server:
     build:
       context: ./server
       dockerfile: Dockerfile
     container_name: ai-projects-server
     ports:
+      # Map host port 8000 to FastAPI Uvicorn server port 8000
       - "8000:8000"
     volumes:
+      # Bind mount server source code for live reload during local development
       - ./server:/app
     environment:
+      # Server runtime configuration
       - PORT=8000
       - HOST=0.0.0.0
+
+      # OpenAI API configuration (powers Travel Guide service)
       - OPENAI_API_KEY=${OPENAI_API_KEY:-}
       - OPENAI_MODEL=${OPENAI_MODEL:-gpt-4o-mini}
       - OPENAI_BASE_URL=${OPENAI_BASE_URL:-https://api.openai.com/v1}
+
+      # Google Gemini API configuration
       - GEMINI_API_KEY=${GEMINI_API_KEY:-}
       - GEMINI_MODEL=${GEMINI_MODEL:-gemini-3.8-flash}
       - GEMINI_BASE_URL=${GEMINI_BASE_URL:-https://generativelanguage.googleapis.com/v1beta/openai/}
+
+      # Groq API configuration (powers Joke Generator service)
       - GROQ_API_KEY=${GROQ_API_KEY:-}
       - GROQ_MODEL=${GROQ_MODEL:-openai/gpt-oss-20b}
       - GROQ_BASE_URL=${GROQ_BASE_URL:-https://api.groq.com/openai/v1}
