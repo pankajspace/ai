@@ -80,7 +80,9 @@ If you prefer building and running containers independently using standard Docke
 4. **Health Check Endpoint**: `http://localhost:8000/health`
 5. **Travel Suggestion Endpoint**: `POST http://localhost:8000/api/travel`
 6. **Joke Generator Endpoint**: `POST http://localhost:8000/api/joke`
-7. **Single-Tool Agent Endpoint**: `POST http://localhost:8000/api/agent`
+7. **Text Summarizer Endpoint**: `POST http://localhost:8000/api/summarize`
+8. **Conversational Memory Chat Endpoint**: `POST http://localhost:8000/api/memory-chat`
+9. **Single-Tool Agent Endpoint**: `POST http://localhost:8000/api/agent`
 
 ---
 

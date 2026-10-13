@@ -8,7 +8,7 @@ This script demonstrates the foundational mechanics of an LLM Agent:
    the result back to the LLM to generate the final response.
 
 Run:
-    python projects/ai-projects/server/services/03_agent_one_tool.py
+    python projects/ai-projects/server/services/05_agent_one_tool.py
 """
 
 import json
