@@ -1,0 +1,31 @@
+services:
+  # Single common container for React client
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    container_name: ai-projects-client
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - VITE_SERVER_URL=http://localhost:8000
+    depends_on:
+      - server
+
+  # Server service for this project (FastAPI)
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: ai-projects-server
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app
+    environment:
+      - PORT=8000
+      - HOST=0.0.0.0
+
