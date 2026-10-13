@@ -55,10 +55,6 @@ class SummarizerResponse(BaseModel):
     summary: str
 
 
-# Naming aliases for backwards-compatibility and flexible imports
-SummarizeRequest = SummarizerRequest
-SummarizeResponse = SummarizerResponse
-
 
 # ---------------------------------------------------------------------------
 # LangChain LCEL Chain Definition
@@ -99,10 +95,6 @@ def summarize(long_text: str = DEFAULT_SAMPLE_TEXT) -> str:
     # ⑤ run it; the dict fills the {data} blank by name
     return chain.invoke({"data": long_text})
 
-
-# Backward-compatible and semantic aliases
-run_summarizer = summarize
-run_langchain_summarizer = summarize
 
 
 # ---------------------------------------------------------------------------

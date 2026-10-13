@@ -9,8 +9,8 @@ from services import (
     JokeResponse,
     MemoryChatRequest,
     MemoryChatResponse,
-    SummarizeRequest,
-    SummarizeResponse,
+    SummarizerRequest,
+    SummarizerResponse,
     TravelRequest,
     TravelResponse,
     chat_with_memory,
@@ -67,21 +67,19 @@ def joke_generator(req: JokeRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
-@app.post("/api/summarize", response_model=SummarizeResponse)
-@app.post("/api/summary", response_model=SummarizeResponse)
-def summarizer_service(req: SummarizeRequest):
+@app.post("/api/summarize", response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
     text_content = req.text.strip() if req.text else ""
     if not text_content:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     try:
         summary_result = summarize(text_content)
-        return SummarizeResponse(text=text_content, summary=summary_result)
+        return SummarizerResponse(text=text_content, summary=summary_result)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/memory-chat", response_model=MemoryChatResponse)
-@app.post("/api/chat", response_model=MemoryChatResponse)
 def memory_chat_service(req: MemoryChatRequest):
     message_text = req.message.strip() if req.message else ""
     if not message_text:

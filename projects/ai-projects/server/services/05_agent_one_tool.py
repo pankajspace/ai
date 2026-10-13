@@ -167,19 +167,15 @@ def run_agent_with_tool(user_message: str = "How much are the shoes?") -> str:
     return msg.content or ""
 
 
-# Backward-compatible alias
-agent = run_agent_with_tool
-
-
 # ---------------------------------------------------------------------------
 # Test Cases / Demonstration
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     # Test Case 1: Requires external knowledge -> triggers tool call -> returns ₹799
     print("--- Test 1: Tool Required ---")
-    print(agent("How much are the shoes?"))
+    print(run_agent_with_tool("How much are the shoes?"))
 
     print("\n--- Test 2: Direct Answer (No Tool Needed) ---")
     # Test Case 2: General conversation -> model answers directly without calling any tool
-    print(agent("Hi! What can you help with?"))
+    print(run_agent_with_tool("Hi! What can you help with?"))
 

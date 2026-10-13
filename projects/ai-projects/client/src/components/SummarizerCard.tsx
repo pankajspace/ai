@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { API_BASE } from '../config'
 
-export interface SummarizeResponse {
+export interface SummarizerResponse {
   text: string
   summary: string
 }
@@ -52,7 +52,7 @@ export function SummarizerCard({ apiBase = API_BASE }: SummarizerCardProps = {})
         throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
       }
 
-      const data: SummarizeResponse = await res.json()
+      const data: SummarizerResponse = await res.json()
       setSummary(data.summary)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {

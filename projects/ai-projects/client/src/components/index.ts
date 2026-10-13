@@ -5,7 +5,7 @@ export { JokeGeneratorCard, default as JokeGeneratorTile } from './JokeGenerator
 export type { JokeGeneratorCardProps, JokeResponse } from './JokeGeneratorCard'
 
 export { SummarizerCard, default as SummarizerTile } from './SummarizerCard'
-export type { SummarizerCardProps, SummarizeResponse } from './SummarizerCard'
+export type { SummarizerCardProps, SummarizerResponse } from './SummarizerCard'
 
 export { MemoryChatCard, default as MemoryChatTile } from './MemoryChatCard'
 export type { MemoryChatCardProps, MemoryChatResponse, ChatMessage } from './MemoryChatCard'

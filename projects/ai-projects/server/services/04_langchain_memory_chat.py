@@ -165,10 +165,6 @@ def chat_with_memory(
     return answer, updated_history
 
 
-# Functional aliases for backwards-compatibility and service consistency
-run_memory_chat = chat_with_memory
-memory_chat = chat_with_memory
-
 
 # ---------------------------------------------------------------------------
 # Standalone CLI Verification
