@@ -11,12 +11,13 @@ Minimal FastAPI backend service hosting the OpenAI Travel Guide service in a mul
 ## File Structure
 
 1. `main.py`: FastAPI app with CORS middleware, health check, and route endpoints.
-2. `services/chat_openai.py`: Self-contained service module holding schemas and OpenAI travel guide logic.
-3. `services/chat_gemini.py`: Self-contained service module holding schemas and Google Gemini joke generator logic.
-3. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
-4. `Dockerfile`: Container image build instructions for Python 3.12-slim.
-5. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
-6. `.env.example`: Configuration variables for port, host, and API keys.
+2. `services/__init__.py`: Package entrypoint dynamically loading numbered services and exporting schemas.
+3. `services/01_chat_openai.py`: Self-contained service module holding schemas and OpenAI travel guide logic.
+4. `services/02_chat_groq.py`: Self-contained service module holding schemas and Groq joke generator logic.
+5. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`).
+6. `Dockerfile`: Container image build instructions for Python 3.12-slim.
+7. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
+8. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -67,4 +68,4 @@ From the `projects/ai-projects/server` directory:
 1. `GET /`: Basic service status check.
 2. `GET /health`: Healthcheck endpoint for Docker and monitoring.
 3. `POST /api/travel`: Accepts JSON with a city (`{"city": "Bangalore"}`) and returns a witty activity suggestion from GPT-4o mini.
-4. `POST /api/joke`: Accepts JSON with a topic (`{"topic": "programming"}`) and returns a funny joke from Google Gemini.
+4. `POST /api/joke`: Accepts JSON with a topic (`{"topic": "programming"}`) and returns a funny joke from Groq.

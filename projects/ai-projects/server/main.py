@@ -1,8 +1,14 @@
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from services.chat_groq import JokeRequest, JokeResponse, get_groq_joke
-from services.chat_openai import TravelRequest, TravelResponse, get_travel_suggestion
+from services import (
+    JokeRequest,
+    JokeResponse,
+    TravelRequest,
+    TravelResponse,
+    get_groq_joke,
+    get_travel_suggestion,
+)
 
 # Load environment variables from root .env
 load_dotenv(find_dotenv())
