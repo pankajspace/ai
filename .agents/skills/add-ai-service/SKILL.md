@@ -30,7 +30,8 @@ This skill guides the end-to-end integration of a new AI service into the `proje
    - Expose endpoint under `/api/<feature>` with status codes and clean exception handling.
 
 4. **Consistent UI Tile in React Client**:
-   - UI code lives in `projects/ai-projects/client/src/App.tsx`.
+   - Each service tile is a standalone React component inside `projects/ai-projects/client/src/components/<Feature>Card.tsx`.
+   - Re-exported from `projects/ai-projects/client/src/components/index.ts` and mounted inside `projects/ai-projects/client/src/App.tsx`.
    - Every service is displayed as a standard half-width card: `<div className="card card-half">`.
    - Must include:
      - Title with emoji and a provider badge (e.g. `<span className="badge badge-healthy">Groq</span>`).
@@ -122,97 +123,114 @@ In `projects/ai-projects/server/main.py`:
    - PROVIDER_API_KEY=${PROVIDER_API_KEY:-}
    ```
 
-### Step 4: Add Interactive Card to Client UI
+### Step 4: Add Interactive Card Component to Client UI
 
-In `projects/ai-projects/client/src/App.tsx`:
+1. Create `projects/ai-projects/client/src/components/<Feature>Card.tsx`:
+   ```tsx
+   import { useState } from 'react'
+   import { API_BASE } from '../config'
 
-1. Define the response interface:
-   ```typescript
-   interface FeatureResponse {
+   export interface FeatureResponse {
      query: string
      result: string
    }
-   ```
 
-2. Add state hooks:
-   ```typescript
-   const [featureQuery, setFeatureQuery] = useState<string>('preset 1')
-   const [submittingFeature, setSubmittingFeature] = useState<boolean>(false)
-   const [featureResult, setFeatureResult] = useState<string | null>(null)
-   const [featureError, setFeatureError] = useState<string | null>(null)
-   ```
-
-3. Add submit handler:
-   ```typescript
-   const handleRunFeature = async (e?: React.FormEvent) => {
-     if (e) e.preventDefault()
-     if (!featureQuery.trim()) return
-
-     setSubmittingFeature(true)
-     setFeatureError(null)
-     try {
-       const res = await fetch(`${API_BASE}/api/<feature>`, {
-         method: 'POST',
-         headers: { 'Content-Type': 'application/json' },
-         body: JSON.stringify({ query: featureQuery.trim() }),
-       })
-       if (!res.ok) {
-         const errJson = await res.json().catch(() => null)
-         throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
-       }
-       const data: FeatureResponse = await res.json()
-       setFeatureResult(data.result)
-     } catch (err) {
-       setFeatureError(err instanceof Error ? err.message : 'Request failed')
-     } finally {
-       setSubmittingFeature(false)
-     }
+   export interface FeatureCardProps {
+     apiBase?: string
    }
+
+   const FEATURE_PRESETS = ['preset 1', 'preset 2', 'preset 3']
+
+   export function FeatureCard({ apiBase = API_BASE }: FeatureCardProps = {}) {
+     const [featureQuery, setFeatureQuery] = useState<string>('preset 1')
+     const [submittingFeature, setSubmittingFeature] = useState<boolean>(false)
+     const [featureResult, setFeatureResult] = useState<string | null>(null)
+     const [featureError, setFeatureError] = useState<string | null>(null)
+
+     const handleRunFeature = async (e?: React.FormEvent) => {
+       if (e) e.preventDefault()
+       if (!featureQuery.trim()) return
+
+       setSubmittingFeature(true)
+       setFeatureError(null)
+       try {
+         const res = await fetch(`${apiBase}/api/<feature>`, {
+           method: 'POST',
+           headers: { 'Content-Type': 'application/json' },
+           body: JSON.stringify({ query: featureQuery.trim() }),
+         })
+         if (!res.ok) {
+           const errJson = await res.json().catch(() => null)
+           throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
+         }
+         const data: FeatureResponse = await res.json()
+         setFeatureResult(data.result)
+       } catch (err) {
+         setFeatureError(err instanceof Error ? err.message : 'Request failed')
+       } finally {
+         setSubmittingFeature(false)
+       }
+     }
+
+     return (
+       <div className="card card-half">
+         <h2>
+           <span className="card-title">🧩 Feature Title</span>
+           <span className="badge badge-healthy">Provider Name</span>
+         </h2>
+         <p>Description of feature via <code>POST /api/<feature></code>.</p>
+         <form onSubmit={handleRunFeature} className="form-row">
+           <input
+             type="text"
+             placeholder="Enter prompt or query…"
+             value={featureQuery}
+             onChange={(e) => setFeatureQuery(e.target.value)}
+             required
+           />
+           <div className="preset-row">
+             <span className="preset-label">Quick pick:</span>
+             {FEATURE_PRESETS.map((preset) => (
+               <button
+                 type="button"
+                 key={preset}
+                 className="preset-chip"
+                 onClick={() => setFeatureQuery(preset)}
+               >
+                 {preset}
+               </button>
+             ))}
+           </div>
+           <span className="validation">{featureError}</span>
+           <div className="card-actions">
+             <button type="submit" disabled={submittingFeature || !featureQuery.trim()}>
+               {submittingFeature && <span className="spinner" />}
+               {submittingFeature ? 'Processing…' : 'Run Feature'}
+             </button>
+           </div>
+         </form>
+         {featureResult && (
+           <div className="result visible">
+             {featureResult}
+           </div>
+         )}
+       </div>
+     )
+   }
+
+   export default FeatureCard
    ```
 
-4. Insert card JSX into the `<div className="grid">` container:
+2. Export from `projects/ai-projects/client/src/components/index.ts`:
+   ```typescript
+   export { FeatureCard } from './FeatureCard'
+   ```
+
+3. Import and render in `projects/ai-projects/client/src/App.tsx` inside `<div className="grid">`:
    ```tsx
-   <div className="card card-half">
-     <h2>
-       <span className="card-title">🧩 Feature Title</span>
-       <span className="badge badge-healthy">Provider Name</span>
-     </h2>
-     <p>Description of feature via <code>POST /api/<feature></code>.</p>
-     <form onSubmit={handleRunFeature} className="form-row">
-       <input
-         type="text"
-         placeholder="Enter prompt or query…"
-         value={featureQuery}
-         onChange={(e) => setFeatureQuery(e.target.value)}
-         required
-       />
-       <div className="preset-row">
-         <span className="preset-label">Quick pick:</span>
-         {FEATURE_PRESETS.map((preset) => (
-           <button
-             type="button"
-             key={preset}
-             className="preset-chip"
-             onClick={() => setFeatureQuery(preset)}
-           >
-             {preset}
-           </button>
-         ))}
-       </div>
-       <span className="validation">{featureError}</span>
-       <div className="card-actions">
-         <button type="submit" disabled={submittingFeature || !featureQuery.trim()}>
-           {submittingFeature && <span className="spinner" />}
-           {submittingFeature ? 'Processing…' : 'Run Feature'}
-         </button>
-       </div>
-     </form>
-     {featureResult && (
-       <div className="result visible">
-         {featureResult}
-       </div>
-     )}
-   </div>
+   import { FeatureCard } from './components/FeatureCard'
+
+   // Inside <div className="grid">:
+   <FeatureCard />
    ```
 
 ### Step 5: Update Documentation
