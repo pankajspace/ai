@@ -9,35 +9,59 @@ THE FIX:
 Group related tools in a class. They share ONE connection (here, one dict)
 via self, created once in __init__.
 
-    python 10_class_based_tools.py
+Run locally (from this folder):
+    pip install -r requirements.txt
+    python main.py
+
+Run with Docker (from this folder):
+    docker build -t 10_class_based_tools .
+    docker run --rm --env-file .env 10_class_based_tools
 """
 
 import os
-import sys
 
+from dotenv import find_dotenv, load_dotenv
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
-# Model configuration
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
+# 1. Load AWS and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+# 2. Inputs - queries to execute; uncomment another list to test different operations
+queries = [
+    "Check stock for PROD-123",
+    "Update PROD-456 stock to 25 units, then confirm the new level",
+]
+# queries = [
+#     "What is the price and quantity for PROD-789?",
+#     "Update PROD-123 stock to 0 units and check its availability",
+# ]
+# queries = [
+#     "Check stock for PROD-999",
+# ]
+
+# 3. Model configuration
+model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
+# 4. Class-based tools sharing state
 class InventoryTools:
+    """Grouped inventory tools sharing a single state."""
+
     def __init__(self):
-        # Shared resource: all tools access the same data store.
-        # In production: self.db = connect_to_database()   <-- opened ONCE
+        # Shared state: in production this is a single DB connection or pool
         self.products = {
             "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
-            "PROD-456": {"name": "USB-C Hub", "quantity": 0, "price": 49.99},
-            "PROD-789": {"name": "Mechanical Keyboard", "quantity": 8, "price": 89.99},
+            "PROD-456": {"name": "USB-C Cable",    "quantity": 0,  "price": 12.99},
+            "PROD-789": {"name": "Laptop Stand",   "quantity": 8,  "price": 49.99},
         }
 
     @tool
     def check_stock(self, product_id: str) -> str:
-        """Check product stock level.
+        """Check the current stock level and price for a product.
 
         Args:
-            product_id: The product ID to check
+            product_id: The product ID to look up (e.g. 'PROD-123')
         """
         product = self.products.get(product_id)
         if not product:
@@ -58,15 +82,14 @@ class InventoryTools:
         return f"Product {product_id} not found"
 
 
-# One instance, shared state, multiple tools
+# 5. One instance, shared state, multiple tools
 inventory = InventoryTools()
 agent = Agent(
-    model=BedrockModel(model_id=MODEL_ID),
+    model=BedrockModel(model_id=model_id),
     tools=[inventory.check_stock, inventory.update_stock],
 )
 
-agent("Check stock for PROD-123")
-agent("Update PROD-456 stock to 25 units, then confirm the new level")
-
-# Note the second request: the agent UPDATES then RE-CHECKS, and the change
-# persists because both tools share the same self.products.
+for q in queries:
+    print(f"\nQuery: {q}\n" + "-" * 50)
+    response = agent(q)
+    print(response)

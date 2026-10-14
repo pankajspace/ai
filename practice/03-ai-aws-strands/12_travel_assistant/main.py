@@ -14,21 +14,40 @@ WHAT TO WATCH: the agent calls get_weather_forecast FIRST, feeds those numbers
 into suggest_packing_list, then prices the trip and compares to the budget.
 Nobody wrote that sequence — the loop worked it out.
 
-    python 12_travel_assistant.py
-    python 12_travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+Run locally (from this folder):
+    pip install -r requirements.txt
+    python main.py
+
+Run with Docker (from this folder):
+    docker build -t 12_travel_assistant .
+    docker run --rm --env-file .env 12_travel_assistant
 """
 
 import os
 import sys
 
+from dotenv import find_dotenv, load_dotenv
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
 
-# Model configuration
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
+# 1. Load AWS and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+# 2. Inputs - travel questions; uncomment another line or edit to try different destinations & budgets
+query = (
+    "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
+    "What should I pack, and does it fit my budget?"
+)
+# query = "I'm planning a 4-day solo trip to Manali with a budget of 15000 rupees. What should I pack and can I afford it?"
+# query = "I'm going to Bangalore for 2 days with 1 colleague. Budget is 10000 rupees. Suggest packing list and calculate cost."
+# query = "Family trip of 4 to Jaipur for 5 days with budget 50000 rupees. What are the weather, packing, and costs?"
+
+# 3. Model configuration
+model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
+# 4. Custom tool definitions
 @tool
 def get_weather_forecast(city: str, days: int) -> dict:
     """Get the weather forecast for a city over a number of days.
@@ -100,8 +119,9 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     }
 
 
+# 5. Initialize agent with tools and system prompt
 agent = Agent(
-    model=BedrockModel(model_id=MODEL_ID),
+    model=BedrockModel(model_id=model_id),
     tools=[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator],
     system_prompt=(
         "You are a practical travel assistant. "
@@ -111,31 +131,10 @@ agent = Agent(
     ),
 )
 
-
 if __name__ == "__main__":
-    if len(sys.argv) > 1:
-        question = " ".join(sys.argv[1:])
-    else:
-        question = (
-            "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
-            "What should I pack, and does it fit my budget?"
-        )
+    # Command line argument override if provided
+    selected_query = " ".join(sys.argv[1:]) if len(sys.argv) > 1 else query
 
-    print(f"\nQuestion: {question}\n" + "-" * 60)
-    response = agent(question)
+    print(f"\nQuestion: {selected_query}\n" + "-" * 60)
+    response = agent(selected_query)
     print(response)
-
-
-# ---------------------------------------------------------------------------
-# EXTENSION CHALLENGES
-#
-# EASY    Add a get_visa_requirements(country) tool, ask about an intl. trip.
-# MEDIUM  Replace the mock weather with a real API call using `requests`
-#         (same pattern as two/01_function_to_tool.py).
-# MEDIUM  Regroup the three tools into a TravelTools class with shared state
-#         (see two/08_class_based_tools.py).
-# HARDER  Make the weather + cost lookups async so a multi-city comparison
-#         runs in parallel (see two/09_async_tools.py).
-# HARDER  Add file_write from strands_tools and have the agent save an
-#         itinerary to disk.
-# ---------------------------------------------------------------------------

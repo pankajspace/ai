@@ -13,41 +13,57 @@ WHAT TO LOOK FOR in the output:
 That empty `ai:` line is the model deciding to act instead of replying.
 That IS the agentic loop.
 
-    python 02_hello_world_langgraph.py
+Run locally (from this folder):
+    pip install -r requirements.txt
+    python main.py
+
+Run with Docker (from this folder):
+    docker build -t 02_hello_world_langgraph .
+    docker run --rm --env-file .env 02_hello_world_langgraph
 """
 
 import os
-import sys
 
+from dotenv import find_dotenv, load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-# Model configuration
-MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
+# 1. Load AWS and Bedrock configuration from .env
+#    (in Docker they are passed in with --env-file instead)
+load_dotenv(find_dotenv())
+
+# 2. Inputs - prompt to send; uncomment another line to try a different input
+prompt = "Please greet Alice and Bob."
+# prompt = "Please greet Charlie, Diana, and Edward individually."
+# prompt = "Say hello to Dr. Watson."
+# prompt = "Hi there, who are you and what tools do you have?"
+
+# 3. Model configuration
+model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
-# Define a simple tool
+# 4. Define a simple tool
 @tool
 def greet(name: str) -> str:
     """Greet someone by name."""
     return f"Hello, {name}! Welcome to the world of AI agents."
 
 
-# Initialize the LLM via Bedrock
+# 5. Initialize the LLM via Bedrock Converse
 llm = init_chat_model(
-    MODEL_ID,
+    model_id,
     model_provider="bedrock_converse",
 )
 
-# Create a ReAct agent with the tool
+# 6. Create a ReAct agent with the tool
 agent = create_react_agent(model=llm, tools=[greet])
 
-# Run the agent
+# 7. Run the agent and display execution steps
+print(f"Prompt: {prompt}\n" + "-" * 50)
 response = agent.invoke(
-    {"messages": [{"role": "user", "content": "Please greet Alice and Bob."}]}
+    {"messages": [{"role": "user", "content": prompt}]}
 )
 
-# Print every step so you can see the loop
 for message in response["messages"]:
     print(f"{message.type}: {message.text}")
