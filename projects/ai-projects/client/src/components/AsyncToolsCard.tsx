@@ -65,6 +65,7 @@ export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {})
       <h2>
         <span className="card-title">⚡ Async Parallel Tools</span>
         <span className="badge badge-healthy">asyncio.gather</span>
+        <a className="info-link" href="info/async-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Executes concurrent async warehouse lookups simultaneously, slashing latency compared to sequential queries.

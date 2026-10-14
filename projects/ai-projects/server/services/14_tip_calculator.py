@@ -48,10 +48,12 @@ class TipCalculatorResponse(BaseModel):
 
 def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -> dict:
     """Calculate tip and split the bill among people."""
+    # ① Compute tip amount, total bill, and per-person split
     tip = bill_amount * (tip_percentage / 100)
     total = bill_amount + tip
     per_person = total / (num_people if num_people > 0 else 1)
 
+    # ② Return rounded monetary breakdown dictionary
     return {
         "bill": round(float(bill_amount), 2),
         "tip": round(float(tip), 2),
@@ -66,6 +68,7 @@ def run_tip_calculator_agent(
     query: str = "The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?",
 ) -> dict:
     """Run the Tip Calculator Agent."""
+    # ① Load AWS credentials and initialize state for tool calls and calculation output
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
@@ -73,6 +76,7 @@ def run_tip_calculator_agent(
     tool_calls_recorded = []
     calc_result = None
 
+    # ② Run Strands Agent on Bedrock if AWS credentials are configured
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -99,6 +103,7 @@ def run_tip_calculator_agent(
         except Exception as exc:
             print(f"Strands Bedrock failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and calculate_tip schema for intent-driven extraction
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -131,6 +136,7 @@ def run_tip_calculator_agent(
         {"role": "user", "content": query},
     ]
 
+    # ④ Run the agent loop to extract parameters from natural language and compute the split
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

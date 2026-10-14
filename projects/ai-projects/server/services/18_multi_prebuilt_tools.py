@@ -47,6 +47,7 @@ VIRTUAL_FILESYSTEM = {}
 def tool_http_request(url: str) -> str:
     """Fetch content from an HTTP URL."""
     try:
+        # ① Perform GET request with a 5-second timeout and truncate response to 1,000 chars
         resp = requests.get(url, timeout=5)
         text = resp.text
         return text[:1000]  # truncate to keep prompt context clean
@@ -56,6 +57,7 @@ def tool_http_request(url: str) -> str:
 
 def tool_calculator(expression: str) -> str:
     """Safely calculate mathematical expression."""
+    # ① Sanitize expression and evaluate with restricted math primitives
     clean = expression.strip().replace("^", "**").replace("x", "*")
     if not re.match(r"^[0-9\+\-\*\/\(\)\.\s\*\*eE\%\,]+$", clean):
         return f"Error: Expression contains unsupported characters: {clean}"
@@ -68,6 +70,7 @@ def tool_calculator(expression: str) -> str:
 
 def tool_file_write(filename: str, content: str) -> str:
     """Write content to a file in memory or disk."""
+    # ① Normalize basename and store content in the virtual filesystem
     fname = os.path.basename(filename)
     VIRTUAL_FILESYSTEM[fname] = content
     return f"Successfully wrote {len(content)} characters to {fname}"
@@ -77,6 +80,7 @@ def run_multi_prebuilt_tools_agent(
     task: str = "Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt",
 ) -> dict:
     """Run the Multi Prebuilt Tools Agent."""
+    # ① Load AWS credentials and initialize tool sequence and file capture state
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
@@ -84,6 +88,7 @@ def run_multi_prebuilt_tools_agent(
     tool_sequence = []
     local_files = {}
 
+    # ② Run Strands Agent with calculator, http_request, and file_write on Bedrock if configured
     if aws_key and aws_secret:
         try:
             from strands import Agent
@@ -107,6 +112,7 @@ def run_multi_prebuilt_tools_agent(
         except Exception as exc:
             print(f"Strands Bedrock multi prebuilt failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and register the three prebuilt tool schemas
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -162,6 +168,7 @@ def run_multi_prebuilt_tools_agent(
         {"role": "user", "content": task},
     ]
 
+    # ④ Execute the multi-step pipeline: fetch HTTP data -> compute stats -> write artifact file
     for _ in range(6):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

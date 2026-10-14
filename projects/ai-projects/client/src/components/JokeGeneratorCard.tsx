@@ -54,6 +54,7 @@ export function JokeGeneratorCard({ apiBase = API_BASE }: JokeGeneratorCardProps
       <h2>
         <span className="card-title">😂 Joke Generator</span>
         <span className="badge badge-healthy">Groq</span>
+        <a className="info-link" href="info/joke-generator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Ask Groq for a funny joke on any topic.

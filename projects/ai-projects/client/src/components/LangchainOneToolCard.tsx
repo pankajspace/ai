@@ -63,6 +63,7 @@ export function LangchainOneToolCard({ apiBase = API_BASE }: LangchainOneToolCar
       <h2>
         <span className="card-title">🌦️ LangChain Agent</span>
         <span className="badge badge-healthy">LangChain • Groq</span>
+        <a className="info-link" href="info/langchain-one-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         LangChain agent with a single tool (<code>get_weather</code>) to check current city forecasts.

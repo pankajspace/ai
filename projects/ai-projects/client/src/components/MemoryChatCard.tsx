@@ -78,6 +78,7 @@ export function MemoryChatCard({ apiBase = API_BASE }: MemoryChatCardProps = {})
       <h2>
         <span className="card-title">🧠 Conversational Memory</span>
         <span className="badge badge-healthy">LangChain • GPT-4o mini</span>
+        <a className="info-link" href="info/memory-chat.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Multi-turn chat using LangChain LCEL with dynamic message history retention.

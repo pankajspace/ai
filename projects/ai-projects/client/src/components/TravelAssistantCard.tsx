@@ -64,6 +64,7 @@ export function TravelAssistantCard({ apiBase = API_BASE }: TravelAssistantCardP
       <h2>
         <span className="card-title">🏖️ Capstone Travel Planner</span>
         <span className="badge badge-healthy">Capstone Agent</span>
+        <a className="info-link" href="info/travel-assistant.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Autonomous concierge chaining <code>weather</code> &rarr; <code>packing</code> &rarr; <code>cost estimation</code> &rarr; <code>budget check</code>.

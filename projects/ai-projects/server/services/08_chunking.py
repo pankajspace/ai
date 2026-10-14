@@ -74,10 +74,12 @@ def chunk_text(
     Returns:
         List of text chunks.
     """
+    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,        # aim for target chars per chunk
         chunk_overlap=chunk_overlap,  # adjacent chunks share chars (context glue)
     )
+    # ② Split the document text into overlapping chunks preserving natural boundaries
     return splitter.split_text(text)
 
 

@@ -49,10 +49,12 @@ MOCK_AWS_STATE = {
 
 def execute_aws_operation(operation: str, params: dict = None) -> dict:
     """Execute an AWS operation via boto3 or fallback to simulated infrastructure."""
+    # ① Check AWS credentials and region configuration
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     region = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
 
+    # ② Execute live read-only boto3 API calls when credentials are present
     if aws_key and aws_secret:
         try:
             import boto3
@@ -73,7 +75,7 @@ def execute_aws_operation(operation: str, params: dict = None) -> dict:
         except Exception as exc:
             print(f"Live AWS operation {operation} failed ({exc}), falling back to simulation")
 
-    # Simulated AWS environment
+    # ③ Return simulated cloud state when running without live AWS credentials
     if operation == "list_s3_buckets":
         return {"status": "success", "buckets": MOCK_AWS_STATE["buckets"], "count": len(MOCK_AWS_STATE["buckets"]), "live": False}
     elif operation == "get_caller_identity":
@@ -93,6 +95,7 @@ def execute_aws_operation(operation: str, params: dict = None) -> dict:
 
 def run_use_aws_agent(prompt: str = "List all S3 buckets in my account") -> dict:
     """Run the natural language AWS agent."""
+    # ① Load AWS credentials and initialize operation and resource logs
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
@@ -100,6 +103,7 @@ def run_use_aws_agent(prompt: str = "List all S3 buckets in my account") -> dict
     ops_recorded = []
     collected_data = {}
 
+    # ② Run Strands Agent with strands_tools.use_aws on Bedrock if configured
     if aws_key and aws_secret:
         try:
             from strands import Agent
@@ -123,6 +127,7 @@ def run_use_aws_agent(prompt: str = "List all S3 buckets in my account") -> dict
         except Exception as exc:
             print(f"Strands use_aws failed ({exc}), falling back to OpenAI agent")
 
+    # ③ Configure OpenAI client and read-only use_aws tool schema
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -157,6 +162,7 @@ def run_use_aws_agent(prompt: str = "List all S3 buckets in my account") -> dict
         {"role": "user", "content": prompt},
     ]
 
+    # ④ Run the agent loop to map natural language to AWS operations and summarize results
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

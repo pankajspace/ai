@@ -64,6 +64,7 @@ export function ToolErrorInjectionCard({ apiBase = API_BASE }: ToolErrorInjectio
       <h2>
         <span className="card-title">⚠️ Tool Error Injection</span>
         <span className="badge badge-healthy">HTTP 503 Outage</span>
+        <a className="info-link" href="info/tool-error-injection.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Simulates upstream tool failures (HTTP 503) to test error transparency, error propagation, and hallucination prevention.

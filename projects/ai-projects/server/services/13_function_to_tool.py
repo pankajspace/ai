@@ -46,20 +46,24 @@ def check_server_status(server_url: str) -> str:
         server_url: The URL of the server to check
     """
     try:
+        # ① Send an HTTP GET request with a 5-second timeout and report the status code
         response = requests.get(server_url, timeout=5)
         return f"Server is up. Status code: {response.status_code}"
     except requests.exceptions.RequestException as e:
+        # ② Catch network or HTTP errors and return a readable diagnostic string
         return f"Server is down or unreachable: {str(e)}"
 
 
 def run_function_to_tool_agent(question: str = "Is the staging server running? Check https://httpbin.org/get") -> dict:
     """Execute the Function-to-Tool agent."""
+    # ① Load AWS credentials and initialize the tool call log
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_calls_recorded = []
 
+    # ② Wrap check_server_status with @tool and invoke Strands Agent on Bedrock if configured
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -83,6 +87,7 @@ def run_function_to_tool_agent(question: str = "Is the staging server running? C
         except Exception as exc:
             print(f"Strands Bedrock failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and JSON function schema derived from signature + docstring
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -116,6 +121,7 @@ def run_function_to_tool_agent(question: str = "Is the staging server running? C
         {"role": "user", "content": question},
     ]
 
+    # ④ Run the tool-calling loop to inspect the URL and synthesize the health report
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

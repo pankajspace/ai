@@ -54,9 +54,11 @@ def run_mcp_client(
     tool_args: Optional[Dict[str, Any]] = None,
 ) -> dict:
     """Execute direct MCP tool call."""
+    # ① Default tool arguments when none are supplied
     if tool_args is None:
         tool_args = {"teams": "India vs West Indies"}
 
+    # ② Build the MCP server's advertised tool descriptor list
     tools_available = [
         McpToolDescriptor(
             name="get_live_score",
@@ -78,7 +80,7 @@ def run_mcp_client(
         ),
     ]
 
-    # Attempt stdio client with FastMCP if mcp package available
+    # ③ Initialize protocol transport and check for stdio MCP client support
     transport = "In-Process Direct Protocol Simulation"
     result_data = {}
 
@@ -92,6 +94,7 @@ def run_mcp_client(
     except Exception:
         pass
 
+    # ④ Dispatch the requested MCP tool call with structured arguments
     if tool_name == "get_live_score":
         teams = tool_args.get("teams", "India vs West Indies")
         result_data = get_live_score(teams)
@@ -101,6 +104,7 @@ def run_mcp_client(
     else:
         result_data = {"error": f"Tool '{tool_name}' not found on MCP server"}
 
+    # ⑤ Return handshake status, discovered tool schemas, and invocation output
     return {
         "handshake_status": "200 OK (Handshake Initialized)",
         "server_tools": [t.model_dump() for t in tools_available],

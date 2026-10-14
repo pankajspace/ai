@@ -52,7 +52,9 @@ WAREHOUSE_DATA = {
 
 async def mock_async_warehouse_lookup(product_id: str, warehouse: str) -> dict:
     """Simulate a network-delayed warehouse database lookup."""
+    # ① Simulate 300ms network I/O latency without blocking the event loop
     await asyncio.sleep(0.3)  # simulate network hop
+    # ② Look up warehouse stock for the normalized product ID
     w = warehouse.lower().strip()
     p = product_id.upper().strip()
     qty = WAREHOUSE_DATA.get(w, {}).get(p, 0)
@@ -63,20 +65,23 @@ async def run_async_tools_agent_async(
     query: str = "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.",
 ) -> dict:
     """Execute parallel warehouse queries asynchronously."""
+    # ① Start timer and launch all three warehouse lookups concurrently via asyncio.gather
     start_time = time.perf_counter()
 
-    # Run lookups concurrently across 3 warehouses
     warehouses = ["east", "west", "central"]
     tasks = [mock_async_warehouse_lookup("PROD-123", w) for w in warehouses]
     results = await asyncio.gather(*tasks)
 
+    # ② Measure wall-clock parallel duration vs the sequential sum baseline
     duration = time.perf_counter() - start_time
     sequential_baseline = 0.3 * len(warehouses)
 
+    # ③ Aggregate stock counts across all warehouses
     warehouse_map = {r["warehouse"]: r["stock"] for r in results}
     total_stock = sum(warehouse_map.values())
     tool_calls = [f"check_warehouse_inventory('PROD-123', '{w}') -> {qty} units" for w, qty in warehouse_map.items()]
 
+    # ④ Pass aggregated warehouse data to the LLM to synthesize the fulfillment decision
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -98,6 +103,7 @@ async def run_async_tools_agent_async(
     )
     reply = completion.choices[0].message.content or ""
 
+    # ⑤ Return the response, per-warehouse stock map, and timing comparison
     return {
         "query": query,
         "response": reply,
@@ -114,6 +120,7 @@ def run_async_tools_agent(
 ) -> dict:
     """Synchronous entry point wrapping async loop."""
     try:
+        # ① Check if an event loop is already running and dispatch accordingly
         loop = asyncio.get_event_loop()
         if loop.is_running():
             import concurrent.futures
@@ -122,6 +129,7 @@ def run_async_tools_agent(
                 return pool.submit(asyncio.run, run_async_tools_agent_async(query)).result()
         return loop.run_until_complete(run_async_tools_agent_async(query))
     except RuntimeError:
+        # ② Start a fresh event loop when none is active in the current thread
         return asyncio.run(run_async_tools_agent_async(query))
 
 

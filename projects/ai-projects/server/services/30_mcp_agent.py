@@ -44,7 +44,7 @@ class McpAgentResponse(BaseModel):
 
 def run_mcp_agent(question: str = "What is the score in India vs West Indies?") -> dict:
     """Run the MCP-Enabled LLM agent."""
-    # Check for Groq key first (since practice 06 used Groq), fallback to OpenAI
+    # ① Select Groq or OpenAI client based on available environment credentials
     groq_key = os.getenv("GROQ_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
 
@@ -57,6 +57,7 @@ def run_mcp_agent(question: str = "What is the score in India vs West Indies?") 
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
         provider_name = f"OpenAI ({model}) + FastMCP"
 
+    # ② Convert FastMCP server tool definitions into LLM function-calling schemas
     tools_schema = [
         {
             "type": "function",
@@ -88,6 +89,7 @@ def run_mcp_agent(question: str = "What is the score in India vs West Indies?") 
         },
     ]
 
+    # ③ Send user question and MCP tool schemas to the model
     messages = [
         {
             "role": "system",
@@ -114,6 +116,7 @@ def run_mcp_agent(question: str = "What is the score in India vs West Indies?") 
             "provider": provider_name,
         }
 
+    # ④ Execute the selected tool against the FastMCP cricket server
     tc = msg.tool_calls[0]
     fname = tc.function.name
     args = json.loads(tc.function.arguments or "{}")
@@ -125,6 +128,7 @@ def run_mcp_agent(question: str = "What is the score in India vs West Indies?") 
     else:
         tool_res = {"error": f"Unknown tool: {fname}"}
 
+    # ⑤ Feed the MCP tool output back to the LLM to synthesize the final grounded answer
     messages.append(msg)
     messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(tool_res)})
 

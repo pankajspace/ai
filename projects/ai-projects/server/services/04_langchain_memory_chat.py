@@ -77,18 +77,15 @@ def chat_with_memory(
     Returns:
         Tuple of (assistant_response, updated_chat_history).
     """
-    # Default to an empty list if no prior conversation history was provided
+    # ① Default to an empty list and format history into (role, content) tuples for MessagesPlaceholder
     history_list = history or []
-
-    # Format history into a list of (role, content) tuples expected by LangChain's MessagesPlaceholder
     lc_history = [(msg.role, msg.content) for msg in history_list]
 
-    # Retrieve model parameters and API credentials from environment variables
+    # ② Retrieve model parameters and initialize the ChatOpenAI client
     model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     base_url = os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY")
 
-    # Initialize the ChatOpenAI client with timeout and optional custom base URL
     model = ChatOpenAI(
         model=model_name,
         api_key=api_key,
@@ -96,7 +93,7 @@ def chat_with_memory(
         timeout=15.0,
     )
 
-    # Build prompt template injecting system instructions, chat history, and current question
+    # ③ Build prompt template injecting system instructions, chat history, and current question
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
@@ -106,14 +103,12 @@ def chat_with_memory(
         ("human", "{question}"),
     ])
 
-    # Assemble LCEL (LangChain Expression Language) pipeline: Prompt -> Model
+    # ④ Assemble LCEL pipeline (Prompt | Model) and invoke with history and question
     chain = prompt | model
-
-    # Invoke chain with input variables and extract string response
     result = chain.invoke({"history": lc_history, "question": question})
     answer = str(result.content) if hasattr(result, "content") else str(result)
 
-    # Build updated history list:
+    # ⑤ Build updated history list:
     # 1. *history_list: Unpacks all existing ChatMessage items into the new list (non-mutating)
     # 2. Appends the current user query and model answer to preserve context for the next turn
     updated_history = [

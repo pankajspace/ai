@@ -54,6 +54,7 @@ export function TravelGuideCard({ apiBase = API_BASE }: TravelGuideCardProps = {
       <h2>
         <span className="card-title">✈️ Travel Guide</span>
         <span className="badge badge-healthy">GPT-4o mini</span>
+        <a className="info-link" href="info/travel-guide.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Ask GPT-4o mini for a witty suggestion of what to do in any city.

@@ -88,6 +88,7 @@ PROBLEMS = {
 
 def evaluate_cot_accuracy(extracted: str, accepted: List[str]) -> bool:
     """Evaluate whether answer matches any accepted answers."""
+    # ① Strip whitespace and hyphens before matching against accepted ground-truth strings
     cleaned = extracted.lower().replace(" ", "").replace("-", "")
     for acc in accepted:
         clean_acc = acc.lower().replace(" ", "").replace("-", "")
@@ -102,6 +103,7 @@ def run_cot_vs_direct_benchmark(
     custom_correct_answers: Optional[List[str]] = None,
 ) -> dict:
     """Execute CoT vs Direct comparison."""
+    # ① Initialize OpenAI client and resolve preset or custom logic puzzle
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -112,7 +114,7 @@ def run_cot_vs_direct_benchmark(
     q_text = custom_question or preset["question"]
     accepted = custom_correct_answers or preset["correct_answers"]
 
-    # Direct Strategy
+    # ② Run Direct Strategy (no intermediate working allowed)
     start_d = time.perf_counter()
     direct_prompt = f"{q_text}\n\nAnswer in one short sentence. Do not show working."
     resp_d = client.chat.completions.create(
@@ -124,7 +126,7 @@ def run_cot_vs_direct_benchmark(
     text_d = resp_d.choices[0].message.content or ""
     correct_d = evaluate_cot_accuracy(text_d, accepted)
 
-    # CoT Strategy
+    # ③ Run Chain-of-Thought Strategy (step-by-step reasoning before final answer)
     start_c = time.perf_counter()
     cot_prompt = f"{q_text}\n\nThink step by step, then state your final answer clearly on a new line."
     resp_c = client.chat.completions.create(
@@ -136,6 +138,7 @@ def run_cot_vs_direct_benchmark(
     text_c = resp_c.choices[0].message.content or ""
     correct_c = evaluate_cot_accuracy(text_c, accepted)
 
+    # ④ Return side-by-side accuracy, latency, and reasoning traces
     return {
         "problem_title": problem_title,
         "question": q_text,

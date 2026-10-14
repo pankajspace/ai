@@ -64,6 +64,7 @@ export function CustomInventoryCard({ apiBase = API_BASE }: CustomInventoryCardP
       <h2>
         <span className="card-title">📦 Custom Inventory Tool</span>
         <span className="badge badge-healthy">Domain Tool</span>
+        <a className="info-link" href="info/custom-inventory.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Queries proprietary catalog data using a custom domain tool (<code>check_inventory</code>) for product stock.

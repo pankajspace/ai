@@ -50,6 +50,7 @@ SALES_DB = {
 
 def get_sales_data(quarter: str) -> dict:
     """Retrieve sales data for a specific quarter."""
+    # ① Normalize quarter label and look up revenue and deal count from SALES_DB
     q_key = quarter.upper().strip().replace("LAST QUARTER", "Q3").replace("LAST", "Q3")
     data = SALES_DB.get(q_key, {"revenue": 1250000, "deals": 47})
     return {"revenue": data["revenue"], "deals": data["deals"], "quarter": q_key}
@@ -57,6 +58,7 @@ def get_sales_data(quarter: str) -> dict:
 
 def analyze_sales(revenue: int, deals: int, quarter: str) -> str:
     """Calculate key metrics from sales data."""
+    # ① Compute average deal size and format the executive summary string
     avg_deal = revenue / deals if deals > 0 else 0
     return f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"
 
@@ -70,12 +72,14 @@ def run_multi_tool_sales_agent(
     task: str = "Pull last quarter's sales data and email a summary to the team",
 ) -> dict:
     """Run the Multi-Tool Sales Agent."""
+    # ① Load AWS credentials and initialize the ordered tool sequence trace
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_sequence = []
 
+    # ② Run Strands multi-tool agent on Bedrock if AWS credentials are configured
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -116,6 +120,7 @@ def run_multi_tool_sales_agent(
         except Exception as exc:
             print(f"Bedrock Strands multi-tool failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and register the three sales pipeline tool schemas
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -176,6 +181,7 @@ def run_multi_tool_sales_agent(
         {"role": "user", "content": task},
     ]
 
+    # ④ Run the multi-turn orchestration loop: get_sales_data -> analyze_sales -> send_email
     for _ in range(6):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

@@ -56,6 +56,7 @@ export function FunctionToToolCard({ apiBase = API_BASE }: FunctionToToolCardPro
       <h2>
         <span className="card-title">🔌 Function to Tool</span>
         <span className="badge badge-healthy">@tool Decorator</span>
+        <a className="info-link" href="info/function-to-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Exposes a Python function with docstrings and type hints as an agent tool to check live HTTP server health.

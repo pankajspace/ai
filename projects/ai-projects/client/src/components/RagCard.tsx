@@ -88,6 +88,7 @@ export function RagCard({ apiBase = API_BASE }: RagCardProps = {}) {
       <h2>
         <span className="card-title">📚 Paragraph RAG</span>
         <span className="badge badge-healthy">LangChain + RAG</span>
+        <a className="info-link" href="info/rag.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Ask questions about any paragraph using Retrieval-Augmented Generation (chunking &rarr; semantic retrieval &rarr; grounded answer).

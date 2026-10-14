@@ -52,14 +52,14 @@ def run_tool_schema_calibration(
     query: str = "What is the current hourly precipitation forecast for Seattle?",
 ) -> dict:
     """Evaluate tool routing across 2x2 naming/description conditions."""
+    # ① Initialize OpenAI client
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
     )
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-    # The ideal tool is hourly precipitation forecast
-    # We test 4 conditions:
+    # ② Define the 2x2 calibration matrix (Descriptive vs Opaque names x Loose vs Tight docstrings)
     conditions = [
         {
             "code": "A",
@@ -105,6 +105,7 @@ def run_tool_schema_calibration(
 
     results = []
 
+    # ③ Build OpenAI tool schemas for each condition and force a tool choice
     for c in conditions:
         schemas = [
             {
@@ -142,6 +143,7 @@ def run_tool_schema_calibration(
             "is_correct_routing": is_correct,
         })
 
+    # ④ Summarize routing accuracy across the 4 schema conditions
     correct_count = sum(1 for r in results if r["is_correct_routing"])
     summary = f"Routed accurately in {correct_count} of 4 calibration conditions. Tight docstrings enable successful routing even with opaque names (Condition D)."
 

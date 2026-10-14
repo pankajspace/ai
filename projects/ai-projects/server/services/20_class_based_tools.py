@@ -45,6 +45,7 @@ class InventoryService:
     """Simulated stateful database connection pool."""
 
     def __init__(self):
+        # ① Initialize the shared in-memory inventory dictionary
         self.inventory: Dict[str, int] = {
             "PROD-123": 15,
             "PROD-456": 0,
@@ -53,6 +54,7 @@ class InventoryService:
 
     def check_stock(self, product_id: str) -> str:
         """Check the current stock level."""
+        # ① Look up the normalized product ID in the shared inventory store
         pid = product_id.upper().strip()
         qty = self.inventory.get(pid, None)
         if qty is None:
@@ -61,6 +63,7 @@ class InventoryService:
 
     def update_stock(self, product_id: str, quantity: int) -> str:
         """Update stock quantity in the shared state store."""
+        # ① Mutate the product quantity in the shared inventory store
         pid = product_id.upper().strip()
         self.inventory[pid] = quantity
         return f"Successfully updated stock for {pid} to {quantity} units."
@@ -74,12 +77,14 @@ def run_class_based_tools_agent(
     query: str = "Update PROD-456 stock to 25 units, then confirm the new level",
 ) -> dict:
     """Run the Class-Based Tools Agent."""
+    # ① Load AWS credentials and initialize the tool call log
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_calls_recorded = []
 
+    # ② Bind check_stock and update_stock methods from the shared InventoryService instance on Bedrock
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -114,6 +119,7 @@ def run_class_based_tools_agent(
         except Exception as exc:
             print(f"Strands Bedrock class tools failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and schemas for check_stock and update_stock
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -157,6 +163,7 @@ def run_class_based_tools_agent(
         {"role": "user", "content": query},
     ]
 
+    # ④ Execute the tool loop against the shared _inventory_service_instance so mutations persist across calls
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

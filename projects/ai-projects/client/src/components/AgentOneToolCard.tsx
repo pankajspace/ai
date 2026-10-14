@@ -68,6 +68,7 @@ export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps =
       <h2>
         <span className="card-title">🤖 Single-Tool Agent</span>
         <span className="badge badge-healthy">GPT-4o mini</span>
+        <a className="info-link" href="info/agent-one-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Autonomous agent with local tool calling (<code>get_price</code>) to answer store queries.

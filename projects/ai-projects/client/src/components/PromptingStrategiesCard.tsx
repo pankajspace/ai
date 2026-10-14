@@ -77,6 +77,7 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
       <h2>
         <span className="card-title">🎯 Prompting Strategies Benchmark</span>
         <span className="badge badge-healthy">Direct vs CoT</span>
+        <a className="info-link" href="info/prompting-strategies.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning, measuring accuracy against token costs.

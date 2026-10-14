@@ -76,6 +76,7 @@ Answer: 144
 
 def extract_final_answer(response_text: str) -> str:
     """Extract final answer clause from output."""
+    # ① Look for explicit 'Answer:' delimiter or fallback to the final line
     text = response_text.strip()
     matches = list(re.finditer(r"answer\s*:", text, flags=re.IGNORECASE))
     if matches:
@@ -84,12 +85,14 @@ def extract_final_answer(response_text: str) -> str:
         lines = [ln for ln in text.splitlines() if ln.strip()]
         segment = lines[-1] if lines else ""
 
+    # ② Strip markdown formatting and normalize case
     segment = segment.strip().splitlines()[0] if segment.strip() else ""
     return segment.replace("*", "").replace("`", "").strip().lower()
 
 
 def evaluate_accuracy(extracted: str, expected: str) -> bool:
     """Evaluate if extracted answer matches expected."""
+    # ① Normalize both extracted and expected answers before checking containment
     if not extracted or not expected:
         return False
     clean_extracted = re.sub(r"[^\w\.\:\/]", "", extracted)
@@ -102,12 +105,14 @@ def run_prompting_strategies(
     expected_answer: str = "293",
 ) -> dict:
     """Execute all three prompting strategies and compare metrics."""
+    # ① Initialize the OpenAI client and model configuration
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
     )
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+    # ② Construct Direct, Zero-Shot CoT, and Few-Shot CoT prompts
     prompts = {
         "Direct": f"{question}\n\nAnswer the question directly. State your final answer in the format: 'Answer: <your answer>'. Do not include any explanations or working.",
         "Zero-Shot CoT": f"{question}\n\nThink through the problem step by step to find the solution. After your reasoning, state your final answer on a new line in the format: 'Answer: <your answer>'.",
@@ -116,6 +121,7 @@ def run_prompting_strategies(
 
     results = []
 
+    # ③ Run each strategy and measure latency and token usage
     for name, p_text in prompts.items():
         start_t = time.perf_counter()
         try:
@@ -133,6 +139,7 @@ def run_prompting_strategies(
             text = f"Error: {str(exc)}"
             p_tok, c_tok = 0, 0
 
+        # ④ Extract the final answer and score accuracy against ground truth
         extracted = extract_final_answer(text)
         correct = evaluate_accuracy(extracted, expected_answer)
 
@@ -149,6 +156,7 @@ def run_prompting_strategies(
             }
         )
 
+    # ⑤ Return comparative benchmark metrics across all three strategies
     return {
         "question": question,
         "expected_answer": expected_answer,

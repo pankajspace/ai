@@ -63,6 +63,7 @@ export function McpEvalsCard({ apiBase = API_BASE }: McpEvalsCardProps = {}) {
       <h2>
         <span className="card-title">🧪 FastMCP Evals Suite</span>
         <span className="badge badge-healthy">Agent Unit Tests</span>
+        <a className="info-link" href="info/mcp-evals.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Automated assertion test suite validating MCP tool selection accuracy and ground truth factual verification.

@@ -70,6 +70,7 @@ export function SummarizerCard({ apiBase = API_BASE }: SummarizerCardProps = {})
       <h2>
         <span className="card-title">📝 Text Summarizer</span>
         <span className="badge badge-healthy">LangChain LCEL</span>
+        <a className="info-link" href="info/summarizer.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Summarize long text into a concise, friendly overview using LangChain Expression Language (LCEL).

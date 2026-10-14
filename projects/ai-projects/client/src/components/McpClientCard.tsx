@@ -72,6 +72,7 @@ export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
       <h2>
         <span className="card-title">📡 FastMCP Protocol Client</span>
         <span className="badge badge-healthy">MCP Plumbing</span>
+        <a className="info-link" href="info/mcp-client.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Talks directly to the FastMCP server without an LLM: Handshake &rarr; Tool Discovery &rarr; Direct Protocol Call.

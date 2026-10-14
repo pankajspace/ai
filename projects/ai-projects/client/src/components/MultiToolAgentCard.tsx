@@ -68,6 +68,7 @@ export function MultiToolAgentCard({
       <h2>
         <span className="card-title">🛠️ Multi-Tool Agent</span>
         <span className="badge badge-healthy">LangChain • Groq</span>
+        <a className="info-link" href="info/multi-tool-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         LangChain agent with multiple tools (<code>get_weather</code>, <code>add</code>, <code>multiply</code>, <code>get_population</code>).

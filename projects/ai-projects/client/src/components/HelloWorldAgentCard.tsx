@@ -56,6 +56,7 @@ export function HelloWorldAgentCard({ apiBase = API_BASE }: HelloWorldAgentCardP
       <h2>
         <span className="card-title">🌐 Hello World Agent</span>
         <span className="badge badge-healthy">Strands · Bedrock</span>
+        <a className="info-link" href="info/hello-world-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         The minimal Strands agentic loop powered by Amazon Bedrock Nova Lite (with OpenAI fallback).

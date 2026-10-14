@@ -102,6 +102,7 @@ TOOLS = [get_weather, add, multiply, get_population]
 # ---------------------------------------------------------------------------
 # Build the agent
 # ---------------------------------------------------------------------------
+# ① Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
     model=MODEL,
     api_key=REQUIRED_KEY,
@@ -110,6 +111,7 @@ llm = ChatOpenAI(
     timeout=20.0,
 )
 
+# ② Create the multi-tool LangChain agent with all 4 tools registered
 agent = create_agent(
     model=llm,
     tools=TOOLS,
@@ -129,9 +131,12 @@ def run_multi_tool_agent(
     question: str = "What's the weather in Tokyo, and what is 12 times 12?",
 ) -> tuple[str, bool]:
     """Run a user question through the multi-tool LangChain agent."""
+    # ① Invoke the multi-tool agent with the user's question
     response = agent.invoke({"messages": [{"role": "user", "content": question}]})
     messages = response["messages"]
+    # ② Detect whether one or more tools were executed during the turn
     tool_called = any(msg.type == "tool" for msg in messages)
+    # ③ Extract and return the final synthesized answer
     final_msg = messages[-1]
     answer = str(final_msg.content) if hasattr(final_msg, "content") else str(final_msg)
     return answer, tool_called

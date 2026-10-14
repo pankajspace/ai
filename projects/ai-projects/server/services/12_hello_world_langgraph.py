@@ -45,13 +45,14 @@ def greet_tool(name: str) -> str:
 
 def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
     """Run the LangGraph tool-enabled ReAct agent."""
+    # ① Load AWS credentials and initialize the recorded tool call trace
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_calls_recorded = []
 
-    # Attempt LangGraph with Bedrock Converse if AWS keys configured
+    # ② Attempt LangGraph create_react_agent with Bedrock Converse if AWS keys are configured
     if aws_key and aws_secret:
         try:
             from langchain.chat_models import init_chat_model
@@ -78,7 +79,7 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
         except Exception as exc:
             print(f"Bedrock LangGraph failed ({exc}), falling back to OpenAI")
 
-    # LangChain / OpenAI ReAct loop
+    # ③ Configure OpenAI client and greet tool schema for the fallback ReAct loop
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -108,6 +109,7 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
         {"role": "user", "content": prompt},
     ]
 
+    # ④ Execute the iterative ReAct loop (Reason -> Act -> Observe) up to 5 turns
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
@@ -118,6 +120,7 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
         msg = resp.choices[0].message
         messages.append(msg)
 
+        # ⑤ Return final synthesis once the model finishes calling tools
         if not msg.tool_calls:
             return {
                 "prompt": prompt,
@@ -126,6 +129,7 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
                 "provider": f"LangGraph ReAct Pattern + OpenAI {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}",
             }
 
+        # ⑥ Execute each requested greet tool call and feed observations back into messages
         for tc in msg.tool_calls:
             fn_name = tc.function.name
             args = json.loads(tc.function.arguments or "{}")

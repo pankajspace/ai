@@ -78,6 +78,7 @@ export function ChunkingCard({ apiBase = API_BASE }: ChunkingCardProps = {}) {
       <h2>
         <span className="card-title">🧩 Document Chunking</span>
         <span className="badge badge-healthy">LangChain Splitter</span>
+        <a className="info-link" href="info/chunking.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Split long documents into smaller, overlapping passages using <code>RecursiveCharacterTextSplitter</code> for embedding and vector indexing.

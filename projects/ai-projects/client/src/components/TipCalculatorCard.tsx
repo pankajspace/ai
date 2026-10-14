@@ -64,6 +64,7 @@ export function TipCalculatorCard({ apiBase = API_BASE }: TipCalculatorCardProps
       <h2>
         <span className="card-title">💵 Tip & Split Agent</span>
         <span className="badge badge-healthy">Natural Intent</span>
+        <a className="info-link" href="info/tip-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Interprets natural language bill and tip queries without regex, invoking the tip calculator tool directly.

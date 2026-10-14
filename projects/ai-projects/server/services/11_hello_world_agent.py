@@ -41,10 +41,12 @@ def run_hello_world_agent(prompt: str = "Hello! Tell me a fun fact about AI agen
     Uses Amazon Bedrock Nova Lite if AWS credentials are configured,
     otherwise gracefully falls back to OpenAI with provider indication.
     """
+    # ① Check AWS credentials and target Bedrock model identifier
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_NOVA_LITE", os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0"))
 
+    # ② Attempt execution through Strands Agent on Amazon Bedrock Nova Lite
     if aws_key and aws_secret:
         try:
             from strands import Agent
@@ -62,7 +64,7 @@ def run_hello_world_agent(prompt: str = "Hello! Tell me a fun fact about AI agen
             # If Bedrock connection fails, continue to fallback
             print(f"Bedrock invocation failed ({exc}), falling back to OpenAI")
 
-    # OpenAI Fallback
+    # ③ OpenAI Fallback when AWS credentials are unavailable
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -78,6 +80,7 @@ def run_hello_world_agent(prompt: str = "Hello! Tell me a fun fact about AI agen
         ],
         temperature=0.7,
     )
+    # ④ Extract and return the assistant reply with provider metadata
     reply = completion.choices[0].message.content or ""
     return {
         "prompt": prompt,

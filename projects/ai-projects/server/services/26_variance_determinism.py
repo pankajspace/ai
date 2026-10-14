@@ -48,6 +48,7 @@ def run_variance_determinism_benchmark(
     review_text: str = "The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars.",
 ) -> dict:
     """Run extraction across the three determinism strategies."""
+    # ① Initialize OpenAI client
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -56,7 +57,7 @@ def run_variance_determinism_benchmark(
 
     results = []
 
-    # Strategy A: Unconstrained
+    # ② Strategy A: Unconstrained freeform prompt (high variance, fails JSON parsing)
     prompt_a = f"Extract product, sentiment, pros, cons, and rating from this review:\n\n{review_text}"
     resp_a = client.chat.completions.create(model=model, messages=[{"role": "user", "content": prompt_a}])
     text_a = resp_a.choices[0].message.content or ""
@@ -78,7 +79,7 @@ def run_variance_determinism_benchmark(
         "parse_error": err_a,
     })
 
-    # Strategy B: Prompt-Constrained
+    # ③ Strategy B: Prompt-constrained JSON instructions (requires fence stripping)
     prompt_b = (
         f"Extract product, sentiment (positive/negative/mixed), pros (list), cons (list), and rating (number) "
         f"from this review as JSON with keys 'product', 'sentiment', 'pros', 'cons', 'rating'. "
@@ -105,7 +106,7 @@ def run_variance_determinism_benchmark(
         "parse_error": err_b,
     })
 
-    # Strategy C: Schema-Enforced (Structured Outputs)
+    # ④ Strategy C: API Schema-Enforced JSON mode (response_format={"type": "json_object"})
     prompt_c = (
         f"Extract review metadata into JSON with keys 'product', 'sentiment', 'pros', 'cons', 'rating':\n\n{review_text}"
     )
@@ -132,6 +133,7 @@ def run_variance_determinism_benchmark(
         "parse_error": err_c,
     })
 
+    # ⑤ Return all three strategy outputs and JSON parse results
     return {
         "review_text": review_text,
         "strategies": results,

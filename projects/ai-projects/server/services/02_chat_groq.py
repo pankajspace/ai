@@ -58,23 +58,23 @@ def get_groq_joke(topic: str = "programming") -> str:
     Raises:
         ValueError: If GROQ_API_KEY is not defined in the environment.
     """
-    # Verify that the Groq API key is present in environment variables
+    # ① Verify that the Groq API key is present in environment variables
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         raise ValueError("GROQ_API_KEY is not configured in .env")
 
-    # Read endpoint and model configuration (falling back to sensible defaults)
+    # ② Read endpoint and model configuration (falling back to sensible defaults)
     base_url = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
     model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-    # Initialize the OpenAI SDK client configured for Groq's base URL
+    # ③ Initialize the OpenAI SDK client configured for Groq's base URL
     client = OpenAI(
         api_key=api_key,
         base_url=base_url,
         timeout=15.0,
     )
 
-    # Call the chat completions endpoint with system persona and user topic
+    # ④ Call the chat completions endpoint with system persona and user topic
     response = client.chat.completions.create(
         model=model,
         messages=[
@@ -84,7 +84,7 @@ def get_groq_joke(topic: str = "programming") -> str:
         timeout=15.0,
     )
 
-    # Extract and return the joke text
+    # ⑤ Extract and return the joke text
     return response.choices[0].message.content or ""
 
 

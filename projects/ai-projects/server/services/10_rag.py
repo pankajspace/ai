@@ -74,14 +74,17 @@ class RagResponse(BaseModel):
 # ---------------------------------------------------------------------------
 def _retrieve_relevant_chunks(chunks: list[str], question: str, k: int = 3) -> list[str]:
     """Retrieve top relevant chunks using Chroma vector store and HuggingFace embeddings."""
+    # ① Short-circuit if total chunks are already within the top-k limit
     if len(chunks) <= k:
         return chunks
 
     from langchain_chroma import Chroma
     from langchain_huggingface import HuggingFaceEmbeddings
 
+    # ② Embed all chunks into an ephemeral Chroma vector store
     embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
     db = Chroma.from_texts(chunks, embedder)
+    # ③ Run similarity search for the user question and return top-k passages
     results = db.similarity_search(question, k=k)
     return [r.page_content for r in results]
 

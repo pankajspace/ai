@@ -75,6 +75,7 @@ TOOLS = [get_weather]
 # ---------------------------------------------------------------------------
 # Build the agent
 # ---------------------------------------------------------------------------
+# ① Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
     model=MODEL,
     api_key=REQUIRED_KEY,
@@ -83,6 +84,7 @@ llm = ChatOpenAI(
     timeout=20.0,
 )
 
+# ② Create the LangChain tool-calling agent with get_weather and system instructions
 agent = create_agent(
     model=llm,
     tools=TOOLS,
@@ -100,9 +102,12 @@ def run_langchain_one_tool(
     question: str = "What is the weather like in New York?",
 ) -> tuple[str, bool]:
     """Run a user question through the single-tool LangChain agent."""
+    # ① Invoke the LangChain agent with the user's question
     response = agent.invoke({"messages": [{"role": "user", "content": question}]})
     messages = response["messages"]
+    # ② Check whether any tool message appears in the trace
     tool_called = any(msg.type == "tool" for msg in messages)
+    # ③ Extract and return the final assistant reply alongside the tool flag
     final_msg = messages[-1]
     answer = str(final_msg.content) if hasattr(final_msg, "content") else str(final_msg)
     return answer, tool_called

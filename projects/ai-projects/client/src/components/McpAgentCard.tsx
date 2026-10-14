@@ -66,6 +66,7 @@ export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
       <h2>
         <span className="card-title">🏏 FastMCP Cricket Agent</span>
         <span className="badge badge-healthy">MCP + LLM</span>
+        <a className="info-link" href="info/mcp-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         The LLM decides which FastMCP tool to call and extracts arguments, formulating verified cricket answers.

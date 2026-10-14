@@ -151,10 +151,12 @@ def health_check():
 
 @app.post("/api/travel", response_model=TravelResponse)
 def travel_suggestion(req: TravelRequest):
+    # ① Validate city input and delegate to OpenAI travel suggestion service
     city_name = req.city.strip() if req.city else "Bangalore"
     if not city_name:
         raise HTTPException(status_code=400, detail="City cannot be empty")
     try:
+        # ② Invoke service and wrap in TravelResponse
         suggestion = get_travel_suggestion(city_name)
         return TravelResponse(city=city_name, suggestion=suggestion)
     except Exception as exc:
@@ -163,6 +165,7 @@ def travel_suggestion(req: TravelRequest):
 
 @app.post("/api/joke", response_model=JokeResponse)
 def joke_generator(req: JokeRequest):
+    # ① Normalize topic and call Groq joke generator service
     topic_name = req.topic.strip() if req.topic else "programming"
     try:
         joke_text = get_groq_joke(topic_name)
@@ -173,6 +176,7 @@ def joke_generator(req: JokeRequest):
 
 @app.post("/api/summarize", response_model=SummarizerResponse)
 def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
     text_content = req.text.strip() if req.text else ""
     if not text_content:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
@@ -185,6 +189,7 @@ def summarizer_service(req: SummarizerRequest):
 
 @app.post("/api/memory-chat", response_model=MemoryChatResponse)
 def memory_chat_service(req: MemoryChatRequest):
+    # ① Validate user message and pass conversation history to memory chat service
     message_text = req.message.strip() if req.message else ""
     if not message_text:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -201,6 +206,7 @@ def memory_chat_service(req: MemoryChatRequest):
 
 @app.post("/api/agent", response_model=AgentResponse)
 def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
     message_text = req.message.strip() if req.message else "How much are the shoes?"
     if not message_text:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -214,6 +220,7 @@ def agent_service(req: AgentRequest):
 @app.post("/api/langchain-one-tool", response_model=LangchainOneToolResponse)
 @app.post("/api/langchain-agent", response_model=LangchainOneToolResponse)
 def langchain_one_tool_service(req: LangchainOneToolRequest):
+    # ① Validate message and invoke LangChain single-tool agent
     message_text = req.message.strip() if req.message else "What is the weather like in New York?"
     if not message_text:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -230,6 +237,7 @@ def langchain_one_tool_service(req: LangchainOneToolRequest):
 
 @app.post("/api/multi-tool-agent", response_model=MultiToolAgentResponse)
 def multi_tool_agent_service(req: MultiToolAgentRequest):
+    # ① Validate message and invoke LangChain multi-tool agent
     message_text = req.message.strip() if req.message else "What's the weather in Tokyo, and what is 12 times 12?"
     if not message_text:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
@@ -246,6 +254,7 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
 
 @app.post("/api/chunk", response_model=ChunkingResponse)
 def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
     text_content = req.text.strip() if req.text else ""
     if not text_content:
         raise HTTPException(status_code=400, detail="Text cannot be empty")
@@ -267,6 +276,7 @@ def chunking_service(req: ChunkingRequest):
 
 @app.post("/api/embedding", response_model=EmbeddingResponse)
 def embedding_service(req: EmbeddingRequest):
+    # ① Validate both sentences and compute cosine similarity via SentenceTransformer
     text1 = req.text1.strip() if req.text1 else ""
     text2 = req.text2.strip() if req.text2 else ""
     if not text1 or not text2:
@@ -280,6 +290,7 @@ def embedding_service(req: EmbeddingRequest):
 
 @app.post("/api/rag", response_model=RagResponse)
 def rag_service(req: RagRequest):
+    # ① Validate paragraph and question before running the 4-stage RAG pipeline
     paragraph = req.paragraph.strip() if req.paragraph else ""
     question = req.question.strip() if req.question else ""
     if not paragraph:
@@ -299,6 +310,7 @@ def rag_service(req: RagRequest):
 
 @app.post("/api/hello-world-agent", response_model=HelloWorldAgentResponse)
 def hello_world_agent_service(req: HelloWorldAgentRequest):
+    # ① Normalize prompt and invoke AWS Strands Hello World Agent
     prompt_text = req.prompt.strip() if req.prompt else "Hello! Tell me a fun fact about AI agents."
     try:
         res = run_hello_world_agent(prompt_text)
@@ -309,6 +321,7 @@ def hello_world_agent_service(req: HelloWorldAgentRequest):
 
 @app.post("/api/langgraph-agent", response_model=LangGraphAgentResponse)
 def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
     prompt_text = req.prompt.strip() if req.prompt else "Please greet Alice and Bob."
     try:
         res = run_langgraph_agent(prompt_text)
@@ -319,6 +332,7 @@ def langgraph_agent_service(req: LangGraphAgentRequest):
 
 @app.post("/api/function-to-tool", response_model=FunctionToToolResponse)
 def function_to_tool_service(req: FunctionToToolRequest):
+    # ① Normalize question and invoke HTTP health-check tool agent
     q = req.question.strip() if req.question else "Is the staging server running? Check https://httpbin.org/get"
     try:
         res = run_function_to_tool_agent(q)
@@ -329,6 +343,7 @@ def function_to_tool_service(req: FunctionToToolRequest):
 
 @app.post("/api/tip-calculator", response_model=TipCalculatorResponse)
 def tip_calculator_service(req: TipCalculatorRequest):
+    # ① Normalize query and run tip and bill-split agent
     q = req.query.strip() if req.query else "The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"
     try:
         res = run_tip_calculator_agent(q)
@@ -339,6 +354,7 @@ def tip_calculator_service(req: TipCalculatorRequest):
 
 @app.post("/api/multi-tool-sales", response_model=MultiToolSalesResponse)
 def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Normalize task and execute chained 3-tool sales pipeline agent
     task_text = req.task.strip() if req.task else "Pull last quarter's sales data and email a summary to the team"
     try:
         res = run_multi_tool_sales_agent(task_text)
@@ -349,6 +365,7 @@ def multi_tool_sales_service(req: MultiToolSalesRequest):
 
 @app.post("/api/custom-inventory", response_model=CustomInventoryResponse)
 def custom_inventory_service(req: CustomInventoryRequest):
+    # ① Normalize question and query custom inventory tool agent
     q = req.question.strip() if req.question else "Is PROD-123 in stock?"
     try:
         res = run_custom_inventory_agent(q)
@@ -359,6 +376,7 @@ def custom_inventory_service(req: CustomInventoryRequest):
 
 @app.post("/api/prebuilt-calculator", response_model=PrebuiltCalculatorResponse)
 def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
+    # ① Normalize query and invoke safe AST math calculator agent
     q = req.query.strip() if req.query else "What's 42 raised to the power of 9?"
     try:
         res = run_prebuilt_calculator_agent(q)
@@ -369,6 +387,7 @@ def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
 
 @app.post("/api/multi-prebuilt-tools", response_model=MultiPrebuiltToolsResponse)
 def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
+    # ① Normalize task and execute multi-prebuilt tools pipeline agent
     t = req.task.strip() if req.task else "Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt"
     try:
         res = run_multi_prebuilt_tools_agent(t)
@@ -379,6 +398,7 @@ def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
 
 @app.post("/api/use-aws", response_model=UseAwsResponse)
 def use_aws_service(req: UseAwsRequest):
+    # ① Normalize prompt and invoke AWS cloud assistant agent
     p = req.prompt.strip() if req.prompt else "List all S3 buckets in my account"
     try:
         res = run_use_aws_agent(p)
@@ -389,6 +409,7 @@ def use_aws_service(req: UseAwsRequest):
 
 @app.post("/api/class-based-tools", response_model=ClassBasedToolsResponse)
 def class_based_tools_service(req: ClassBasedToolsRequest):
+    # ① Normalize query and run stateful class-based inventory tools agent
     q = req.query.strip() if req.query else "Update PROD-456 stock to 25 units, then confirm the new level"
     try:
         res = run_class_based_tools_agent(q)
@@ -399,6 +420,7 @@ def class_based_tools_service(req: ClassBasedToolsRequest):
 
 @app.post("/api/async-tools", response_model=AsyncToolsResponse)
 def async_tools_service(req: AsyncToolsRequest):
+    # ① Normalize query and run async parallel warehouse tools agent
     q = req.query.strip() if req.query else "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
     try:
         res = run_async_tools_agent(q)
@@ -409,6 +431,7 @@ def async_tools_service(req: AsyncToolsRequest):
 
 @app.post("/api/travel-assistant", response_model=TravelAssistantResponse)
 def travel_assistant_service(req: TravelAssistantRequest):
+    # ① Normalize query and invoke 5-tool capstone travel planner agent
     q = req.query.strip() if req.query else "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?"
     try:
         res = run_travel_assistant_agent(q)
@@ -423,6 +446,7 @@ def travel_assistant_service(req: TravelAssistantRequest):
 
 @app.post("/api/prompting-strategies", response_model=PromptingStrategiesResponse)
 def prompting_strategies_service(req: PromptingStrategiesRequest):
+    # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
     try:
         res = run_prompting_strategies(
             question=req.question,
@@ -435,6 +459,7 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
 
 @app.post("/api/sycophancy-trap", response_model=SycophancyTrapResponse)
 def sycophancy_trap_service(req: SycophancyTrapRequest):
+    # ① Execute multi-turn sycophancy resilience benchmark
     try:
         res = run_sycophancy_trap(
             case_type=req.case_type or "Math Gaslight",
@@ -454,6 +479,7 @@ def sycophancy_trap_service(req: SycophancyTrapRequest):
 
 @app.post("/api/cot-vs-direct", response_model=CotVsDirectResponse)
 def cot_vs_direct_service(req: CotVsDirectRequest):
+    # ① Run Chain-of-Thought vs Direct answer benchmark
     try:
         res = run_cot_vs_direct_benchmark(
             problem_title=req.problem_title or "Spatial Navigation (Grid)",
@@ -467,6 +493,7 @@ def cot_vs_direct_service(req: CotVsDirectRequest):
 
 @app.post("/api/variance-determinism", response_model=VarianceDeterminismResponse)
 def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
     try:
         res = run_variance_determinism_benchmark(review_text=req.review_text)
         return VarianceDeterminismResponse(**res)
@@ -476,6 +503,7 @@ def variance_determinism_service(req: VarianceDeterminismRequest):
 
 @app.post("/api/tool-schema-calibration", response_model=ToolSchemaCalibrationResponse)
 def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
+    # ① Run 2x2 tool schema routing calibration benchmark
     try:
         res = run_tool_schema_calibration(query=req.query)
         return ToolSchemaCalibrationResponse(**res)
@@ -485,6 +513,7 @@ def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
 
 @app.post("/api/tool-error-injection", response_model=ToolErrorInjectionResponse)
 def tool_error_injection_service(req: ToolErrorInjectionRequest):
+    # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
     try:
         res = run_tool_error_injection(question=req.question)
         return ToolErrorInjectionResponse(**res)
@@ -498,6 +527,7 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 
 @app.post("/api/mcp-client", response_model=McpClientResponse)
 def mcp_client_service(req: McpClientRequest):
+    # ① Invoke FastMCP tool directly without an LLM
     try:
         res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
         return McpClientResponse(**res)
@@ -507,6 +537,7 @@ def mcp_client_service(req: McpClientRequest):
 
 @app.post("/api/mcp-agent", response_model=McpAgentResponse)
 def mcp_agent_service(req: McpAgentRequest):
+    # ① Run LLM agent connected to FastMCP cricket tools
     try:
         res = run_mcp_agent(question=req.question)
         return McpAgentResponse(**res)
@@ -516,6 +547,7 @@ def mcp_agent_service(req: McpAgentRequest):
 
 @app.post("/api/mcp-evals", response_model=McpEvalsResponse)
 def mcp_evals_service(req: McpEvalsRequest):
+    # ① Execute MCP agent evaluation suite and return assertion metrics
     try:
         res = run_mcp_evals_suite(run_all=req.run_all)
         return McpEvalsResponse(**res)

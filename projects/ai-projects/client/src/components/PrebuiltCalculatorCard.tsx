@@ -56,6 +56,7 @@ export function PrebuiltCalculatorCard({ apiBase = API_BASE }: PrebuiltCalculato
       <h2>
         <span className="card-title">🧮 Math Assistant</span>
         <span className="badge badge-healthy">Prebuilt Tool</span>
+        <a className="info-link" href="info/prebuilt-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Leverages a pre-built mathematical tool and system prompt to solve arithmetic and algebraic calculations.

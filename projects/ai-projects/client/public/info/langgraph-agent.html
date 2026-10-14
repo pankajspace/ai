@@ -1,0 +1,905 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>TechToday — LangGraph ReAct Agent &middot; How It Works</title>
+  <link rel="stylesheet" href="../css/info.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+</head>
+<body>
+  <header>
+    <nav class="nav container">
+      <a href="https://www.techtoday.co.in/" class="brand">
+        <span class="logo" aria-hidden="true"></span>
+        <span>TechToday</span>
+      </a>
+      <a href="../" class="nav-back-link">&larr; Back to AI Projects</a>
+    </nav>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div class="container">
+        <h1>🔄 LangGraph ReAct Agent — How It Works</h1>
+        <p class="subtitle">The concept, request flow, and source code behind this demo</p>
+      </div>
+    </div>
+
+    <section>
+      <div class="container">
+        <div class="units-container">
+
+          <!-- Unit 1: How It Works -->
+          <div class="unit-card">
+            <div class="unit-header">
+              <span class="unit-num">Unit 1</span>
+              <h2 class="unit-title">How It Works</h2>
+            </div>
+            <div class="unit-topics">
+
+              <div class="topic-section open" id="concept">
+                <div class="topic-header">
+                  <span class="topic-num">1.1</span>
+                  <span class="topic-name">Concept</span>
+                  <span class="topic-meta-chip">overview</span>
+                  <span class="topic-chevron">&#9654;</span>
+                </div>
+                <div class="topic-body">
+                  <div class="concept-box">
+                    <strong>🔄 LangGraph ReAct Agent</strong> builds a graph-based ReAct (Reason + Act) agent that calls a custom <code>say_hello(name)</code> tool for each person mentioned in the prompt.
+                  </div>
+                  <p>When asked to <em>"Please greet Alice and Bob"</em>, the ReAct state machine loops between the reasoning node (LLM) and the action node (<code>say_hello</code> tool) until every person has been greeted, recording each tool call in the state graph's message list.</p>
+                </div>
+              </div>
+
+              <div class="topic-section" id="theory-concepts">
+                <div class="topic-header">
+                  <span class="topic-num">1.2</span>
+                  <span class="topic-name">Theory &amp; Concepts</span>
+                  <span class="topic-meta-chip">fundamentals</span>
+                  <span class="topic-chevron">&#9654;</span>
+                </div>
+                <div class="topic-body">
+                  <p><strong>Core Concepts:</strong></p><ul><li><strong>ReAct State Graph:</strong> Models agent execution as a directed cyclic graph between an <code>agent</code> node (LLM decision) and a <code>tools</code> node (function execution).</li><li><strong>Multi-Entity Tool Fan-Out:</strong> The LLM extracts multiple named entities (Alice, Bob) from a single prompt and invokes <code>say_hello</code> for each one.</li></ul>
+                </div>
+              </div>
+
+              <div class="topic-section" id="request-flow">
+                <div class="topic-header">
+                  <span class="topic-num">1.3</span>
+                  <span class="topic-name">Request flow</span>
+                  <span class="topic-meta-chip">end-to-end</span>
+                  <span class="topic-chevron">&#9654;</span>
+                </div>
+                <div class="topic-body">
+                  <p>What happens when you click the action button on the <strong>🔄 LangGraph ReAct Agent</strong> card:</p>
+                  <div class="flow-diagram">
+                  <div class="flow-step">
+                    <strong>1. Browser</strong> — <code>LangGraphAgentCard.tsx</code> sends <code>POST /api/langgraph-agent</code> with <code>{"prompt": "Please greet Alice and Bob."}</code>.
+                  </div>
+                  <div class="flow-arrow">&#x2193;</div>
+                  <div class="flow-step">
+                    <strong>2. FastAPI Route (<code>server/main.py</code>)</strong> — <code>langgraph_agent_service(req)</code> calls <code>run_langgraph_agent(prompt_text)</code>.
+                  </div>
+                  <div class="flow-arrow">&#x2193;</div>
+                  <div class="flow-step">
+                    <strong>3. ReAct Graph Execution (<code>12_hello_world_langgraph.py</code>)</strong> — Constructs the LangGraph ReAct agent (with OpenAI tool-loop fallback) bound to <code>say_hello(name)</code>.
+                  </div>
+                  <div class="flow-arrow">&#x2193;</div>
+                  <div class="flow-step">
+                    <strong>4. Tool Execution & Synthesis</strong> — Executes <code>say_hello("Alice")</code> and <code>say_hello("Bob")</code>, then synthesizes the final greeting.
+                  </div>
+                  <div class="flow-arrow">&#x2193;</div>
+                  <div class="flow-step return">
+                    &#x21A9; <strong>Return</strong> — Returns <code>LangGraphAgentResponse</code> with <code>response</code>, <code>tools_called</code>, and <code>framework</code>.
+                  </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="topic-section" id="code-flow">
+                <div class="topic-header">
+                  <span class="topic-num">1.4</span>
+                  <span class="topic-name">Code flow</span>
+                  <span class="topic-meta-chip">step-by-step</span>
+                  <span class="topic-chevron">&#9654;</span>
+                </div>
+                <div class="topic-body">
+                  <p>Function-level call graph across the React card, FastAPI route, and Python service (steps <code>①</code>, <code>②</code>, ... match the numbered comments in Unit 2):</p>
+                  <pre class="mermaid">flowchart TD
+    UI["LangGraphAgentCard.tsx<br/>POST /api/langgraph-agent { prompt }"]:::entry
+    Route["main.py<br/>langgraph_agent_service(req)"]:::fn
+    Svc["12_hello_world_langgraph.py<br/>run_langgraph_agent(prompt)"]:::fn
+    Graph["LangGraph ReAct StateGraph<br/>create_react_agent(llm, [say_hello])"]:::fn
+    Tool["@tool say_hello(name)"]:::fn
+    LLM[("OpenAI API<br/>gpt-4o-mini")]:::ext
+    Ret(["LangGraphAgentResponse JSON<br/>{ response, tools_called, framework }"]):::ret
+
+    UI -->|"① POST JSON"| Route
+    Route -->|"② run_langgraph_agent()"| Svc
+    Svc -->|"③ invoke ReAct graph"| Graph
+    Graph -->|"④ reason step"| LLM
+    LLM -.->|"returns tool_calls (Alice, Bob)"| Graph
+    Graph -->|"⑤ act step"| Tool
+    Tool -.->|"returns greetings"| Graph
+    Graph -->|"⑥ observe step"| LLM
+    LLM -.->|"returns final summary"| Graph
+    Graph -.->|"returns trace"| Svc
+    Svc -.->|"returns response dict"| Route
+    Route -.->|"returns HTTP 200"| Ret
+
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0</pre>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- Unit 2: Source Code -->
+          <div class="unit-card">
+            <div class="unit-header">
+              <span class="unit-num">Unit 2</span>
+              <h2 class="unit-title">Source Code</h2>
+            </div>
+            <div class="unit-topics">
+
+            <div class="topic-section" id="source-server-services-12-hello-world-langgraph-py">
+              <div class="topic-header">
+                <span class="topic-num">2.1</span>
+                <span class="topic-name"><span class="file-path">server/services/12_hello_world_langgraph.py</span></span>
+                <span class="topic-meta-chip">154 lines</span>
+                <span class="topic-chevron">&#9654;</span>
+              </div>
+              <div class="topic-body">
+                <p class="file-label">LangGraph ReAct Hello World Agent Service.</p>
+                <pre><code class="language-python">&quot;&quot;&quot;LangGraph ReAct Hello World Agent Service.
+
+Demonstrates the LangGraph tool-calling ReAct agentic loop:
+1. Defines a tool `greet(name: str)`.
+2. Passes prompt to LangGraph ReAct agent.
+3. Observes tool execution steps (calling greet for each person).
+4. Synthesizes final response.
+
+Run directly:
+    python projects/ai-projects/server/services/12_hello_world_langgraph.py
+&quot;&quot;&quot;
+
+import json
+import os
+from typing import List
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+load_dotenv(find_dotenv())
+
+
+class LangGraphAgentRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for LangGraph Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str = Field(
+        default=&quot;Please greet Alice and Bob.&quot;,
+        description=&quot;User request for greeting individuals&quot;,
+    )
+
+
+class LangGraphAgentResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from LangGraph Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str
+    response: str
+    tool_calls: List[str]
+    provider: str
+
+
+def greet_tool(name: str) -&gt; str:
+    &quot;&quot;&quot;Greet someone by name.&quot;&quot;&quot;
+    return f&quot;Hello, {name}! Welcome to the world of AI agents.&quot;
+
+
+def run_langgraph_agent(prompt: str = &quot;Please greet Alice and Bob.&quot;) -&gt; dict:
+    &quot;&quot;&quot;Run the LangGraph tool-enabled ReAct agent.&quot;&quot;&quot;
+    # ① Load AWS credentials and initialize the recorded tool call trace
+    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
+    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
+    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+    tool_calls_recorded = []
+
+    # ② Attempt LangGraph create_react_agent with Bedrock Converse if AWS keys are configured
+    if aws_key and aws_secret:
+        try:
+            from langchain.chat_models import init_chat_model
+            from langchain.tools import tool
+            from langgraph.prebuilt import create_react_agent
+
+            @tool
+            def greet(name: str) -&gt; str:
+                &quot;&quot;&quot;Greet someone by name.&quot;&quot;&quot;
+                res = greet_tool(name)
+                tool_calls_recorded.append(f&quot;greet(&#x27;{name}&#x27;) -&gt; {res}&quot;)
+                return res
+
+            llm = init_chat_model(bedrock_model_id, model_provider=&quot;bedrock_converse&quot;)
+            agent = create_react_agent(model=llm, tools=[greet])
+            result = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}]})
+            final_message = result[&quot;messages&quot;][-1].content
+            return {
+                &quot;prompt&quot;: prompt,
+                &quot;response&quot;: final_message,
+                &quot;tool_calls&quot;: tool_calls_recorded,
+                &quot;provider&quot;: f&quot;LangGraph + Bedrock Converse ({bedrock_model_id})&quot;,
+            }
+        except Exception as exc:
+            print(f&quot;Bedrock LangGraph failed ({exc}), falling back to OpenAI&quot;)
+
+    # ③ Configure OpenAI client and greet tool schema for the fallback ReAct loop
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+    tools_schema = [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;greet&quot;,
+                &quot;description&quot;: &quot;Greet someone by name.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {
+                        &quot;name&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The name of the person to greet&quot;}
+                    },
+                    &quot;required&quot;: [&quot;name&quot;],
+                },
+            },
+        }
+    ]
+
+    messages = [
+        {
+            &quot;role&quot;: &quot;system&quot;,
+            &quot;content&quot;: &quot;You are a friendly LangGraph ReAct agent. Use the greet tool for each person mentioned in the user prompt.&quot;,
+        },
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt},
+    ]
+
+    # ④ Execute the iterative ReAct loop (Reason -&gt; Act -&gt; Observe) up to 5 turns
+    for _ in range(5):
+        resp = client.chat.completions.create(
+            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+            messages=messages,
+            tools=tools_schema,
+            tool_choice=&quot;auto&quot;,
+        )
+        msg = resp.choices[0].message
+        messages.append(msg)
+
+        # ⑤ Return final synthesis once the model finishes calling tools
+        if not msg.tool_calls:
+            return {
+                &quot;prompt&quot;: prompt,
+                &quot;response&quot;: msg.content or &quot;&quot;,
+                &quot;tool_calls&quot;: tool_calls_recorded,
+                &quot;provider&quot;: f&quot;LangGraph ReAct Pattern + OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+            }
+
+        # ⑥ Execute each requested greet tool call and feed observations back into messages
+        for tc in msg.tool_calls:
+            fn_name = tc.function.name
+            args = json.loads(tc.function.arguments or &quot;{}&quot;)
+            if fn_name == &quot;greet&quot;:
+                output = greet_tool(args.get(&quot;name&quot;, &quot;Friend&quot;))
+                tool_calls_recorded.append(f&quot;greet(&#x27;{args.get(&#x27;name&#x27;)}&#x27;) -&gt; {output}&quot;)
+            else:
+                output = f&quot;Unknown tool: {fn_name}&quot;
+            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: output})
+
+    return {
+        &quot;prompt&quot;: prompt,
+        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;Completed greeting process.&quot;),
+        &quot;tool_calls&quot;: tool_calls_recorded,
+        &quot;provider&quot;: f&quot;LangGraph ReAct Pattern + OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+    }
+
+
+if __name__ == &quot;__main__&quot;:
+    test_res = run_langgraph_agent(&quot;Please greet Alice and Bob.&quot;)
+    print(&quot;Tool calls:&quot;, test_res[&quot;tool_calls&quot;])
+    print(&quot;Response:&quot;, test_res[&quot;response&quot;])</code></pre>
+              </div>
+            </div>
+
+            <div class="topic-section" id="source-server-main-py">
+              <div class="topic-header">
+                <span class="topic-num">2.2</span>
+                <span class="topic-name"><span class="file-path">server/main.py</span></span>
+                <span class="topic-meta-chip">561 lines</span>
+                <span class="topic-chevron">&#9654;</span>
+              </div>
+              <div class="topic-body">
+                <p class="file-label">FastAPI application exposing all 31 AI Projects demo endpoints with CORS and background embedding warmup.</p>
+                <pre><code class="language-python">import threading
+from contextlib import asynccontextmanager
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    # 01 - 10
+    AgentRequest,
+    AgentResponse,
+    ChatMessage,
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    JokeRequest,
+    JokeResponse,
+    LangchainOneToolRequest,
+    LangchainOneToolResponse,
+    MemoryChatRequest,
+    MemoryChatResponse,
+    MultiToolAgentRequest,
+    MultiToolAgentResponse,
+    RagRequest,
+    RagResponse,
+    SummarizerRequest,
+    SummarizerResponse,
+    TravelRequest,
+    TravelResponse,
+    answer_rag,
+    chat_with_memory,
+    chunk_text,
+    compute_similarity,
+    get_groq_joke,
+    get_travel_suggestion,
+    run_agent_with_tool,
+    run_langchain_one_tool,
+    run_multi_tool_agent,
+    summarize,
+    # 11 - 22: AWS Strands
+    HelloWorldAgentRequest,
+    HelloWorldAgentResponse,
+    run_hello_world_agent,
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    run_langgraph_agent,
+    FunctionToToolRequest,
+    FunctionToToolResponse,
+    run_function_to_tool_agent,
+    TipCalculatorRequest,
+    TipCalculatorResponse,
+    run_tip_calculator_agent,
+    MultiToolSalesRequest,
+    MultiToolSalesResponse,
+    run_multi_tool_sales_agent,
+    CustomInventoryRequest,
+    CustomInventoryResponse,
+    run_custom_inventory_agent,
+    PrebuiltCalculatorRequest,
+    PrebuiltCalculatorResponse,
+    run_prebuilt_calculator_agent,
+    MultiPrebuiltToolsRequest,
+    MultiPrebuiltToolsResponse,
+    run_multi_prebuilt_tools_agent,
+    UseAwsRequest,
+    UseAwsResponse,
+    run_use_aws_agent,
+    ClassBasedToolsRequest,
+    ClassBasedToolsResponse,
+    run_class_based_tools_agent,
+    AsyncToolsRequest,
+    AsyncToolsResponse,
+    run_async_tools_agent,
+    TravelAssistantRequest,
+    TravelAssistantResponse,
+    run_travel_assistant_agent,
+    # 23 - 24: AI Systems
+    PromptingStrategiesRequest,
+    PromptingStrategiesResponse,
+    run_prompting_strategies,
+    SycophancyTrapRequest,
+    SycophancyTrapResponse,
+    run_sycophancy_trap,
+    # 25 - 28: AI Reliability
+    CotVsDirectRequest,
+    CotVsDirectResponse,
+    run_cot_vs_direct_benchmark,
+    VarianceDeterminismRequest,
+    VarianceDeterminismResponse,
+    run_variance_determinism_benchmark,
+    ToolSchemaCalibrationRequest,
+    ToolSchemaCalibrationResponse,
+    run_tool_schema_calibration,
+    ToolErrorInjectionRequest,
+    ToolErrorInjectionResponse,
+    run_tool_error_injection,
+    # 29 - 31: MCP &amp; Evals
+    McpClientRequest,
+    McpClientResponse,
+    run_mcp_client,
+    McpAgentRequest,
+    McpAgentResponse,
+    run_mcp_agent,
+    McpEvalsRequest,
+    McpEvalsResponse,
+    run_mcp_evals_suite,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-warm SentenceTransformer in background
+    def warmup_embedding():
+        try:
+            compute_similarity(&quot;warmup&quot;, &quot;warmup&quot;)
+        except Exception:
+            pass
+
+    threading.Thread(target=warmup_embedding, daemon=True).start()
+    yield
+
+
+app = FastAPI(title=&quot;AI Projects API&quot;, lifespan=lifespan)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.get(&quot;/&quot;)
+def read_root():
+    return {&quot;message&quot;: &quot;AI Projects Server is running (31 Integrated Services)&quot;, &quot;status&quot;: &quot;ok&quot;}
+
+
+@app.get(&quot;/health&quot;)
+def health_check():
+    return {&quot;status&quot;: &quot;healthy&quot;, &quot;total_services&quot;: 31}
+
+
+# ==============================================================================
+# SECTION 1: AI BASICS (01 - 10)
+# ==============================================================================
+
+@app.post(&quot;/api/travel&quot;, response_model=TravelResponse)
+def travel_suggestion(req: TravelRequest):
+    # ① Validate city input and delegate to OpenAI travel suggestion service
+    city_name = req.city.strip() if req.city else &quot;Bangalore&quot;
+    if not city_name:
+        raise HTTPException(status_code=400, detail=&quot;City cannot be empty&quot;)
+    try:
+        # ② Invoke service and wrap in TravelResponse
+        suggestion = get_travel_suggestion(city_name)
+        return TravelResponse(city=city_name, suggestion=suggestion)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/joke&quot;, response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    # ① Normalize topic and call Groq joke generator service
+    topic_name = req.topic.strip() if req.topic else &quot;programming&quot;
+    try:
+        joke_text = get_groq_joke(topic_name)
+        return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/summarize&quot;, response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        summary_result = summarize(text_content)
+        return SummarizerResponse(text=text_content, summary=summary_result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/memory-chat&quot;, response_model=MemoryChatResponse)
+def memory_chat_service(req: MemoryChatRequest):
+    # ① Validate user message and pass conversation history to memory chat service
+    message_text = req.message.strip() if req.message else &quot;&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, updated_history = chat_with_memory(message_text, req.history)
+        return MemoryChatResponse(
+            message=message_text,
+            response=reply,
+            history=updated_history,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
+    message_text = req.message.strip() if req.message else &quot;How much are the shoes?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply = run_agent_with_tool(message_text)
+        return AgentResponse(message=message_text, response=reply)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langchain-one-tool&quot;, response_model=LangchainOneToolResponse)
+@app.post(&quot;/api/langchain-agent&quot;, response_model=LangchainOneToolResponse)
+def langchain_one_tool_service(req: LangchainOneToolRequest):
+    # ① Validate message and invoke LangChain single-tool agent
+    message_text = req.message.strip() if req.message else &quot;What is the weather like in New York?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_langchain_one_tool(message_text)
+        return LangchainOneToolResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-agent&quot;, response_model=MultiToolAgentResponse)
+def multi_tool_agent_service(req: MultiToolAgentRequest):
+    # ① Validate message and invoke LangChain multi-tool agent
+    message_text = req.message.strip() if req.message else &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_multi_tool_agent(message_text)
+        return MultiToolAgentResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        chunks = chunk_text(
+            text=text_content,
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+        )
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/embedding&quot;, response_model=EmbeddingResponse)
+def embedding_service(req: EmbeddingRequest):
+    # ① Validate both sentences and compute cosine similarity via SentenceTransformer
+    text1 = req.text1.strip() if req.text1 else &quot;&quot;
+    text2 = req.text2.strip() if req.text2 else &quot;&quot;
+    if not text1 or not text2:
+        raise HTTPException(status_code=400, detail=&quot;Both texts are required&quot;)
+    try:
+        res = compute_similarity(text1, text2)
+        return EmbeddingResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/rag&quot;, response_model=RagResponse)
+def rag_service(req: RagRequest):
+    # ① Validate paragraph and question before running the 4-stage RAG pipeline
+    paragraph = req.paragraph.strip() if req.paragraph else &quot;&quot;
+    question = req.question.strip() if req.question else &quot;&quot;
+    if not paragraph:
+        raise HTTPException(status_code=400, detail=&quot;Paragraph cannot be empty&quot;)
+    if not question:
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
+    try:
+        res = answer_rag(paragraph=paragraph, question=question)
+        return RagResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 2: AWS STRANDS &amp; AGENT WORKFLOWS (11 - 22)
+# ==============================================================================
+
+@app.post(&quot;/api/hello-world-agent&quot;, response_model=HelloWorldAgentResponse)
+def hello_world_agent_service(req: HelloWorldAgentRequest):
+    # ① Normalize prompt and invoke AWS Strands Hello World Agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Hello! Tell me a fun fact about AI agents.&quot;
+    try:
+        res = run_hello_world_agent(prompt_text)
+        return HelloWorldAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
+def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Please greet Alice and Bob.&quot;
+    try:
+        res = run_langgraph_agent(prompt_text)
+        return LangGraphAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/function-to-tool&quot;, response_model=FunctionToToolResponse)
+def function_to_tool_service(req: FunctionToToolRequest):
+    # ① Normalize question and invoke HTTP health-check tool agent
+    q = req.question.strip() if req.question else &quot;Is the staging server running? Check https://httpbin.org/get&quot;
+    try:
+        res = run_function_to_tool_agent(q)
+        return FunctionToToolResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tip-calculator&quot;, response_model=TipCalculatorResponse)
+def tip_calculator_service(req: TipCalculatorRequest):
+    # ① Normalize query and run tip and bill-split agent
+    q = req.query.strip() if req.query else &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
+    try:
+        res = run_tip_calculator_agent(q)
+        return TipCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-sales&quot;, response_model=MultiToolSalesResponse)
+def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Normalize task and execute chained 3-tool sales pipeline agent
+    task_text = req.task.strip() if req.task else &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;
+    try:
+        res = run_multi_tool_sales_agent(task_text)
+        return MultiToolSalesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/custom-inventory&quot;, response_model=CustomInventoryResponse)
+def custom_inventory_service(req: CustomInventoryRequest):
+    # ① Normalize question and query custom inventory tool agent
+    q = req.question.strip() if req.question else &quot;Is PROD-123 in stock?&quot;
+    try:
+        res = run_custom_inventory_agent(q)
+        return CustomInventoryResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/prebuilt-calculator&quot;, response_model=PrebuiltCalculatorResponse)
+def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
+    # ① Normalize query and invoke safe AST math calculator agent
+    q = req.query.strip() if req.query else &quot;What&#x27;s 42 raised to the power of 9?&quot;
+    try:
+        res = run_prebuilt_calculator_agent(q)
+        return PrebuiltCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-prebuilt-tools&quot;, response_model=MultiPrebuiltToolsResponse)
+def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
+    # ① Normalize task and execute multi-prebuilt tools pipeline agent
+    t = req.task.strip() if req.task else &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;
+    try:
+        res = run_multi_prebuilt_tools_agent(t)
+        return MultiPrebuiltToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/use-aws&quot;, response_model=UseAwsResponse)
+def use_aws_service(req: UseAwsRequest):
+    # ① Normalize prompt and invoke AWS cloud assistant agent
+    p = req.prompt.strip() if req.prompt else &quot;List all S3 buckets in my account&quot;
+    try:
+        res = run_use_aws_agent(p)
+        return UseAwsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/class-based-tools&quot;, response_model=ClassBasedToolsResponse)
+def class_based_tools_service(req: ClassBasedToolsRequest):
+    # ① Normalize query and run stateful class-based inventory tools agent
+    q = req.query.strip() if req.query else &quot;Update PROD-456 stock to 25 units, then confirm the new level&quot;
+    try:
+        res = run_class_based_tools_agent(q)
+        return ClassBasedToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/async-tools&quot;, response_model=AsyncToolsResponse)
+def async_tools_service(req: AsyncToolsRequest):
+    # ① Normalize query and run async parallel warehouse tools agent
+    q = req.query.strip() if req.query else &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;
+    try:
+        res = run_async_tools_agent(q)
+        return AsyncToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/travel-assistant&quot;, response_model=TravelAssistantResponse)
+def travel_assistant_service(req: TravelAssistantRequest):
+    # ① Normalize query and invoke 5-tool capstone travel planner agent
+    q = req.query.strip() if req.query else &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;
+    try:
+        res = run_travel_assistant_agent(q)
+        return TravelAssistantResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 3: AI SYSTEMS &amp; PROMPTING STRATEGIES (23 - 24)
+# ==============================================================================
+
+@app.post(&quot;/api/prompting-strategies&quot;, response_model=PromptingStrategiesResponse)
+def prompting_strategies_service(req: PromptingStrategiesRequest):
+    # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    try:
+        res = run_prompting_strategies(
+            question=req.question,
+            expected_answer=req.expected_answer or &quot;293&quot;,
+        )
+        return PromptingStrategiesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/sycophancy-trap&quot;, response_model=SycophancyTrapResponse)
+def sycophancy_trap_service(req: SycophancyTrapRequest):
+    # ① Execute multi-turn sycophancy resilience benchmark
+    try:
+        res = run_sycophancy_trap(
+            case_type=req.case_type or &quot;Math Gaslight&quot;,
+            custom_question=req.custom_question,
+            custom_pushbacks=req.custom_pushbacks,
+            correct_answer=req.correct_answer,
+            capitulation_markers=req.capitulation_markers,
+        )
+        return SycophancyTrapResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 4: AI RELIABILITY &amp; CALIBRATION (25 - 28)
+# ==============================================================================
+
+@app.post(&quot;/api/cot-vs-direct&quot;, response_model=CotVsDirectResponse)
+def cot_vs_direct_service(req: CotVsDirectRequest):
+    # ① Run Chain-of-Thought vs Direct answer benchmark
+    try:
+        res = run_cot_vs_direct_benchmark(
+            problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
+            custom_question=req.custom_question,
+            custom_correct_answers=req.custom_correct_answers,
+        )
+        return CotVsDirectResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/variance-determinism&quot;, response_model=VarianceDeterminismResponse)
+def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    try:
+        res = run_variance_determinism_benchmark(review_text=req.review_text)
+        return VarianceDeterminismResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-schema-calibration&quot;, response_model=ToolSchemaCalibrationResponse)
+def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
+    # ① Run 2x2 tool schema routing calibration benchmark
+    try:
+        res = run_tool_schema_calibration(query=req.query)
+        return ToolSchemaCalibrationResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-error-injection&quot;, response_model=ToolErrorInjectionResponse)
+def tool_error_injection_service(req: ToolErrorInjectionRequest):
+    # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
+    try:
+        res = run_tool_error_injection(question=req.question)
+        return ToolErrorInjectionResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 5: MODEL CONTEXT PROTOCOL &amp; EVALS (29 - 31)
+# ==============================================================================
+
+@app.post(&quot;/api/mcp-client&quot;, response_model=McpClientResponse)
+def mcp_client_service(req: McpClientRequest):
+    # ① Invoke FastMCP tool directly without an LLM
+    try:
+        res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
+        return McpClientResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-agent&quot;, response_model=McpAgentResponse)
+def mcp_agent_service(req: McpAgentRequest):
+    # ① Run LLM agent connected to FastMCP cricket tools
+    try:
+        res = run_mcp_agent(question=req.question)
+        return McpAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-evals&quot;, response_model=McpEvalsResponse)
+def mcp_evals_service(req: McpEvalsRequest):
+    # ① Execute MCP agent evaluation suite and return assertion metrics
+    try:
+        res = run_mcp_evals_suite(run_all=req.run_all)
+        return McpEvalsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+
+    uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
+              </div>
+            </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <div class="container">&copy; 2026 TechToday &middot; Built with FastAPI, React &amp; Vite</div>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <script src="../js/info.js"></script>
+</body>
+</html>

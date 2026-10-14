@@ -60,16 +60,18 @@ def compute_similarity(
     Returns:
         Dictionary matching EmbeddingResponse fields.
     """
+    # ① Load the compact 384-dimensional SentenceTransformer embedding model
     model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    # Encode both texts into 384-dimensional dense vectors
+    # ② Encode both texts into 384-dimensional dense vectors
     v1 = model.encode(text1)
     v2 = model.encode(text2)
 
-    # Compute cosine similarity
+    # ③ Compute cosine similarity using dot product divided by the product of vector norms
     norm_product = float(norm(v1) * norm(v2))
     similarity = float(dot(v1, v2) / norm_product) if norm_product > 0 else 0.0
 
+    # ④ Return similarity score, vector dimensionality, and 5-value vector previews
     return {
         "text1": text1,
         "text2": text2,

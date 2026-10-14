@@ -41,12 +41,12 @@ class PrebuiltCalculatorResponse(BaseModel):
 
 def safe_calculator(expression: str) -> str:
     """Safely calculate mathematical expressions."""
+    # ① Normalize operators and validate expression against the character allowlist
     clean_expr = expression.strip().replace("^", "**").replace("x", "*")
-    # Sanitize allowed characters
     if not re.match(r"^[0-9\+\-\*\/\(\)\.\s\*\*eE\%\,]+$", clean_expr):
         return f"Error: Expression contains unsupported characters: {clean_expr}"
     try:
-        # Limited builtins for safety
+        # ② Evaluate arithmetic safely with restricted math functions and no builtins
         allowed = {
             "math": math,
             "sqrt": math.sqrt,
@@ -65,12 +65,14 @@ def safe_calculator(expression: str) -> str:
 
 def run_prebuilt_calculator_agent(query: str = "What's 42 raised to the power of 9?") -> dict:
     """Run the Prebuilt Calculator Agent."""
+    # ① Load AWS credentials and initialize the tool call log
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_calls_recorded = []
 
+    # ② Run Strands Agent with prebuilt strands_tools.calculator on Bedrock if configured
     if aws_key and aws_secret:
         try:
             from strands import Agent
@@ -93,6 +95,7 @@ def run_prebuilt_calculator_agent(query: str = "What's 42 raised to the power of
         except Exception as exc:
             print(f"Strands Bedrock calculator failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and calculator tool schema for deterministic arithmetic
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -120,6 +123,7 @@ def run_prebuilt_calculator_agent(query: str = "What's 42 raised to the power of
         {"role": "user", "content": query},
     ]
 
+    # ④ Run the agent loop to evaluate the expression and return the exact result
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

@@ -32,6 +32,7 @@ PLAYER_STATS = {
 
 def get_live_score(teams: str) -> dict:
     """Get the LIVE score of a cricket match."""
+    # ① Normalize team names and look up the live match scorecard
     key = teams.strip().lower().replace("windies", "west indies")
     if key not in LIVE_MATCHES:
         return {"error": f"No live match found for '{teams}'. Try 'India vs West Indies'."}
@@ -40,6 +41,7 @@ def get_live_score(teams: str) -> dict:
 
 def get_player_stats(player_name: str) -> dict:
     """Get a player's batting stats for the current series."""
+    # ① Normalize player name and return series batting statistics
     key = player_name.strip().lower()
     if key not in PLAYER_STATS:
         return {"error": f"No stats found for '{player_name}'."}

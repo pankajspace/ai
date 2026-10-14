@@ -64,6 +64,7 @@ export function ToolSchemaCalibrationCard({ apiBase = API_BASE }: ToolSchemaCali
       <h2>
         <span className="card-title">🔬 Tool Schema Calibration</span>
         <span className="badge badge-healthy">2x2 Matrix</span>
+        <a className="info-link" href="info/tool-schema-calibration.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p>
         Measures whether LLMs route on function names or docstring descriptions across a 2x2 matrix of descriptive/opaque names and tight/loose docstrings.

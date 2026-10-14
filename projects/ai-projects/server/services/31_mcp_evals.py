@@ -79,6 +79,7 @@ TEST_SUITE = [
 
 def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -> TestCaseEvalResult:
     """Execute a single test case evaluation."""
+    # ① Start timer and declare MCP tool schemas for the evaluation run
     start_t = time.perf_counter()
 
     tools_schema = [
@@ -113,6 +114,7 @@ def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -> TestCase
         {"role": "user", "content": case["prompt"]},
     ]
 
+    # ② Invoke the LLM and assert tool routing accuracy against expected_tool
     resp = client.chat.completions.create(
         model=model,
         messages=messages,
@@ -123,6 +125,7 @@ def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -> TestCase
     actual_tool = msg.tool_calls[0].function.name if msg.tool_calls else None
     tool_routing_passed = (actual_tool == case["expected_tool"])
 
+    # ③ Execute the MCP tool if called and synthesize the agent's final response
     if msg.tool_calls:
         tc = msg.tool_calls[0]
         args = json.loads(tc.function.arguments or "{}")
@@ -138,6 +141,7 @@ def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -> TestCase
     else:
         answer = msg.content or ""
 
+    # ④ Verify ground-truth keywords in the final answer and compute overall pass/fail
     dur = time.perf_counter() - start_t
     lowered_answer = answer.lower()
     answer_verified = all(kw.lower() in lowered_answer for kw in case["keywords"])
@@ -159,6 +163,7 @@ def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -> TestCase
 
 def run_mcp_evals_suite(run_all: bool = True) -> dict:
     """Execute complete MCP evaluation suite."""
+    # ① Initialize Groq or OpenAI client for the test suite
     groq_key = os.getenv("GROQ_API_KEY")
     openai_key = os.getenv("OPENAI_API_KEY")
 
@@ -169,6 +174,7 @@ def run_mcp_evals_suite(run_all: bool = True) -> dict:
         client = OpenAI(api_key=openai_key, base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"))
         model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
+    # ② Execute each test case in TEST_SUITE and collect assertion results
     results = []
     cases_to_run = TEST_SUITE if run_all else TEST_SUITE[:1]
 
@@ -176,6 +182,7 @@ def run_mcp_evals_suite(run_all: bool = True) -> dict:
         res = run_single_mcp_eval_case(c, client, model)
         results.append(res)
 
+    # ③ Aggregate pass/fail counts and accuracy percentage
     total = len(results)
     passed = sum(1 for r in results if r.overall_passed)
     failed = total - passed

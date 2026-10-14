@@ -62,6 +62,7 @@ BASE_COSTS_PER_PERSON_PER_DAY = {
 
 def get_weather_forecast(city: str, days: int = 3) -> dict:
     """Retrieve weather forecast for a target destination."""
+    # ① Look up destination weather forecast or fall back to mild sunny defaults
     c = city.lower().strip()
     w = CITY_WEATHER.get(c, {"temp": "26°C", "condition": "Mild & Sunny", "rain_chance": "15%"})
     return {"city": city.title(), "days": days, **w}
@@ -69,6 +70,7 @@ def get_weather_forecast(city: str, days: int = 3) -> dict:
 
 def suggest_packing_list(city: str, weather_condition: str, days: int = 3) -> list:
     """Generate recommended items to pack based on weather conditions."""
+    # ① Start with base travel essentials and append weather-specific gear
     cond = weather_condition.lower()
     items = ["ID and Travel Documents", "Personal Toiletries", "Phone Charger & Power Bank"]
     if "cold" in cond or "breezy" in cond:
@@ -82,6 +84,7 @@ def suggest_packing_list(city: str, weather_condition: str, days: int = 3) -> li
 
 def calculate_trip_cost(destination: str, days: int, num_travelers: int = 1) -> dict:
     """Calculate estimated total cost in INR."""
+    # ① Multiply daily per-person rate by duration and total travelers
     dest = destination.lower().strip()
     daily_rate = BASE_COSTS_PER_PERSON_PER_DAY.get(dest, 2500)
     total = daily_rate * days * num_travelers
@@ -98,6 +101,7 @@ def run_travel_assistant_agent(
     query: str = "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?",
 ) -> dict:
     """Run the capstone travel assistant agent."""
+    # ① Load AWS credentials and initialize workflow step and itinerary trackers
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
@@ -105,6 +109,7 @@ def run_travel_assistant_agent(
     workflow_steps = []
     itinerary_data = {}
 
+    # ② Run Strands Capstone Agent on Bedrock if AWS credentials are configured
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -147,6 +152,7 @@ def run_travel_assistant_agent(
         except Exception as exc:
             print(f"Bedrock travel assistant failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and register the three travel planning tool schemas
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -210,6 +216,7 @@ def run_travel_assistant_agent(
         {"role": "user", "content": query},
     ]
 
+    # ④ Execute the multi-step planning loop: weather forecast -> packing list -> cost vs budget
     for _ in range(6):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),

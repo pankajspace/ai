@@ -47,8 +47,10 @@ INVENTORY = {
 
 def check_inventory(product_id: str) -> str:
     """Check if a product is in stock."""
+    # ① Normalize the product ID and look up quantity in INVENTORY
     pid = product_id.upper().strip()
     qty = INVENTORY.get(pid, 0)
+    # ② Return distinct status messages for unknown SKU, in-stock, or out-of-stock
     if pid not in INVENTORY:
         return f"Product {pid} not found in inventory catalog."
     if qty > 0:
@@ -58,12 +60,14 @@ def check_inventory(product_id: str) -> str:
 
 def run_custom_inventory_agent(question: str = "Is PROD-123 in stock?") -> dict:
     """Run the Custom Inventory Agent."""
+    # ① Load AWS credentials and initialize the tool call log
     aws_key = os.getenv("AWS_ACCESS_KEY_ID")
     aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
     bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
     tool_calls_recorded = []
 
+    # ② Run Strands Agent on Bedrock with the custom check_inv tool if configured
     if aws_key and aws_secret:
         try:
             from strands import Agent, tool
@@ -87,6 +91,7 @@ def run_custom_inventory_agent(question: str = "Is PROD-123 in stock?") -> dict:
         except Exception as exc:
             print(f"Strands Bedrock inventory failed ({exc}), falling back to OpenAI")
 
+    # ③ Configure OpenAI client and custom check_inventory tool schema
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -117,6 +122,7 @@ def run_custom_inventory_agent(question: str = "Is PROD-123 in stock?") -> dict:
         {"role": "user", "content": question},
     ]
 
+    # ④ Execute the tool-calling loop to resolve SKU stock status
     for _ in range(5):
         resp = client.chat.completions.create(
             model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
