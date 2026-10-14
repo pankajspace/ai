@@ -6,6 +6,9 @@ import { MemoryChatCard } from './components/MemoryChatCard'
 import { AgentOneToolCard } from './components/AgentOneToolCard'
 import { LangchainOneToolCard } from './components/LangchainOneToolCard'
 import { MultiToolAgentCard } from './components/MultiToolAgentCard'
+import { ChunkingCard } from './components/ChunkingCard'
+import { EmbeddingCard } from './components/EmbeddingCard'
+import { RagCard } from './components/RagCard'
 
 function App() {
   return (
@@ -53,6 +56,15 @@ function App() {
 
               {/* Tile 7: Multi-Tool Agent Service (LangChain + Groq) */}
               <MultiToolAgentCard />
+
+              {/* Tile 8: Document Chunking Service (LangChain Splitter) */}
+              <ChunkingCard />
+
+              {/* Tile 9: Sentence Embedding & Similarity Service (all-MiniLM-L6-v2) */}
+              <EmbeddingCard />
+
+              {/* Tile 10: Paragraph RAG Service (LangChain + Vector Search) */}
+              <RagCard />
             </div>
           </div>
         </section>

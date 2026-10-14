@@ -123,6 +123,24 @@ Run each service file directly from `projects/ai-projects/server`:
    ```
    Executes a LangChain agent equipped with multiple tools (`get_weather`, `multiply`, `add`, `get_population`) across single-tool, multi-tool, and general knowledge queries.
 
+8. **Document Chunking Service**:
+   ```bash
+   python services/08-chunking.py
+   ```
+   Splits document text into overlapping passages using `RecursiveCharacterTextSplitter`.
+
+9. **Sentence Embedding & Similarity Service**:
+   ```bash
+   python services/09-embedding.py
+   ```
+   Encodes sentences into dense vector representations and calculates cosine similarity using `all-MiniLM-L6-v2`.
+
+10. **Paragraph RAG Service**:
+    ```bash
+    python services/10-rag.py
+    ```
+    Executes an end-to-end RAG query answering pipeline against a reference paragraph without requiring a PDF file.
+
 ### 3. Running Service Files Inside Docker
 
 If the Docker containers are already running, you can execute the Python files directly inside the running container without installing Python dependencies locally on your host machine:
@@ -161,6 +179,21 @@ If the Docker containers are already running, you can execute the Python files d
    ```bash
    docker exec -it ai-projects-server python services/07_langchain_multi_tools.py
    ```
+
+8. Test Document Chunking in Docker:
+   ```bash
+   docker exec -it ai-projects-server python services/08-chunking.py
+   ```
+
+9. Test Sentence Embedding in Docker:
+   ```bash
+   docker exec -it ai-projects-server python services/09-embedding.py
+   ```
+
+10. Test Paragraph RAG in Docker:
+    ```bash
+    docker exec -it ai-projects-server python services/10-rag.py
+    ```
 
 ---
 

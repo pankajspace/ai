@@ -5,6 +5,10 @@ from services import (
     AgentRequest,
     AgentResponse,
     ChatMessage,
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
     JokeRequest,
     JokeResponse,
     LangchainOneToolRequest,
@@ -13,11 +17,16 @@ from services import (
     MemoryChatResponse,
     MultiToolAgentRequest,
     MultiToolAgentResponse,
+    RagRequest,
+    RagResponse,
     SummarizerRequest,
     SummarizerResponse,
     TravelRequest,
     TravelResponse,
+    answer_rag,
     chat_with_memory,
+    chunk_text,
+    compute_similarity,
     get_groq_joke,
     get_travel_suggestion,
     run_agent_with_tool,
@@ -26,7 +35,7 @@ from services import (
     summarize,
 )
 
-# Load environment variables from root .env
+# Load environment variables from root or local .env
 load_dotenv(find_dotenv())
 
 app = FastAPI(title="AI Projects API")
@@ -154,8 +163,56 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.post("/api/chunk", response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    text_content = req.text.strip() if req.text else ""
+    if not text_content:
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    try:
+        chunks = chunk_text(
+            text=text_content,
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+        )
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/embedding", response_model=EmbeddingResponse)
+def embedding_service(req: EmbeddingRequest):
+    text1 = req.text1.strip() if req.text1 else ""
+    text2 = req.text2.strip() if req.text2 else ""
+    if not text1 or not text2:
+        raise HTTPException(status_code=400, detail="Both texts are required")
+    try:
+        res = compute_similarity(text1, text2)
+        return EmbeddingResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/rag", response_model=RagResponse)
+def rag_service(req: RagRequest):
+    paragraph = req.paragraph.strip() if req.paragraph else ""
+    question = req.question.strip() if req.question else ""
+    if not paragraph:
+        raise HTTPException(status_code=400, detail="Paragraph cannot be empty")
+    if not question:
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    try:
+        res = answer_rag(paragraph=paragraph, question=question)
+        return RagResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
-
