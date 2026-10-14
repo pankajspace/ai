@@ -4,7 +4,7 @@ This service splits long documents into smaller, overlapping chunks suitable
 for vector embeddings and retrieval (RAG).
 
 Run directly:
-    python projects/ai-projects/server/services/08-chunking.py
+    python projects/ai-projects/server/services/08_chunking.py
 """
 
 from pydantic import BaseModel, Field

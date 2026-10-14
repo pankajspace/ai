@@ -6,7 +6,7 @@ This service demonstrates how text embeddings work:
 3. Provides dimension count and vector preview values.
 
 Run directly:
-    python projects/ai-projects/server/services/09-embedding.py
+    python projects/ai-projects/server/services/09_embedding.py
 """
 
 import math
