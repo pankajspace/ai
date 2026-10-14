@@ -9,27 +9,13 @@ Run directly:
     python projects/ai-projects/server/services/09_embedding.py
 """
 
-import math
-import os
 from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel, Field
+from numpy import dot
+from numpy.linalg import norm
+from sentence_transformers import SentenceTransformer
 
 load_dotenv(find_dotenv())
-
-_model = None
-
-
-def _get_sentence_transformer():
-    """Lazy load SentenceTransformer to optimize startup time."""
-    global _model
-    if _model is None:
-        try:
-            from sentence_transformers import SentenceTransformer
-            _model = SentenceTransformer("all-MiniLM-L6-v2")
-        except Exception:
-            _model = None
-    return _model
-
 
 # ---------------------------------------------------------------------------
 # Request & Response Schemas (Pydantic)
@@ -74,59 +60,23 @@ def compute_similarity(
     Returns:
         Dictionary matching EmbeddingResponse fields.
     """
-    model = _get_sentence_transformer()
+    model = SentenceTransformer("all-MiniLM-L6-v2")
 
-    if model is not None:
-        from numpy import dot
-        from numpy.linalg import norm
+    # Encode both texts into 384-dimensional dense vectors
+    v1 = model.encode(text1)
+    v2 = model.encode(text2)
 
-        # Encode both texts into 384-dimensional dense vectors
-        v1 = model.encode(text1)
-        v2 = model.encode(text2)
-
-        # Compute cosine similarity
-        norm_product = float(norm(v1) * norm(v2))
-        similarity = float(dot(v1, v2) / norm_product) if norm_product > 0 else 0.0
-
-        dims = int(v1.shape[0])
-        preview_1 = [round(float(x), 4) for x in v1[:5]]
-        preview_2 = [round(float(x), 4) for x in v2[:5]]
-    else:
-        # Fallback using OpenAI embeddings if sentence-transformers is not yet installed
-        api_key = os.getenv("OPENAI_API_KEY")
-        if api_key:
-            from openai import OpenAI
-            client = OpenAI(
-                api_key=api_key,
-                base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-            )
-            resp = client.embeddings.create(
-                model="text-embedding-3-small",
-                input=[text1, text2],
-            )
-            v1 = resp.data[0].embedding
-            v2 = resp.data[1].embedding
-
-            dot_val = sum(a * b for a, b in zip(v1, v2))
-            norm1 = math.sqrt(sum(a * a for a in v1))
-            norm2 = math.sqrt(sum(b * b for b in v2))
-            similarity = float(dot_val / (norm1 * norm2)) if norm1 * norm2 > 0 else 0.0
-
-            dims = len(v1)
-            preview_1 = [round(x, 4) for x in v1[:5]]
-            preview_2 = [round(x, 4) for x in v2[:5]]
-        else:
-            raise RuntimeError(
-                "Neither sentence-transformers nor OPENAI_API_KEY is available for embedding."
-            )
+    # Compute cosine similarity
+    norm_product = float(norm(v1) * norm(v2))
+    similarity = float(dot(v1, v2) / norm_product) if norm_product > 0 else 0.0
 
     return {
         "text1": text1,
         "text2": text2,
         "similarity": round(similarity, 4),
-        "dimensions": dims,
-        "preview_text1": preview_1,
-        "preview_text2": preview_2,
+        "dimensions": int(v1.shape[0]),
+        "preview_text1": [round(float(x), 4) for x in v1[:5]],
+        "preview_text2": [round(float(x), 4) for x in v2[:5]],
     }
 
 
