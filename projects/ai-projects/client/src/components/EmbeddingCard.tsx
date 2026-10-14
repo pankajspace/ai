@@ -53,7 +53,7 @@ export function EmbeddingCard({ apiBase = API_BASE }: EmbeddingCardProps = {}) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text1: trimmed1, text2: trimmed2 }),
-        signal: AbortSignal.timeout(20000),
+        signal: AbortSignal.timeout(60000),
       })
 
       if (!res.ok) {
@@ -65,7 +65,7 @@ export function EmbeddingCard({ apiBase = API_BASE }: EmbeddingCardProps = {}) {
       setResult(data)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setError('Request timed out. Please verify server connection.')
+        setError('Request timed out. The embedding model is downloading or loading in the background, please try again.')
       } else {
         setError(err instanceof Error ? err.message : 'Failed to compute similarity')
       }
@@ -135,7 +135,7 @@ export function EmbeddingCard({ apiBase = API_BASE }: EmbeddingCardProps = {}) {
         <div className="card-actions">
           <button type="submit" disabled={submitting || !text1.trim() || !text2.trim()}>
             {submitting && <span className="spinner" />}
-            {submitting ? 'Encoding…' : 'Compare Similarity'}
+            {submitting ? 'Comparing…' : 'Compare Similarity'}
           </button>
         </div>
       </form>

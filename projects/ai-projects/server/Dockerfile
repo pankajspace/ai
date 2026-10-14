@@ -24,13 +24,13 @@ WORKDIR /app
 COPY requirements.txt .
 
 # 5. Fast Dependency Installation with BuildKit Cache Mount
-# - '--mount=type=cache,target=/root/.cache/uv':
-#   Caches downloaded Python wheels on the Docker host across rebuilds.
-#   If requirements.txt changes, only new or updated packages are fetched over
-#   the network; large packages (like PyTorch and transformers) are reused from disk.
-# - Cache is not baked into the final image layer, keeping image size small.
-# - Works identically across local macOS (Apple Silicon) and Cloud Linux (CPU/GPU).
+# - Step A: Install CPU-only PyTorch from PyTorch's official CPU repository.
+#   This completely stops downloading ~1.5 GB of unused NVIDIA CUDA / cuDNN wheels.
+# - Step B: Install remaining application dependencies from requirements.txt.
+#   Since PyTorch is already installed, sentence-transformers and transformers
+#   will reuse it and will never pull in any NVIDIA packages.
 RUN --mount=type=cache,target=/root/.cache/uv \
+    uv pip install --system --index-url https://download.pytorch.org/whl/cpu torch && \
     uv pip install --system -r requirements.txt
 
 # 6. Application Source Code

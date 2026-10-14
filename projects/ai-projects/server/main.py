@@ -35,10 +35,27 @@ from services import (
     summarize,
 )
 
+import threading
+from contextlib import asynccontextmanager
+
 # Load environment variables from root or local .env
 load_dotenv(find_dotenv())
 
-app = FastAPI(title="AI Projects API")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-warm SentenceTransformer in background so first user request responds instantly
+    def warmup_embedding():
+        try:
+            compute_similarity("warmup", "warmup")
+        except Exception:
+            pass
+
+    threading.Thread(target=warmup_embedding, daemon=True).start()
+    yield
+
+
+app = FastAPI(title="AI Projects API", lifespan=lifespan)
 
 # Enable CORS for frontend requests
 app.add_middleware(

@@ -23,7 +23,7 @@ const QUERY_PRESETS = [
 
 export function MultiToolAgentCard({
   apiBase = API_BASE,
-  className = 'card-wide',
+  className = 'card-half',
 }: MultiToolAgentCardProps = {}) {
   const [message, setMessage] = useState<string>(QUERY_PRESETS[0])
   const [submittingAgent, setSubmittingAgent] = useState<boolean>(false)
