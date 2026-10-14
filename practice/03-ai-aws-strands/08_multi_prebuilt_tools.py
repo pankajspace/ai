@@ -11,16 +11,18 @@ That prompt is a real safety feature — in production you often WANT a human
 approving actions. If a script ever seems to hang, it's probably waiting for
 you to type 'y'.
 
-    python two/06_multi_prebuilt_tools.py
+    python 08_multi_prebuilt_tools.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import http_request, calculator, file_write
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 agent = Agent(
     model=BedrockModel(model_id=MODEL_ID),

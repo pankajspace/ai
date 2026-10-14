@@ -9,15 +9,17 @@ Four lines is a whole agent:
 There are no tools here, so the agentic loop runs exactly once.
 This is the "before" picture for Module 2.
 
-    python one/01_hello_world_agent.py
+    python 01_hello_world_agent.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent
 from strands.models.bedrock import BedrockModel
-from config import NOVA_LITE
+
+# Model configuration
+NOVA_LITE = os.getenv("BEDROCK_NOVA_LITE", "amazon.nova-lite-v1:0")
 
 # Nova Lite: Amazon's cheapest model — ideal for a first run.
 model = BedrockModel(model_id=NOVA_LITE)

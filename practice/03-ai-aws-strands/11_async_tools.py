@@ -9,17 +9,19 @@ PARALLEL, so the whole thing takes about 2 seconds instead of 6.
 
 WATCH THE PRINTED TIMING at the end — that IS the lesson.
 
-    python two/09_async_tools.py
+    python 11_async_tools.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 import asyncio
+import os
+import sys
 import time
+
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool

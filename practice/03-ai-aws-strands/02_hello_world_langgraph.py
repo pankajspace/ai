@@ -13,16 +13,18 @@ WHAT TO LOOK FOR in the output:
 That empty `ai:` line is the model deciding to act instead of replying.
 That IS the agentic loop.
 
-    python one/02_hello_world_langgraph.py
+    python 02_hello_world_langgraph.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 # Define a simple tool

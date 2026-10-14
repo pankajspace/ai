@@ -7,16 +7,17 @@ A normal Python function is invisible to an agent. To expose it, add 3 things:
     2. type hints            -> tells the agent what data types to expect
     3. a proper docstring    -> tells the agent WHEN to use it
 
-    python two/01_function_to_tool.py
+    python 03_function_to_tool.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
+import os
+import sys
 import requests
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool                                              # 1. decorator

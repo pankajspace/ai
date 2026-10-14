@@ -6,15 +6,17 @@ write your own. Here: an online store checking stock.
 The mock dictionary stands in for a real database. The agent-facing part —
 decorator, type hints, docstring — is identical either way.
 
-    python two/04_custom_tool_inventory.py
+    python 06_custom_tool_inventory.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool

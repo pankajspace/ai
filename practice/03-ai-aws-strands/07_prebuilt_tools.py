@@ -4,16 +4,18 @@ You don't have to write everything. strands_tools ships ready-made tools.
 This also introduces the SYSTEM PROMPT: standing instructions that shape
 the agent's behaviour on every request.
 
-    python two/05_prebuilt_tools.py
+    python 07_prebuilt_tools.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 agent = Agent(
     model=BedrockModel(model_id=MODEL_ID),

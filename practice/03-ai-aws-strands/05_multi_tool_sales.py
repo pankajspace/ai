@@ -6,15 +6,17 @@ task. It's three: query, analyse, send.
 You give the agent three small tools. You NEVER tell it the order.
 It works out: get data -> analyse it -> email the result. That's planning.
 
-    python two/03_multi_tool_sales.py
+    python 05_multi_tool_sales.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool

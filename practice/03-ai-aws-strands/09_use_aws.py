@@ -10,16 +10,18 @@ An empty list is a valid result, not an error.
 use_aws CAN modify real resources. In a class, demo read-only requests only,
 on a sandbox account.
 
-    python two/07_use_aws.py
+    python 09_use_aws.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import use_aws
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 agent = Agent(
     model=BedrockModel(model_id=MODEL_ID),

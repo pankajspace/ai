@@ -3,15 +3,17 @@
 Shows that the agent understands INTENT, not keywords. All three phrasings
 at the bottom work without any extra code — no regex, no intent classifier.
 
-    python two/02_tip_calculator.py
+    python 04_tip_calculator.py
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool

@@ -14,17 +14,19 @@ WHAT TO WATCH: the agent calls get_weather_forecast FIRST, feeds those numbers
 into suggest_packing_list, then prices the trip and compares to the budget.
 Nobody wrote that sequence — the loop worked it out.
 
-    python three/travel_assistant.py
-    python three/travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
+    python 12_travel_assistant.py
+    python 12_travel_assistant.py "I'm going to Manali for 4 days, budget 15000"
 """
 
-import sys, os
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import os
+import sys
 
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
-from config import MODEL_ID
+
+# Model configuration
+MODEL_ID = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
 @tool
