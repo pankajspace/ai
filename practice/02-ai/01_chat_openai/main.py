@@ -22,10 +22,10 @@ from openai import OpenAI
 load_dotenv(find_dotenv())
 
 # 2. Inputs - change the value (or uncomment another line) to see a different output
-city = "Bangalore"
+# city = "Bangalore"
 # city = "Paris"
 # city = "Tokyo"
-# city = "New York"
+city = "New York"
 
 # 3. Create the client (it reads OPENAI_API_KEY / OPENAI_BASE_URL from the environment)
 client = OpenAI(timeout=15.0)
