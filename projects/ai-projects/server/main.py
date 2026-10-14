@@ -4,13 +4,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from services import (
     AgentRequest,
     AgentResponse,
+    ChatMessage,
     JokeRequest,
     JokeResponse,
+    MemoryChatRequest,
+    MemoryChatResponse,
+    SummarizerRequest,
+    SummarizerResponse,
     TravelRequest,
     TravelResponse,
+    chat_with_memory,
     get_groq_joke,
     get_travel_suggestion,
     run_agent_with_tool,
+    summarize,
 )
 
 # Load environment variables from root .env
@@ -56,6 +63,34 @@ def joke_generator(req: JokeRequest):
     try:
         joke_text = get_groq_joke(topic_name)
         return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/summarize", response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    text_content = req.text.strip() if req.text else ""
+    if not text_content:
+        raise HTTPException(status_code=400, detail="Text cannot be empty")
+    try:
+        summary_result = summarize(text_content)
+        return SummarizerResponse(text=text_content, summary=summary_result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/memory-chat", response_model=MemoryChatResponse)
+def memory_chat_service(req: MemoryChatRequest):
+    message_text = req.message.strip() if req.message else ""
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    try:
+        reply, updated_history = chat_with_memory(message_text, req.history)
+        return MemoryChatResponse(
+            message=message_text,
+            response=reply,
+            history=updated_history,
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

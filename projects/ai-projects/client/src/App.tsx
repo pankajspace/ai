@@ -1,6 +1,8 @@
 import './App.css'
 import { TravelGuideCard } from './components/TravelGuideCard'
 import { JokeGeneratorCard } from './components/JokeGeneratorCard'
+import { SummarizerCard } from './components/SummarizerCard'
+import { MemoryChatCard } from './components/MemoryChatCard'
 import { AgentOneToolCard } from './components/AgentOneToolCard'
 
 function App() {
@@ -35,7 +37,13 @@ function App() {
               {/* Tile 2: Joke Generator Service (Groq) */}
               <JokeGeneratorCard />
 
-              {/* Tile 3: Single-Tool Agent Service (OpenAI) */}
+              {/* Tile 3: Text Summarizer Service (LangChain LCEL) */}
+              <SummarizerCard />
+
+              {/* Tile 4: Conversational Memory Chat (LangChain) */}
+              <MemoryChatCard />
+
+              {/* Tile 5: Single-Tool Agent Service (OpenAI) */}
               <AgentOneToolCard />
             </div>
           </div>
