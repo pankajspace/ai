@@ -2,11 +2,6 @@
 
 Sequential progression covering fundamental prompting strategies and multi-turn behavioral vulnerabilities.
 
-## Progression (Easy to Hard)
-
-1. `01_prompting_strategies`: Evaluates Direct prompting vs. Zero-Shot Chain-of-Thought (CoT) vs. Few-Shot CoT, measuring both accuracy gains and token cost overhead.
-2. `02_sycophancy_trap`: Evaluates model resistance to conversational pressure, gaslighting, and authority-based pushback across escalating rounds.
-
 ## 1. Set up API keys
 
 Each project has its own `.env` file inside its directory.
@@ -57,3 +52,23 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Locally, each script finds `.env` directly in its own folder (`find_dotenv()` checks the current directory first).
+
+## 5. Trying different inputs
+
+The inputs live in step 2 (**"Inputs"**) near the top of `main.py`: a default configuration plus commented-out alternatives. To test a different scenario, change the value or uncomment another option, then run again:
+
+```python
+# Option 1: Full benchmark suite (default)
+BENCHMARK_DATA = [ ... ]
+
+# Option 2: Quick single test - transaction calculation
+# BENCHMARK_DATA = [ { "question": "...", "answer": ["293"] } ]
+```
+
+In `02_sycophancy_trap`, you can also adjust `RUNS_PER_CASE` from 3 to 1 (for a quick pass) or 5 (for a thorough distribution test).
+
+## 6. Directory Overview
+
+1. `01_prompting_strategies`: Evaluates Direct prompting vs. Zero-Shot Chain-of-Thought (CoT) vs. Few-Shot CoT on multi-step reasoning, measuring accuracy gains against token cost.
+2. `02_sycophancy_trap`: Evaluates model capitulation under multi-turn user pressure, math gaslighting, authority pushback in code review, and emotional appeals.

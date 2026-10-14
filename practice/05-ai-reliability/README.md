@@ -2,13 +2,6 @@
 
 A sequential suite measuring reliability levers across prompt designs, structured output constraints, tool schemas, and error handling.
 
-## Progression (Easy to Hard)
-
-1. `01_cot_vs_direct`: Demonstrates that Chain-of-Thought (step-by-step reasoning) is a reliability lever for multi-step tasks, benchmarking accuracy and latency trade-offs against direct answers.
-2. `02_variance_determinism`: Evaluates output consistency and schema adherence across 15 iterations under Unconstrained, Prompt-Constrained, and API Schema-Enforced modes.
-3. `03_tool_schema_calibration`: Evaluates whether LLMs route on tool function names versus docstring descriptions using a 2x2 matrix (Descriptive/Opaque names x Loose/Tight descriptions).
-4. `04_tool_error_injection`: Simulates upstream API failures (HTTP 503) to test agent transparency, error propagation, and hallucinated data prevention across different prompt instructions.
-
 ## 1. Set up API keys
 
 Each project has its own `.env` file inside its directory.
@@ -65,3 +58,31 @@ pip install -r requirements.txt
 python main.py
 ```
 
+Locally, each script finds `.env` directly in its own folder (`find_dotenv()` checks the current directory first).
+
+## 5. Trying different inputs
+
+Every input lives in step 2 (**"Inputs"**) near the top of `main.py`: a default configuration plus commented-out samples. To try different inputs or scenarios, change the value or uncomment another option, then run again:
+
+```python
+# Option 1: Smartphone review (default)
+base_review = (
+    "The new smartphone is amazing, the camera quality is top-notch but the "
+    "battery life is a bit disappointing. I love the design though!"
+)
+
+# Option 2: Laptop review with mixed performance
+# base_review = (
+#     "The laptop has blazing performance and great build quality, but the "
+#     "trackpad feels sticky and the battery lasts only 3 hours under load."
+# )
+```
+
+In `01_cot_vs_direct` and `02_variance_determinism`, you can also adjust iteration counts (`RUNS_PER_PROBLEM` / `ITERATIONS`). In `03_tool_schema_calibration`, you can select the full 50-query suite or a rapid 6-query test subset. In `04_tool_error_injection`, you can switch `QUESTION` across different multi-city combinations.
+
+## 6. Directory Overview
+
+1. `01_cot_vs_direct`: Demonstrates that Chain-of-Thought (step-by-step reasoning) is a reliability lever for multi-step tasks, benchmarking accuracy and latency trade-offs against direct answers.
+2. `02_variance_determinism`: Evaluates output consistency and schema adherence across 15 iterations under Unconstrained, Prompt-Constrained, and API Schema-Enforced modes.
+3. `03_tool_schema_calibration`: Evaluates whether LLMs route on tool function names versus docstring descriptions using a 2x2 matrix (Descriptive/Opaque names x Loose/Tight descriptions).
+4. `04_tool_error_injection`: Simulates upstream API failures (HTTP 503) to test agent transparency, error propagation, and hallucinated data prevention across different prompt instructions.
