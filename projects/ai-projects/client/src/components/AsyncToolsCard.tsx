@@ -21,6 +21,12 @@ const PRESETS = [
   'Which warehouse has the highest stock of PROD-123: east, west, or central?',
 ]
 
+const WAREHOUSES = [
+  { name: 'East', stock: 'PROD-123: 45, PROD-456: 10' },
+  { name: 'West', stock: 'PROD-123: 35, PROD-456: 0' },
+  { name: 'Central', stock: 'PROD-123: 50, PROD-456: 20' },
+]
+
 export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {}) {
   const [query, setQuery] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -63,6 +69,24 @@ export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {})
       <p>
         Executes concurrent async warehouse lookups simultaneously, slashing latency compared to sequential queries.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory Distributed Warehouses (3 locations)</summary>
+        <div className="data-preview-grid">
+          {WAREHOUSES.map((w) => (
+            <span
+              key={w.name}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to check ${w.name} warehouse`}
+              onClick={() => setQuery(`How many units of PROD-123 and PROD-456 are in ${w.name} warehouse?`)}
+            >
+              <code>{w.name}</code>: <strong>{w.stock}</strong>
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

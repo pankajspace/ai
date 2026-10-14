@@ -26,6 +26,12 @@ const PRESETS = [
   { tool: 'get_player_stats', arg: 'Shai Hope', label: 'get_player_stats (Shai Hope)' },
 ]
 
+const MCP_SERVER_DATA = [
+  { tool: 'get_live_score', arg: 'India vs West Indies', label: 'IND vs WI', detail: 'IND 287/6 · WI 198/5 (Req 90 off 70b)' },
+  { tool: 'get_player_stats', arg: 'Shubman Gill', label: 'Shubman Gill', detail: '164 runs, 3 inngs, HS 150' },
+  { tool: 'get_player_stats', arg: 'Shai Hope', label: 'Shai Hope', detail: '131 runs, 2 inngs, HS 78' },
+]
+
 export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
   const [toolName, setToolName] = useState<string>(PRESETS[0].tool)
   const [argVal, setArgVal] = useState<string>(PRESETS[0].arg)
@@ -70,6 +76,27 @@ export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
       <p>
         Talks directly to the FastMCP server without an LLM: Handshake &rarr; Tool Discovery &rarr; Direct Protocol Call.
       </p>
+
+      <details className="data-preview" open>
+        <summary>FastMCP Server In-Memory Data</summary>
+        <div className="data-preview-grid">
+          {MCP_SERVER_DATA.map((d) => (
+            <span
+              key={d.label}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to invoke ${d.tool} for ${d.arg}`}
+              onClick={() => {
+                setToolName(d.tool)
+                setArgVal(d.arg)
+              }}
+            >
+              <code>{d.label}</code>: <strong>{d.detail}</strong>
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleRun} className="form-row">
         <input
           type="text"

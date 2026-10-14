@@ -19,6 +19,12 @@ const PRESETS = [
   'List all DynamoDB tables available in my current AWS region',
 ]
 
+const MOCK_AWS_DATA = [
+  { resource: 'S3 Buckets', items: 'prod-ai-models-2026, analytics-data-lake-raw, backups-us-east-1' },
+  { resource: 'DynamoDB Tables', items: 'Customers, Orders, AgentSessions' },
+  { resource: 'Region / Account', items: 'us-east-1 · Account 987654321098' },
+]
+
 export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
   const [prompt, setPrompt] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -61,6 +67,24 @@ export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
       <p>
         Executes read-only AWS operations (S3, STS, DynamoDB) from plain English commands.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory AWS Infrastructure State</summary>
+        <div className="data-preview-grid">
+          {MOCK_AWS_DATA.map((d) => (
+            <span
+              key={d.resource}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to query ${d.resource}`}
+              onClick={() => setPrompt(`List all ${d.resource.toLowerCase()} in my account`)}
+            >
+              <code>{d.resource}</code>: <strong>{d.items}</strong>
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

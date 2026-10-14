@@ -22,6 +22,12 @@ const PRESETS = [
   'What is 2 + 2?',
 ]
 
+const CRICKET_DATA = [
+  { match: 'IND vs WI', detail: 'IND 287/6 · WI 198/5 (Req 90 off 70b)', query: 'What is the score in India vs West Indies?' },
+  { match: 'Shubman Gill', detail: '164 runs, 3 inngs, HS 150', query: 'How many runs has Shubman Gill scored this series?' },
+  { match: 'Shai Hope', detail: '131 runs, 2 inngs, HS 78', query: "What is Shai Hope's highest score in the series?" },
+]
+
 export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
   const [question, setQuestion] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -64,6 +70,24 @@ export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
       <p>
         The LLM decides which FastMCP tool to call and extracts arguments, formulating verified cricket answers.
       </p>
+
+      <details className="data-preview" open>
+        <summary>FastMCP Server Knowledge (Match & Player Stats)</summary>
+        <div className="data-preview-grid">
+          {CRICKET_DATA.map((c) => (
+            <span
+              key={c.match}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to ask about ${c.match}`}
+              onClick={() => setQuestion(c.query)}
+            >
+              <code>{c.match}</code>: <strong>{c.detail}</strong>
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

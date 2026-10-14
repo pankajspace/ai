@@ -18,6 +18,14 @@ const QUERY_PRESETS = [
   'Hi! What can you help with?',
 ]
 
+const STORE_PRICES = [
+  { item: 'shoes', price: '₹799' },
+  { item: 'hat', price: '₹399' },
+  { item: 'bag', price: '₹1,420' },
+  { item: 'shorts', price: '₹1,299' },
+  { item: 'pants', price: '₹1,699' },
+]
+
 export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps = {}) {
   const [message, setMessage] = useState<string>('How much are the shoes?')
   const [submittingAgent, setSubmittingAgent] = useState<boolean>(false)
@@ -64,6 +72,24 @@ export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps =
       <p>
         Autonomous agent with local tool calling (<code>get_price</code>) to answer store queries.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory Price Catalog (5 items)</summary>
+        <div className="data-preview-grid">
+          {STORE_PRICES.map((p) => (
+            <span
+              key={p.item}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to check ${p.item} price`}
+              onClick={() => setMessage(`How much are the ${p.item}?`)}
+            >
+              <code>{p.item}</code>: <strong>{p.price}</strong>
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleAskAgent} className="form-row">
         <input
           type="text"

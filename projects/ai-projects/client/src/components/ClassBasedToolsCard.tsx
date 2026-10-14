@@ -19,6 +19,12 @@ const PRESETS = [
   'Update PROD-123 stock to 0 units and check its availability',
 ]
 
+const INITIAL_INVENTORY = [
+  { id: 'PROD-123', qty: 15 },
+  { id: 'PROD-456', qty: 0 },
+  { id: 'PROD-789', qty: 8 },
+]
+
 export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardProps = {}) {
   const [query, setQuery] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -61,6 +67,32 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
       <p>
         Groups tools inside a class instance sharing single database connections to prevent connection pool exhaustion.
       </p>
+
+      <details className="data-preview" open>
+        <summary>Stateful Database Inventory (Connection Pool)</summary>
+        <div className="data-preview-grid">
+          {INITIAL_INVENTORY.map((item) => {
+            const currentQty = result?.current_inventory?.[item.id] ?? item.qty
+            return (
+              <span
+                key={item.id}
+                className="data-tag"
+                style={{ cursor: 'pointer' }}
+                title={`Click to check ${item.id} stock`}
+                onClick={() => setQuery(`Check stock for ${item.id}`)}
+              >
+                <code>{item.id}</code>:{' '}
+                {currentQty > 0 ? (
+                  <strong>{currentQty} in stock</strong>
+                ) : (
+                  <strong style={{ color: '#ef9a9a' }}>0 (out of stock)</strong>
+                )}
+              </span>
+            )
+          })}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

@@ -19,6 +19,13 @@ const PRESETS = [
   "Family trip of 4 to Jaipur for 5 days with budget 50000 rupees. What are the weather, packing, and costs?",
 ]
 
+const DESTINATION_DATA = [
+  { city: 'Goa', weather: '31°C Sunny', cost: '₹2,500/day' },
+  { city: 'Manali', weather: '12°C Cold', cost: '₹2,000/day' },
+  { city: 'Bangalore', weather: '24°C Pleasant', cost: '₹3,000/day' },
+  { city: 'Jaipur', weather: '34°C Hot', cost: '₹2,200/day' },
+]
+
 export function TravelAssistantCard({ apiBase = API_BASE }: TravelAssistantCardProps = {}) {
   const [query, setQuery] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -61,6 +68,26 @@ export function TravelAssistantCard({ apiBase = API_BASE }: TravelAssistantCardP
       <p>
         Autonomous concierge chaining <code>weather</code> &rarr; <code>packing</code> &rarr; <code>cost estimation</code> &rarr; <code>budget check</code>.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory Destination Knowledge (4 cities)</summary>
+        <div className="data-preview-grid">
+          {DESTINATION_DATA.map((d) => (
+            <span
+              key={d.city}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to plan trip to ${d.city}`}
+              onClick={() =>
+                setQuery(`I'm going to ${d.city} for 3 days with a friend. My budget is 15000 rupees. What should I pack, and can I afford it?`)
+              }
+            >
+              <code>{d.city}</code>: <strong>{d.weather}</strong> &bull; {d.cost}
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

@@ -19,6 +19,13 @@ const PRESETS = [
   'Can I order 5 units of PROD-123 right now?',
 ]
 
+const INVENTORY_DATA = [
+  { id: 'PROD-123', qty: 15 },
+  { id: 'PROD-456', qty: 0 },
+  { id: 'PROD-789', qty: 8 },
+  { id: 'PROD-999', qty: 0 },
+]
+
 export function CustomInventoryCard({ apiBase = API_BASE }: CustomInventoryCardProps = {}) {
   const [question, setQuestion] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -61,6 +68,29 @@ export function CustomInventoryCard({ apiBase = API_BASE }: CustomInventoryCardP
       <p>
         Queries proprietary catalog data using a custom domain tool (<code>check_inventory</code>) for product stock.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory Catalog Data (4 items)</summary>
+        <div className="data-preview-grid">
+          {INVENTORY_DATA.map((item) => (
+            <span
+              key={item.id}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to check ${item.id}`}
+              onClick={() => setQuestion(`Is ${item.id} in stock?`)}
+            >
+              <code>{item.id}</code>:{' '}
+              {item.qty > 0 ? (
+                <strong>{item.qty} units</strong>
+              ) : (
+                <strong style={{ color: '#ef9a9a' }}>0 (out of stock)</strong>
+              )}
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"

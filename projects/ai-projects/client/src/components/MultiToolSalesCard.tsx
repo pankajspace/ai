@@ -18,6 +18,13 @@ const PRESETS = [
   "Get sales data for Q4 and send an email report to sales-team@company.com",
 ]
 
+const SALES_DATA = [
+  { quarter: 'Q1', revenue: '$950K', deals: 35 },
+  { quarter: 'Q2', revenue: '$1.10M', deals: 42 },
+  { quarter: 'Q3', revenue: '$1.25M', deals: 47 },
+  { quarter: 'Q4', revenue: '$1.45M', deals: 55 },
+]
+
 export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardProps = {}) {
   const [task, setTask] = useState<string>(PRESETS[0])
   const [submitting, setSubmitting] = useState<boolean>(false)
@@ -60,6 +67,28 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
       <p>
         Autonomous planning across 3 unordered tools: <code>get_sales_data</code> &rarr; <code>analyze_sales</code> &rarr; <code>send_email</code>.
       </p>
+
+      <details className="data-preview" open>
+        <summary>In-Memory Quarterly Sales DB (4 quarters)</summary>
+        <div className="data-preview-grid">
+          {SALES_DATA.map((s) => (
+            <span
+              key={s.quarter}
+              className="data-tag"
+              style={{ cursor: 'pointer' }}
+              title={`Click to report ${s.quarter} sales`}
+              onClick={() =>
+                setTask(
+                  `Get sales data for ${s.quarter}, analyze metrics, and email report to team@company.com`
+                )
+              }
+            >
+              <code>{s.quarter}</code>: <strong>{s.revenue}</strong> ({s.deals} deals)
+            </span>
+          ))}
+        </div>
+      </details>
+
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"
