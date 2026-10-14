@@ -5,7 +5,7 @@ Provides Model Context Protocol (MCP) tool endpoints for cricket matches and pla
 2. `get_player_stats(player_name)`: Fetches series stats and high scores.
 
 Run directly:
-    python projects/ai-projects/server/services/cricket_server.py
+    python projects/ai-projects/server/services/mcp/cricket_server.py
 """
 
 import sys

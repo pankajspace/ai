@@ -16,7 +16,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from pydantic import BaseModel, Field
 
-from services.cricket_server import get_live_score, get_player_stats
+from services.mcp.cricket_server import get_live_score, get_player_stats
 
 
 class McpClientRequest(BaseModel):
@@ -87,7 +87,7 @@ def run_mcp_client(
         from mcp.client.stdio import stdio_client
 
         # If running in environment with mcp
-        server_path = str(Path(__file__).parent / "cricket_server.py")
+        server_path = str(Path(__file__).parent / "mcp" / "cricket_server.py")
         # In case stdio fails or in container sandbox, use direct implementation safely
     except Exception:
         pass

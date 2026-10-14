@@ -17,7 +17,7 @@ from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field
 
-from services.cricket_server import get_live_score, get_player_stats
+from services.mcp.cricket_server import get_live_score, get_player_stats
 
 load_dotenv(find_dotenv())
 

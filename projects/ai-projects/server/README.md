@@ -43,7 +43,7 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 31. `services/29_mcp_client.py`: FastMCP protocol plumbing without LLM (handshake, tool discovery, direct tool execution).
 32. `services/30_mcp_agent.py`: LLM-guided FastMCP cricket assistant routing questions to live match tools.
 33. `services/31_mcp_evals.py`: Automated assertion unit-test suite evaluating MCP tool routing and factual accuracy.
-34. `services/cricket_server.py`: FastMCP server providing live scores and player statistics.
+34. `services/mcp/cricket_server.py`: FastMCP server providing live scores and player statistics.
 35. `requirements.txt`: Python package dependencies.
 36. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
 37. `.env.example`: Configuration variables for port, host, and API keys.
