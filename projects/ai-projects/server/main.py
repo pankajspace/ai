@@ -9,14 +9,18 @@ from services import (
     JokeResponse,
     MemoryChatRequest,
     MemoryChatResponse,
+    MultiToolAgentRequest,
+    MultiToolAgentResponse,
     SummarizerRequest,
     SummarizerResponse,
+    ToolStep,
     TravelRequest,
     TravelResponse,
     chat_with_memory,
     get_groq_joke,
     get_travel_suggestion,
     run_agent_with_tool,
+    run_multi_tool_agent,
     summarize,
 )
 
@@ -107,7 +111,28 @@ def agent_service(req: AgentRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.post("/api/multi-tool-agent", response_model=MultiToolAgentResponse)
+def multi_tool_agent_service(req: MultiToolAgentRequest):
+    message_text = (
+        req.message.strip()
+        if req.message
+        else "What's the weather in Tokyo, and what is 12 times 12?"
+    )
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    try:
+        reply, steps = run_multi_tool_agent(message_text)
+        return MultiToolAgentResponse(
+            message=message_text,
+            response=reply,
+            steps=steps,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 if __name__ == "__main__":
     import uvicorn
 
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

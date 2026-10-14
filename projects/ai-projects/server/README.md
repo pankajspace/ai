@@ -17,10 +17,11 @@ Minimal FastAPI backend service hosting AI services in a multi-container archite
 5. `services/03_langchain_summarizer.py`: Self-contained service module holding schemas and LangChain text summarizer logic.
 6. `services/04_langchain_memory_chat.py`: Self-contained service module holding schemas and LangChain conversational memory chat logic.
 7. `services/05_agent_one_tool.py`: Self-contained service module implementing an autonomous agent with local tool calling (`get_price`).
-8. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`, `langchain-openai`, `langchain-core`).
-9. `Dockerfile`: Container image build instructions for Python 3.12-slim.
-10. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
-11. `.env.example`: Configuration variables for port, host, and API keys.
+8. `services/07_langchain_multi_tools.py`: Self-contained service module implementing a LangChain multi-tool agent (`get_weather`, `add`, `multiply`, `get_population`) with visible tool-call trace.
+9. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`, `langchain`, `langchain-openai`, `langchain-core`).
+10. `Dockerfile`: Container image build instructions for Python 3.12-slim.
+11. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
+12. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -75,3 +76,5 @@ From the `projects/ai-projects/server` directory:
 5. `POST /api/summarize`: Accepts JSON with text (`{"text": "Long text to summarize..."}`) and returns a concise summary via LangChain LCEL chaining.
 6. `POST /api/memory-chat`: Accepts JSON with a message and history (`{"message": "What is my name?", "history": [...]}`) and returns a response from LangChain memory chat preserving context.
 7. `POST /api/agent`: Accepts JSON with a message (`{"message": "How much are the shoes?"}`) and returns a response generated via the autonomous agent tool-calling loop.
+8. `POST /api/multi-tool-agent`: Accepts JSON with a message (`{"message": "What's the weather in Tokyo, and what is 12 times 12?"}`) and returns the final answer along with a trace of intermediate tool calls and tool results.
+

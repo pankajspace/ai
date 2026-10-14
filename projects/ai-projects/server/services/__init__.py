@@ -7,6 +7,7 @@ chat_groq = importlib.import_module(".02_chat_groq", package=__name__)
 langchain_summarizer = importlib.import_module(".03_langchain_summarizer", package=__name__)
 langchain_memory_chat = importlib.import_module(".04_langchain_memory_chat", package=__name__)
 agent_one_tool = importlib.import_module(".05_agent_one_tool", package=__name__)
+langchain_multi_tools = importlib.import_module(".07_langchain_multi_tools", package=__name__)
 
 # Register canonical module paths in sys.modules
 sys.modules[f"{__name__}.chat_openai"] = chat_openai
@@ -14,6 +15,7 @@ sys.modules[f"{__name__}.chat_groq"] = chat_groq
 sys.modules[f"{__name__}.langchain_summarizer"] = langchain_summarizer
 sys.modules[f"{__name__}.langchain_memory_chat"] = langchain_memory_chat
 sys.modules[f"{__name__}.agent_one_tool"] = agent_one_tool
+sys.modules[f"{__name__}.langchain_multi_tools"] = langchain_multi_tools
 
 # Re-export service models and handlers
 TravelRequest = chat_openai.TravelRequest
@@ -37,12 +39,18 @@ AgentRequest = agent_one_tool.AgentRequest
 AgentResponse = agent_one_tool.AgentResponse
 run_agent_with_tool = agent_one_tool.run_agent_with_tool
 
+ToolStep = langchain_multi_tools.ToolStep
+MultiToolAgentRequest = langchain_multi_tools.MultiToolAgentRequest
+MultiToolAgentResponse = langchain_multi_tools.MultiToolAgentResponse
+run_multi_tool_agent = langchain_multi_tools.run_multi_tool_agent
+
 __all__ = [
     "chat_openai",
     "chat_groq",
     "langchain_summarizer",
     "langchain_memory_chat",
     "agent_one_tool",
+    "langchain_multi_tools",
     "TravelRequest",
     "TravelResponse",
     "get_travel_suggestion",
@@ -59,4 +67,9 @@ __all__ = [
     "AgentRequest",
     "AgentResponse",
     "run_agent_with_tool",
+    "ToolStep",
+    "MultiToolAgentRequest",
+    "MultiToolAgentResponse",
+    "run_multi_tool_agent",
 ]
+
