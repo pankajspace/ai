@@ -16,10 +16,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
-try:
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-except ImportError:
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 load_dotenv(find_dotenv())
 
@@ -76,45 +73,17 @@ class RagResponse(BaseModel):
 # Retrieval & RAG Logic
 # ---------------------------------------------------------------------------
 def _retrieve_relevant_chunks(chunks: list[str], question: str, k: int = 3) -> list[str]:
-    """Retrieve top relevant chunks using Chroma/Embeddings with fallback."""
+    """Retrieve top relevant chunks using Chroma vector store and HuggingFace embeddings."""
     if len(chunks) <= k:
         return chunks
 
-    # 1. Attempt Chroma + HuggingFaceEmbeddings (original design)
-    try:
-        from langchain_chroma import Chroma
-        from langchain_huggingface import HuggingFaceEmbeddings
+    from langchain_chroma import Chroma
+    from langchain_huggingface import HuggingFaceEmbeddings
 
-        embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-        db = Chroma.from_texts(chunks, embedder)
-        results = db.similarity_search(question, k=k)
-        return [r.page_content for r in results]
-    except Exception:
-        pass
-
-    # 2. Attempt OpenAIEmbeddings + InMemoryVectorStore
-    try:
-        from langchain_openai import OpenAIEmbeddings
-        from langchain_core.vectorstores import InMemoryVectorStore
-
-        embedder = OpenAIEmbeddings(
-            api_key=os.getenv("OPENAI_API_KEY"),
-            base_url=os.getenv("OPENAI_BASE_URL", None),
-        )
-        db = InMemoryVectorStore.from_texts(chunks, embedder)
-        results = db.similarity_search(question, k=k)
-        return [r.page_content for r in results]
-    except Exception:
-        pass
-
-    # 3. Simple lexical relevance fallback for lightweight POC execution
-    q_words = set(question.lower().split())
-    scored = sorted(
-        chunks,
-        key=lambda c: len(set(c.lower().split()) & q_words),
-        reverse=True,
-    )
-    return scored[:k]
+    embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
+    db = Chroma.from_texts(chunks, embedder)
+    results = db.similarity_search(question, k=k)
+    return [r.page_content for r in results]
 
 
 def answer_rag(

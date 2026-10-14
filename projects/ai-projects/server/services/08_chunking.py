@@ -9,10 +9,7 @@ Run directly:
 
 from pydantic import BaseModel, Field
 
-try:
-    from langchain_text_splitters import RecursiveCharacterTextSplitter
-except ImportError:
-    from langchain.text_splitter import RecursiveCharacterTextSplitter
+from langchain_text_splitters import RecursiveCharacterTextSplitter
 
 DEFAULT_SAMPLE_TEXT = (
     "Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. "
