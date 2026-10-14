@@ -13,7 +13,6 @@ from services import (
     MultiToolAgentResponse,
     SummarizerRequest,
     SummarizerResponse,
-    ToolStep,
     TravelRequest,
     TravelResponse,
     chat_with_memory,
@@ -121,11 +120,11 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
     if not message_text:
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     try:
-        reply, steps = run_multi_tool_agent(message_text)
+        reply, tool_called = run_multi_tool_agent(message_text)
         return MultiToolAgentResponse(
             message=message_text,
             response=reply,
-            steps=steps,
+            tool_called=tool_called,
         )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))

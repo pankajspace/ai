@@ -1,17 +1,10 @@
 import { useState } from 'react'
 import { API_BASE } from '../config'
 
-export interface ToolStep {
-  type: 'tool_call' | 'tool_result' | string
-  name: string
-  args?: Record<string, unknown>
-  content: string
-}
-
 export interface MultiToolAgentResponse {
   message: string
   response: string
-  steps: ToolStep[]
+  tool_called: boolean
 }
 
 export interface MultiToolAgentCardProps {
@@ -31,7 +24,7 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
   const [message, setMessage] = useState<string>(QUERY_PRESETS[0])
   const [submittingAgent, setSubmittingAgent] = useState<boolean>(false)
   const [agentResponse, setAgentResponse] = useState<string | null>(null)
-  const [agentSteps, setAgentSteps] = useState<ToolStep[]>([])
+  const [toolCalled, setToolCalled] = useState<boolean | null>(null)
   const [agentError, setAgentError] = useState<string | null>(null)
 
   const handleAskAgent = async (e?: React.FormEvent) => {
@@ -54,7 +47,7 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
       }
       const data: MultiToolAgentResponse = await res.json()
       setAgentResponse(data.response)
-      setAgentSteps(data.steps || [])
+      setToolCalled(Boolean(data.tool_called))
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
         setAgentError('Request timed out after 25 seconds. Please verify server connection and Groq API key.')
@@ -73,7 +66,7 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
         <span className="badge badge-healthy">LangChain • Groq</span>
       </h2>
       <p>
-        LangChain agent with multiple tools (<code>get_weather</code>, <code>add</code>, <code>multiply</code>, <code>get_population</code>) and visible tool-call trace.
+        LangChain agent with multiple tools (<code>get_weather</code>, <code>add</code>, <code>multiply</code>, <code>get_population</code>).
       </p>
       <form onSubmit={handleAskAgent} className="form-row">
         <input
@@ -103,35 +96,16 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
         <div className="card-actions">
           <button type="submit" disabled={submittingAgent || !message.trim()}>
             {submittingAgent && <span className="spinner" />}
-            {submittingAgent ? 'Reasoning…' : 'Run Multi-Tool Agent'}
+            {submittingAgent ? 'Reasoning…' : 'Ask Agent'}
           </button>
         </div>
       </form>
 
       {agentResponse && (
         <div className="result visible">
-          {agentSteps.length > 0 ? (
-            <div style={{ marginBottom: '0.6rem', fontSize: '0.8rem', fontFamily: 'monospace' }}>
-              <strong>Tool trace:</strong>
-              {agentSteps.map((step, idx) => (
-                <div
-                  key={idx}
-                  style={{
-                    color: step.type === 'tool_call' ? 'var(--accent)' : '#81c784',
-                    marginTop: '0.2rem',
-                  }}
-                >
-                  {step.type === 'tool_call'
-                    ? `🔧 [tool call]   ${step.content}`
-                    : `📦 [tool result] ${step.content}`}
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div style={{ marginBottom: '0.5rem', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
-              <em>No external tool needed — answered directly by model.</em>
-            </div>
-          )}
+          <div style={{ marginBottom: '0.4rem', fontSize: '0.78rem', color: toolCalled ? 'var(--accent)' : 'var(--text-muted)' }}>
+            <strong>Tool called:</strong> {toolCalled ? 'Yes' : 'No'}
+          </div>
           <strong>Agent reply:</strong>
           {'\n\n'}
           {agentResponse}
@@ -142,4 +116,3 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
 }
 
 export default MultiToolAgentCard
-

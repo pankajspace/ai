@@ -14,5 +14,6 @@ export { AgentOneToolCard, default as AgentOneToolTile } from './AgentOneToolCar
 export type { AgentOneToolCardProps, AgentResponse } from './AgentOneToolCard'
 
 export { MultiToolAgentCard, default as MultiToolAgentTile } from './MultiToolAgentCard'
-export type { MultiToolAgentCardProps, MultiToolAgentResponse, ToolStep } from './MultiToolAgentCard'
+export type { MultiToolAgentCardProps, MultiToolAgentResponse } from './MultiToolAgentCard'
+
 

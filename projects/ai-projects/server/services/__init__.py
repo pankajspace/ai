@@ -39,7 +39,6 @@ AgentRequest = agent_one_tool.AgentRequest
 AgentResponse = agent_one_tool.AgentResponse
 run_agent_with_tool = agent_one_tool.run_agent_with_tool
 
-ToolStep = langchain_multi_tools.ToolStep
 MultiToolAgentRequest = langchain_multi_tools.MultiToolAgentRequest
 MultiToolAgentResponse = langchain_multi_tools.MultiToolAgentResponse
 run_multi_tool_agent = langchain_multi_tools.run_multi_tool_agent
@@ -67,9 +66,9 @@ __all__ = [
     "AgentRequest",
     "AgentResponse",
     "run_agent_with_tool",
-    "ToolStep",
     "MultiToolAgentRequest",
     "MultiToolAgentResponse",
     "run_multi_tool_agent",
 ]
+
 
