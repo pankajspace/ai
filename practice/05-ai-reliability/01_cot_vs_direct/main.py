@@ -1,6 +1,5 @@
-"""
-Prototype: Chain-of-Thought vs. Direct Answer
-==============================================
+"""Prototype: Chain-of-Thought vs. Direct Answer.
+
 Demonstrates that asking a model to "think step by step" is a reliability
 lever - not just a stylistic choice.
 
@@ -9,22 +8,26 @@ For each multi-step reasoning problem we run two prompt strategies N times:
   - CoT     - "Think step by step, then state your final answer."
 
 We score every response, aggregate accuracy across all runs, and display
-a side-by-side comparison so the *distribution* - not just a single lucky
-or unlucky example - is visible.
-
-Concept: CoT forces the model to commit to intermediate steps, which
-catches compounding errors before they reach the final answer.
+a side-by-side comparison so the distribution is visible.
 
 IMPORTANT: use a NON-reasoning model (e.g. gpt-4o-mini). Reasoning models
 think internally even when told not to show working, which erases the gap
 this prototype exists to measure.
+
+Run locally (from this folder):
+    pip install -r requirements.txt
+    python main.py
+
+Run with Docker (from this folder):
+    docker build -t 01_cot_vs_direct .
+    docker run --rm --env-file .env 01_cot_vs_direct
 """
 
 import os
-import time
 import textwrap
+import time
 
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from rich.console import Console, Group
 from rich.panel import Panel
@@ -32,49 +35,29 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
-# find_dotenv() walks up from this file, so a .env in a parent folder is found
+# 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
 console = Console()
 
-MODEL_NAME = "gpt-4o-mini"
-RUNS_PER_PROBLEM = 8
-TEMPERATURE = 0.7
+MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 
-# how many trailing lines of a response count as the model's "final answer"
+# 2. Inputs - number of runs per problem and problem test suite
+#    Uncomment another option below to test different scenarios:
+
+# Runs per problem
+RUNS_PER_PROBLEM = 8
+# RUNS_PER_PROBLEM = 2  # Fast test run
+# RUNS_PER_PROBLEM = 5  # Medium benchmark run
+
+# Number of trailing lines considered "final answer"
 TAIL_LINES = 1
 
-# set True to print every prompt/response pair in Rich panels (very verbose:
-# one pair per run). False keeps the console output compact, as in output-1.md.
+# Set True to inspect prompt/response exchanges in Rich panels
 SHOW_EXCHANGES = False
 
-_client = None
-
-
-def get_client() -> OpenAI:
-    """Returns a module-level OpenAI client, creating it on first use.
-
-    Returns:
-        An authenticated OpenAI client instance.
-
-    Side effects:
-        Reads OPENAI_API_KEY from the environment on first call.
-
-    Edge cases / gotchas:
-        Reuses one client across all runs; the original built a fresh client
-        per request, which added needless connection overhead.
-    """
-    global _client
-    if _client is None:
-        _client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
-    return _client
-
-
-# -- Problems ------------------------------------------------------------------
-# Each problem has a clear answer that is easy to verify automatically.
-# The "wrong_answer" field documents the intuitive but incorrect response -
-# exactly what a model under direct prompting often produces.
-
+# Option 1: Full benchmark problem suite (default)
 PROBLEMS = [
     {
         "title": "Spatial Navigation (Grid)",
@@ -145,15 +128,56 @@ PROBLEMS = [
     },
 ]
 
-# -- Prompt strategies ---------------------------------------------------------
+# Option 2: Single problem test - Spatial navigation
+# PROBLEMS = [
+#     {
+#         "title": "Spatial Navigation (Grid)",
+#         "question": (
+#             "Start at origin (0,0) facing North (+Y direction). "
+#             "Move forward 3 units. Turn right 90 degrees. Move forward 2 units. "
+#             "Turn right 90 degrees. Move forward 5 units. "
+#             "Turn left 90 degrees. Move backward 2 units. "
+#             "What are your exact final (X,Y) coordinates? Format as (X, Y)."
+#         ),
+#         "correct_answers": ["(0, -2)", "(0,-2)"],
+#         "wrong_answer": "(4, -2) or (2, 2)",
+#         "explanation": "Start(0,0) N -> Fwd 3 to (0,3). Right to E -> Fwd 2 to (2,3). Right to S -> Fwd 5 to (2,-2). Left to E -> Back 2 (moving West) to (0,-2).",
+#     }
+# ]
+
+# Option 3: Single problem test - Relational logic (Family Tree)
+# PROBLEMS = [
+#     {
+#         "title": "Relational Logic (Family Tree)",
+#         "question": (
+#             "Alice is the sister of Bob. Bob is the father of Charlie. "
+#             "Charlie is the brother of Diana. Diana is the mother of Eve. "
+#             "What is the exact biological relationship of Alice to Eve?"
+#         ),
+#         "correct_answers": ["great-aunt", "great aunt", "grand-aunt", "grand aunt"],
+#         "wrong_answer": "Aunt or Grandmother",
+#         "explanation": "Bob is Diana's father. Alice is Bob's sister, making her Diana's aunt. Diana is Eve's mother, making Alice Eve's great-aunt.",
+#     }
+# ]
+
+_client = None
+
+
+def get_client() -> OpenAI:
+    """Returns a module-level OpenAI client, creating it on first use."""
+    global _client
+    if _client is None:
+        api_key = os.getenv("OPENAI_API_KEY")
+        if not api_key:
+            console.print("[bold red]Error:[/bold red] OPENAI_API_KEY not set.")
+            raise SystemExit(1)
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        _client = OpenAI(api_key=api_key, base_url=base_url)
+    return _client
 
 
 def direct_prompt(question: str) -> str:
-    """Returns a prompt requesting a direct answer without reasoning.
-
-    Forces the model to skip intermediate steps, which often leads to errors
-    in multi-step logic problems.
-    """
+    """Returns a prompt requesting a direct answer without reasoning."""
     return (
         f"{question}\n\n"
         "Answer in one short sentence only. Do not show any working or reasoning."
@@ -161,11 +185,7 @@ def direct_prompt(question: str) -> str:
 
 
 def cot_prompt(question: str) -> str:
-    """Returns a prompt requesting step-by-step reasoning (Chain-of-Thought).
-
-    Encourages the model to process intermediate steps explicitly,
-    improving reliability for complex reasoning tasks.
-    """
+    """Returns a prompt requesting step-by-step reasoning (Chain-of-Thought)."""
     return (
         f"{question}\n\n"
         "Think step by step. Show each step of your reasoning clearly, "
@@ -173,25 +193,8 @@ def cot_prompt(question: str) -> str:
     )
 
 
-# -- API helpers ---------------------------------------------------------------
-
-
 def ask(prompt: str) -> str:
-    """Sends a prompt to the model and returns the verbatim response text.
-
-    Args:
-        prompt: The string text to send.
-
-    Returns:
-        The stripped response text, or a string starting with 'Error:' on failure.
-
-    Side effects:
-        Makes a network request. Prints Rich panels when SHOW_EXCHANGES is True.
-
-    Edge cases / gotchas:
-        Never raises - a failed call is scored as incorrect so one bad request
-        does not abort an 80-run sweep.
-    """
+    """Sends a prompt to the model and returns the verbatim response text."""
     if SHOW_EXCHANGES:
         console.print(
             Panel(
@@ -236,117 +239,65 @@ def ask(prompt: str) -> str:
 
 
 def is_correct(response: str, correct_answers: list[str]) -> bool:
-    """Check whether the model's FINAL answer matches an accepted answer.
-
-    Args:
-        response: The verbatim model output.
-        correct_answers: Accepted answer strings, compared case-insensitively.
-
-    Returns:
-        True when the concluding portion of the response contains an accepted
-        answer.
-
-    Edge cases / gotchas:
-        Scores only the final non-empty line, not the whole response. A CoT
-        trace often raises and then discards a candidate answer mid-reasoning;
-        matching anywhere in the text would credit CoT for an answer it
-        explicitly rejected, inflating the very number this prototype measures.
-        Both prompts instruct the model to put its answer at the end, so the
-        tail is the fair place to look. Widen TAIL_LINES if a model you test
-        habitually buries its conclusion mid-response.
-    """
+    """Check whether the model's FINAL answer matches an accepted answer."""
     if response.startswith("Error:"):
         return False
 
-    lines = [ln for ln in response.strip().splitlines() if ln.strip()]
+    lines = [ln.strip() for ln in response.splitlines() if ln.strip()]
     if not lines:
         return False
 
-    tail = "\n".join(lines[-TAIL_LINES:]).lower()
-    return any(ans.lower() in tail for ans in correct_answers)
+    tail = " ".join(lines[-TAIL_LINES:]).lower()
+    for ans in correct_answers:
+        if ans.lower() in tail:
+            return True
+    return False
 
 
-# -- Display helpers -----------------------------------------------------------
+def run_strategy(prompt_fn, strategy_name: str, problem: dict):
+    """Runs one strategy across RUNS_PER_PROBLEM iterations."""
+    prompt = prompt_fn(problem["question"])
+    results: list[bool] = []
+    latencies: list[float] = []
 
+    for i in range(1, RUNS_PER_PROBLEM + 1):
+        t0 = time.time()
+        resp = ask(prompt)
+        dt = time.time() - t0
+        ok = is_correct(resp, problem["correct_answers"])
+        results.append(ok)
+        latencies.append(dt)
 
-def accuracy_bar(correct: int, total: int, width: int = 20) -> Text:
-    """Render a filled/empty block bar with colour based on accuracy percentage.
-
-    Green for >= 80%, yellow for >= 50%, and red otherwise.
-    """
-    pct = correct / total
-    filled = round(pct * width)
-    bar = "█" * filled + "░" * (width - filled)
-    color = "green" if pct >= 0.8 else "yellow" if pct >= 0.5 else "red"
-    return Text(f"{bar}  {correct}/{total}  ({int(pct * 100)}%)", style=color)
-
-
-def run_strategy(prompt_fn, label: str, problem: dict) -> tuple[list[bool], list[float]]:
-    """Run one prompt strategy multiple times and capture results and latency.
-
-    Args:
-        prompt_fn: Callable turning a question into a prompt string.
-        label: Display label for the progress line.
-        problem: The problem dict being tested.
-
-    Returns:
-        A tuple (results, times) of per-run correctness flags and elapsed seconds.
-
-    Side effects:
-        Makes RUNS_PER_PROBLEM network requests and writes progress to stdout.
-    """
-    results = []
-    times = []
-    for run in range(1, RUNS_PER_PROBLEM + 1):
-        start_t = time.perf_counter()
-        response = ask(prompt_fn(problem["question"]))
-        elapsed = time.perf_counter() - start_t
-
-        passed = is_correct(response, problem["correct_answers"])
-        results.append(passed)
-        times.append(elapsed)
-
-        dot = "[green]●[/green]" if passed else "[red]●[/red]"
+        dot = "[green]o[/green]" if ok else "[red]x[/red]"
+        scored_on = " ".join(
+            [ln for ln in resp.splitlines() if ln.strip()][-TAIL_LINES:]
+        )
         console.print(
-            f"  {label} #{run:02d}: {dot} [dim]{elapsed:4.1f}s[/dim]",
-            end="   ",
+            f"  [dim]Run #{i:02d}:[/dim] {dot}  [dim]{dt:4.1f}s | scored on: '{scored_on[:45]}'[/dim]",
             highlight=False,
         )
-        if run % 4 == 0:
-            console.print()
-        time.sleep(0.4)  # gentle on rate limits
-    if RUNS_PER_PROBLEM % 4 != 0:
-        console.print()
-    return results, times
+
+    return results, latencies
 
 
-# -- Main ----------------------------------------------------------------------
+def accuracy_bar(correct: int, total: int, width: int = 16) -> Text:
+    """Renders a text progress bar coloured by accuracy."""
+    pct = correct / total if total else 0
+    filled = round(pct * width)
+    bar = "█" * filled + "░" * (width - filled)
+    color = "green" if pct >= 0.75 else "yellow" if pct >= 0.4 else "red"
+    return Text(f"{bar} {pct * 100:3.0f}%", style=color)
 
 
 def run_demo():
-    """Main entry point for the CoT vs Direct Answer comparison prototype.
-
-    Iterates through a set of logic problems, running both strategies
-    and displaying comparative metrics and a final summary.
-
-    Side effects:
-        Makes network calls and writes formatted tables to stdout.
-    """
-    api_key = os.getenv("OPENAI_API_KEY")
-    if not api_key:
-        console.print(
-            "[bold red]Error:[/bold red] OPENAI_API_KEY not set. Add it to a .env file."
-        )
-        console.print(
-            f"[dim]Looked for .env at: {find_dotenv() or 'no .env found in this folder or any parent'}[/dim]"
-        )
-        raise SystemExit(1)
+    """Runs the full CoT vs Direct comparison benchmark."""
+    get_client()
 
     console.print(
         Panel.fit(
             "[bold yellow]Chain-of-Thought vs. Direct Answer[/bold yellow]\n"
-            "[dim]Comparison of performance and latency across multiple reasoning problems.[/dim]\n"
-            f"[dim]{RUNS_PER_PROBLEM} runs x 2 strategies x {len(PROBLEMS)} problems | {MODEL_NAME}[/dim]",
+            "[dim]Measuring CoT as a reliability lever across multi-step reasoning problems.[/dim]\n"
+            f"[dim]Model: {MODEL_NAME} | temperature: {TEMPERATURE} | {RUNS_PER_PROBLEM} runs per problem[/dim]",
             border_style="yellow",
         )
     )
@@ -421,7 +372,7 @@ def run_demo():
             }
         )
 
-    # -- Overall summary -------------------------------------------------------
+    # Overall summary
     console.print(Rule("[bold yellow]Overall Summary[/bold yellow]", style="yellow"))
 
     total_runs = RUNS_PER_PROBLEM * len(PROBLEMS)
@@ -446,7 +397,6 @@ def run_demo():
         else:
             lift_str = "[dim]+/-0[/dim]"
 
-        # Mini side-by-side bar for the summary
         d_bar = "█" * row["direct"] + "░" * (RUNS_PER_PROBLEM - row["direct"])
         c_bar = "█" * row["cot"] + "░" * (RUNS_PER_PROBLEM - row["cot"])
         dist = Text()
@@ -497,3 +447,4 @@ def run_demo():
 
 if __name__ == "__main__":
     run_demo()
+

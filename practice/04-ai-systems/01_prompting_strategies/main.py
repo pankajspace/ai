@@ -1,6 +1,5 @@
-"""
-Prototype: Direct vs. Zero-Shot CoT vs. Few-Shot CoT
-====================================================
+"""Prototype: Direct vs. Zero-Shot CoT vs. Few-Shot CoT.
+
 Benchmarks three prompting strategies on a set of questions chosen because
 the intuitive answer is wrong. Reports accuracy AND token cost, so the
 accuracy gain can be weighed against what it costs to buy.
@@ -8,34 +7,40 @@ accuracy gain can be weighed against what it costs to buy.
 IMPORTANT: use a NON-reasoning model (e.g. gpt-4o-mini). Reasoning models
 think internally even under a "just the final answer" prompt, which erases
 the gap this benchmark exists to measure.
+
+Run locally (from this folder):
+    pip install -r requirements.txt
+    python main.py
+
+Run with Docker (from this folder):
+    docker build -t 01_prompting_strategies .
+    docker run --rm --env-file .env 01_prompting_strategies
 """
 
 import os
 import re
-import time
 import textwrap
+import time
 
 import matplotlib
 
 matplotlib.use("Agg")  # save to file without needing a display
 import matplotlib.pyplot as plt
-
-from dotenv import load_dotenv, find_dotenv
+from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from rich.console import Console
-from rich.table import Table
 from rich.panel import Panel
 from rich.rule import Rule
+from rich.table import Table
 from rich.text import Text
 
-# find_dotenv() walks up from this file, so a .env in a parent folder is found
+# 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
-MODEL_NAME = "gpt-4o-mini"
-TEMPERATURE = 0.7
+MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
 
 console = Console()
-
 _client = None
 
 
@@ -64,15 +69,15 @@ def get_client() -> OpenAI:
                 f"{find_dotenv() or 'no .env found in this folder or any parent'}[/dim]"
             )
             raise SystemExit(1)
-        _client = OpenAI(api_key=api_key)
+        base_url = os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1")
+        _client = OpenAI(api_key=api_key, base_url=base_url)
     return _client
 
 
-# Benchmark Questions
-# Chosen to require actual multi-step computation. Deliberately NOT famous
-# puzzles (bat-and-ball, 17 sheep, 5 machines): those appear verbatim in
-# training data, so a direct prompt retrieves a memorised answer rather than
-# reasoning, and CoT has no headroom left to show a gain.
+# 2. Inputs - default benchmark suite or targeted single test cases
+#    Uncomment another option below to test different scenarios:
+
+# Option 1: Full benchmark suite (default) - multi-step reasoning, arithmetic, rates
 BENCHMARK_DATA = [
     {
         "question": "A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)",
@@ -95,6 +100,30 @@ BENCHMARK_DATA = [
         "answer": ["250"],
     },
 ]
+
+# Option 2: Quick single test - transaction calculation
+# BENCHMARK_DATA = [
+#     {
+#         "question": "A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)",
+#         "answer": ["293"],
+#     },
+# ]
+
+# Option 3: Quick single test - compound percentages
+# BENCHMARK_DATA = [
+#     {
+#         "question": "A jacket is priced at 4000 rupees. A 25% discount is applied, then a further 10% off the reduced price, and finally 18% GST is added to that result. What is the final price? (Answer with the number only)",
+#         "answer": ["3186"],
+#     },
+# ]
+
+# Option 4: Quick single test - worker rates
+# BENCHMARK_DATA = [
+#     {
+#         "question": "Three printers together print 90 pages in 6 minutes. At the same rate per printer, how many pages would 5 printers print in 10 minutes? (Answer with the number only)",
+#         "answer": ["250"],
+#     },
+# ]
 
 # Few-Shot Examples for reasoning-based prompting
 FEW_SHOT_EXAMPLES = """
@@ -219,13 +248,7 @@ def evaluate_accuracy(response_text, correct_answer):
         True when the extracted final answer matches any accepted value.
 
     Edge cases / gotchas:
-        The original scorer searched the WHOLE response for the answer as a raw
-        substring after stripping '.' and ','. With single-digit answers that
-        matched almost anything: a numbered reasoning step '1.' satisfied the
-        answer '1', and a response echoing '5 machines' satisfied the answer
-        '5'. Every CoT response scored correct regardless of its conclusion,
-        inflating exactly the number this benchmark measures. This version
-        scores only the stated final answer, with word boundaries, and for a
+        Scores only the stated final answer, with word boundaries, and for a
         numeric answer requires the FIRST number stated to be the answer.
     """
     if response_text.startswith("Error:"):
@@ -239,8 +262,7 @@ def evaluate_accuracy(response_text, correct_answer):
     if not answer_segment:
         return False
 
-    # keep only the asserted value, dropping any trailing justification such as
-    # "8 sheep are left, since 17 - 9 = 8" -> "8 sheep are left"
+    # keep only the asserted value, dropping any trailing justification
     clause = first_clause(answer_segment)
     cleaned_clause = clause.replace("$", "").replace(",", "")
 
@@ -250,22 +272,43 @@ def evaluate_accuracy(response_text, correct_answer):
         if cleaned_clause.rstrip(".") == cleaned_answer:
             return True
 
-        # for a numeric expected answer, the FIRST number stated must be it.
-        # otherwise "100 minutes" would match an expected "5" via a later mention.
-        if re.fullmatch(r"\d+(\.\d+)?", cleaned_answer):
-            numbers = re.findall(r"\d+(?:\.\d+)?", cleaned_clause)
-            if numbers and float(numbers[0]) == float(cleaned_answer):
+        if re.search(r"^\d+$", cleaned_answer):
+            first_num = re.search(r"\b\d+\b", cleaned_clause)
+            if first_num and first_num.group(0) == cleaned_answer:
                 return True
-            continue
 
-        if re.search(rf"(?<!\w){re.escape(cleaned_answer)}(?!\w)", cleaned_clause):
+        pattern = r"\b" + re.escape(cleaned_answer) + r"\b"
+        if re.search(pattern, cleaned_clause):
             return True
 
     return False
 
 
-def accuracy_bar(correct: int, total: int, width: int = 20) -> Text:
-    """Generates a visual progress bar for accuracy display."""
+def display_prompt_block(prompt, prompt_type):
+    """Styles and prints the prompt to the terminal."""
+    indent = " " * (len(prompt_type) + 2)
+    wrapped = textwrap.fill(prompt.strip(), width=82, subsequent_indent=indent)
+
+    content = Text.assemble(
+        (f"{prompt_type.upper()}: ", "bold blue"),
+        (wrapped, "blue"),
+    )
+
+    console.print(
+        Panel(
+            content,
+            title="[bold bright_black]Model Input[/bold bright_black]",
+            border_style="bright_black",
+            padding=(1, 2),
+        )
+    )
+    console.print()
+
+
+def accuracy_bar(correct, total, width=20):
+    """Generates a text-based progress bar indicating success rate."""
+    if total == 0:
+        return Text("N/A", style="dim")
     pct = correct / total
     filled = round(pct * width)
     bar = "X" * filled + "." * (width - filled)
@@ -274,84 +317,58 @@ def accuracy_bar(correct: int, total: int, width: int = 20) -> Text:
 
 
 def run_benchmark():
-    """Executes the benchmark across three prompting strategies and collects metrics.
+    """Runs all benchmark questions across the three prompting strategies.
 
     Returns:
-        A dict keyed by strategy name holding accuracy, token totals and counts.
+        A dict keyed by strategy name, containing accuracy, tokens, and counts.
 
     Side effects:
-        Makes network requests and writes styled output to stdout.
+        Makes network requests and prints formatted output to stdout.
     """
-    results = {
-        "Direct": {"accuracy": 0, "tokens": 0, "count": 0},
-        "Zero-Shot CoT": {"accuracy": 0, "tokens": 0, "count": 0},
-        "Few-Shot CoT": {"accuracy": 0, "tokens": 0, "count": 0},
+    strategies = {
+        "Direct": lambda q: f"{q}\nAnswer in one short sentence. State only the final answer.",
+        "Zero-Shot CoT": lambda q: f"{q}\nThink step by step, then state your final answer on the last line as 'Answer: <value>'.",
+        "Few-Shot CoT": lambda q: f"{FEW_SHOT_EXAMPLES}\nQuestion: {q}\nThink step by step, then state your final answer on the last line as 'Answer: <value>'.",
     }
 
-    strategies = [
-        (
-            "Direct",
-            "Answer the following question directly with just the final answer: {question}",
-            "cyan",
-        ),
-        (
-            "Zero-Shot CoT",
-            "Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>': {question}",
-            "magenta",
-        ),
-        (
-            "Few-Shot CoT",
-            f"Answer the following question. Think step-by-step and then provide the final answer as 'Answer: <value>'.\n\n{FEW_SHOT_EXAMPLES}\n\nQuestion: {{question}}",
-            "yellow",
-        ),
-    ]
+    results = {
+        name: {"accuracy": 0, "total_correct": 0, "tokens": 0, "count": 0}
+        for name in strategies
+    }
 
     console.print(
         Panel.fit(
-            f"[bold yellow]Prompting Strategy Benchmark[/bold yellow]\n"
-            f"[dim]Comparing Direct, Zero-Shot CoT, and Few-Shot CoT performance.[/dim]\n"
-            f"[dim]Model: {MODEL_NAME} | Questions: {len(BENCHMARK_DATA)}[/dim]",
+            "[bold yellow]Benchmarking Prompting Strategies[/bold yellow]\n"
+            "[dim]Direct vs. Zero-Shot CoT vs. Few-Shot CoT[/dim]\n"
+            f"[dim]Model: {MODEL_NAME} · Temperature: {TEMPERATURE}[/dim]",
             border_style="yellow",
         )
     )
     console.print()
 
-    for name, template, color in strategies:
-        console.print(
-            f"[bold {color}]-- {name} --------------------------------------[/bold {color}]"
-        )
+    for name, strategy_fn in strategies.items():
+        console.print(Rule(f"[bold cyan]Strategy: {name}[/bold cyan]", style="cyan"))
+        console.print()
+
         total_correct = 0
         total_tokens = 0
 
         for i, item in enumerate(BENCHMARK_DATA, 1):
-            prompt = template.format(question=item["question"])
+            prompt = strategy_fn(item["question"])
+            expected = item["answer"]
+            expected_label = expected[0] if isinstance(expected, list) else expected
 
-            # Model Input Block
-            wrapped_input = textwrap.fill(prompt, width=82, subsequent_indent="      ")
-            input_content = Text.assemble(
-                ("USER: ", "bold blue"), (wrapped_input, "blue")
-            )
-            console.print(
-                Panel(
-                    input_content,
-                    title="[bold bright_black]Model Input[/bold bright_black]",
-                    border_style="bright_black",
-                    padding=(1, 2),
-                )
-            )
+            display_prompt_block(prompt, "User")
 
             start_time = time.time()
             response, p_tokens, c_tokens = get_model_response(prompt)
             elapsed = time.time() - start_time
-            total_tokens += p_tokens + c_tokens
 
-            expected = item["answer"]
-            expected_label = expected[0] if isinstance(expected, list) else expected
+            total_tokens += p_tokens + c_tokens
             is_correct = evaluate_accuracy(response, expected)
             if is_correct:
                 total_correct += 1
 
-            # Model Response Block
             wrapped_response = textwrap.fill(
                 response.strip(), width=82, subsequent_indent="           "
             )
@@ -453,11 +470,9 @@ def display_stats(results):
     console.print(table)
     console.print()
 
-    # Evaluate best performing strategies
     best_acc = max(results.values(), key=lambda x: x["accuracy"])["accuracy"]
     best_strategies = [n for n, d in results.items() if d["accuracy"] == best_acc]
 
-    # Calculate token efficiency
     efficiency = {
         n: (d["accuracy"] / (d["tokens"] / 1000)) if d["tokens"] > 0 else 0
         for n, d in results.items()
@@ -471,7 +486,6 @@ def display_stats(results):
         f"[dim]({efficiency[most_efficient]:.1f} accuracy pts per 1k tokens)[/dim]",
     ]
 
-    # what each strategy cost, relative to answering directly
     for name, data in results.items():
         if name == "Direct" or baseline["tokens"] == 0:
             continue
@@ -496,3 +510,4 @@ if __name__ == "__main__":
     results = run_benchmark()
     display_stats(results)
     plot_results(results)
+
