@@ -13,6 +13,9 @@ export type { MemoryChatCardProps, MemoryChatResponse, ChatMessage } from './Mem
 export { AgentOneToolCard, default as AgentOneToolTile } from './AgentOneToolCard'
 export type { AgentOneToolCardProps, AgentResponse } from './AgentOneToolCard'
 
+export { LangchainOneToolCard, default as LangchainOneToolTile } from './LangchainOneToolCard'
+export type { LangchainOneToolCardProps, LangchainOneToolResponse } from './LangchainOneToolCard'
+
 export { MultiToolAgentCard, default as MultiToolAgentTile } from './MultiToolAgentCard'
 export type { MultiToolAgentCardProps, MultiToolAgentResponse } from './MultiToolAgentCard'
 

@@ -7,6 +7,8 @@ from services import (
     ChatMessage,
     JokeRequest,
     JokeResponse,
+    LangchainOneToolRequest,
+    LangchainOneToolResponse,
     MemoryChatRequest,
     MemoryChatResponse,
     MultiToolAgentRequest,
@@ -19,6 +21,7 @@ from services import (
     get_groq_joke,
     get_travel_suggestion,
     run_agent_with_tool,
+    run_langchain_one_tool,
     run_multi_tool_agent,
     summarize,
 )
@@ -106,6 +109,27 @@ def agent_service(req: AgentRequest):
     try:
         reply = run_agent_with_tool(message_text)
         return AgentResponse(message=message_text, response=reply)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/langchain-one-tool", response_model=LangchainOneToolResponse)
+@app.post("/api/langchain-agent", response_model=LangchainOneToolResponse)
+def langchain_one_tool_service(req: LangchainOneToolRequest):
+    message_text = (
+        req.message.strip()
+        if req.message
+        else "What is the weather like in New York?"
+    )
+    if not message_text:
+        raise HTTPException(status_code=400, detail="Message cannot be empty")
+    try:
+        reply, tool_called = run_langchain_one_tool(message_text)
+        return LangchainOneToolResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

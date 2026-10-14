@@ -9,6 +9,7 @@ export interface MultiToolAgentResponse {
 
 export interface MultiToolAgentCardProps {
   apiBase?: string
+  className?: string
 }
 
 const QUERY_PRESETS = [
@@ -20,7 +21,10 @@ const QUERY_PRESETS = [
   'Who wrote the play Romeo and Juliet?',
 ]
 
-export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardProps = {}) {
+export function MultiToolAgentCard({
+  apiBase = API_BASE,
+  className = 'card-wide',
+}: MultiToolAgentCardProps = {}) {
   const [message, setMessage] = useState<string>(QUERY_PRESETS[0])
   const [submittingAgent, setSubmittingAgent] = useState<boolean>(false)
   const [agentResponse, setAgentResponse] = useState<string | null>(null)
@@ -60,7 +64,7 @@ export function MultiToolAgentCard({ apiBase = API_BASE }: MultiToolAgentCardPro
   }
 
   return (
-    <div className="card card-half">
+    <div className={`card ${className}`}>
       <h2>
         <span className="card-title">🛠️ Multi-Tool Agent</span>
         <span className="badge badge-healthy">LangChain • Groq</span>

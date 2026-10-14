@@ -83,7 +83,8 @@ If you prefer building and running containers independently using standard Docke
 7. **Text Summarizer Endpoint**: `POST http://localhost:8000/api/summarize`
 8. **Conversational Memory Chat Endpoint**: `POST http://localhost:8000/api/memory-chat`
 9. **Single-Tool Agent Endpoint**: `POST http://localhost:8000/api/agent`
-10. **Multi-Tool Agent Endpoint**: `POST http://localhost:8000/api/multi-tool-agent`
+10. **LangChain Single-Tool Agent Endpoint**: `POST http://localhost:8000/api/langchain-agent`
+11. **Multi-Tool Agent Endpoint**: `POST http://localhost:8000/api/multi-tool-agent`
 
 
 ---
