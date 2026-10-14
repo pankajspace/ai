@@ -20,9 +20,15 @@ export interface McpClientCardProps {
   apiBase?: string
 }
 
+const PRESETS = [
+  { tool: 'get_live_score', arg: 'India vs West Indies', label: 'get_live_score (India vs WI)' },
+  { tool: 'get_player_stats', arg: 'Shubman Gill', label: 'get_player_stats (Shubman Gill)' },
+  { tool: 'get_player_stats', arg: 'Shai Hope', label: 'get_player_stats (Shai Hope)' },
+]
+
 export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
-  const [toolName, setToolName] = useState<string>('get_live_score')
-  const [argVal, setArgVal] = useState<string>('India vs West Indies')
+  const [toolName, setToolName] = useState<string>(PRESETS[0].tool)
+  const [argVal, setArgVal] = useState<string>(PRESETS[0].arg)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [result, setResult] = useState<McpClientResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -65,26 +71,33 @@ export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
         Talks directly to the FastMCP server without an LLM: Handshake &rarr; Tool Discovery &rarr; Direct Protocol Call.
       </p>
       <form onSubmit={handleRun} className="form-row">
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <select
-            value={toolName}
-            onChange={(e) => {
-              setToolName(e.target.value)
-              setArgVal(e.target.value === 'get_live_score' ? 'India vs West Indies' : 'Shubman Gill')
-            }}
-            style={{ width: '45%' }}
-          >
-            <option value="get_live_score">get_live_score</option>
-            <option value="get_player_stats">get_player_stats</option>
-          </select>
-          <input
-            type="text"
-            placeholder="Argument value…"
-            value={argVal}
-            onChange={(e) => setArgVal(e.target.value)}
-            required
-            style={{ width: '55%' }}
-          />
+        <input
+          type="text"
+          placeholder={
+            toolName === 'get_live_score'
+              ? 'Teams (e.g. India vs West Indies)…'
+              : 'Player name (e.g. Shubman Gill)…'
+          }
+          value={argVal}
+          onChange={(e) => setArgVal(e.target.value)}
+          required
+        />
+
+        <div className="preset-row">
+          <span className="preset-label">Quick pick:</span>
+          {PRESETS.map((p) => (
+            <button
+              type="button"
+              key={p.label}
+              className={`preset-chip ${toolName === p.tool && argVal === p.arg ? 'active' : ''}`}
+              onClick={() => {
+                setToolName(p.tool)
+                setArgVal(p.arg)
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
         </div>
 
         <span className="validation">{error}</span>
