@@ -14,7 +14,7 @@
 
 # Practice
 1. [Python](practice/01-python)
-2. [AI Scripts (Docker)](practice/02-ai/README.md)
+2. [AI Basics (Docker)](practice/02-ai-basics/README.md)
 
 # Projects
 

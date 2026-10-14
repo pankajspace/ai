@@ -13,7 +13,7 @@ cp .env.example .env    # then fill in your keys
 
 ## 2. Run with Docker Compose (easiest)
 
-From the `practice/02-ai` root folder, you can run any script with one command:
+From the `practice/02-ai-basics` root folder, you can run any script with one command:
 
 ```bash
 docker compose run --rm 01_chat_openai
