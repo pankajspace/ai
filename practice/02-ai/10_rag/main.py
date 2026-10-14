@@ -10,7 +10,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 10_rag .
-    docker run --rm --env-file ../.env 10_rag
+    docker run --rm --env-file .env 10_rag
 """
 
 import os

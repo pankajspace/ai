@@ -16,6 +16,6 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY main.py .
 
 # 6. Run it
-#    - API keys come from `docker run --env-file ../.env` (never baked into the image)
+#    - API keys come from `docker run --env-file .env` (never baked into the image)
 #    - anything after the image name is passed to main.py as arguments
 ENTRYPOINT ["python", "main.py"]

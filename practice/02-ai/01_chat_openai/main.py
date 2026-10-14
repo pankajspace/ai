@@ -9,7 +9,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 01_chat_openai .
-    docker run --rm --env-file ../.env 01_chat_openai
+    docker run --rm --env-file .env 01_chat_openai
 """
 
 import os

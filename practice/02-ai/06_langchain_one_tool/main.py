@@ -12,7 +12,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 06_langchain_one_tool .
-    docker run --rm --env-file ../.env 06_langchain_one_tool
+    docker run --rm --env-file .env 06_langchain_one_tool
 """
 
 import os

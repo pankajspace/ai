@@ -10,7 +10,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 03_langchain_summarizer .
-    docker run --rm --env-file ../.env 03_langchain_summarizer
+    docker run --rm --env-file .env 03_langchain_summarizer
 """
 
 import os

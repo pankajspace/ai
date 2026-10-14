@@ -10,7 +10,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 02_chat_groq .
-    docker run --rm --env-file ../.env 02_chat_groq
+    docker run --rm --env-file .env 02_chat_groq
 """
 
 import os

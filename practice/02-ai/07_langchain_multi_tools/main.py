@@ -15,7 +15,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 07_langchain_multi_tools .
-    docker run --rm --env-file ../.env 07_langchain_multi_tools
+    docker run --rm --env-file .env 07_langchain_multi_tools
 """
 
 import os

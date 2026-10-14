@@ -11,7 +11,7 @@ Run locally (from this folder):
 
 Run with Docker (from this folder):
     docker build -t 04_langchain_memory_chat .
-    docker run --rm --env-file ../.env 04_langchain_memory_chat
+    docker run --rm --env-file .env 04_langchain_memory_chat
 """
 
 import os

@@ -22,6 +22,6 @@ RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTr
 COPY main.py .
 
 # 7. Run it
-#    - API keys come from `docker run --env-file ../.env` (never baked into the image)
+#    - API keys come from `docker run --env-file .env` (never baked into the image)
 #    - anything after the image name is passed to main.py as arguments
 ENTRYPOINT ["python", "main.py"]
