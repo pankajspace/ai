@@ -77,13 +77,18 @@ def chat_with_memory(
     Returns:
         Tuple of (assistant_response, updated_chat_history).
     """
+    # Default to an empty list if no prior conversation history was provided
     history_list = history or []
+
+    # Format history into a list of (role, content) tuples expected by LangChain's MessagesPlaceholder
     lc_history = [(msg.role, msg.content) for msg in history_list]
 
+    # Retrieve model parameters and API credentials from environment variables
     model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
     base_url = os.getenv("OPENAI_BASE_URL")
     api_key = os.getenv("OPENAI_API_KEY")
 
+    # Initialize the ChatOpenAI client with timeout and optional custom base URL
     model = ChatOpenAI(
         model=model_name,
         api_key=api_key,
@@ -91,19 +96,26 @@ def chat_with_memory(
         timeout=15.0,
     )
 
+    # Build prompt template injecting system instructions, chat history, and current question
     prompt = ChatPromptTemplate.from_messages([
         (
             "system",
             "You are a friendly assistant. Use the conversation history to stay consistent.",
         ),
-        MessagesPlaceholder("history"),
+        MessagesPlaceholder("history"),  # Dynamically receives lc_history tuples
         ("human", "{question}"),
     ])
+
+    # Assemble LCEL (LangChain Expression Language) pipeline: Prompt -> Model
     chain = prompt | model
 
+    # Invoke chain with input variables and extract string response
     result = chain.invoke({"history": lc_history, "question": question})
     answer = str(result.content) if hasattr(result, "content") else str(result)
 
+    # Build updated history list:
+    # 1. *history_list: Unpacks all existing ChatMessage items into the new list (non-mutating)
+    # 2. Appends the current user query and model answer to preserve context for the next turn
     updated_history = [
         *history_list,
         ChatMessage(role="user", content=question),
@@ -111,6 +123,7 @@ def chat_with_memory(
     ]
 
     return answer, updated_history
+
 
 
 
