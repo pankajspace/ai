@@ -15,13 +15,9 @@ From inside a script's folder:
 ```bash
 cd 01_chat_openai
 docker build -t 01_chat_openai .
-docker run --rm --env-file ../.env 01_chat_openai          # default input
-docker run --rm --env-file ../.env 01_chat_openai Paris    # your own input
+docker run --rm --env-file ../.env 01_chat_openai
 ```
 
-- Anything after the image name is passed to `main.py` as arguments.
-- `04_langchain_memory_chat` is interactive, so add `-it`:
-  `docker run --rm -it --env-file ../.env 04_langchain_memory_chat`
 - `08_chunking` and `09_embedding` need no keys, so you can drop `--env-file`.
 - `09_embedding` and `10_rag` images are bigger (~2-2.5 GB vs ~250-350 MB) because they include CPU-only
   PyTorch and the embedding model. The model is downloaded at build time, so runs start quickly.
@@ -39,7 +35,22 @@ python main.py
 
 Locally, the scripts find `../.env` on their own (`find_dotenv()` searches parent folders).
 
-## 4. Switching provider (06, 07)
+## 4. Trying different inputs
 
-Change `PROVIDER = "groq"` at the top of `main.py` to `"openai"` or `"gemini"`.
-Then rebuild the image (`docker build ...`) so the container picks up the change.
+The scripts take no command-line arguments. Every input lives in the **"Inputs"** step
+near the top of `main.py`: a default value plus commented-out samples. To see a
+different output, change the value or uncomment another line, then run again.
+
+```python
+city = "Bangalore"
+# city = "Paris"      <- uncomment this (and comment out the line above) to try Paris
+```
+
+In 06 and 07 you can also switch the LLM: change `PROVIDER = "groq"` to `"openai"` or `"gemini"`.
+
+With Docker, the script is copied in at build time, so after editing either rebuild
+(`docker build ...`) or mount your edited file over it to skip the rebuild:
+
+```bash
+docker run --rm --env-file ../.env -v "$PWD/main.py:/app/main.py" 01_chat_openai
+```

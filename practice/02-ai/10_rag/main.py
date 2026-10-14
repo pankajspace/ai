@@ -2,20 +2,18 @@
 
 Puts 08 (chunking) and 09 (embeddings) together with an LLM:
 chunk -> embed + store -> retrieve the best chunks -> answer ONLY from them.
+To ask something else, change the question in step 2.
 
 Run locally (from this folder):
     pip install -r requirements.txt
     python main.py
-    python main.py "How long does a refund take?"
 
 Run with Docker (from this folder):
     docker build -t 10_rag .
     docker run --rm --env-file ../.env 10_rag
-    docker run --rm --env-file ../.env 10_rag "How long does a refund take?"
 """
 
 import os
-import sys
 
 from dotenv import find_dotenv, load_dotenv
 from langchain_chroma import Chroma
@@ -28,7 +26,7 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 #    (in Docker they are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
-# 2. The document to search, and the question (from the command line or default)
+# 2. Inputs - the document to search, and a question about it
 PARAGRAPH = (
     "TechToday Return Policy: Customers may return any eligible product within 30 days "
     "of the purchase date. All returned merchandise must be unworn, undamaged, and in its "
@@ -37,7 +35,12 @@ PARAGRAPH = (
     "are non-refundable unless the return is due to our fulfillment error. International "
     "orders and clearance items marked as final sale cannot be returned or exchanged."
 )
-question = sys.argv[1] if len(sys.argv) > 1 else "How long do I have to return something?"
+question = "How long do I have to return something?"
+# question = "How long does a refund take?"
+# question = "Are shipping fees refunded?"
+# question = "What condition must returned items be in?"
+# question = "Are clearance items marked as final sale returnable?"
+# question = "Do you sell laptops?"   # not in the paragraph -> the model should say so
 
 # 3. Chunk the paragraph into small, overlapping pieces
 splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=40)

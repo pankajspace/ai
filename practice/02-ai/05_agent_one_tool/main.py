@@ -6,20 +6,19 @@ Agent = LLM + tool + decision loop:
   - Our code runs the function and sends the result back.
   - The LLM then writes the final answer using that result.
 
+To try other questions, edit the list in step 2.
+
 Run locally (from this folder):
     pip install -r requirements.txt
-    python main.py   # runs two demo questions
-    python main.py "How much is the bag?"
+    python main.py
 
 Run with Docker (from this folder):
     docker build -t 05_agent_one_tool .
-    docker run --rm --env-file ../.env 05_agent_one_tool   # runs two demo questions
-    docker run --rm --env-file ../.env 05_agent_one_tool "How much is the bag?"
+    docker run --rm --env-file ../.env 05_agent_one_tool
 """
 
 import json
 import os
-import sys
 
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
@@ -28,21 +27,31 @@ from openai import OpenAI
 #    (in Docker they are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
+# 2. Inputs - questions to ask; uncomment more lines to try them
+questions = [
+    "How much are the shoes?",        # -> calls get_price
+    "Hi! What can you help with?",    # -> answers directly, no tool
+    # "What does a hat cost?",                       # -> calls get_price
+    # "How much for a bag and a pair of shorts?",    # -> calls get_price twice
+    # "How much are the sunglasses?",                # -> tool returns '₹unknown'
+]
+
+# 3. Create the client (it reads OPENAI_API_KEY / OPENAI_BASE_URL from the environment)
 client = OpenAI(timeout=15.0)
 model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
-# 2. Fake "database" - data the LLM cannot know on its own
+# 4. Fake "database" - data the LLM cannot know on its own
 PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
 
 
-# 3. The Python tool the agent is allowed to use
+# 5. The Python tool the agent is allowed to use
 def get_price(item: str) -> str:
     """Return the price of a shop item, or '₹unknown' if we don't sell it."""
     print(f"   🔧 tool called: get_price({item!r})")
     return f"₹{PRICES.get(item.lower(), 'unknown')}"
 
 
-# 4. Describe the tool to the model (JSON Schema)
+# 6. Describe the tool to the model (JSON Schema)
 #    - name:        which function to call
 #    - description: tells the model WHEN to use it
 #    - parameters:  which arguments to send
@@ -62,22 +71,22 @@ TOOLS = [{
 }]
 
 
-# 5. The agent loop: ask -> (maybe) run tool -> ask again with the result
+# 7. The agent loop: ask -> (maybe) run tool -> ask again with the result
 def run_agent(question: str) -> str:
     messages = [{"role": "user", "content": question}]
 
-    # 5a. First call: send the question + tool list; the model decides what to do
+    # 7a. First call: send the question + tool list; the model decides what to do
     msg = client.chat.completions.create(model=model, messages=messages, tools=TOOLS).choices[0].message
 
-    # 5b. No tool needed -> the model answered directly
+    # 7b. No tool needed -> the model answered directly
     if not msg.tool_calls:
         return msg.content or ""
 
-    # 5c. Tool needed -> keep the model's tool-call message in the history
+    # 7c. Tool needed -> keep the model's tool-call message in the history
     #     (OpenAI requires it to come before the tool results)
     messages.append(msg)
 
-    # 5d. Run each requested tool and add its result, linked by tool_call_id
+    # 7d. Run each requested tool and add its result, linked by tool_call_id
     for call in msg.tool_calls:
         args = json.loads(call.function.arguments)
         messages.append({
@@ -86,16 +95,12 @@ def run_agent(question: str) -> str:
             "content": get_price(args.get("item", "")),
         })
 
-    # 5e. Second call: the model reads the tool result and writes the final answer
+    # 7e. Second call: the model reads the tool result and writes the final answer
     msg = client.chat.completions.create(model=model, messages=messages).choices[0].message
     return msg.content or ""
 
 
-# 6. Run the agent on the CLI question, or on two demo questions
-questions = sys.argv[1:] or [
-    "How much are the shoes?",       # needs the tool
-    "Hi! What can you help with?",   # no tool needed
-]
+# 8. Run the agent on every question from step 2
 for q in questions:
     print(f"\nQ: {q}")
     print(f"A: {run_agent(q)}")

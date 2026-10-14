@@ -2,16 +2,15 @@
 
 Groq hosts open-weights models (e.g. Llama 3.3 70B) behind an OpenAI-compatible
 API, so the same `openai` client works - just point `base_url` at Groq.
+To try another topic, change the value in step 2.
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python main.py   # default topic: programming
-    python main.py cats
+    python main.py
 
 Run with Docker (from this folder):
     docker build -t 02_chat_groq .
-    docker run --rm --env-file ../.env 02_chat_groq   # default topic: programming
-    docker run --rm --env-file ../.env 02_chat_groq cats
+    docker run --rm --env-file ../.env 02_chat_groq
 """
 
 import os
@@ -28,8 +27,11 @@ api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     sys.exit("GROQ_API_KEY is not set in .env")
 
-# 2. Read the joke topic from the command line (or use the default)
-topic = sys.argv[1] if len(sys.argv) > 1 else "programming"
+# 2. Inputs - change the value (or uncomment another line) to see a different output
+topic = "programming"
+# topic = "cats"
+# topic = "coffee"
+# topic = "Monday mornings"
 
 # 3. Create an OpenAI client that talks to Groq instead of OpenAI
 client = OpenAI(

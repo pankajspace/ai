@@ -1,20 +1,17 @@
 """LangChain Memory Chat.
 
-An interactive chat in the terminal. The model itself is stateless, so we keep
-the conversation history ourselves and send it with every new question.
+The model itself is stateless, so we keep the conversation history ourselves
+and send it with every new question. This script plays a scripted
+conversation, so you can see the bot recall earlier turns.
+To try another conversation, change the choice in step 2.
 
 Run locally (from this folder):
     pip install -r requirements.txt
     python main.py
-    (type 'quit' or 'exit' to stop)
 
 Run with Docker (from this folder):
     docker build -t 04_langchain_memory_chat .
-    docker run --rm -it --env-file ../.env 04_langchain_memory_chat
-
-Try:
-    You: My favorite color is navy blue.
-    You: What is my favorite color?
+    docker run --rm --env-file ../.env 04_langchain_memory_chat
 """
 
 import os
@@ -27,14 +24,34 @@ from langchain_openai import ChatOpenAI
 #    (in Docker they are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
-# 2. Create the chat model
+# 2. Inputs - sample conversations (one user message per turn); pick one below
+CONVERSATION_COLOR = [
+    "Hi! My favorite color is navy blue.",
+    "What is my favorite color?",
+]
+CONVERSATION_TRIP = [
+    "I'm planning a trip to Goa next month with my two kids.",
+    "Suggest one activity that would suit us.",
+    "Remind me - where am I going, and how many people are travelling?",
+]
+CONVERSATION_PROFILE = [
+    "My name is Asha and I'm a backend developer.",
+    "This week I'm learning LangChain.",
+    "Summarize what you know about me in one sentence.",
+]
+
+conversation = CONVERSATION_COLOR
+# conversation = CONVERSATION_TRIP
+# conversation = CONVERSATION_PROFILE
+
+# 3. Create the chat model
 model = ChatOpenAI(
     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
     base_url=os.getenv("OPENAI_BASE_URL") or None,
     timeout=15.0,
 )
 
-# 3. Build the prompt: system instructions + past messages + new question
+# 4. Build the prompt: system instructions + past messages + new question
 #    MessagesPlaceholder("history") is filled with the list of past turns.
 prompt = ChatPromptTemplate.from_messages([
     ("system", "You are a friendly assistant. Use the conversation history to stay consistent."),
@@ -42,30 +59,19 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{question}"),
 ])
 
-# 4. Chain them together: prompt -> model
+# 5. Chain them together: prompt -> model
 chain = prompt | model
 
-# 5. Chat loop - history is a list of (role, content) tuples
+# 6. Play the conversation - history is a list of (role, content) tuples
 history: list[tuple[str, str]] = []
-print("Chat with the bot (type 'quit' or 'exit' to stop).")
 
-while True:
-    # 5a. Read the user's question
-    try:
-        question = input("You: ").strip()
-    except (EOFError, KeyboardInterrupt):
-        print()
-        break
-    if question.lower() in {"quit", "exit"}:
-        break
-    if not question:
-        continue
-
-    # 5b. Send history + question to the model
+for question in conversation:
+    # 6a. Send history + the new question to the model
     answer = chain.invoke({"history": history, "question": question}).content
-    print("Bot:", answer)
+    print(f"\nYou: {question}")
+    print(f"Bot: {answer}")
 
-    # 5c. Remember this turn so the next question has context
+    # 6b. Remember this turn so the next question has context
     history.append(("human", question))
     history.append(("ai", answer))
     print(f"   (history now has {len(history)} messages)")
