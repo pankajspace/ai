@@ -1,0 +1,115 @@
+import { useState } from 'react'
+import { API_BASE } from '../config'
+
+export interface UseAwsResponse {
+  prompt: string
+  response: string
+  operations_executed: string[]
+  cloud_data: Record<string, any>
+  provider: string
+}
+
+export interface UseAwsCardProps {
+  apiBase?: string
+}
+
+const PRESETS = [
+  'List all S3 buckets in my account',
+  'Show the current AWS region and account identity details',
+  'List all DynamoDB tables available in my current AWS region',
+]
+
+export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
+  const [prompt, setPrompt] = useState<string>(PRESETS[0])
+  const [submitting, setSubmitting] = useState<boolean>(false)
+  const [result, setResult] = useState<UseAwsResponse | null>(null)
+  const [error, setError] = useState<string | null>(null)
+
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    if (!prompt.trim()) return
+
+    setSubmitting(true)
+    setError(null)
+    try {
+      const res = await fetch(`${apiBase}/api/use-aws`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: prompt.trim() }),
+        signal: AbortSignal.timeout(25000),
+      })
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => null)
+        throw new Error(errJson?.detail || `Server returned HTTP ${res.status}`)
+      }
+      const data: UseAwsResponse = await res.json()
+      setResult(data)
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Failed to query AWS agent')
+    } finally {
+      setSubmitting(false)
+    }
+  }
+
+  return (
+    <div className="card card-half">
+      <h2>
+        <span className="card-title">☁️ AWS Cloud Assistant</span>
+        <span className="badge badge-healthy">Strands · use_aws</span>
+      </h2>
+      <p>
+        Executes read-only AWS operations (S3, STS, DynamoDB) from plain English commands.
+      </p>
+      <form onSubmit={handleSubmit} className="form-row">
+        <input
+          type="text"
+          placeholder="e.g. List all S3 buckets in my account…"
+          value={prompt}
+          onChange={(e) => setPrompt(e.target.value)}
+          required
+        />
+
+        <div className="preset-row">
+          <span className="preset-label">Quick pick:</span>
+          {PRESETS.map((p) => (
+            <button
+              type="button"
+              key={p}
+              className="preset-chip"
+              onClick={() => setPrompt(p)}
+            >
+              {p.slice(0, 30)}…
+            </button>
+          ))}
+        </div>
+
+        <span className="validation">{error}</span>
+
+        <div className="card-actions">
+          <button type="submit" disabled={submitting || !prompt.trim()}>
+            {submitting && <span className="spinner" />}
+            {submitting ? 'Querying Cloud…' : 'Execute AWS Query'}
+          </button>
+        </div>
+      </form>
+
+      {result && (
+        <div className="result visible">
+          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
+            Provider: {result.provider}
+          </div>
+          {result.operations_executed.map((op, i) => (
+            <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              ☁️ {op}
+            </div>
+          ))}
+          <div style={{ marginTop: '0.4rem' }}>{result.response}</div>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export default UseAwsCard
+

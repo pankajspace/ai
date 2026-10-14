@@ -1,28 +1,52 @@
 # AI Projects Server (FastAPI)
 
-Minimal FastAPI backend service hosting AI services in a multi-container architecture.
+FastAPI backend service hosting 31 modular AI services across 5 sequential domains in a multi-container architecture.
 
 ## Overview
 
-1. Service: FastAPI application serving HTTP endpoints and integrating OpenAI `gpt-4o-mini`, Groq, and LangChain.
-2. Architecture: Multi-container setup where each project backend runs as an isolated service alongside a single shared React client container.
+1. Service: FastAPI application serving HTTP endpoints across OpenAI `gpt-4o-mini`, Groq, LangChain, AWS Bedrock / Strands, LangGraph, and FastMCP.
+2. Architecture: Multi-container setup where the FastAPI backend runs alongside a Vite + React client container.
 3. Development mode: Supports hot-reload both locally and via Docker volume mounts.
 
 ## File Structure
 
-1. `main.py`: FastAPI app with CORS middleware, health check, and route endpoints.
+1. `main.py`: FastAPI app with CORS middleware, health check, and 31 route endpoints.
 2. `services/__init__.py`: Package entrypoint dynamically loading numbered services and exporting schemas.
-3. `services/01_chat_openai.py`: Self-contained service module holding schemas and OpenAI travel guide logic.
-4. `services/02_chat_groq.py`: Self-contained service module holding schemas and Groq joke generator logic.
-5. `services/03_langchain_summarizer.py`: Self-contained service module holding schemas and LangChain text summarizer logic.
-6. `services/04_langchain_memory_chat.py`: Self-contained service module holding schemas and LangChain conversational memory chat logic.
-7. `services/05_agent_one_tool.py`: Self-contained service module implementing an autonomous agent with local tool calling (`get_price`).
-8. `services/06_langchain_one_tool.py`: Self-contained service module implementing a LangChain single-tool agent (`get_weather`).
-9. `services/07_langchain_multi_tools.py`: Self-contained service module implementing a LangChain multi-tool agent (`get_weather`, `add`, `multiply`, `get_population`).
-10. `requirements.txt`: Dependencies (`fastapi`, `uvicorn`, `openai`, `python-dotenv`, `langchain`, `langchain-openai`, `langchain-core`).
-11. `Dockerfile`: Container image build instructions for Python 3.12-slim.
-12. `.dockerignore`: Excludes virtual environments, environment files, and temporary caches from container builds.
-13. `.env.example`: Configuration variables for port, host, and API keys.
+3. `services/01_chat_openai.py`: OpenAI travel guide chat completion service.
+4. `services/02_chat_groq.py`: Groq joke generator chat completion service.
+5. `services/03_langchain_summarizer.py`: LangChain LCEL text summarizer service.
+6. `services/04_langchain_memory_chat.py`: LangChain conversational memory chat service.
+7. `services/05_agent_one_tool.py`: Autonomous agent with local tool calling (`get_price`).
+8. `services/06_langchain_one_tool.py`: LangChain single-tool agent (`get_weather`).
+9. `services/07_langchain_multi_tools.py`: LangChain multi-tool agent (`get_weather`, arithmetic, population).
+10. `services/08_chunking.py`: Document chunking service using RecursiveCharacterTextSplitter.
+11. `services/09_embedding.py`: Sentence similarity computation via all-MiniLM-L6-v2 embeddings.
+12. `services/10_rag.py`: Paragraph retrieval-augmented generation service.
+13. `services/11_hello_world_agent.py`: Minimal Strands agent on Amazon Bedrock Nova Lite (with OpenAI fallback).
+14. `services/12_hello_world_langgraph.py`: LangGraph ReAct agent loop with greeting tool.
+15. `services/13_function_to_tool.py`: Converting Python functions to agent tools via `@tool`, type hints, and docstrings.
+16. `services/14_tip_calculator.py`: Natural language intent-driven bill and tip calculator agent.
+17. `services/15_multi_tool_sales.py`: Autonomous sales pipeline orchestration (`get_data` -> `analyze` -> `email`).
+18. `services/16_custom_tool_inventory.py`: Domain-specific catalog stock lookup tool (`check_inventory`).
+19. `services/17_prebuilt_tools.py`: Math assistant agent using pre-built mathematical evaluation tools.
+20. `services/18_multi_prebuilt_tools.py`: Multi-step data pipeline combining HTTP requests, calculations, and file writes.
+21. `services/19_use_aws.py`: Natural language AWS cloud management interface for read-only inspections.
+22. `services/20_class_based_tools.py`: Class-based tools sharing state/connection pool to prevent DB connection bloat.
+23. `services/21_async_tools.py`: Parallel async tool execution across multiple warehouses via `asyncio.gather`.
+24. `services/22_travel_assistant.py`: Capstone travel agent combining weather forecasts, packing lists, and cost estimation.
+25. `services/23_prompting_strategies.py`: Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning.
+26. `services/24_sycophancy_trap.py`: 4-round escalating pushback evaluator testing model sycophancy and integrity.
+27. `services/25_cot_vs_direct.py`: Side-by-side reliability benchmark measuring CoT reasoning gains on logic puzzles.
+28. `services/26_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
+29. `services/27_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
+30. `services/28_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
+31. `services/29_mcp_client.py`: FastMCP protocol plumbing without LLM (handshake, tool discovery, direct tool execution).
+32. `services/30_mcp_agent.py`: LLM-guided FastMCP cricket assistant routing questions to live match tools.
+33. `services/31_mcp_evals.py`: Automated assertion unit-test suite evaluating MCP tool routing and factual accuracy.
+34. `services/cricket_server.py`: FastMCP server providing live scores and player statistics.
+35. `requirements.txt`: Python package dependencies.
+36. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
+37. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -62,7 +86,7 @@ From the `projects/ai-projects/server` directory:
    ```bash
    pip install -r requirements.txt
    ```
-3. Ensure your OpenAI key is configured in the root `.env` (`projects/ai-projects/.env`).
+3. Ensure API keys are configured in `.env`.
 4. Run the development server:
    ```bash
    uvicorn main:app --reload --port 8000
@@ -71,13 +95,35 @@ From the `projects/ai-projects/server` directory:
 ## Endpoints
 
 1. `GET /`: Basic service status check.
-2. `GET /health`: Healthcheck endpoint for Docker and monitoring.
-3. `POST /api/travel`: Accepts JSON with a city (`{"city": "Bangalore"}`) and returns a witty activity suggestion from GPT-4o mini.
-4. `POST /api/joke`: Accepts JSON with a topic (`{"topic": "programming"}`) and returns a funny joke from Groq.
-5. `POST /api/summarize`: Accepts JSON with text (`{"text": "Long text to summarize..."}`) and returns a concise summary via LangChain LCEL chaining.
-6. `POST /api/memory-chat`: Accepts JSON with a message and history (`{"message": "What is my name?", "history": [...]}`) and returns a response from LangChain memory chat preserving context.
-7. `POST /api/agent`: Accepts JSON with a message (`{"message": "How much are the shoes?"}`) and returns a response generated via the autonomous agent tool-calling loop.
-8. `POST /api/langchain-agent`: Accepts JSON with a message (`{"message": "What is the weather like in New York?"}`) and returns the response from the LangChain single-tool agent.
-9. `POST /api/multi-tool-agent`: Accepts JSON with a message (`{"message": "What's the weather in Tokyo, and what is 12 times 12?"}`) and returns the response from the LangChain multi-tool agent.
-
-
+2. `GET /health`: Healthcheck endpoint reporting status and total service count (31).
+3. `POST /api/travel`: OpenAI travel suggestions.
+4. `POST /api/joke`: Groq joke generator.
+5. `POST /api/summarize`: LangChain LCEL text summarizer.
+6. `POST /api/memory-chat`: Conversational memory chat.
+7. `POST /api/agent`: Autonomous single-tool price lookup agent.
+8. `POST /api/langchain-agent`: LangChain single-tool weather agent.
+9. `POST /api/multi-tool-agent`: LangChain multi-tool agent.
+10. `POST /api/chunk`: Text chunking service.
+11. `POST /api/embedding`: Sentence similarity embedding service.
+12. `POST /api/rag`: Paragraph vector RAG QA service.
+13. `POST /api/hello-world-agent`: Strands Bedrock Hello World agent.
+14. `POST /api/langgraph-agent`: LangGraph tool-enabled ReAct agent.
+15. `POST /api/function-to-tool`: Python function-to-tool server health checker.
+16. `POST /api/tip-calculator`: Natural language tip and bill split agent.
+17. `POST /api/multi-tool-sales`: Multi-tool sales operations planner.
+18. `POST /api/custom-inventory`: Custom inventory catalog lookup agent.
+19. `POST /api/prebuilt-calculator`: Math assistant using pre-built mathematical tool.
+20. `POST /api/multi-prebuilt-tools`: Chained HTTP, math, and file write workflow agent.
+21. `POST /api/use-aws`: Natural language AWS cloud management interface.
+22. `POST /api/class-based-tools`: Class-based tools sharing state/connection pool.
+23. `POST /api/async-tools`: Concurrent async warehouse lookup agent.
+24. `POST /api/travel-assistant`: Capstone weather, packing, and cost planner agent.
+25. `POST /api/prompting-strategies`: Benchmarking Direct vs Zero-Shot CoT vs Few-Shot CoT.
+26. `POST /api/sycophancy-trap`: Multi-turn pushback and capitulation evaluator.
+27. `POST /api/cot-vs-direct`: CoT vs Direct reasoning reliability benchmark.
+28. `POST /api/variance-determinism`: Structured output determinism evaluator.
+29. `POST /api/tool-schema-calibration`: 2x2 tool schema routing calibration matrix.
+30. `POST /api/tool-error-injection`: Upstream API error injection and hallucination test.
+31. `POST /api/mcp-client`: Direct FastMCP protocol client.
+32. `POST /api/mcp-agent`: LLM-guided FastMCP cricket assistant.
+33. `POST /api/mcp-evals`: Automated assertion evaluation suite for FastMCP agent.
