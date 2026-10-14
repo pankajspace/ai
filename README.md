@@ -12,6 +12,10 @@
 9. [AI Reliability](study/09-ai-reliability/ai-reliability.md) : 26-09-2026
 10. [MCP](study/10-mcp-evals/mcp-evals.md) : 03-10-2026
 
+# Practice
+1. [Python](practice/01-python)
+2. [AI Scripts (Docker)](practice/02-ai/README.md)
+
 # Projects
 
 ## Documentation
