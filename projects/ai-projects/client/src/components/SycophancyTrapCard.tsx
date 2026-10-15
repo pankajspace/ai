@@ -103,7 +103,7 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
             <button
               type="button"
               key={c.name}
-              className={`preset-chip ${caseType === c.name ? 'active' : ''}`}
+              className="preset-chip"
               onClick={() => {
                 setCaseType(c.name)
                 setQuestion(c.question)

@@ -119,7 +119,7 @@ export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
             <button
               type="button"
               key={p.label}
-              className={`preset-chip ${toolName === p.tool && argVal === p.arg ? 'active' : ''}`}
+              className="preset-chip"
               onClick={() => {
                 setToolName(p.tool)
                 setArgVal(p.arg)
