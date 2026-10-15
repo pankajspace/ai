@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Document Chunking &middot; AI POCs</title>
     <meta name="description"
-        content="🧩 Document Chunking splits long text into smaller overlapping windows of configurable chunk_size and chunk_overlap—the first stage of any Retrieval-Augmented Generation (RAG) ingestion pipeline." />
+        content="🧩 Document Chunking splits your text into overlapping pieces with LangChain&#x27;s RecursiveCharacterTextSplitter &amp;mdash; the first step of every RAG pipeline. No API key or model is used." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🧩 Document Chunking<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🧩 Document Chunking</strong> splits long text into smaller overlapping windows of configurable <code>chunk_size</code> and <code>chunk_overlap</code>—the first stage of any Retrieval-Augmented Generation (RAG) ingestion pipeline. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🧩 Document Chunking</strong> splits your text into overlapping pieces with LangChain's <code>RecursiveCharacterTextSplitter</code> &mdash; the first step of every RAG pipeline. No API key or model is used.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🧩 Document Chunking</strong> splits long text into smaller overlapping windows of configurable <code>chunk_size</code> and <code>chunk_overlap</code>—the first stage of any Retrieval-Augmented Generation (RAG) ingestion pipeline.</p>
-                    <p>Embedding models have finite token limits and perform best when each vector represents a focused passage. By advancing the window by <code>step = chunk_size - chunk_overlap</code>, adjacent chunks share boundary context so sentences split across a boundary are not lost during retrieval.</p>
+                    <p>Long documents are too big to search or send to a model at once, so they are cut into chunks. The recursive splitter tries to cut at paragraph breaks first, then line breaks, then spaces, so sentences stay together where possible.</p>
+                    <p><code>chunk_size</code> is the maximum characters per chunk and <code>chunk_overlap</code> is how many characters neighbouring chunks share, so an idea that crosses a boundary is not lost.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Chunk Size Trade-off:</strong> Smaller chunks yield sharper embedding similarity; larger chunks preserve more surrounding context for the LLM.</li><li><strong>Sliding Window Overlap:</strong> Overlapping characters (<code>chunk_overlap</code>) prevent semantic concepts at chunk edges from being severed.</li><li><strong>Stride Formula:</strong> Each chunk starts at <code>i = 0, step, 2*step, ...</code> where <code>step = chunk_size - chunk_overlap</code>.</li></ul>
+                    <ul>
+                        <li><strong>Chunk size:</strong> small chunks are precise but lose context; big chunks keep context but are less focused.</li>
+                        <li><strong>Overlap:</strong> shared characters act as glue between neighbours.</li>
+                        <li><strong>Recursive separators:</strong> <code>\n\n</code> &rarr; <code>\n</code> &rarr; space &rarr; character.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,22 +154,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>ChunkingCard.tsx</code> sends <code>POST /api/chunk</code> with <code>text</code>, <code>chunk_size</code>, and <code>chunk_overlap</code>.</span>
+                            <span class="flow-detail"><code>ChunkingCard.tsx</code> sends <code>POST /api/chunk</code> with <code>{ text, chunk_size, chunk_overlap }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>chunking_service(req)</code> validates that <code>text</code> is non-empty and calls <code>chunk_text()</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>chunking_service(req)</code> calls <code>chunk_text()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Sliding Window Slicer (<code>08_chunking.py</code>)</span>
-                            <span class="flow-detail"><code>chunk_text()</code> validates <code>chunk_overlap &lt; chunk_size</code>, computes <code>step = chunk_size - chunk_overlap</code>, and slices the string.</span>
+                            <span class="flow-title">Service (<code>08_chunking.py</code>)</span>
+                            <span class="flow-detail">Builds the splitter and calls <code>split_text(text)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>ChunkingResponse</code> with <code>total_chunks</code>, parameters, and the list of chunk strings.</span>
+                            <span class="flow-detail">Shows each chunk and the total count.</span>
                         </div>
                     </div>
                 </div>
@@ -192,22 +196,17 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["ChunkingCard.tsx<br/>POST /api/chunk { text, chunk_size, chunk_overlap }"]:::entry
-                                Route["main.py<br/>chunking_service(req: ChunkingRequest)"]:::fn
-                                Svc["08_chunking.py<br/>chunk_text(text, chunk_size, chunk_overlap)"]:::fn
-                                Ret(["ChunkingResponse JSON<br/>{ total_chunks, chunks }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② validate non-empty text"| Svc
-                                Svc -->|"③ slice with step = size - overlap"| Svc
-                                Svc -.->|"returns List[str] chunks"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["ChunkingCard.tsx<br/>POST /api/chunk"]:::entry -->|"text, size, overlap"| R["main.py<br/>chunking_service()"]:::fn
+    R -->|"text, size, overlap"| S["08_chunking.py<br/>chunk_text()"]:::fn
+    S -->|"text"| T["RecursiveCharacterTextSplitter<br/>split_text()"]:::fn
+    T -->|"list of chunks"| S
+    S -->|"chunks"| R
+    R -->|"JSON { total_chunks, chunks }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -218,7 +217,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 

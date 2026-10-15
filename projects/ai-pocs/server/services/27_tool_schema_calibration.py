@@ -12,9 +12,8 @@ Run directly:
     python projects/ai-pocs/server/services/27_tool_schema_calibration.py
 """
 
-import json
 import os
-from typing import Any, Dict, List, Optional
+from typing import List, Optional
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 from pydantic import BaseModel, Field

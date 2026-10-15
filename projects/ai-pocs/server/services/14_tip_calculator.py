@@ -13,10 +13,13 @@ Run directly:
 import json
 import os
 from typing import Any, Dict, List, Optional
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -29,13 +32,6 @@ class TipCalculatorRequest(BaseModel):
     )
 
 
-class TipBreakdown(BaseModel):
-    bill: float
-    tip: float
-    total: float
-    per_person: float
-
-
 class TipCalculatorResponse(BaseModel):
     """Output payload from Tip Calculator Agent."""
 
@@ -46,21 +42,30 @@ class TipCalculatorResponse(BaseModel):
     provider: str
 
 
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
+
+
+@tool
 def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -> dict:
-    """Calculate tip and split the bill among people."""
-    # ① Compute tip amount, total bill, and per-person split
+    """Calculate tip and split the bill among people.
+
+    Args:
+        bill_amount: Total bill amount in dollars
+        tip_percentage: Tip percentage (e.g., 15, 18, 20)
+        num_people: Number of people splitting the bill (default: 1)
+    """
+    # Compute the tip amount, combined total, and per-person share
     tip = bill_amount * (tip_percentage / 100)
     total = bill_amount + tip
-    per_person = total / (num_people if num_people > 0 else 1)
+    per_person = total / num_people
 
-    # ② Return rounded monetary breakdown dictionary
+    # Return a dictionary with rounded monetary values
     return {
-        "bill": round(float(bill_amount), 2),
-        "tip": round(float(tip), 2),
-        "total": round(float(total), 2),
-        "per_person": round(float(per_person), 2),
-        "num_people": num_people,
-        "tip_percentage": tip_percentage,
+        "bill": bill_amount,
+        "tip": round(tip, 2),
+        "total": round(total, 2),
+        "per_person": round(per_person, 2),
     }
 
 
@@ -68,112 +73,29 @@ def run_tip_calculator_agent(
     query: str = "The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?",
 ) -> dict:
     """Run the Tip Calculator Agent."""
-    # ① Load AWS credentials and initialize state for tool calls and calculation output
-    aws_key = os.getenv("AWS_ACCESS_KEY_ID")
-    aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
-    bedrock_model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
+    # ③ Initialize the Strands Agent with BedrockModel and the calculate_tip tool
+    agent = Agent(model=BedrockModel(model_id=model_id), tools=[calculate_tip])
 
-    tool_calls_recorded = []
-    calc_result = None
+    # ④ The agent extracts bill, tip % and group size from plain English and calls the tool
+    response = agent(query)
 
-    # ② Run Strands Agent on Bedrock if AWS credentials are configured
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent, tool
-            from strands.models.bedrock import BedrockModel
+    # ⑤ Collect every tool call (toolUse) and tool output (toolResult) from the message history
+    blocks = [block for message in agent.messages for block in message["content"]]
+    tool_uses = [b["toolUse"] for b in blocks if "toolUse" in b]
+    tool_results = [b["toolResult"] for b in blocks if "toolResult" in b]
 
-            @tool
-            def tip_tool(bill_amount: float, tip_percentage: float, num_people: int = 1) -> dict:
-                """Calculate tip and split the bill among people."""
-                nonlocal calc_result
-                calc = calculate_tip(bill_amount, tip_percentage, num_people)
-                calc_result = calc
-                tool_calls_recorded.append(f"calculate_tip({bill_amount}, {tip_percentage}%, {num_people}p) -> {calc}")
-                return calc
-
-            agent = Agent(model=BedrockModel(model_id=bedrock_model_id), tools=[tip_tool])
-            reply = agent(query)
-            return {
-                "query": query,
-                "response": str(reply),
-                "calculation": calc_result,
-                "tool_calls": tool_calls_recorded,
-                "provider": f"Strands + Bedrock ({bedrock_model_id})",
-            }
-        except Exception as exc:
-            print(f"Strands Bedrock failed ({exc}), falling back to OpenAI")
-
-    # ③ Configure OpenAI client and calculate_tip schema for intent-driven extraction
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-    )
-
-    tools_schema = [
-        {
-            "type": "function",
-            "function": {
-                "name": "calculate_tip",
-                "description": "Calculate tip and split the bill among people based on bill amount, tip percentage, and group size.",
-                "parameters": {
-                    "type": "object",
-                    "properties": {
-                        "bill_amount": {"type": "number", "description": "Total bill amount before tip"},
-                        "tip_percentage": {"type": "number", "description": "Tip percentage (e.g. 15, 18, 20)"},
-                        "num_people": {"type": "integer", "description": "Number of people sharing the bill", "default": 1},
-                    },
-                    "required": ["bill_amount", "tip_percentage"],
-                },
-            },
-        }
-    ]
-
-    messages = [
-        {
-            "role": "system",
-            "content": "You are a helpful dining bill and tip assistant. Always use the calculate_tip tool to perform accurate calculations.",
-        },
-        {"role": "user", "content": query},
-    ]
-
-    # ④ Run the agent loop to extract parameters from natural language and compute the split
-    for _ in range(5):
-        resp = client.chat.completions.create(
-            model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-            messages=messages,
-            tools=tools_schema,
-            tool_choice="auto",
-        )
-        msg = resp.choices[0].message
-        messages.append(msg)
-
-        if not msg.tool_calls:
-            return {
-                "query": query,
-                "response": msg.content or "",
-                "calculation": calc_result,
-                "tool_calls": tool_calls_recorded,
-                "provider": f"OpenAI {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')} (Intent Agent)",
-            }
-
-        for tc in msg.tool_calls:
-            args = json.loads(tc.function.arguments or "{}")
-            calc_result = calculate_tip(
-                bill_amount=args.get("bill_amount", 0.0),
-                tip_percentage=args.get("tip_percentage", 15.0),
-                num_people=args.get("num_people", 1),
-            )
-            tool_calls_recorded.append(
-                f"calculate_tip(bill={calc_result['bill']}, tip={calc_result['tip_percentage']}%, split={calc_result['num_people']}) -> total: ${calc_result['total']}"
-            )
-            messages.append({"role": "tool", "tool_call_id": tc.id, "content": json.dumps(calc_result)})
+    # ⑥ Show the last calculation: the tool's arguments plus the dict it returned (stored as JSON text)
+    calculation = None
+    if tool_results and tool_results[-1]["status"] == "success":
+        result = json.loads(tool_results[-1]["content"][0]["text"])
+        calculation = {"num_people": 1, **tool_uses[-1]["input"], **result}
 
     return {
         "query": query,
-        "response": messages[-1].get("content", ""),
-        "calculation": calc_result,
-        "tool_calls": tool_calls_recorded,
-        "provider": f"OpenAI {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')}",
+        "response": str(response),
+        "calculation": calculation,
+        "tool_calls": [f"{t['name']}({t['input']})" for t in tool_uses],
+        "provider": f"Strands + Bedrock ({model_id})",
     }
 
 
@@ -181,4 +103,3 @@ if __name__ == "__main__":
     res = run_tip_calculator_agent()
     print("Calls:", res["tool_calls"])
     print("Response:", res["response"])
-

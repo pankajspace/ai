@@ -207,7 +207,6 @@ McpAgentRequest = mcp_agent.McpAgentRequest
 McpAgentResponse = mcp_agent.McpAgentResponse
 run_mcp_agent = mcp_agent.run_mcp_agent
 
-McpEvalsRequest = mcp_evals.McpEvalsRequest
 McpEvalsResponse = mcp_evals.McpEvalsResponse
 run_mcp_evals_suite = mcp_evals.run_mcp_evals_suite
 
@@ -247,5 +246,5 @@ __all__ = [
     # 29-31
     "McpClientRequest", "McpClientResponse", "run_mcp_client",
     "McpAgentRequest", "McpAgentResponse", "run_mcp_agent",
-    "McpEvalsRequest", "McpEvalsResponse", "run_mcp_evals_suite",
+    "McpEvalsResponse", "run_mcp_evals_suite",
 ]

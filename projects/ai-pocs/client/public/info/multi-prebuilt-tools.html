@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Multi-Prebuilt Tools &middot; AI POCs</title>
     <meta name="description"
-        content="🔗 Multi-Prebuilt Tools chains three prebuilt utility tools—http_request(url), calculator(expression), and file_write(filename, content)—in a single autonomous agent run." />
+        content="🔗 Multi-Prebuilt Tools chains three prebuilt strands_tools &amp;mdash; http_request, calculator and file_write &amp;mdash; into a fetch &amp;rarr; compute &amp;rarr; save pipeline." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🔗 Multi-Prebuilt Tools<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🔗 Multi-Prebuilt Tools</strong> chains three prebuilt utility tools—<code>http_request(url)</code>, <code>calculator(expression)</code>, and <code>file_write(filename, content)</code>—in a single autonomous agent run. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🔗 Multi-Prebuilt Tools</strong> chains three prebuilt <code>strands_tools</code> &mdash; <code>http_request</code>, <code>calculator</code> and <code>file_write</code> &mdash; into a fetch &rarr; compute &rarr; save pipeline.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🔗 Multi-Prebuilt Tools</strong> chains three prebuilt utility tools—<code>http_request(url)</code>, <code>calculator(expression)</code>, and <code>file_write(filename, content)</code>—in a single autonomous agent run.</p>
-                    <p>Mirroring <code>strands_tools</code> prebuilt utilities, the agent fetches JSON data from an API endpoint, optionally runs a calculation on the returned price, and persists a formatted summary into a sandboxed in-memory virtual file buffer so the UI can inspect both the tool log and written file.</p>
+                    <p>Give the agent a task like &quot;fetch stock data from this URL, average the closing prices and save the result to stock_summary.txt&quot;. It calls <code>http_request</code> to get the JSON, <code>calculator</code> for the average, and <code>file_write</code> to save the summary.</p>
+                    <p><code>file_write</code> normally asks a human to confirm before writing. Setting <code>BYPASS_TOOL_CONSENT=true</code> skips that prompt so the pipeline can run unattended &mdash; and means the agent really writes files on the server, so use it with care.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Composable Utility Toolbelt:</strong> Combining network read (<code>http_request</code>), compute (<code>calculator</code>), and storage write (<code>file_write</code>) covers end-to-end ETL tasks.</li><li><strong>Sandboxed File Virtualization:</strong> Writing to an in-memory <code>VIRTUAL_FS</code> dictionary keeps container execution stateless and safe while still demonstrating file output.</li></ul>
+                    <ul>
+                        <li><strong>Tool chaining:</strong> each tool's output becomes the next tool's input.</li>
+                        <li><strong>Tool consent:</strong> sensitive prebuilt tools ask for confirmation unless <code>BYPASS_TOOL_CONSENT</code> is set; this variable affects every tool in the process.</li>
+                        <li><strong>Written files:</strong> the card lists each <code>file_write</code> call's path and content, read from the agent's <code>toolUse</code> blocks.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>MultiPrebuiltToolsCard.tsx</code> sends <code>POST /api/multi-prebuilt-tools</code> with a multi-step task.</span>
+                            <span class="flow-detail"><code>MultiPrebuiltToolsCard.tsx</code> sends <code>POST /api/multi-prebuilt-tools</code> with <code>{ task }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>multi_prebuilt_tools_service(req)</code> calls <code>run_multi_prebuilt_tools_agent(t)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>multi_prebuilt_tools_service(req)</code> calls <code>run_multi_prebuilt_tools_agent(task)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Tool 1 — HTTP Fetch (<code>18_multi_prebuilt_tools.py</code>)</span>
-                            <span class="flow-detail">Agent calls <code>tool_http_request(url)</code> (with resilient demo fallback if offline).</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Tool 2 & 3 — Compute & Write</span>
-                            <span class="flow-detail">Agent optionally evaluates expressions via <code>tool_calculator</code> and writes the summary via <code>tool_file_write</code>.</span>
+                            <span class="flow-title">Agent (<code>18_multi_prebuilt_tools.py</code>)</span>
+                            <span class="flow-detail">Bedrock calls <code>http_request</code> &rarr; <code>calculator</code> &rarr; <code>file_write</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>MultiPrebuiltToolsResponse</code> with the final answer, <code>tools_invoked</code> list, and <code>virtual_file_content</code>.</span>
+                            <span class="flow-detail">Shows the reply, the tool sequence and the files written.</span>
                         </div>
                     </div>
                 </div>
@@ -197,35 +196,29 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["MultiPrebuiltToolsCard.tsx<br/>POST /api/multi-prebuilt-tools { task }"]:::entry
-                                Route["main.py<br/>multi_prebuilt_tools_service(req)"]:::fn
-                                Svc["18_multi_prebuilt_tools.py<br/>run_multi_prebuilt_tools_agent(task)"]:::fn
-                                LLM[("OpenAI API<br/>6-Turn Agent Loop")]:::ext
-                                HTTP["tool_http_request(url)"]:::fn
-                                Calc["tool_calculator(expression)"]:::fn
-                                File["tool_file_write(filename, content)"]:::fn
-                                Ret(["MultiPrebuiltToolsResponse JSON<br/>{ answer, tools_invoked, virtual_file_content }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_multi_prebuilt_tools_agent()"| Svc
-                                Svc -->|"③ task + 3 prebuilt schemas"| LLM
-                                LLM -.->|"returns http_request(url)"| Svc
-                                Svc -->|"④ fetch JSON payload"| HTTP
-                                HTTP -.->|"returns JSON string"| Svc
-                                Svc -->|"⑤ optional calculation"| Calc
-                                Calc -.->|"returns numeric result"| Svc
-                                Svc -->|"⑥ write summary to VIRTUAL_FS"| File
-                                File -.->|"returns bytes written"| Svc
-                                Svc -->|"⑦ final synthesis"| LLM
-                                LLM -.->|"returns summary"| Svc
-                                Svc -.->|"returns response dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["MultiPrebuiltToolsCard.tsx<br/>POST /api/multi-prebuilt-tools"]:::entry -->|"task"| R["main.py<br/>multi_prebuilt_tools_service()"]:::fn
+    R -->|"task"| S["18_multi_prebuilt_tools.py<br/>run_multi_prebuilt_tools_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"toolUse: http_request"| A
+    A -->|"url"| T0["http_request()"]:::fn
+    T0 -->|"response body"| A
+    B -->|"toolUse: calculator"| A
+    A -->|"expression"| T1["calculator()"]:::fn
+    T1 -->|"average"| A
+    B -->|"toolUse: file_write"| A
+    A -->|"path, content"| T2["file_write()"]:::fn
+    T2 -->|"file saved"| A
+    A -->|"toolResult"| B
+    B -->|"final text"| A
+    A -->|"reply + agent.messages"| S
+    S -->|"reply + tool_sequence + written_files"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -236,7 +229,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -251,7 +244,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">224 lines</span>
+                        <span class="topic-meta-chip">92 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -266,24 +259,24 @@
                     <pre><code data-lang="python">&quot;&quot;&quot;Multi-Prebuilt Tools Agent Service.
 
 Demonstrates chaining multiple prebuilt tools and unattended consent:
-1. Prebuilt tools: `http_request`, `calculator`, and `file_write`.
-2. Handles complex multi-step pipelines: Fetch external API data -&gt; Compute statistics -&gt; Save artifact.
-3. Records all intermediate file writes and execution traces.
+1. Prebuilt tools from `strands_tools`: `http_request`, `calculator`, and `file_write`.
+2. Sets `BYPASS_TOOL_CONSENT=&quot;true&quot;` so sensitive tools (`file_write`) run unattended without prompts.
+3. Handles complex multi-step pipelines: Fetch external API data -&gt; Compute statistics -&gt; Save artifact.
 
 Run directly:
     python projects/ai-pocs/server/services/18_multi_prebuilt_tools.py
 &quot;&quot;&quot;
 
-import json
-import math
 import os
-import re
 from typing import Dict, List
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
-import requests
 
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+from strands_tools import calculator, file_write, http_request
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -291,7 +284,11 @@ class MultiPrebuiltToolsRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Multi Prebuilt Tools Agent.&quot;&quot;&quot;
 
     task: str = Field(
-        default=&quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;,
+        default=(
+            &quot;Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d, &quot;
+            &quot;extract the latest closing prices, calculate the average price over the period, &quot;
+            &quot;and save the results to stock_summary.txt&quot;
+        ),
         description=&quot;Multi-step data pipeline task combining HTTP, calculation, and file writing&quot;,
     )
 
@@ -306,186 +303,50 @@ class MultiPrebuiltToolsResponse(BaseModel):
     provider: str
 
 
-VIRTUAL_FILESYSTEM = {}
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
 
 
-def tool_http_request(url: str) -&gt; str:
-    &quot;&quot;&quot;Fetch content from an HTTP URL.&quot;&quot;&quot;
-    try:
-        # ① Perform GET request with a 5-second timeout and truncate response to 1,000 chars
-        resp = requests.get(url, timeout=5)
-        text = resp.text
-        return text[:1000]  # truncate to keep prompt context clean
-    except Exception as exc:
-        return f&quot;HTTP error fetching {url}: {str(exc)}&quot;
-
-
-def tool_calculator(expression: str) -&gt; str:
-    &quot;&quot;&quot;Safely calculate mathematical expression.&quot;&quot;&quot;
-    # ① Sanitize expression and evaluate with restricted math primitives
-    clean = expression.strip().replace(&quot;^&quot;, &quot;**&quot;).replace(&quot;x&quot;, &quot;*&quot;)
-    if not re.match(r&quot;^[0-9\+\-\*\/\(\)\.\s\*\*eE\%\,]+$&quot;, clean):
-        return f&quot;Error: Expression contains unsupported characters: {clean}&quot;
-    try:
-        allowed = {&quot;math&quot;: math, &quot;sqrt&quot;: math.sqrt, &quot;pow&quot;: pow, &quot;abs&quot;: abs}
-        return str(eval(clean, {&quot;__builtins__&quot;: None}, allowed))
-    except Exception as exc:
-        return f&quot;Math error: {str(exc)}&quot;
-
-
-def tool_file_write(filename: str, content: str) -&gt; str:
-    &quot;&quot;&quot;Write content to a file in memory or disk.&quot;&quot;&quot;
-    # ① Normalize basename and store content in the virtual filesystem
-    fname = os.path.basename(filename)
-    VIRTUAL_FILESYSTEM[fname] = content
-    return f&quot;Successfully wrote {len(content)} characters to {fname}&quot;
+# ③ Disable interactive tool consent prompts so file_write runs unattended
+os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = os.getenv(&quot;BYPASS_TOOL_CONSENT&quot;, &quot;true&quot;)
 
 
 def run_multi_prebuilt_tools_agent(
-    task: str = &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;,
+    task: str = MultiPrebuiltToolsRequest.model_fields[&quot;task&quot;].default,
 ) -&gt; dict:
     &quot;&quot;&quot;Run the Multi Prebuilt Tools Agent.&quot;&quot;&quot;
-    # ① Load AWS credentials and initialize tool sequence and file capture state
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
-
-    tool_sequence = []
-    local_files = {}
-
-    # ② Run Strands Agent with calculator, http_request, and file_write on Bedrock if configured
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent
-            from strands.models.bedrock import BedrockModel
-            from strands_tools import calculator, file_write, http_request
-
-            os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = &quot;true&quot;
-            agent = Agent(
-                model=BedrockModel(model_id=bedrock_model_id),
-                tools=[calculator, http_request, file_write],
-            )
-            res = agent(task)
-            tool_sequence.append(&quot;strands_tools [calculator, http_request, file_write] executed&quot;)
-            return {
-                &quot;task&quot;: task,
-                &quot;response&quot;: str(res),
-                &quot;tool_sequence&quot;: tool_sequence,
-                &quot;written_files&quot;: VIRTUAL_FILESYSTEM,
-                &quot;provider&quot;: f&quot;Strands Multi-Prebuilt + Bedrock ({bedrock_model_id})&quot;,
-            }
-        except Exception as exc:
-            print(f&quot;Strands Bedrock multi prebuilt failed ({exc}), falling back to OpenAI&quot;)
-
-    # ③ Configure OpenAI client and register the three prebuilt tool schemas
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    # ④ Initialize the Strands Agent with http_request, calculator, and file_write
+    agent = Agent(
+        model=BedrockModel(model_id=model_id),
+        tools=[http_request, calculator, file_write],
+        system_prompt=&quot;You help with data analysis tasks.&quot;,
     )
 
-    tools_schema = [
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;http_request&quot;,
-                &quot;description&quot;: &quot;Fetch data or JSON from a web URL using GET.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {&quot;url&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The URL to fetch&quot;}},
-                    &quot;required&quot;: [&quot;url&quot;],
-                },
-            },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;calculator&quot;,
-                &quot;description&quot;: &quot;Compute a math calculation or numeric average.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {&quot;expression&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Math expression&quot;}},
-                    &quot;required&quot;: [&quot;expression&quot;],
-                },
-            },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;file_write&quot;,
-                &quot;description&quot;: &quot;Write text data or summary to a named file.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;filename&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Name of the target file&quot;},
-                        &quot;content&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Text content to save&quot;},
-                    },
-                    &quot;required&quot;: [&quot;filename&quot;, &quot;content&quot;],
-                },
-            },
-        },
+    # ⑤ Execute the multi-step pipeline: fetch HTTP data -&gt; compute average -&gt; save artifact file
+    response = agent(task)
+
+    # ⑥ Collect the tool calls in order, and the files the agent asked file_write to save
+    tool_uses = [
+        block[&quot;toolUse&quot;]
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
     ]
-
-    messages = [
-        {
-            &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: &quot;You are an automated data-gathering assistant. Use http_request to fetch data, calculator if maths is required, and file_write to save output files.&quot;,
-        },
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: task},
-    ]
-
-    # ④ Execute the multi-step pipeline: fetch HTTP data -&gt; compute stats -&gt; write artifact file
-    for _ in range(6):
-        resp = client.chat.completions.create(
-            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-            messages=messages,
-            tools=tools_schema,
-            tool_choice=&quot;auto&quot;,
-        )
-        msg = resp.choices[0].message
-        messages.append(msg)
-
-        if not msg.tool_calls:
-            return {
-                &quot;task&quot;: task,
-                &quot;response&quot;: msg.content or &quot;&quot;,
-                &quot;tool_sequence&quot;: tool_sequence,
-                &quot;written_files&quot;: local_files,
-                &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (Prebuilt Multi-Tool)&quot;,
-            }
-
-        for tc in msg.tool_calls:
-            fname = tc.function.name
-            args = json.loads(tc.function.arguments or &quot;{}&quot;)
-            if fname == &quot;http_request&quot;:
-                out = tool_http_request(args.get(&quot;url&quot;, &quot;&quot;))
-                tool_sequence.append(f&quot;http_request(&#x27;{args.get(&#x27;url&#x27;)}&#x27;) -&gt; received data&quot;)
-            elif fname == &quot;calculator&quot;:
-                out = tool_calculator(args.get(&quot;expression&quot;, &quot;0&quot;))
-                tool_sequence.append(f&quot;calculator(&#x27;{args.get(&#x27;expression&#x27;)}&#x27;) -&gt; {out}&quot;)
-            elif fname == &quot;file_write&quot;:
-                fn = args.get(&quot;filename&quot;, &quot;output.txt&quot;)
-                cnt = args.get(&quot;content&quot;, &quot;&quot;)
-                out = tool_file_write(fn, cnt)
-                local_files[fn] = cnt
-                tool_sequence.append(f&quot;file_write(&#x27;{fn}&#x27;) -&gt; saved&quot;)
-            else:
-                out = f&quot;Unknown tool: {fname}&quot;
-
-            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: out})
+    written_files = {t[&quot;input&quot;][&quot;path&quot;]: t[&quot;input&quot;][&quot;content&quot;] for t in tool_uses if t[&quot;name&quot;] == &quot;file_write&quot;}
 
     return {
         &quot;task&quot;: task,
-        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;&quot;),
-        &quot;tool_sequence&quot;: tool_sequence,
-        &quot;written_files&quot;: local_files,
-        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+        &quot;response&quot;: str(response),
+        &quot;tool_sequence&quot;: [f&quot;{t[&#x27;name&#x27;]}({t[&#x27;input&#x27;]})&quot; for t in tool_uses],
+        &quot;written_files&quot;: written_files,
+        &quot;provider&quot;: f&quot;Strands Multi-Tool + Bedrock ({model_id})&quot;,
     }
 
 
 if __name__ == &quot;__main__&quot;:
     out = run_multi_prebuilt_tools_agent()
     print(&quot;Sequence:&quot;, out[&quot;tool_sequence&quot;])
-    print(&quot;Files:&quot;, out[&quot;written_files&quot;].keys())
+    print(&quot;Files:&quot;, list(out[&quot;written_files&quot;]))
     print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
                 </div>
             </section>

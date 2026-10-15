@@ -29,8 +29,10 @@ class CotVsDirectRequest(BaseModel):
         default="Spatial Navigation (Grid)",
         description="Preset logic problem or 'custom'",
     )
-    custom_question: Optional[str] = None
-    custom_correct_answers: Optional[List[str]] = None
+    custom_question: Optional[str] = Field(
+        default=None,
+        description="Optional replacement question, scored against the preset's accepted answers",
+    )
 
 
 class CotVsDirectResult(BaseModel):
@@ -100,7 +102,6 @@ def evaluate_cot_accuracy(extracted: str, accepted: List[str]) -> bool:
 def run_cot_vs_direct_benchmark(
     problem_title: str = "Spatial Navigation (Grid)",
     custom_question: Optional[str] = None,
-    custom_correct_answers: Optional[List[str]] = None,
 ) -> dict:
     """Execute CoT vs Direct comparison."""
     # ① Initialize OpenAI client and resolve preset or custom logic puzzle
@@ -112,7 +113,7 @@ def run_cot_vs_direct_benchmark(
 
     preset = PROBLEMS.get(problem_title, PROBLEMS["Spatial Navigation (Grid)"])
     q_text = custom_question or preset["question"]
-    accepted = custom_correct_answers or preset["correct_answers"]
+    accepted = preset["correct_answers"]
 
     # ② Run Direct Strategy (no intermediate working allowed)
     start_d = time.perf_counter()

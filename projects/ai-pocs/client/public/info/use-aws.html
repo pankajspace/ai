@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — AWS Cloud Assistant &middot; AI POCs</title>
     <meta name="description"
-        content="☁️ AWS Cloud Assistant translates natural-language infrastructure queries into structured AWS SDK (boto3) calls via a unified use_aws(service_name, operation_name, region) tool." />
+        content="☁️ AWS Cloud Assistant gives a Strands agent the prebuilt use_aws tool, which can call any AWS API through boto3 &amp;mdash; you ask in plain English, the agent picks the service and operation." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">☁️ AWS Cloud Assistant<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>☁️ AWS Cloud Assistant</strong> translates natural-language infrastructure queries into structured AWS SDK (<code>boto3</code>) calls via a unified <code>use_aws(service_name, operation_name, region)</code> tool. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>☁️ AWS Cloud Assistant</strong> gives a Strands agent the prebuilt <code>use_aws</code> tool, which can call any AWS API through boto3 &mdash; you ask in plain English, the agent picks the service and operation.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>☁️ AWS Cloud Assistant</strong> translates natural-language infrastructure queries into structured AWS SDK (<code>boto3</code>) calls via a unified <code>use_aws(service_name, operation_name, region)</code> tool.</p>
-                    <p>Inspired by <code>strands_tools.use_aws</code>, a single polymorphic tool schema accepts the target AWS service (<code>s3</code>, <code>ec2</code>, <code>dynamodb</code>, <code>lambda</code>) and snake_case operation name (<code>list_buckets</code>, <code>describe_instances</code>, <code>list_tables</code>), returning structured cloud resource metadata.</p>
+                    <p>&quot;List all S3 buckets in my account&quot; becomes <code>use_aws(service_name=&quot;s3&quot;, operation_name=&quot;list_buckets&quot;, ...)</code>. The call runs against the real AWS account of the configured credentials and the agent summarises the result.</p>
+                    <p>Because the tool can reach the whole AWS API, the credentials should only allow read-only actions. <code>use_aws</code> asks for confirmation before mutating calls, but that confirmation is skipped when <code>BYPASS_TOOL_CONSENT=true</code> (set by the Multi-Prebuilt Tools demo in the same server).</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Polymorphic Cloud Tooling:</strong> Instead of registering hundreds of individual AWS API functions, one <code>use_aws</code> meta-tool accepts <code>service_name</code> and <code>operation_name</code> parameters.</li><li><strong>Intent-to-SDK Mapping:</strong> The LLM maps conversational requests like <em>"List all S3 buckets"</em> to <code>service_name="s3", operation_name="list_buckets"</code>.</li></ul>
+                    <ul>
+                        <li><strong>Natural language to API calls:</strong> the model fills <code>service_name</code>, <code>operation_name</code>, <code>parameters</code> and <code>region</code>.</li>
+                        <li><strong>Least privilege:</strong> the IAM policy is the real safety boundary for an agent with cloud access.</li>
+                        <li><strong>Operations list:</strong> the card shows each <code>service.operation</code> the agent called, read from the <code>toolUse</code> blocks.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>UseAwsCard.tsx</code> sends <code>POST /api/use-aws</code> with a cloud inspection prompt.</span>
+                            <span class="flow-detail"><code>UseAwsCard.tsx</code> sends <code>POST /api/use-aws</code> with <code>{ prompt }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>use_aws_service(req)</code> calls <code>run_use_aws_agent(p)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>use_aws_service(req)</code> calls <code>run_use_aws_agent(prompt)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">AWS Operation Selection (<code>19_use_aws.py</code>)</span>
-                            <span class="flow-detail">OpenAI selects <code>use_aws(service_name, operation_name, region)</code>.</span>
+                            <span class="flow-title">Agent (<code>19_use_aws.py</code>)</span>
+                            <span class="flow-detail">Bedrock chooses the AWS call; <code>use_aws</code> runs it with boto3.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Cloud Resource Query</span>
-                            <span class="flow-detail"><code>simulate_use_aws()</code> executes the matching S3, EC2, DynamoDB, or Lambda operation and returns the resource payload.</span>
+                            <span class="flow-title">AWS APIs</span>
+                            <span class="flow-detail">S3 / STS / DynamoDB / ... return real account data.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>UseAwsResponse</code> with the natural-language summary, <code>aws_service</code>, <code>aws_operation</code>, and raw <code>raw_aws_output</code>.</span>
+                            <span class="flow-detail">Shows the answer and the list of AWS operations.</span>
                         </div>
                     </div>
                 </div>
@@ -197,29 +201,23 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["UseAwsCard.tsx<br/>POST /api/use-aws { prompt }"]:::entry
-                                Route["main.py<br/>use_aws_service(req)"]:::fn
-                                Svc["19_use_aws.py<br/>run_use_aws_agent(prompt)"]:::fn
-                                LLM[("OpenAI API<br/>use_aws meta-tool schema")]:::ext
-                                AWS["19_use_aws.py<br/>simulate_use_aws(service, op, region)"]:::fn
-                                Ret(["UseAwsResponse JSON<br/>{ answer, aws_service, aws_operation, raw_aws_output }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_use_aws_agent()"| Svc
-                                Svc -->|"③ prompt + use_aws schema"| LLM
-                                LLM -.->|"returns use_aws(s3, list_buckets)"| Svc
-                                Svc -->|"④ dispatch service & operation"| AWS
-                                AWS -.->|"returns AWS resource dict"| Svc
-                                Svc -->|"⑤ feed AWS JSON output"| LLM
-                                LLM -.->|"returns infrastructure summary"| Svc
-                                Svc -.->|"returns response dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["UseAwsCard.tsx<br/>POST /api/use-aws"]:::entry -->|"prompt"| R["main.py<br/>use_aws_service()"]:::fn
+    R -->|"prompt"| S["19_use_aws.py<br/>run_use_aws_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"toolUse: use_aws"| A
+    A -->|"service, operation, params"| T0["use_aws()"]:::fn
+    T0 -->|"AWS API response"| A
+    A -->|"toolResult"| B
+    B -->|"final text"| A
+    A -->|"reply + agent.messages"| S
+    S -->|"reply + operations_executed"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -230,7 +228,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -245,7 +243,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">205 lines</span>
+                        <span class="topic-meta-chip">79 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -260,201 +258,75 @@
                     <pre><code data-lang="python">&quot;&quot;&quot;Natural Language Cloud / AWS Agent Service.
 
 Demonstrates `use_aws` natural language cloud operations:
-1. Translates natural language requests into AWS API operations.
-2. Read-only safety guardrails (S3 bucket listing, caller identity, DynamoDB tables).
-3. Connects to real AWS if credentials are configured; otherwise provides realistic cloud infrastructure simulation.
+1. The prebuilt `use_aws` tool from `strands_tools` exposes the whole AWS API (via boto3) to the agent.
+2. The agent translates a plain-English request into service_name + operation_name + parameters.
+3. Calls run against the real AWS account of the configured credentials, so give them a read-only IAM policy.
+   (BYPASS_TOOL_CONSENT=true, set by service 18, also skips use_aws&#x27;s confirmation for mutating calls.)
 
 Run directly:
     python projects/ai-pocs/server/services/19_use_aws.py
 &quot;&quot;&quot;
 
-import json
 import os
-from typing import Any, Dict, List
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
+from typing import List
 
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+from strands_tools import use_aws
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
 class UseAwsRequest(BaseModel):
-    &quot;&quot;&quot;Input payload for AWS Cloud Agent.&quot;&quot;&quot;
+    &quot;&quot;&quot;Input payload for Use AWS Agent.&quot;&quot;&quot;
 
     prompt: str = Field(
         default=&quot;List all S3 buckets in my account&quot;,
-        description=&quot;Natural language instruction for AWS cloud management&quot;,
+        description=&quot;Natural language AWS cloud operation request&quot;,
     )
 
 
 class UseAwsResponse(BaseModel):
-    &quot;&quot;&quot;Output payload from AWS Cloud Agent.&quot;&quot;&quot;
+    &quot;&quot;&quot;Output payload from Use AWS Agent.&quot;&quot;&quot;
 
     prompt: str
     response: str
     operations_executed: List[str]
-    cloud_data: Dict[str, Any]
     provider: str
 
 
-MOCK_AWS_STATE = {
-    &quot;buckets&quot;: [&quot;prod-ai-models-2026&quot;, &quot;analytics-data-lake-raw&quot;, &quot;techtoday-static-assets&quot;, &quot;backups-us-east-1&quot;],
-    &quot;region&quot;: &quot;us-east-1&quot;,
-    &quot;account_id&quot;: &quot;987654321098&quot;,
-    &quot;arn&quot;: &quot;arn:aws:iam::987654321098:user/ai-pocs-agent&quot;,
-    &quot;dynamodb_tables&quot;: [&quot;Customers&quot;, &quot;Orders&quot;, &quot;AgentSessions&quot;],
-}
-
-
-def execute_aws_operation(operation: str, params: dict = None) -&gt; dict:
-    &quot;&quot;&quot;Execute an AWS operation via boto3 or fallback to simulated infrastructure.&quot;&quot;&quot;
-    # ① Check AWS credentials and region configuration
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    region = os.getenv(&quot;AWS_DEFAULT_REGION&quot;, &quot;us-east-1&quot;)
-
-    # ② Execute live read-only boto3 API calls when credentials are present
-    if aws_key and aws_secret:
-        try:
-            import boto3
-
-            if operation == &quot;list_s3_buckets&quot;:
-                s3 = boto3.client(&quot;s3&quot;, region_name=region)
-                resp = s3.list_buckets()
-                buckets = [b[&quot;Name&quot;] for b in resp.get(&quot;Buckets&quot;, [])]
-                return {&quot;status&quot;: &quot;success&quot;, &quot;buckets&quot;: buckets, &quot;count&quot;: len(buckets), &quot;live&quot;: True}
-            elif operation == &quot;get_caller_identity&quot;:
-                sts = boto3.client(&quot;sts&quot;, region_name=region)
-                ident = sts.get_caller_identity()
-                return {&quot;status&quot;: &quot;success&quot;, &quot;identity&quot;: ident, &quot;live&quot;: True}
-            elif operation == &quot;list_dynamodb_tables&quot;:
-                ddb = boto3.client(&quot;dynamodb&quot;, region_name=region)
-                tables = ddb.list_tables().get(&quot;TableNames&quot;, [])
-                return {&quot;status&quot;: &quot;success&quot;, &quot;tables&quot;: tables, &quot;live&quot;: True}
-        except Exception as exc:
-            print(f&quot;Live AWS operation {operation} failed ({exc}), falling back to simulation&quot;)
-
-    # ③ Return simulated cloud state when running without live AWS credentials
-    if operation == &quot;list_s3_buckets&quot;:
-        return {&quot;status&quot;: &quot;success&quot;, &quot;buckets&quot;: MOCK_AWS_STATE[&quot;buckets&quot;], &quot;count&quot;: len(MOCK_AWS_STATE[&quot;buckets&quot;]), &quot;live&quot;: False}
-    elif operation == &quot;get_caller_identity&quot;:
-        return {
-            &quot;status&quot;: &quot;success&quot;,
-            &quot;identity&quot;: {
-                &quot;Account&quot;: MOCK_AWS_STATE[&quot;account_id&quot;],
-                &quot;Arn&quot;: MOCK_AWS_STATE[&quot;arn&quot;],
-                &quot;Region&quot;: MOCK_AWS_STATE[&quot;region&quot;],
-            },
-            &quot;live&quot;: False,
-        }
-    elif operation == &quot;list_dynamodb_tables&quot;:
-        return {&quot;status&quot;: &quot;success&quot;, &quot;tables&quot;: MOCK_AWS_STATE[&quot;dynamodb_tables&quot;], &quot;live&quot;: False}
-    return {&quot;status&quot;: &quot;success&quot;, &quot;message&quot;: f&quot;Simulated {operation} completed.&quot;, &quot;live&quot;: False}
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
 
 
 def run_use_aws_agent(prompt: str = &quot;List all S3 buckets in my account&quot;) -&gt; dict:
-    &quot;&quot;&quot;Run the natural language AWS agent.&quot;&quot;&quot;
-    # ① Load AWS credentials and initialize operation and resource logs
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
-
-    ops_recorded = []
-    collected_data = {}
-
-    # ② Run Strands Agent with strands_tools.use_aws on Bedrock if configured
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent
-            from strands.models.bedrock import BedrockModel
-            from strands_tools import use_aws
-
-            agent = Agent(
-                model=BedrockModel(model_id=bedrock_model_id),
-                tools=[use_aws],
-                system_prompt=&quot;You are an AWS assistant that helps inspect and manage cloud resources safely.&quot;,
-            )
-            res = agent(prompt)
-            ops_recorded.append(&quot;strands_tools.use_aws executed&quot;)
-            return {
-                &quot;prompt&quot;: prompt,
-                &quot;response&quot;: str(res),
-                &quot;operations_executed&quot;: ops_recorded,
-                &quot;cloud_data&quot;: {&quot;mode&quot;: &quot;live_aws&quot;},
-                &quot;provider&quot;: f&quot;Strands use_aws + Bedrock ({bedrock_model_id})&quot;,
-            }
-        except Exception as exc:
-            print(f&quot;Strands use_aws failed ({exc}), falling back to OpenAI agent&quot;)
-
-    # ③ Configure OpenAI client and read-only use_aws tool schema
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    &quot;&quot;&quot;Run the Use AWS Agent.&quot;&quot;&quot;
+    # ③ Initialize the Strands Agent with the prebuilt use_aws tool and cloud assistant system prompt
+    agent = Agent(
+        model=BedrockModel(model_id=model_id),
+        tools=[use_aws],
+        system_prompt=&quot;You are an AWS assistant that helps manage cloud resources.&quot;,
     )
 
-    tools_schema = [
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;use_aws&quot;,
-                &quot;description&quot;: &quot;Execute read-only AWS queries: list_s3_buckets, get_caller_identity, or list_dynamodb_tables.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;operation&quot;: {
-                            &quot;type&quot;: &quot;string&quot;,
-                            &quot;enum&quot;: [&quot;list_s3_buckets&quot;, &quot;get_caller_identity&quot;, &quot;list_dynamodb_tables&quot;],
-                            &quot;description&quot;: &quot;The AWS operation to run&quot;,
-                        }
-                    },
-                    &quot;required&quot;: [&quot;operation&quot;],
-                },
-            },
-        }
+    # ④ Execute the natural language AWS request
+    response = agent(prompt)
+
+    # ⑤ List the AWS API operations the agent chose (service.operation)
+    operations = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;input&#x27;][&#x27;service_name&#x27;]}.{block[&#x27;toolUse&#x27;][&#x27;input&#x27;][&#x27;operation_name&#x27;]}&quot;
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
     ]
-
-    messages = [
-        {
-            &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: &quot;You are an AWS operations assistant. Use the use_aws tool to perform requested cloud inspections.&quot;,
-        },
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt},
-    ]
-
-    # ④ Run the agent loop to map natural language to AWS operations and summarize results
-    for _ in range(5):
-        resp = client.chat.completions.create(
-            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-            messages=messages,
-            tools=tools_schema,
-            tool_choice=&quot;auto&quot;,
-        )
-        msg = resp.choices[0].message
-        messages.append(msg)
-
-        if not msg.tool_calls:
-            return {
-                &quot;prompt&quot;: prompt,
-                &quot;response&quot;: msg.content or &quot;&quot;,
-                &quot;operations_executed&quot;: ops_recorded,
-                &quot;cloud_data&quot;: collected_data,
-                &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (AWS Cloud Interface)&quot;,
-            }
-
-        for tc in msg.tool_calls:
-            args = json.loads(tc.function.arguments or &quot;{}&quot;)
-            op = args.get(&quot;operation&quot;, &quot;list_s3_buckets&quot;)
-            res_dict = execute_aws_operation(op)
-            collected_data[op] = res_dict
-            ops_recorded.append(f&quot;use_aws(operation=&#x27;{op}&#x27;) -&gt; {json.dumps(res_dict)}&quot;)
-            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(res_dict)})
 
     return {
         &quot;prompt&quot;: prompt,
-        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;&quot;),
-        &quot;operations_executed&quot;: ops_recorded,
-        &quot;cloud_data&quot;: collected_data,
-        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+        &quot;response&quot;: str(response),
+        &quot;operations_executed&quot;: operations,
+        &quot;provider&quot;: f&quot;Strands use_aws + Bedrock ({model_id})&quot;,
     }
 
 

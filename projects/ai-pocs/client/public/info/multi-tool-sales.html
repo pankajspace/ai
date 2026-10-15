@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Sales Pipeline Agent &middot; AI POCs</title>
     <meta name="description"
-        content="📈 Sales Pipeline Agent orchestrates a 3-stage enterprise workflow—fetch_sales_data(quarter) → calculate_metrics(revenues) → send_email(recipient, subject, body)—driven autonomously by an LLM." />
+        content="📈 Sales Pipeline Agent gives a Strands agent three small tools &amp;mdash; get_sales_data, analyze_sales, send_email &amp;mdash; with no order, and the agent plans the chain itself." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">📈 Sales Pipeline Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>📈 Sales Pipeline Agent</strong> orchestrates a 3-stage enterprise workflow—<code>fetch_sales_data(quarter)</code> → <code>calculate_metrics(revenues)</code> → <code>send_email(recipient, subject, body)</code>—driven autonomously by an LLM. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>📈 Sales Pipeline Agent</strong> gives a Strands agent three small tools &mdash; <code>get_sales_data</code>, <code>analyze_sales</code>, <code>send_email</code> &mdash; with no order, and the agent plans the chain itself.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>📈 Sales Pipeline Agent</strong> orchestrates a 3-stage enterprise workflow—<code>fetch_sales_data(quarter)</code> → <code>calculate_metrics(revenues)</code> → <code>send_email(recipient, subject, body)</code>—driven autonomously by an LLM.</p>
-                    <p>Given a high-level goal like <em>"Pull last quarter's sales data and email a summary to the team"</em>, the agent discovers that it must first fetch the raw quarterly records, pass the extracted revenue numbers into the KPI calculator, and finally compose and dispatch an email containing those computed metrics.</p>
+                    <p>Nothing in the code says &quot;fetch, then analyse, then email&quot;. The agent works it out from the task and the tool signatures: <code>analyze_sales</code> needs <code>revenue</code> and <code>deals</code>, which only <code>get_sales_data</code> can provide, so it is called first.</p>
+                    <p>The tools are mocks (the same sales numbers for every quarter, and a fake email send) so the demo focuses on the planning, not on real systems.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Autonomous Workflow Planning:</strong> Rather than hardcoding a pipeline in Python, the LLM plans the 3-step execution order from tool schemas alone.</li><li><strong>Data Transformation Across Tools:</strong> The agent extracts the numerical <code>revenue</code> values from <code>fetch_sales_data</code>'s JSON output to construct the <code>revenues: List[float]</code> argument for <code>calculate_metrics</code>.</li></ul>
+                    <ul>
+                        <li><strong>Autonomous planning:</strong> the model chains tools by feeding one tool's output into the next tool's arguments.</li>
+                        <li><strong>Rule of thumb:</strong> build focused, single-purpose tools &mdash; one mega-tool is harder to reason about and impossible to reuse.</li>
+                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,32 +154,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>MultiToolSalesCard.tsx</code> sends <code>POST /api/multi-tool-sales</code> with a natural-language task.</span>
+                            <span class="flow-detail"><code>MultiToolSalesCard.tsx</code> sends <code>POST /api/multi-tool-sales</code> with <code>{ task }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>multi_tool_sales_service(req)</code> calls <code>run_multi_tool_sales_agent(task_text)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>multi_tool_sales_service(req)</code> calls <code>run_multi_tool_sales_agent(task)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Step 1 — Fetch Data (<code>15_multi_tool_sales.py</code>)</span>
-                            <span class="flow-detail">Agent calls <code>fetch_sales_data("Q4")</code> to retrieve monthly revenue and unit counts.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Step 2 — Compute KPIs</span>
-                            <span class="flow-detail">Agent passes <code>[42000, 51500, 63200]</code> to <code>calculate_metrics(revenues)</code>.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Step 3 — Send Email</span>
-                            <span class="flow-detail">Agent calls <code>send_email(recipient, subject, body)</code> with the formatted KPI report.</span>
+                            <span class="flow-title">Agent (<code>15_multi_tool_sales.py</code>)</span>
+                            <span class="flow-detail">Bedrock calls <code>get_sales_data</code> &rarr; <code>analyze_sales</code> &rarr; <code>send_email</code>, one result feeding the next.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>MultiToolSalesResponse</code> with the final confirmation and the full <code>pipeline_steps</code> trace.</span>
+                            <span class="flow-detail">Shows the summary and the ordered tool sequence.</span>
                         </div>
                     </div>
                 </div>
@@ -202,39 +196,29 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales { task }"]:::entry
-                                Route["main.py<br/>multi_tool_sales_service(req)"]:::fn
-                                Svc["15_multi_tool_sales.py<br/>run_multi_tool_sales_agent(task)"]:::fn
-                                LLM[("OpenAI API<br/>6-Turn Agent Loop")]:::ext
-                                T1["fetch_sales_data(quarter)"]:::fn
-                                T2["calculate_metrics(revenues)"]:::fn
-                                T3["send_email(recipient, subject, body)"]:::fn
-                                Ret(["MultiToolSalesResponse JSON<br/>{ answer, pipeline_steps }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_multi_tool_sales_agent()"| Svc
-                                Svc -->|"③ task + 3 tool schemas"| LLM
-                                LLM -.->|"returns call #1: fetch_sales_data"| Svc
-                                Svc -->|"④ fetch Q4 records"| T1
-                                T1 -.->|"returns monthly sales"| Svc
-                                Svc -->|"⑤ feed sales records"| LLM
-                                LLM -.->|"returns call #2: calculate_metrics"| Svc
-                                Svc -->|"⑥ compute total/avg/peak"| T2
-                                T2 -.->|"returns KPI dict"| Svc
-                                Svc -->|"⑦ feed KPIs"| LLM
-                                LLM -.->|"returns call #3: send_email"| Svc
-                                Svc -->|"⑧ dispatch email"| T3
-                                T3 -.->|"returns sent confirmation"| Svc
-                                Svc -->|"⑨ final synthesis"| LLM
-                                LLM -.->|"returns executive summary"| Svc
-                                Svc -.->|"returns { answer, pipeline_steps }"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales"]:::entry -->|"task"| R["main.py<br/>multi_tool_sales_service()"]:::fn
+    R -->|"task"| S["15_multi_tool_sales.py<br/>run_multi_tool_sales_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"toolUse: get_sales_data"| A
+    A -->|"quarter"| T0["get_sales_data()"]:::fn
+    T0 -->|"revenue, deals"| A
+    B -->|"toolUse: analyze_sales"| A
+    A -->|"revenue, deals, quarter"| T1["analyze_sales()"]:::fn
+    T1 -->|"summary line"| A
+    B -->|"toolUse: send_email"| A
+    A -->|"to, subject, body"| T2["send_email()"]:::fn
+    T2 -->|"Email sent"| A
+    A -->|"toolResult"| B
+    B -->|"final text"| A
+    A -->|"reply + agent.messages"| S
+    S -->|"reply + tool_sequence"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -245,7 +229,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -260,7 +244,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">234 lines</span>
+                        <span class="topic-meta-chip">107 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -280,19 +264,21 @@ Demonstrates autonomous multi-tool planning and chained orchestration:
    - `analyze_sales(revenue: int, deals: int, quarter: str)`
    - `send_email(to: str, subject: str, body: str)`
 2. The agent plans the workflow: Fetch Data -&gt; Compute Analysis -&gt; Dispatch Email.
-3. Traces all intermediate steps and outputs.
+3. Passes the output of each tool directly as inputs into the next step of the agentic loop.
 
 Run directly:
     python projects/ai-pocs/server/services/15_multi_tool_sales.py
 &quot;&quot;&quot;
 
-import json
 import os
 from typing import List
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -314,193 +300,64 @@ class MultiToolSalesResponse(BaseModel):
     provider: str
 
 
-SALES_DB = {
-    &quot;Q1&quot;: {&quot;revenue&quot;: 950000, &quot;deals&quot;: 35},
-    &quot;Q2&quot;: {&quot;revenue&quot;: 1100000, &quot;deals&quot;: 42},
-    &quot;Q3&quot;: {&quot;revenue&quot;: 1250000, &quot;deals&quot;: 47},
-    &quot;Q4&quot;: {&quot;revenue&quot;: 1450000, &quot;deals&quot;: 55},
-}
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
 
 
+@tool
 def get_sales_data(quarter: str) -&gt; dict:
     &quot;&quot;&quot;Retrieve sales data for a specific quarter.&quot;&quot;&quot;
-    # ① Normalize quarter label and look up revenue and deal count from SALES_DB
-    q_key = quarter.upper().strip().replace(&quot;LAST QUARTER&quot;, &quot;Q3&quot;).replace(&quot;LAST&quot;, &quot;Q3&quot;)
-    data = SALES_DB.get(q_key, {&quot;revenue&quot;: 1250000, &quot;deals&quot;: 47})
-    return {&quot;revenue&quot;: data[&quot;revenue&quot;], &quot;deals&quot;: data[&quot;deals&quot;], &quot;quarter&quot;: q_key}
+    # Return mock quarterly revenue and closed deal count
+    return {&quot;revenue&quot;: 1250000, &quot;deals&quot;: 47, &quot;quarter&quot;: quarter}
 
 
+@tool
 def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str:
     &quot;&quot;&quot;Calculate key metrics from sales data.&quot;&quot;&quot;
-    # ① Compute average deal size and format the executive summary string
-    avg_deal = revenue / deals if deals &gt; 0 else 0
+    # Compute average deal size and format the executive summary string
+    avg_deal = revenue / deals
     return f&quot;Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size&quot;
 
 
+@tool
 def send_email(to: str, subject: str, body: str) -&gt; str:
-    &quot;&quot;&quot;Send an email message (mock dispatch).&quot;&quot;&quot;
-    return f&quot;Email successfully dispatched to &#x27;{to}&#x27; with subject &#x27;{subject}&#x27;&quot;
+    &quot;&quot;&quot;Send an email message.&quot;&quot;&quot;
+    # Simulate dispatching the summary email to the target recipient
+    return f&quot;Email sent to {to}&quot;
 
 
 def run_multi_tool_sales_agent(
     task: str = &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;,
 ) -&gt; dict:
     &quot;&quot;&quot;Run the Multi-Tool Sales Agent.&quot;&quot;&quot;
-    # ① Load AWS credentials and initialize the ordered tool sequence trace
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
-
-    tool_sequence = []
-
-    # ② Run Strands multi-tool agent on Bedrock if AWS credentials are configured
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent, tool
-            from strands.models.bedrock import BedrockModel
-
-            @tool
-            def tool_get_sales(quarter: str) -&gt; dict:
-                &quot;&quot;&quot;Retrieve sales data for a specific quarter.&quot;&quot;&quot;
-                res = get_sales_data(quarter)
-                tool_sequence.append(f&quot;1. get_sales_data(&#x27;{quarter}&#x27;) -&gt; {res}&quot;)
-                return res
-
-            @tool
-            def tool_analyze(revenue: int, deals: int, quarter: str) -&gt; str:
-                &quot;&quot;&quot;Calculate key metrics from sales data.&quot;&quot;&quot;
-                res = analyze_sales(revenue, deals, quarter)
-                tool_sequence.append(f&quot;2. analyze_sales(rev=${revenue}, deals={deals}) -&gt; {res}&quot;)
-                return res
-
-            @tool
-            def tool_email(to: str, subject: str, body: str) -&gt; str:
-                &quot;&quot;&quot;Send an email message.&quot;&quot;&quot;
-                res = send_email(to, subject, body)
-                tool_sequence.append(f&quot;3. send_email(&#x27;{to}&#x27;) -&gt; {res}&quot;)
-                return res
-
-            agent = Agent(
-                model=BedrockModel(model_id=bedrock_model_id),
-                tools=[tool_get_sales, tool_analyze, tool_email],
-            )
-            res = agent(task)
-            return {
-                &quot;task&quot;: task,
-                &quot;response&quot;: str(res),
-                &quot;tool_sequence&quot;: tool_sequence,
-                &quot;provider&quot;: f&quot;Strands Multi-Tool + Bedrock ({bedrock_model_id})&quot;,
-            }
-        except Exception as exc:
-            print(f&quot;Bedrock Strands multi-tool failed ({exc}), falling back to OpenAI&quot;)
-
-    # ③ Configure OpenAI client and register the three sales pipeline tool schemas
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    # ③ Initialize the Strands Agent with all three sales pipeline tools (no order given)
+    agent = Agent(
+        model=BedrockModel(model_id=model_id),
+        tools=[get_sales_data, analyze_sales, send_email],
     )
 
-    tools_schema = [
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;get_sales_data&quot;,
-                &quot;description&quot;: &quot;Retrieve revenue and deal counts for a sales quarter (e.g. &#x27;Q3&#x27;).&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {&quot;quarter&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Target quarter like Q1, Q2, Q3, Q4&quot;}},
-                    &quot;required&quot;: [&quot;quarter&quot;],
-                },
-            },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;analyze_sales&quot;,
-                &quot;description&quot;: &quot;Calculate average deal size and performance metrics from sales numbers.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;revenue&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Total revenue&quot;},
-                        &quot;deals&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Number of closed deals&quot;},
-                        &quot;quarter&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Quarter name&quot;},
-                    },
-                    &quot;required&quot;: [&quot;revenue&quot;, &quot;deals&quot;, &quot;quarter&quot;],
-                },
-            },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;send_email&quot;,
-                &quot;description&quot;: &quot;Send an email message to a recipient or team.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;to&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Recipient email or alias&quot;},
-                        &quot;subject&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Email subject line&quot;},
-                        &quot;body&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Email body content&quot;},
-                    },
-                    &quot;required&quot;: [&quot;to&quot;, &quot;subject&quot;, &quot;body&quot;],
-                },
-            },
-        },
+    # ④ Execute the multi-step task (get_sales_data -&gt; analyze_sales -&gt; send_email)
+    response = agent(task)
+
+    # ⑤ Collect the tool calls in the order the agent made them
+    tool_sequence = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
     ]
-
-    messages = [
-        {
-            &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: &quot;You are a sales operations agent. When given a request, plan and execute the necessary tools sequentially (get sales data -&gt; analyze -&gt; send email).&quot;,
-        },
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: task},
-    ]
-
-    # ④ Run the multi-turn orchestration loop: get_sales_data -&gt; analyze_sales -&gt; send_email
-    for _ in range(6):
-        resp = client.chat.completions.create(
-            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-            messages=messages,
-            tools=tools_schema,
-            tool_choice=&quot;auto&quot;,
-        )
-        msg = resp.choices[0].message
-        messages.append(msg)
-
-        if not msg.tool_calls:
-            return {
-                &quot;task&quot;: task,
-                &quot;response&quot;: msg.content or &quot;&quot;,
-                &quot;tool_sequence&quot;: tool_sequence,
-                &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (Multi-Tool Orchestrator)&quot;,
-            }
-
-        for tc in msg.tool_calls:
-            fname = tc.function.name
-            args = json.loads(tc.function.arguments or &quot;{}&quot;)
-            if fname == &quot;get_sales_data&quot;:
-                out = get_sales_data(args.get(&quot;quarter&quot;, &quot;Q3&quot;))
-                tool_sequence.append(f&quot;get_sales_data({args.get(&#x27;quarter&#x27;)}) -&gt; revenue: ${out[&#x27;revenue&#x27;]:,}&quot;)
-                content = json.dumps(out)
-            elif fname == &quot;analyze_sales&quot;:
-                out_str = analyze_sales(args.get(&quot;revenue&quot;, 1250000), args.get(&quot;deals&quot;, 47), args.get(&quot;quarter&quot;, &quot;Q3&quot;))
-                tool_sequence.append(f&quot;analyze_sales(...) -&gt; {out_str}&quot;)
-                content = out_str
-            elif fname == &quot;send_email&quot;:
-                out_str = send_email(args.get(&quot;to&quot;, &quot;team@company.com&quot;), args.get(&quot;subject&quot;, &quot;Sales Update&quot;), args.get(&quot;body&quot;, &quot;&quot;))
-                tool_sequence.append(f&quot;send_email(to=&#x27;{args.get(&#x27;to&#x27;)}&#x27;) -&gt; Dispatched&quot;)
-                content = out_str
-            else:
-                content = f&quot;Unknown tool: {fname}&quot;
-
-            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: content})
 
     return {
         &quot;task&quot;: task,
-        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;&quot;),
+        &quot;response&quot;: str(response),
         &quot;tool_sequence&quot;: tool_sequence,
-        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+        &quot;provider&quot;: f&quot;Strands Multi-Tool + Bedrock ({model_id})&quot;,
     }
 
+
+# RULE OF THUMB: build focused, single-purpose tools.
+# One mega-tool that does everything is harder to maintain, harder for the
+# agent to reason about, and impossible to reuse elsewhere.
 
 if __name__ == &quot;__main__&quot;:
     res = run_multi_tool_sales_agent()

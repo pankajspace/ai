@@ -20,30 +20,14 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
-# Load environment / API keys
+# Configuration & Provider Selection
 # ---------------------------------------------------------------------------
-load_dotenv(find_dotenv(), override=True)
+load_dotenv(find_dotenv())
 
-# ---------------------------------------------------------------------------
-# Pick your provider here.
-# ---------------------------------------------------------------------------
-# "groq"   -> free + fast.  Key: https://console.groq.com      (GROQ_API_KEY)
-# "gemini" -> free tier.    Key: https://aistudio.google.com   (GEMINI_API_KEY / GOOGLE_API_KEY)
-# "openai" -> needs billing/credits set up.                    (OPENAI_API_KEY)
+# Pick a provider: "groq" (free + fast), "gemini" (free tier) or "openai" (needs billing).
+# Its settings are read from <PROVIDER>_MODEL / <PROVIDER>_API_KEY / <PROVIDER>_BASE_URL in .env
 PROVIDER = "groq"
-
-if PROVIDER == "groq":
-    MODEL = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
-    BASE_URL = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
-    REQUIRED_KEY = os.getenv("GROQ_API_KEY") or "missing-key"
-elif PROVIDER == "gemini":
-    MODEL = os.getenv("GEMINI_MODEL") or os.getenv("GOOGLE_MODEL") or "gemini-3.8-flash"
-    BASE_URL = os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
-    REQUIRED_KEY = os.getenv("GEMINI_API_KEY") or "missing-key"
-else:  # openai
-    MODEL = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-    BASE_URL = os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
-    REQUIRED_KEY = os.getenv("OPENAI_API_KEY") or "missing-key"
+prefix = PROVIDER.upper()
 
 
 # ---------------------------------------------------------------------------
@@ -97,16 +81,14 @@ def get_population(city: str) -> str:
     return data.get(city.lower(), f"Sorry, I don't have population data for {city}.")
 
 
-TOOLS = [get_weather, add, multiply, get_population]
-
 # ---------------------------------------------------------------------------
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
-    model=MODEL,
-    api_key=REQUIRED_KEY,
-    base_url=BASE_URL if BASE_URL else None,
+    model=os.getenv(f"{prefix}_MODEL"),
+    api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key",
+    base_url=os.getenv(f"{prefix}_BASE_URL") or None,
     temperature=0,
     timeout=20.0,
 )
@@ -114,7 +96,7 @@ llm = ChatOpenAI(
 # ② Create the multi-tool LangChain agent with all 4 tools registered
 agent = create_agent(
     model=llm,
-    tools=TOOLS,
+    tools=[get_weather, add, multiply, get_population],
     # Tighter prompt: force the model to actually state the result so we don't
     # get vague answers like "that's the current weather".
     system_prompt=(
@@ -132,30 +114,28 @@ def run_multi_tool_agent(
 ) -> tuple[str, bool]:
     """Run a user question through the multi-tool LangChain agent."""
     # ① Invoke the multi-tool agent with the user's question
-    response = agent.invoke({"messages": [{"role": "user", "content": question}]})
-    messages = response["messages"]
+    messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]
+
     # ② Detect whether one or more tools were executed during the turn
-    tool_called = any(msg.type == "tool" for msg in messages)
-    # ③ Extract and return the final synthesized answer
-    final_msg = messages[-1]
-    answer = str(final_msg.content) if hasattr(final_msg, "content") else str(final_msg)
-    return answer, tool_called
+    tool_called = any(m.type == "tool" for m in messages)
 
-
-def ask(question: str) -> None:
-    answer, tool_called = run_multi_tool_agent(question)
-    print(f"\nQ: {question}")
-    print(f"Tool called: {'Yes' if tool_called else 'No'}")
-    print(f"A: {answer}")
+    # ③ The last message is the final synthesized answer
+    return messages[-1].content, tool_called
 
 
 # ---------------------------------------------------------------------------
-# Demo
+# Standalone CLI Verification
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    ask("What is the weather like in New York?")          # -> get_weather
-    ask("What is 25 multiplied by 4?")                     # -> multiply
-    ask("What is 137 plus 568?")                           # -> add
-    ask("What is the population of Bangalore?")            # -> get_population
-    ask("What's the weather in Tokyo, and what is 12 times 12?")  # -> two tools
-    ask("Who wrote the play Romeo and Juliet?")   # -> no tool needed
+    for q in [
+        "What is the weather like in New York?",                  # -> get_weather
+        "What is 25 multiplied by 4?",                            # -> multiply
+        "What is 137 plus 568?",                                  # -> add
+        "What is the population of Bangalore?",                   # -> get_population
+        "What's the weather in Tokyo, and what is 12 times 12?",  # -> two tools
+        "Who wrote the play Romeo and Juliet?",                   # -> no tool needed
+    ]:
+        answer, tool_called = run_multi_tool_agent(q)
+        print(f"\nQ: {q}")
+        print(f"Tool called: {'Yes' if tool_called else 'No'}")
+        print(f"A: {answer}")

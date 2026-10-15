@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Travel Guide &middot; AI POCs</title>
     <meta name="description"
-        content="✈️ Travel Guide sends a single-turn chat completion request to OpenAI (gpt-4o-mini) asking for one iconic activity in a given city, returning a concise, plain-text suggestion." />
+        content="✈️ Travel Guide sends one chat request to OpenAI (gpt-4o-mini) with a system persona and a user prompt, and returns the model&#x27;s single travel suggestion for the city you type." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">✈️ Travel Guide<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>✈️ Travel Guide</strong> sends a single-turn chat completion request to OpenAI (<code>gpt-4o-mini</code>) asking for one iconic activity in a given city, returning a concise, plain-text suggestion. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>✈️ Travel Guide</strong> sends one chat request to OpenAI (<code>gpt-4o-mini</code>) with a system persona and a user prompt, and returns the model's single travel suggestion for the city you type.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>✈️ Travel Guide</strong> sends a single-turn chat completion request to OpenAI (<code>gpt-4o-mini</code>) asking for one iconic activity in a given city, returning a concise, plain-text suggestion.</p>
-                    <p>This demo is the simplest building block of an LLM application: a stateless <code>client.chat.completions.create()</code> call with a single <code>user</code> message. The React card collects a city name, posts it to FastAPI, and renders the returned one-sentence recommendation.</p>
+                    <p>This is the smallest possible LLM call: build a list of messages, send it to the Chat Completions API, and read back the reply text.</p>
+                    <p>The <code>system</code> message sets the persona (&quot;a witty travel guide&quot;) and the <code>user</code> message carries the actual task (&quot;Suggest one thing to do in {city}&quot;). Changing only the city changes the answer, while the tone stays the same.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Stateless Chat Completion:</strong> Each call sends a self-contained list of messages (<code>[{"role": "user", "content": ...}]</code>) with no prior conversation state.</li><li><strong>Prompt Constraints:</strong> Including explicit output formatting rules in the prompt (<em>"Tell me one thing to do in {city} in one short sentence. Plain text only, no markdown."</em>) keeps responses predictable and UI-friendly.</li><li><strong>Pydantic Request/Response Contracts:</strong> <code>TravelRequest</code> and <code>TravelResponse</code> validate incoming JSON and serialize outgoing responses at the API boundary.</li></ul>
+                    <ul>
+                        <li><strong>Chat messages:</strong> an LLM conversation is a list of <code>{role, content}</code> items. <code>system</code> shapes behaviour, <code>user</code> asks, <code>assistant</code> is the model's reply.</li>
+                        <li><strong>Client + model:</strong> <code>OpenAI()</code> reads <code>OPENAI_API_KEY</code> from the environment; the model name comes from <code>OPENAI_MODEL</code>.</li>
+                        <li><strong>Reading the reply:</strong> the answer text lives at <code>response.choices[0].message.content</code>.</li>
+                        <li><strong>Timeouts:</strong> a 15-second timeout stops a slow API call from hanging the request.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +155,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>TravelGuideCard.tsx</code> sends <code>POST /api/travel</code> with <code>{"city": "Bangalore"}</code>.</span>
+                            <span class="flow-detail"><code>TravelGuideCard.tsx</code> sends <code>POST /api/travel</code> with <code>{ city }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>travel_suggestion(req)</code> validates that <code>city</code> is non-empty and calls <code>get_travel_suggestion(city_name)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>travel_suggestion(req)</code> checks the city is not empty and calls <code>get_travel_suggestion(city)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">Service (<code>01_chat_openai.py</code>)</span>
-                            <span class="flow-detail"><code>get_travel_suggestion()</code> initializes the <code>OpenAI</code> client from environment variables and builds the one-sentence prompt.</span>
+                            <span class="flow-detail">Builds the system + user messages and calls <code>client.chat.completions.create()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">OpenAI API</span>
-                            <span class="flow-detail"><code>client.chat.completions.create(model="gpt-4o-mini", messages=[...])</code> generates the travel recommendation.</span>
+                            <span class="flow-detail">Returns one witty suggestion for the city.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>choices[0].message.content</code> is stripped and wrapped in <code>TravelResponse(city, suggestion)</code> back to the card.</span>
+                            <span class="flow-detail">Shows <code>{ city, suggestion }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -197,24 +202,17 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["TravelGuideCard.tsx<br/>POST /api/travel { city }"]:::entry
-                                Route["main.py<br/>travel_suggestion(req: TravelRequest)"]:::fn
-                                Svc["01_chat_openai.py<br/>get_travel_suggestion(city)"]:::fn
-                                LLM[("OpenAI API<br/>chat.completions.create(gpt-4o-mini)")]:::ext
-                                Ret(["TravelResponse JSON<br/>{ city, suggestion }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② strip & validate city"| Svc
-                                Svc -->|"③ user prompt"| LLM
-                                LLM -.->|"returns ChatCompletion"| Svc
-                                Svc -.->|"returns suggestion str"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["TravelGuideCard.tsx<br/>POST /api/travel"]:::entry -->|"city"| R["main.py<br/>travel_suggestion()"]:::fn
+    R -->|"city"| S["01_chat_openai.py<br/>get_travel_suggestion()"]:::fn
+    S -->|"system persona + user prompt"| O[("OpenAI API<br/>gpt-4o-mini")]:::ext
+    O -->|"suggestion text"| S
+    S -->|"suggestion text"| R
+    R -->|"JSON { city, suggestion }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -225,7 +223,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 

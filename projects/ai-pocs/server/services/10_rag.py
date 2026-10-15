@@ -12,11 +12,12 @@ Run directly:
 
 import os
 from dotenv import find_dotenv, load_dotenv
+from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel, Field
 
 load_dotenv(find_dotenv())
 
@@ -70,23 +71,10 @@ class RagResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Retrieval & RAG Logic
+# RAG Pipeline: Chunk -> Embed & Store -> Retrieve -> Generate
 # ---------------------------------------------------------------------------
-def _retrieve_relevant_chunks(chunks: list[str], question: str, k: int = 3) -> list[str]:
-    """Retrieve top relevant chunks using Chroma vector store and HuggingFace embeddings."""
-    # ① Short-circuit if total chunks are already within the top-k limit
-    if len(chunks) <= k:
-        return chunks
-
-    from langchain_chroma import Chroma
-    from langchain_huggingface import HuggingFaceEmbeddings
-
-    # ② Embed all chunks into an ephemeral Chroma vector store
-    embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
-    db = Chroma.from_texts(chunks, embedder)
-    # ③ Run similarity search for the user question and return top-k passages
-    results = db.similarity_search(question, k=k)
-    return [r.page_content for r in results]
+# Load the local embedding model once (no API key needed)
+embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")
 
 
 def answer_rag(
@@ -105,32 +93,31 @@ def answer_rag(
     # ① Chunk the paragraph into overlapping pieces
     splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=40)
     chunks = splitter.split_text(paragraph)
-    if not chunks:
-        chunks = [paragraph]
 
-    # ② Retrieve the most relevant chunks for the question
-    relevant_chunks = _retrieve_relevant_chunks(chunks, question, k=3)
+    # ② Embed every chunk and store the vectors in an in-memory Chroma vector store
+    db = Chroma.from_texts(chunks, embedder)
 
-    # ③ Format the retrieved chunks into context string
+    # ③ Retrieve the top-k chunks most similar to the question
+    k = min(3, len(chunks))
+    relevant_chunks = [doc.page_content for doc in db.similarity_search(question, k=k)]
+    # Drop the in-memory collection so the next request starts with an empty store
+    db.delete_collection()
+
+    # ④ Join the retrieved chunks into one context string
     context = "\n\n".join(relevant_chunks)
 
-    # ④ Initialize chat model
+    # ⑤ Generate an answer grounded only in the retrieved context
     model = ChatOpenAI(
         model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL") or None,
         temperature=0,
     )
-
-    # ⑤ Synthesize answer with prompt chain
-    chain = RAG_PROMPT | model
-    result = chain.invoke({"context": context, "question": question})
-    answer = result.content if hasattr(result, "content") else str(result)
+    answer = (RAG_PROMPT | model).invoke({"context": context, "question": question}).content
 
     return {
         "paragraph": paragraph,
         "question": question,
-        "answer": str(answer).strip(),
+        "answer": answer.strip(),
         "sources": relevant_chunks,
     }
 

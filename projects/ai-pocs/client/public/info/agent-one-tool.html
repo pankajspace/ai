@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Single-Tool Agent &middot; AI POCs</title>
     <meta name="description"
-        content="🤖 Single-Tool Agent implements raw OpenAI function calling from scratch—without any framework—showing the exact two-turn handshake between the LLM and a local Python function get_price(item)." />
+        content="🤖 Single-Tool Agent shows the raw agent loop with the plain OpenAI SDK: the model can ask for get_price(item), our code runs it, and the model writes the final answer from the result." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🤖 Single-Tool Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🤖 Single-Tool Agent</strong> implements raw OpenAI function calling from scratch—without any framework—showing the exact two-turn handshake between the LLM and a local Python function <code>get_price(item)</code>. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🤖 Single-Tool Agent</strong> shows the raw agent loop with the plain OpenAI SDK: the model can ask for <code>get_price(item)</code>, our code runs it, and the model writes the final answer from the result.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🤖 Single-Tool Agent</strong> implements raw OpenAI function calling from scratch—without any framework—showing the exact two-turn handshake between the LLM and a local Python function <code>get_price(item)</code>.</p>
-                    <p>An LLM cannot execute Python code directly. Instead, when given a JSON Schema in <code>tools=[...]</code>, the first LLM call returns a structured <code>tool_calls</code> request naming <code>get_price</code> and its JSON arguments. Our Python code runs <code>get_price(item)</code>, appends a <code>role: "tool"</code> message linked by <code>tool_call_id</code>, and makes a second LLM call to produce the final natural-language answer.</p>
+                    <p>The model never runs Python. When it needs a price it replies with a <em>tool call</em> (a function name plus JSON arguments). Our code runs <code>get_price()</code> against a small price list and sends the result back as a <code>tool</code> message.</p>
+                    <p>If the question does not need a price (&quot;Hi! What can you help with?&quot;), the model answers directly and no tool runs.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>JSON Schema Tool Declaration:</strong> Describes function names, parameter types, and required fields so the model knows when and how to request a call.</li><li><strong>Two-Call Tool Loop:</strong> Turn 1 maps natural language to a structured tool call; Turn 2 maps the tool's output back to natural language.</li><li><strong>Tool Call ID Correlation:</strong> OpenAI requires each <code>role: "tool"</code> message to reference the exact <code>tool_call.id</code> emitted by the assistant message.</li></ul>
+                    <ul>
+                        <li><strong>Tool schema:</strong> the JSON description (name, description, parameters) tells the model what the tool does and how to call it.</li>
+                        <li><strong>Two calls:</strong> call 1 decides (answer or tool call); call 2 writes the answer using the tool output.</li>
+                        <li><strong>Message order matters:</strong> the assistant's <code>tool_calls</code> message must come before the matching <code>tool</code> results (linked by <code>tool_call_id</code>).</li>
+                        <li><strong>Grounding:</strong> the price comes from your data, not from the model's guess.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,32 +155,32 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>AgentOneToolCard.tsx</code> sends <code>POST /api/agent</code> with <code>{"message": "How much are the shoes?"}</code>.</span>
+                            <span class="flow-detail"><code>AgentOneToolCard.tsx</code> sends <code>POST /api/agent</code> with <code>{ message }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>agent_service(req)</code> validates the message and calls <code>run_agent_with_tool(message_text)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>agent_service(req)</code> calls <code>run_agent_with_tool(message)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">First LLM Call (<code>05_agent_one_tool.py</code>)</span>
-                            <span class="flow-detail">Sends user message plus <code>TOOLS</code> schema to OpenAI. The model emits <code>tool_calls=[get_price(item="shoes")]</code>.</span>
+                            <span class="flow-title">Call 1 &rarr; OpenAI</span>
+                            <span class="flow-detail">Question + <code>tools</code> schema. The model either answers or returns <code>tool_calls</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Local Python Tool Execution</span>
-                            <span class="flow-detail"><code>get_price("shoes")</code> looks up the price (<code>"$80"</code>) and appends a <code>role: "tool"</code> message.</span>
+                            <span class="flow-title">Tool run (<code>05_agent_one_tool.py</code>)</span>
+                            <span class="flow-detail">For each tool call, <code>get_price(item)</code> looks up <code>PRICES</code> and the result is appended as a <code>tool</code> message.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Second LLM Call</span>
-                            <span class="flow-detail">OpenAI reads the tool output and formulates the final natural-language response.</span>
+                            <span class="flow-title">Call 2 &rarr; OpenAI</span>
+                            <span class="flow-detail">The full history goes back; the model writes the final answer.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">The final assistant answer (with the executed tool note) is returned in <code>AgentResponse(message, response)</code>.</span>
+                            <span class="flow-detail">Shows <code>{ message, response }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -202,30 +207,21 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["AgentOneToolCard.tsx<br/>POST /api/agent { message }"]:::entry
-                                Route["main.py<br/>agent_service(req: AgentRequest)"]:::fn
-                                Svc["05_agent_one_tool.py<br/>run_agent_with_tool(user_message)"]:::fn
-                                LLM1[("OpenAI API (Call #1)<br/>Decide tool_calls")]:::ext
-                                Tool["05_agent_one_tool.py<br/>get_price(item)"]:::fn
-                                LLM2[("OpenAI API (Call #2)<br/>Synthesize final answer")]:::ext
-                                Ret(["AgentResponse JSON<br/>{ message, response }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_agent_with_tool()"| Svc
-                                Svc -->|"③ messages + TOOLS schema"| LLM1
-                                LLM1 -.->|"returns tool_call: get_price"| Svc
-                                Svc -->|"④ execute get_price(item)"| Tool
-                                Tool -.->|"returns price string"| Svc
-                                Svc -->|"⑤ append role=tool message"| LLM2
-                                LLM2 -.->|"returns final answer"| Svc
-                                Svc -.->|"returns response str"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["AgentOneToolCard.tsx<br/>POST /api/agent"]:::entry -->|"message"| R["main.py<br/>agent_service()"]:::fn
+    R -->|"message"| S["05_agent_one_tool.py<br/>run_agent_with_tool()"]:::fn
+    S -->|"question + tool schema"| O[("OpenAI API")]:::ext
+    O -->|"tool_calls: get_price(item)"| S
+    S -->|"item"| T["get_price()<br/>PRICES lookup"]:::fn
+    T -->|"price string"| S
+    S -->|"history + tool result"| O
+    O -->|"final answer"| S
+    S -->|"answer"| R
+    R -->|"JSON { message, response }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -236,7 +232,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 

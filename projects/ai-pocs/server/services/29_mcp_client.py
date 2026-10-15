@@ -1,22 +1,24 @@
 """Direct FastMCP Client Service.
 
 Demonstrates the core Model Context Protocol (MCP) plumbing without an LLM:
-1. Performs MCP protocol handshake initialization.
-2. Lists all registered tools and their JSON schemas from the server.
-3. Invokes an MCP tool directly (`get_live_score` or `get_player_stats`) with structured parameters.
+1. Starts `cricket_server.py` as a subprocess and talks to it over stdio.
+2. Performs the MCP protocol handshake (`session.initialize()`).
+3. Lists all registered tools and their JSON schemas from the server (`tools/list`).
+4. Invokes an MCP tool directly (`get_live_score` or `get_player_stats`) with structured arguments (`tools/call`).
 
 Run directly:
     python projects/ai-pocs/server/services/29_mcp_client.py
 """
 
+import asyncio
 import json
-import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
-from pydantic import BaseModel, Field
 
-from services.mcp.cricket_server import get_live_score, get_player_stats
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from pydantic import BaseModel, Field
 
 
 class McpClientRequest(BaseModel):
@@ -49,75 +51,48 @@ class McpClientResponse(BaseModel):
     protocol_transport: str
 
 
-def run_mcp_client(
+# ① Start cricket_server.py (found next to this file) over stdio using the active Python interpreter
+server_script = str(Path(__file__).with_name("cricket_server.py"))
+server = StdioServerParameters(command=sys.executable, args=[server_script])
+
+
+async def run_mcp_client(
     tool_name: str = "get_live_score",
     tool_args: Optional[Dict[str, Any]] = None,
 ) -> dict:
-    """Execute direct MCP tool call."""
-    # ① Default tool arguments when none are supplied
-    if tool_args is None:
-        tool_args = {"teams": "India vs West Indies"}
+    """Execute the 3-step MCP client protocol flow (no LLM involved)."""
+    tool_args = tool_args or {"teams": "India vs West Indies"}
 
-    # ② Build the MCP server's advertised tool descriptor list
-    tools_available = [
-        McpToolDescriptor(
-            name="get_live_score",
-            description="Get the LIVE score of a cricket match.",
-            input_schema={
-                "type": "object",
-                "properties": {"teams": {"type": "string", "description": "e.g. India vs West Indies"}},
-                "required": ["teams"],
-            },
-        ),
-        McpToolDescriptor(
-            name="get_player_stats",
-            description="Get a player's batting stats for the current series.",
-            input_schema={
-                "type": "object",
-                "properties": {"player_name": {"type": "string", "description": "Full player name e.g. Shubman Gill"}},
-                "required": ["player_name"],
-            },
-        ),
-    ]
+    # ② Open an MCP stdio transport pipe to the server subprocess
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            # ③ STEP 1: Perform the MCP protocol handshake
+            init = await session.initialize()
 
-    # ③ Initialize protocol transport and check for stdio MCP client support
-    transport = "In-Process Direct Protocol Simulation"
-    result_data = {}
+            # ④ STEP 2: Discover all available tools and their JSON input schemas
+            tools = (await session.list_tools()).tools
 
-    try:
-        from mcp import ClientSession, StdioServerParameters
-        from mcp.client.stdio import stdio_client
+            # ⑤ STEP 3: Call one tool directly with structured arguments
+            result = await session.call_tool(tool_name, tool_args)
 
-        # If running in environment with mcp
-        server_path = str(Path(__file__).parent / "mcp" / "cricket_server.py")
-        # In case stdio fails or in container sandbox, use direct implementation safely
-    except Exception:
-        pass
+    # ⑥ The server returns the tool's dict as JSON text (or an error message)
+    text = result.content[0].text if result.content else "{}"
 
-    # ④ Dispatch the requested MCP tool call with structured arguments
-    if tool_name == "get_live_score":
-        teams = tool_args.get("teams", "India vs West Indies")
-        result_data = get_live_score(teams)
-    elif tool_name == "get_player_stats":
-        player = tool_args.get("player_name", "Shubman Gill")
-        result_data = get_player_stats(player)
-    else:
-        result_data = {"error": f"Tool '{tool_name}' not found on MCP server"}
-
-    # ⑤ Return handshake status, discovered tool schemas, and invocation output
     return {
-        "handshake_status": "200 OK (Handshake Initialized)",
-        "server_tools": [t.model_dump() for t in tools_available],
+        "handshake_status": f"Handshake done with {init.serverInfo.name} (protocol {init.protocolVersion})",
+        "server_tools": [
+            {"name": t.name, "description": t.description or "", "input_schema": t.inputSchema}
+            for t in tools
+        ],
         "invoked_tool": tool_name,
         "arguments": tool_args,
-        "result": result_data,
-        "protocol_transport": transport,
+        "result": {"error": text} if result.isError else json.loads(text),
+        "protocol_transport": "stdio",
     }
 
 
 if __name__ == "__main__":
-    out = run_mcp_client()
-    print("Handshake:", out["handshake_status"])
+    out = asyncio.run(run_mcp_client())
+    print(out["handshake_status"])
     print("Tools:", [t["name"] for t in out["server_tools"]])
-    print("Result:", out["result"])
-
+    print("Result:", json.dumps(out["result"], indent=2))

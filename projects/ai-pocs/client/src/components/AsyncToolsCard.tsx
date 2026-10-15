@@ -22,9 +22,9 @@ const PRESETS = [
 ]
 
 const WAREHOUSES = [
-  { name: 'East', stock: 'PROD-123: 45, PROD-456: 10' },
-  { name: 'West', stock: 'PROD-123: 35, PROD-456: 0' },
-  { name: 'Central', stock: 'PROD-123: 50, PROD-456: 20' },
+  { name: 'East', stock: 'PROD-123: 45, PROD-456: 12' },
+  { name: 'West', stock: 'PROD-123: 30, PROD-456: 0' },
+  { name: 'Central', stock: 'PROD-123: 60, PROD-456: 25' },
 ]
 
 export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {}) {

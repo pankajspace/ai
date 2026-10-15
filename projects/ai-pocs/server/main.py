@@ -1,5 +1,5 @@
-import threading
-from contextlib import asynccontextmanager
+import asyncio
+
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -101,7 +101,6 @@ from services import (
     McpAgentRequest,
     McpAgentResponse,
     run_mcp_agent,
-    McpEvalsRequest,
     McpEvalsResponse,
     run_mcp_evals_suite,
 )
@@ -109,21 +108,7 @@ from services import (
 # Load environment variables
 load_dotenv(find_dotenv())
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Pre-warm SentenceTransformer in background
-    def warmup_embedding():
-        try:
-            compute_similarity("warmup", "warmup")
-        except Exception:
-            pass
-
-    threading.Thread(target=warmup_embedding, daemon=True).start()
-    yield
-
-
-app = FastAPI(title="AI POCs API", lifespan=lifespan)
+app = FastAPI(title="AI POCs API")
 
 # Enable CORS for frontend requests
 app.add_middleware(
@@ -218,7 +203,6 @@ def agent_service(req: AgentRequest):
 
 
 @app.post("/api/langchain-one-tool", response_model=LangchainOneToolResponse)
-@app.post("/api/langchain-agent", response_model=LangchainOneToolResponse)
 def langchain_one_tool_service(req: LangchainOneToolRequest):
     # ① Validate message and invoke LangChain single-tool agent
     message_text = req.message.strip() if req.message else "What is the weather like in New York?"
@@ -423,7 +407,7 @@ def async_tools_service(req: AsyncToolsRequest):
     # ① Normalize query and run async parallel warehouse tools agent
     q = req.query.strip() if req.query else "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
     try:
-        res = run_async_tools_agent(q)
+        res = asyncio.run(run_async_tools_agent(q))
         return AsyncToolsResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -464,9 +448,6 @@ def sycophancy_trap_service(req: SycophancyTrapRequest):
         res = run_sycophancy_trap(
             case_type=req.case_type or "Math Gaslight",
             custom_question=req.custom_question,
-            custom_pushbacks=req.custom_pushbacks,
-            correct_answer=req.correct_answer,
-            capitulation_markers=req.capitulation_markers,
         )
         return SycophancyTrapResponse(**res)
     except Exception as exc:
@@ -484,7 +465,6 @@ def cot_vs_direct_service(req: CotVsDirectRequest):
         res = run_cot_vs_direct_benchmark(
             problem_title=req.problem_title or "Spatial Navigation (Grid)",
             custom_question=req.custom_question,
-            custom_correct_answers=req.custom_correct_answers,
         )
         return CotVsDirectResponse(**res)
     except Exception as exc:
@@ -527,9 +507,9 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 
 @app.post("/api/mcp-client", response_model=McpClientResponse)
 def mcp_client_service(req: McpClientRequest):
-    # ① Invoke FastMCP tool directly without an LLM
+    # ① Invoke a FastMCP tool directly over stdio, without an LLM
     try:
-        res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
+        res = asyncio.run(run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args))
         return McpClientResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
@@ -539,17 +519,17 @@ def mcp_client_service(req: McpClientRequest):
 def mcp_agent_service(req: McpAgentRequest):
     # ① Run LLM agent connected to FastMCP cricket tools
     try:
-        res = run_mcp_agent(question=req.question)
+        res = asyncio.run(run_mcp_agent(question=req.question))
         return McpAgentResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/mcp-evals", response_model=McpEvalsResponse)
-def mcp_evals_service(req: McpEvalsRequest):
+def mcp_evals_service():
     # ① Execute MCP agent evaluation suite and return assertion metrics
     try:
-        res = run_mcp_evals_suite(run_all=req.run_all)
+        res = asyncio.run(run_mcp_evals_suite())
         return McpEvalsResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))

@@ -124,20 +124,15 @@ def run_prompting_strategies(
     # ③ Run each strategy and measure latency and token usage
     for name, p_text in prompts.items():
         start_t = time.perf_counter()
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=[{"role": "user", "content": p_text}],
-                temperature=0.3,
-            )
-            dur = time.perf_counter() - start_t
-            text = resp.choices[0].message.content or ""
-            p_tok = resp.usage.prompt_tokens if resp.usage else 0
-            c_tok = resp.usage.completion_tokens if resp.usage else 0
-        except Exception as exc:
-            dur = time.perf_counter() - start_t
-            text = f"Error: {str(exc)}"
-            p_tok, c_tok = 0, 0
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{"role": "user", "content": p_text}],
+            temperature=0.3,
+        )
+        dur = time.perf_counter() - start_t
+        text = resp.choices[0].message.content or ""
+        p_tok = resp.usage.prompt_tokens
+        c_tok = resp.usage.completion_tokens
 
         # ④ Extract the final answer and score accuracy against ground truth
         extracted = extract_final_answer(text)

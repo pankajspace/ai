@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Prompting Strategies Benchmark &middot; AI POCs</title>
     <meta name="description"
-        content="🎯 Prompting Strategies Benchmark runs the same multi-step arithmetic reasoning question through three prompting paradigms—Direct, Zero-Shot CoT, and Few-Shot CoT—measuring accuracy, token consumption, and latency side by side." />
+        content="🎯 Prompting Strategies Benchmark asks OpenAI the same word problem three ways &amp;mdash; Direct, Zero-Shot Chain-of-Thought and Few-Shot Chain-of-Thought &amp;mdash; and compares correctness, tokens and latency." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🎯 Prompting Strategies Benchmark<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🎯 Prompting Strategies Benchmark</strong> runs the same multi-step arithmetic reasoning question through three prompting paradigms—<strong>Direct</strong>, <strong>Zero-Shot CoT</strong>, and <strong>Few-Shot CoT</strong>—measuring accuracy, token consumption, and latency side by side. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🎯 Prompting Strategies Benchmark</strong> asks OpenAI the same word problem three ways &mdash; Direct, Zero-Shot Chain-of-Thought and Few-Shot Chain-of-Thought &mdash; and compares correctness, tokens and latency.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🎯 Prompting Strategies Benchmark</strong> runs the same multi-step arithmetic reasoning question through three prompting paradigms—<strong>Direct</strong>, <strong>Zero-Shot CoT</strong>, and <strong>Few-Shot CoT</strong>—measuring accuracy, token consumption, and latency side by side.</p>
-                    <p>Asking a model to output an answer immediately (Direct) forces it to compute multi-step arithmetic in a single forward pass. Zero-Shot CoT (<em>"Think through the problem step by step"</em>) and Few-Shot CoT (providing worked examples) allocate intermediate completion tokens as a scratchpad, trading higher token count and latency for substantially higher reasoning accuracy.</p>
+                    <p>The pens question (buy 7, return 2, buy 4 more, pay with 500) is easy to get wrong in one jump. <strong>Direct</strong> forbids working, <strong>Zero-Shot CoT</strong> adds &quot;think step by step&quot;, and <strong>Few-Shot CoT</strong> shows two worked examples first.</p>
+                    <p>Each reply's final <code>Answer:</code> line is extracted and checked against the expected answer (293), and the token counts show what the extra reasoning costs.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Direct Prompting:</strong> Minimal completion tokens and lowest latency, but prone to arithmetic errors on multi-step problems.</li><li><strong>Zero-Shot Chain-of-Thought:</strong> Triggers step-by-step intermediate token generation without requiring worked examples.</li><li><strong>Few-Shot Chain-of-Thought:</strong> Anchors both the reasoning structure (<code>Thought: ... Answer: ...</code>) and granularity using in-context demonstrations.</li></ul>
+                    <ul>
+                        <li><strong>Chain-of-Thought:</strong> writing the steps out often fixes multi-step arithmetic and logic.</li>
+                        <li><strong>Few-shot examples:</strong> showing the format teaches the model how to reason and how to end its answer.</li>
+                        <li><strong>Trade-off:</strong> more reasoning = more completion tokens and more time.</li>
+                        <li><strong>Answer extraction:</strong> a fixed <code>Answer: &lt;value&gt;</code> format makes automatic scoring possible.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +155,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>question</code> and <code>expected_answer</code>.</span>
+                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
                             <span class="flow-detail"><code>prompting_strategies_service(req)</code> calls <code>run_prompting_strategies()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Strategy Loop (<code>23_prompting_strategies.py</code>)</span>
-                            <span class="flow-detail">Executes Direct, Zero-Shot CoT, and Few-Shot CoT prompts against OpenAI while timing each call and recording token usage.</span>
+                            <span class="flow-title">Service (<code>23_prompting_strategies.py</code>)</span>
+                            <span class="flow-detail">Builds 3 prompts and calls OpenAI once per strategy, timing each call and reading <code>usage</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Answer Extraction & Scoring</span>
-                            <span class="flow-detail"><code>extract_final_answer()</code> parses the <code>Answer:</code> clause and <code>evaluate_accuracy()</code> compares it against ground truth.</span>
+                            <span class="flow-title">Scoring</span>
+                            <span class="flow-detail"><code>extract_final_answer()</code> + <code>evaluate_accuracy()</code> mark each answer right or wrong.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>PromptingStrategiesResponse</code> with accuracy, token counts, and latency for all 3 strategies.</span>
+                            <span class="flow-detail">Shows a side-by-side table of the three strategies.</span>
                         </div>
                     </div>
                 </div>
@@ -197,27 +202,21 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry
-                                Route["main.py<br/>prompting_strategies_service(req)"]:::fn
-                                Svc["23_prompting_strategies.py<br/>run_prompting_strategies(question, expected)"]:::fn
-                                LLM[("OpenAI API<br/>Direct / Zero-Shot CoT / Few-Shot CoT")]:::ext
-                                Score["extract_final_answer() +<br/>evaluate_accuracy()"]:::fn
-                                Ret(["PromptingStrategiesResponse JSON<br/>{ strategies: [StrategyResult x 3] }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_prompting_strategies()"| Svc
-                                Svc -->|"③ run 3 prompt variants"| LLM
-                                LLM -.->|"returns text + usage tokens"| Svc
-                                Svc -->|"④ extract answer & check accuracy"| Score
-                                Score -.->|"returns (extracted, is_correct)"| Svc
-                                Svc -.->|"returns benchmark dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry -->|"question"| R["main.py<br/>prompting_strategies_service()"]:::fn
+    R -->|"question, expected"| S["23_prompting_strategies.py<br/>run_prompting_strategies()"]:::fn
+    S -->|"Direct prompt"| O[("OpenAI API")]:::ext
+    S -->|"Zero-Shot CoT prompt"| O
+    S -->|"Few-Shot CoT prompt"| O
+    O -->|"3 replies + token usage"| S
+    S -->|"reply"| X["extract_final_answer()<br/>evaluate_accuracy()"]:::fn
+    X -->|"answer, correct?"| S
+    S -->|"strategies table"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -228,7 +227,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -243,7 +242,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">172 lines</span>
+                        <span class="topic-meta-chip">167 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -381,20 +380,15 @@ def run_prompting_strategies(
     # ③ Run each strategy and measure latency and token usage
     for name, p_text in prompts.items():
         start_t = time.perf_counter()
-        try:
-            resp = client.chat.completions.create(
-                model=model,
-                messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: p_text}],
-                temperature=0.3,
-            )
-            dur = time.perf_counter() - start_t
-            text = resp.choices[0].message.content or &quot;&quot;
-            p_tok = resp.usage.prompt_tokens if resp.usage else 0
-            c_tok = resp.usage.completion_tokens if resp.usage else 0
-        except Exception as exc:
-            dur = time.perf_counter() - start_t
-            text = f&quot;Error: {str(exc)}&quot;
-            p_tok, c_tok = 0, 0
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: p_text}],
+            temperature=0.3,
+        )
+        dur = time.perf_counter() - start_t
+        text = resp.choices[0].message.content or &quot;&quot;
+        p_tok = resp.usage.prompt_tokens
+        c_tok = resp.usage.completion_tokens
 
         # ④ Extract the final answer and score accuracy against ground truth
         extracted = extract_final_answer(text)

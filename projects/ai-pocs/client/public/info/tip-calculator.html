@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Tip & Split Agent &middot; AI POCs</title>
     <meta name="description"
-        content="💵 Tip &amp;amp; Split Agent chains two dependent mathematical tools—calculate_tip(bill_amount, tip_percent) and split_bill(total_amount, num_people)—across sequential agent turns." />
+        content="💵 Tip &amp;amp; Split Agent lets a Strands agent read a bill question in plain English, pull out the bill, tip % and number of people, and call one tool, calculate_tip(bill_amount, tip_percentage, num_people)." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">💵 Tip & Split Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>💵 Tip &amp; Split Agent</strong> chains two dependent mathematical tools—<code>calculate_tip(bill_amount, tip_percent)</code> and <code>split_bill(total_amount, num_people)</code>—across sequential agent turns. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>💵 Tip &amp; Split Agent</strong> lets a Strands agent read a bill question in plain English, pull out the bill, tip % and number of people, and call one tool, <code>calculate_tip(bill_amount, tip_percentage, num_people)</code>.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>💵 Tip &amp; Split Agent</strong> chains two dependent mathematical tools—<code>calculate_tip(bill_amount, tip_percent)</code> and <code>split_bill(total_amount, num_people)</code>—across sequential agent turns.</p>
-                    <p>Because <code>split_bill</code> requires the <code>total_with_tip</code> output produced by <code>calculate_tip</code>, the agent runs an iterative loop (up to 5 turns). In turn 1 it computes the tip and total bill; in turn 2 it feeds that exact total into <code>split_bill</code> to find the per-person share.</p>
+                    <p>The point is <em>intent over keywords</em>: &quot;The bill is $85, 20% tip, split 4 ways&quot; and &quot;Bill is $120, we want to tip 18%, split between 3 people&quot; both end up as the same structured tool call, whatever the wording.</p>
+                    <p>The tool does the maths exactly (no model arithmetic), and the card shows the breakdown: the tool's arguments plus the dict it returned, read from the agent's <code>toolUse</code> and <code>toolResult</code> messages.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Sequential Tool Dependency:</strong> When Tool B depends on the output of Tool A, a multi-turn <code>for _ in range(max_turns)</code> loop lets the LLM observe Tool A's result before invoking Tool B.</li><li><strong>Structured Dictionary Outputs:</strong> Returning typed JSON keys (<code>tip</code>, <code>total_with_tip</code>, <code>per_person</code>) prevents rounding ambiguity between steps.</li></ul>
+                    <ul>
+                        <li><strong>Parameter extraction:</strong> the model fills typed arguments (<code>float</code>, <code>int</code>) from free text.</li>
+                        <li><strong>Default arguments:</strong> <code>num_people: int = 1</code> becomes an optional tool parameter.</li>
+                        <li><strong>Tools for exact work:</strong> let code do the arithmetic; let the model do the language.</li>
+                        <li><strong>Reading results:</strong> Strands stores a dict tool result as JSON text in the <code>toolResult</code> block.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,32 +155,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>TipCalculatorCard.tsx</code> sends <code>POST /api/tip-calculator</code> with a bill-splitting query.</span>
+                            <span class="flow-detail"><code>TipCalculatorCard.tsx</code> sends <code>POST /api/tip-calculator</code> with <code>{ query }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>tip_calculator_service(req)</code> calls <code>run_tip_calculator_agent(q)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>tip_calculator_service(req)</code> calls <code>run_tip_calculator_agent(query)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Turn 1: Tip Calculation (<code>14_tip_calculator.py</code>)</span>
-                            <span class="flow-detail">The LLM calls <code>calculate_tip(bill_amount=85, tip_percent=20)</code>, receiving <code>{"tip": 17.0, "total_with_tip": 102.0}</code>.</span>
+                            <span class="flow-title">Agent (<code>14_tip_calculator.py</code>)</span>
+                            <span class="flow-detail">Bedrock extracts the numbers and calls <code>calculate_tip</code>; Strands runs it.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Turn 2: Bill Split</span>
-                            <span class="flow-detail">Seeing <code>total_with_tip=102.0</code>, the LLM calls <code>split_bill(total_amount=102.0, num_people=4)</code>, receiving <code>{"per_person": 25.5}</code>.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Final Answer</span>
-                            <span class="flow-detail">The LLM summarizes the tip, total bill, and per-person split.</span>
+                            <span class="flow-title">Read the trace</span>
+                            <span class="flow-detail">The service collects the <code>toolUse</code> arguments and the JSON <code>toolResult</code> into <code>calculation</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>TipCalculatorResponse</code> with the final answer and ordered list of <code>steps</code>.</span>
+                            <span class="flow-detail">Shows the answer and the bill / tip / total / per-person breakdown.</span>
                         </div>
                     </div>
                 </div>
@@ -202,34 +202,23 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["TipCalculatorCard.tsx<br/>POST /api/tip-calculator { query }"]:::entry
-                                Route["main.py<br/>tip_calculator_service(req)"]:::fn
-                                Svc["14_tip_calculator.py<br/>run_tip_calculator_agent(query)"]:::fn
-                                LLM[("OpenAI API<br/>Multi-turn Tool Loop")]:::ext
-                                Tip["14_tip_calculator.py<br/>calculate_tip(bill, pct)"]:::fn
-                                Split["14_tip_calculator.py<br/>split_bill(total, people)"]:::fn
-                                Ret(["TipCalculatorResponse JSON<br/>{ answer, steps }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_tip_calculator_agent()"| Svc
-                                Svc -->|"③ Turn 1: query + tool schemas"| LLM
-                                LLM -.->|"returns call: calculate_tip"| Svc
-                                Svc -->|"④ compute tip & total"| Tip
-                                Tip -.->|"returns { tip, total_with_tip }"| Svc
-                                Svc -->|"⑤ Turn 2: feed total_with_tip"| LLM
-                                LLM -.->|"returns call: split_bill"| Svc
-                                Svc -->|"⑥ divide total by num_people"| Split
-                                Split -.->|"returns { per_person }"| Svc
-                                Svc -->|"⑦ Turn 3: synthesize summary"| LLM
-                                LLM -.->|"returns final answer"| Svc
-                                Svc -.->|"returns { answer, steps }"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["TipCalculatorCard.tsx<br/>POST /api/tip-calculator"]:::entry -->|"query"| R["main.py<br/>tip_calculator_service()"]:::fn
+    R -->|"query"| S["14_tip_calculator.py<br/>run_tip_calculator_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"toolUse: calculate_tip"| A
+    A -->|"bill, tip %, people"| T0["calculate_tip()"]:::fn
+    T0 -->|"bill, tip, total, per_person"| A
+    A -->|"toolResult"| B
+    B -->|"final text"| A
+    A -->|"reply + agent.messages"| S
+    S -->|"reply + calculation"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -240,7 +229,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -255,7 +244,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">183 lines</span>
+                        <span class="topic-meta-chip">105 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -282,10 +271,13 @@ Run directly:
 import json
 import os
 from typing import Any, Dict, List, Optional
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -298,13 +290,6 @@ class TipCalculatorRequest(BaseModel):
     )
 
 
-class TipBreakdown(BaseModel):
-    bill: float
-    tip: float
-    total: float
-    per_person: float
-
-
 class TipCalculatorResponse(BaseModel):
     &quot;&quot;&quot;Output payload from Tip Calculator Agent.&quot;&quot;&quot;
 
@@ -315,21 +300,30 @@ class TipCalculatorResponse(BaseModel):
     provider: str
 
 
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+
+@tool
 def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict:
-    &quot;&quot;&quot;Calculate tip and split the bill among people.&quot;&quot;&quot;
-    # ① Compute tip amount, total bill, and per-person split
+    &quot;&quot;&quot;Calculate tip and split the bill among people.
+
+    Args:
+        bill_amount: Total bill amount in dollars
+        tip_percentage: Tip percentage (e.g., 15, 18, 20)
+        num_people: Number of people splitting the bill (default: 1)
+    &quot;&quot;&quot;
+    # Compute the tip amount, combined total, and per-person share
     tip = bill_amount * (tip_percentage / 100)
     total = bill_amount + tip
-    per_person = total / (num_people if num_people &gt; 0 else 1)
+    per_person = total / num_people
 
-    # ② Return rounded monetary breakdown dictionary
+    # Return a dictionary with rounded monetary values
     return {
-        &quot;bill&quot;: round(float(bill_amount), 2),
-        &quot;tip&quot;: round(float(tip), 2),
-        &quot;total&quot;: round(float(total), 2),
-        &quot;per_person&quot;: round(float(per_person), 2),
-        &quot;num_people&quot;: num_people,
-        &quot;tip_percentage&quot;: tip_percentage,
+        &quot;bill&quot;: bill_amount,
+        &quot;tip&quot;: round(tip, 2),
+        &quot;total&quot;: round(total, 2),
+        &quot;per_person&quot;: round(per_person, 2),
     }
 
 
@@ -337,112 +331,29 @@ def run_tip_calculator_agent(
     query: str = &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;,
 ) -&gt; dict:
     &quot;&quot;&quot;Run the Tip Calculator Agent.&quot;&quot;&quot;
-    # ① Load AWS credentials and initialize state for tool calls and calculation output
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+    # ③ Initialize the Strands Agent with BedrockModel and the calculate_tip tool
+    agent = Agent(model=BedrockModel(model_id=model_id), tools=[calculate_tip])
 
-    tool_calls_recorded = []
-    calc_result = None
+    # ④ The agent extracts bill, tip % and group size from plain English and calls the tool
+    response = agent(query)
 
-    # ② Run Strands Agent on Bedrock if AWS credentials are configured
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent, tool
-            from strands.models.bedrock import BedrockModel
+    # ⑤ Collect every tool call (toolUse) and tool output (toolResult) from the message history
+    blocks = [block for message in agent.messages for block in message[&quot;content&quot;]]
+    tool_uses = [b[&quot;toolUse&quot;] for b in blocks if &quot;toolUse&quot; in b]
+    tool_results = [b[&quot;toolResult&quot;] for b in blocks if &quot;toolResult&quot; in b]
 
-            @tool
-            def tip_tool(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict:
-                &quot;&quot;&quot;Calculate tip and split the bill among people.&quot;&quot;&quot;
-                nonlocal calc_result
-                calc = calculate_tip(bill_amount, tip_percentage, num_people)
-                calc_result = calc
-                tool_calls_recorded.append(f&quot;calculate_tip({bill_amount}, {tip_percentage}%, {num_people}p) -&gt; {calc}&quot;)
-                return calc
-
-            agent = Agent(model=BedrockModel(model_id=bedrock_model_id), tools=[tip_tool])
-            reply = agent(query)
-            return {
-                &quot;query&quot;: query,
-                &quot;response&quot;: str(reply),
-                &quot;calculation&quot;: calc_result,
-                &quot;tool_calls&quot;: tool_calls_recorded,
-                &quot;provider&quot;: f&quot;Strands + Bedrock ({bedrock_model_id})&quot;,
-            }
-        except Exception as exc:
-            print(f&quot;Strands Bedrock failed ({exc}), falling back to OpenAI&quot;)
-
-    # ③ Configure OpenAI client and calculate_tip schema for intent-driven extraction
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
-    )
-
-    tools_schema = [
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;calculate_tip&quot;,
-                &quot;description&quot;: &quot;Calculate tip and split the bill among people based on bill amount, tip percentage, and group size.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;bill_amount&quot;: {&quot;type&quot;: &quot;number&quot;, &quot;description&quot;: &quot;Total bill amount before tip&quot;},
-                        &quot;tip_percentage&quot;: {&quot;type&quot;: &quot;number&quot;, &quot;description&quot;: &quot;Tip percentage (e.g. 15, 18, 20)&quot;},
-                        &quot;num_people&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Number of people sharing the bill&quot;, &quot;default&quot;: 1},
-                    },
-                    &quot;required&quot;: [&quot;bill_amount&quot;, &quot;tip_percentage&quot;],
-                },
-            },
-        }
-    ]
-
-    messages = [
-        {
-            &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: &quot;You are a helpful dining bill and tip assistant. Always use the calculate_tip tool to perform accurate calculations.&quot;,
-        },
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: query},
-    ]
-
-    # ④ Run the agent loop to extract parameters from natural language and compute the split
-    for _ in range(5):
-        resp = client.chat.completions.create(
-            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-            messages=messages,
-            tools=tools_schema,
-            tool_choice=&quot;auto&quot;,
-        )
-        msg = resp.choices[0].message
-        messages.append(msg)
-
-        if not msg.tool_calls:
-            return {
-                &quot;query&quot;: query,
-                &quot;response&quot;: msg.content or &quot;&quot;,
-                &quot;calculation&quot;: calc_result,
-                &quot;tool_calls&quot;: tool_calls_recorded,
-                &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (Intent Agent)&quot;,
-            }
-
-        for tc in msg.tool_calls:
-            args = json.loads(tc.function.arguments or &quot;{}&quot;)
-            calc_result = calculate_tip(
-                bill_amount=args.get(&quot;bill_amount&quot;, 0.0),
-                tip_percentage=args.get(&quot;tip_percentage&quot;, 15.0),
-                num_people=args.get(&quot;num_people&quot;, 1),
-            )
-            tool_calls_recorded.append(
-                f&quot;calculate_tip(bill={calc_result[&#x27;bill&#x27;]}, tip={calc_result[&#x27;tip_percentage&#x27;]}%, split={calc_result[&#x27;num_people&#x27;]}) -&gt; total: ${calc_result[&#x27;total&#x27;]}&quot;
-            )
-            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(calc_result)})
+    # ⑥ Show the last calculation: the tool&#x27;s arguments plus the dict it returned (stored as JSON text)
+    calculation = None
+    if tool_results and tool_results[-1][&quot;status&quot;] == &quot;success&quot;:
+        result = json.loads(tool_results[-1][&quot;content&quot;][0][&quot;text&quot;])
+        calculation = {&quot;num_people&quot;: 1, **tool_uses[-1][&quot;input&quot;], **result}
 
     return {
         &quot;query&quot;: query,
-        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;&quot;),
-        &quot;calculation&quot;: calc_result,
-        &quot;tool_calls&quot;: tool_calls_recorded,
-        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+        &quot;response&quot;: str(response),
+        &quot;calculation&quot;: calculation,
+        &quot;tool_calls&quot;: [f&quot;{t[&#x27;name&#x27;]}({t[&#x27;input&#x27;]})&quot; for t in tool_uses],
+        &quot;provider&quot;: f&quot;Strands + Bedrock ({model_id})&quot;,
     }
 
 

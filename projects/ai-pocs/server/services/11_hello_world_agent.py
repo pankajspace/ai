@@ -1,20 +1,22 @@
 """AWS Strands Hello World Agent Service.
 
 Demonstrates the simplest possible autonomous agent:
-1. Configures foundation model (Amazon Nova Lite on Bedrock, or OpenAI fallback).
-2. Initializes an Agent instance with an agentic loop.
-3. Executes a natural language query and streams/returns the response.
+1. Configures a foundation model (Amazon Nova Lite on Bedrock).
+2. Wraps the model in a Strands Agent instance (the agentic loop).
+3. Executes a natural language prompt and returns the reply.
 
 Run directly:
     python projects/ai-pocs/server/services/11_hello_world_agent.py
 """
 
 import os
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
-# Load environment configuration
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -35,64 +37,27 @@ class HelloWorldAgentResponse(BaseModel):
     provider: str
 
 
+# ② Configure the Bedrock foundation model (Amazon Nova Lite is fast and cost-effective)
+model_id = os.getenv("BEDROCK_NOVA_LITE", os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0"))
+model = BedrockModel(model_id=model_id)
+
+
 def run_hello_world_agent(prompt: str = "Hello! Tell me a fun fact about AI agents.") -> dict:
-    """Execute the Hello World Agent.
+    """Execute the Hello World Agent on Amazon Bedrock via Strands."""
+    # ③ Wrap the foundation model in a Strands Agent instance
+    agent = Agent(model=model)
 
-    Uses Amazon Bedrock Nova Lite if AWS credentials are configured,
-    otherwise gracefully falls back to OpenAI with provider indication.
-    """
-    # ① Check AWS credentials and target Bedrock model identifier
-    aws_key = os.getenv("AWS_ACCESS_KEY_ID")
-    aws_secret = os.getenv("AWS_SECRET_ACCESS_KEY")
-    bedrock_model_id = os.getenv("BEDROCK_NOVA_LITE", os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0"))
+    # ④ Execute the natural language prompt through the agentic loop
+    response = agent(prompt)
 
-    # ② Attempt execution through Strands Agent on Amazon Bedrock Nova Lite
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent
-            from strands.models.bedrock import BedrockModel
-
-            model = BedrockModel(model_id=bedrock_model_id)
-            agent = Agent(model=model)
-            response = agent(prompt)
-            return {
-                "prompt": prompt,
-                "response": str(response),
-                "provider": f"Amazon Bedrock ({bedrock_model_id}) via Strands",
-            }
-        except Exception as exc:
-            # If Bedrock connection fails, continue to fallback
-            print(f"Bedrock invocation failed ({exc}), falling back to OpenAI")
-
-    # ③ OpenAI Fallback when AWS credentials are unavailable
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-    )
-    completion = client.chat.completions.create(
-        model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
-        messages=[
-            {
-                "role": "system",
-                "content": "You are a helpful Strands-style AI agent powered by Amazon Bedrock Nova Lite.",
-            },
-            {"role": "user", "content": prompt},
-        ],
-        temperature=0.7,
-    )
-    # ④ Extract and return the assistant reply with provider metadata
-    reply = completion.choices[0].message.content or ""
     return {
         "prompt": prompt,
-        "response": reply,
-        "provider": f"OpenAI {os.getenv('OPENAI_MODEL', 'gpt-4o-mini')} (Strands Bedrock Fallback)",
+        "response": str(response),
+        "provider": f"Amazon Bedrock ({model_id}) via Strands",
     }
 
 
 if __name__ == "__main__":
-    test_prompt = "Hello! Tell me a fun fact about AI agents."
-    print("Testing Hello World Agent...")
-    res = run_hello_world_agent(test_prompt)
+    res = run_hello_world_agent()
     print("Provider:", res["provider"])
     print("Response:\n", res["response"])
-

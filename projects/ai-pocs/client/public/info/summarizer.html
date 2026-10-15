@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Text Summarizer &middot; AI POCs</title>
     <meta name="description"
-        content="📝 Text Summarizer uses LangChain Expression Language (LCEL) to pipe a ChatPromptTemplate into ChatOpenAI and StrOutputParser (prompt | llm | parser), condensing any passage into one sentence." />
+        content="📝 Text Summarizer builds a LangChain LCEL chain &amp;mdash; prompt | model | parser &amp;mdash; and runs it on the text you paste to get a short, friendly summary from OpenAI." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">📝 Text Summarizer<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>📝 Text Summarizer</strong> uses LangChain Expression Language (LCEL) to pipe a <code>ChatPromptTemplate</code> into <code>ChatOpenAI</code> and <code>StrOutputParser</code> (<code>prompt | llm | parser</code>), condensing any passage into one sentence. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>📝 Text Summarizer</strong> builds a LangChain LCEL chain &mdash; <code>prompt | model | parser</code> &mdash; and runs it on the text you paste to get a short, friendly summary from OpenAI.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>📝 Text Summarizer</strong> uses LangChain Expression Language (LCEL) to pipe a <code>ChatPromptTemplate</code> into <code>ChatOpenAI</code> and <code>StrOutputParser</code> (<code>prompt | llm | parser</code>), condensing any passage into one sentence.</p>
-                    <p>Instead of manually formatting prompt strings and unpacking nested SDK objects, LCEL composes reusable Runnable stages with the <code>|</code> pipe operator. Invoking the chain with <code>{"text": text}</code> runs variable substitution, model inference, and string extraction in a single declarative pipeline.</p>
+                    <p>LangChain Expression Language (LCEL) lets you snap small parts together with the <code>|</code> operator. Here the prompt template fills in the text, the chat model answers, and the output parser turns the reply message into a plain string.</p>
+                    <p>The chain is built once when the module loads; every request just calls <code>chain.invoke({&quot;data&quot;: text})</code>.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>LangChain Expression Language (LCEL):</strong> Overloads Python's <code>|</code> operator to chain <code>Runnable</code> components with unified <code>.invoke()</code>, <code>.stream()</code>, and <code>.batch()</code> interfaces.</li><li><strong>ChatPromptTemplate:</strong> Parameterizes prompt templates with named placeholders like <code>{text}</code> so user input is cleanly separated from instructions.</li><li><strong>StrOutputParser:</strong> Unwraps an <code>AIMessage</code> response object directly into a plain Python <code>str</code>.</li></ul>
+                    <ul>
+                        <li><strong>Prompt templates:</strong> <code>ChatPromptTemplate.from_template()</code> keeps the instruction fixed and fills <code>{data}</code> by name.</li>
+                        <li><strong>Chat model wrapper:</strong> <code>ChatOpenAI</code> is the LangChain wrapper around the OpenAI API (temperature 0.3 for steady summaries).</li>
+                        <li><strong>Output parsers:</strong> <code>StrOutputParser()</code> unwraps the AI message into text.</li>
+                        <li><strong>Pipes:</strong> <code>prompt | model | parser</code> means &quot;then&quot; &mdash; the output of each step is the input of the next.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +155,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>SummarizerCard.tsx</code> sends <code>POST /api/summarize</code> with <code>{"text": "..."}</code>.</span>
+                            <span class="flow-detail"><code>SummarizerCard.tsx</code> sends <code>POST /api/summarize</code> with <code>{ text }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>summarizer_service(req)</code> validates the text and calls <code>summarize(text_content)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>summarizer_service(req)</code> checks the text and calls <code>summarize(text)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">LCEL Chain (<code>03_langchain_summarizer.py</code>)</span>
-                            <span class="flow-detail"><code>summarize()</code> builds <code>prompt | llm | parser</code> and calls <code>chain.invoke({"text": text})</code>.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">OpenAI API</span>
-                            <span class="flow-detail"><code>ChatOpenAI</code> executes the formatted prompt and <code>StrOutputParser</code> extracts the summary string.</span>
+                            <span class="flow-title">LCEL chain (<code>03_langchain_summarizer.py</code>)</span>
+                            <span class="flow-detail"><code>prompt</code> fills the template &rarr; <code>model</code> calls OpenAI &rarr; <code>parser</code> returns a string.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">The parsed summary string is returned in <code>SummarizerResponse(text, summary)</code>.</span>
+                            <span class="flow-detail">Shows <code>{ text, summary }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -197,27 +197,19 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["SummarizerCard.tsx<br/>POST /api/summarize { text }"]:::entry
-                                Route["main.py<br/>summarizer_service(req: SummarizerRequest)"]:::fn
-                                Svc["03_langchain_summarizer.py<br/>summarize(text)"]:::fn
-                                Chain["LCEL Chain<br/>ChatPromptTemplate | ChatOpenAI | StrOutputParser"]:::fn
-                                LLM[("OpenAI API<br/>gpt-4o-mini")]:::ext
-                                Ret(["SummarizerResponse JSON<br/>{ text, summary }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② validate text"| Svc
-                                Svc -->|"③ chain.invoke({ text })"| Chain
-                                Chain -->|"④ formatted PromptValue"| LLM
-                                LLM -.->|"returns AIMessage"| Chain
-                                Chain -.->|"returns parsed str"| Svc
-                                Svc -.->|"returns summary"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["SummarizerCard.tsx<br/>POST /api/summarize"]:::entry -->|"text"| R["main.py<br/>summarizer_service()"]:::fn
+    R -->|"text"| S["03_langchain_summarizer.py<br/>summarize()"]:::fn
+    S -->|"data = text"| P["prompt<br/>ChatPromptTemplate"]:::fn
+    P -->|"filled prompt"| M[("model<br/>ChatOpenAI")]:::ext
+    M -->|"AI message"| Q["parser<br/>StrOutputParser"]:::fn
+    Q -->|"summary string"| S
+    S -->|"summary"| R
+    R -->|"JSON { text, summary }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -228,7 +220,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 

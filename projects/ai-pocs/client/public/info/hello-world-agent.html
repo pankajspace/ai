@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Hello World Agent &middot; AI POCs</title>
     <meta name="description"
-        content="🌐 Hello World Agent demonstrates the minimal AWS Strands Agent initialization pattern with multi-provider fallback (AWS Bedrock → Google Gemini → OpenAI)." />
+        content="🌐 Hello World Agent is the smallest Strands agent: wrap an Amazon Bedrock model (Nova Lite) in Agent(model=...) and call it with your prompt." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🌐 Hello World Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🌐 Hello World Agent</strong> demonstrates the minimal AWS Strands Agent initialization pattern with multi-provider fallback (AWS Bedrock → Google Gemini → OpenAI). Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🌐 Hello World Agent</strong> is the smallest Strands agent: wrap an Amazon Bedrock model (Nova Lite) in <code>Agent(model=...)</code> and call it with your prompt.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🌐 Hello World Agent</strong> demonstrates the minimal AWS Strands Agent initialization pattern with multi-provider fallback (AWS Bedrock → Google Gemini → OpenAI).</p>
-                    <p>In AWS Strands, an agent is created with <code>Agent(system_prompt=...)</code> and invoked as a callable <code>agent(prompt)</code>. This service checks environment credentials in priority order so the demo runs seamlessly whether backed by AWS Strands/Bedrock, Gemini, or OpenAI.</p>
+                    <p>A Strands <code>Agent</code> is a model plus an agentic loop. With no tools, the loop is a single model call, so this demo is the &quot;hello world&quot; that every later Strands demo builds on.</p>
+                    <p><code>BedrockModel(model_id=...)</code> uses your AWS credentials (from <code>.env</code> or the instance role) to call Bedrock. A new <code>Agent</code> is created for each request so one visitor's conversation never leaks into another's.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Callable Agent Abstraction:</strong> Strands represents an agent as a stateful callable object encapsulating model configuration, system instructions, and tools.</li><li><strong>Multi-Provider Fallback Chain:</strong> Gracefully degrades across Bedrock, Gemini, and OpenAI based on configured credentials while reporting which provider fulfilled the request.</li></ul>
+                    <ul>
+                        <li><strong>Model vs agent:</strong> the model generates text; the agent wraps it with a loop, tools and conversation history.</li>
+                        <li><strong>Bedrock:</strong> AWS's managed model service; the model is picked with <code>BEDROCK_MODEL_ID</code> / <code>BEDROCK_NOVA_LITE</code>.</li>
+                        <li><strong>Calling an agent:</strong> <code>agent(prompt)</code> runs the loop and returns an <code>AgentResult</code>; <code>str(result)</code> is the reply text.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>HelloWorldAgentCard.tsx</code> sends <code>POST /api/hello-world-agent</code> with <code>{"prompt": "..."}</code>.</span>
+                            <span class="flow-detail"><code>HelloWorldAgentCard.tsx</code> sends <code>POST /api/hello-world-agent</code> with <code>{ prompt }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>hello_world_agent_service(req)</code> normalizes the prompt and calls <code>run_hello_world_agent(prompt_text)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>hello_world_agent_service(req)</code> calls <code>run_hello_world_agent(prompt)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Provider Selection (<code>11_hello_world_agent.py</code>)</span>
-                            <span class="flow-detail">Checks for AWS Strands/Bedrock credentials, then <code>GEMINI_API_KEY</code>, then <code>OPENAI_API_KEY</code>.</span>
+                            <span class="flow-title">Service (<code>11_hello_world_agent.py</code>)</span>
+                            <span class="flow-detail"><code>Agent(model=BedrockModel(...))</code> runs <code>agent(prompt)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Model Invocation</span>
-                            <span class="flow-detail">Executes the prompt with a concise system instruction and captures the active provider name.</span>
+                            <span class="flow-title">Amazon Bedrock</span>
+                            <span class="flow-detail">Nova Lite writes the reply.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>HelloWorldAgentResponse</code> containing <code>prompt</code>, <code>response</code>, and <code>provider</code>.</span>
+                            <span class="flow-detail">Shows <code>{ response, provider }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -197,24 +201,19 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["HelloWorldAgentCard.tsx<br/>POST /api/hello-world-agent { prompt }"]:::entry
-                                Route["main.py<br/>hello_world_agent_service(req)"]:::fn
-                                Svc["11_hello_world_agent.py<br/>run_hello_world_agent(prompt)"]:::fn
-                                LLM[("Strands Bedrock / Gemini / OpenAI<br/>Provider Fallback Chain")]:::ext
-                                Ret(["HelloWorldAgentResponse JSON<br/>{ prompt, response, provider }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_hello_world_agent()"| Svc
-                                Svc -->|"③ invoke first configured provider"| LLM
-                                LLM -.->|"returns completion"| Svc
-                                Svc -.->|"returns { prompt, response, provider }"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["HelloWorldAgentCard.tsx<br/>POST /api/hello-world-agent"]:::entry -->|"prompt"| R["main.py<br/>hello_world_agent_service()"]:::fn
+    R -->|"prompt"| S["11_hello_world_agent.py<br/>run_hello_world_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"reply"| A
+    A -->|"AgentResult"| S
+    S -->|"reply text"| R
+    R -->|"JSON { response, provider }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -225,7 +224,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -240,7 +239,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">97 lines</span>
+                        <span class="topic-meta-chip">63 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -255,20 +254,22 @@
                     <pre><code data-lang="python">&quot;&quot;&quot;AWS Strands Hello World Agent Service.
 
 Demonstrates the simplest possible autonomous agent:
-1. Configures foundation model (Amazon Nova Lite on Bedrock, or OpenAI fallback).
-2. Initializes an Agent instance with an agentic loop.
-3. Executes a natural language query and streams/returns the response.
+1. Configures a foundation model (Amazon Nova Lite on Bedrock).
+2. Wraps the model in a Strands Agent instance (the agentic loop).
+3. Executes a natural language prompt and returns the reply.
 
 Run directly:
     python projects/ai-pocs/server/services/11_hello_world_agent.py
 &quot;&quot;&quot;
 
 import os
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
 
-# Load environment configuration
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel, Field
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
 
@@ -289,64 +290,28 @@ class HelloWorldAgentResponse(BaseModel):
     provider: str
 
 
+# ② Configure the Bedrock foundation model (Amazon Nova Lite is fast and cost-effective)
+model_id = os.getenv(&quot;BEDROCK_NOVA_LITE&quot;, os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;))
+model = BedrockModel(model_id=model_id)
+
+
 def run_hello_world_agent(prompt: str = &quot;Hello! Tell me a fun fact about AI agents.&quot;) -&gt; dict:
-    &quot;&quot;&quot;Execute the Hello World Agent.
+    &quot;&quot;&quot;Execute the Hello World Agent on Amazon Bedrock via Strands.&quot;&quot;&quot;
+    # ③ Wrap the foundation model in a Strands Agent instance
+    agent = Agent(model=model)
 
-    Uses Amazon Bedrock Nova Lite if AWS credentials are configured,
-    otherwise gracefully falls back to OpenAI with provider indication.
-    &quot;&quot;&quot;
-    # ① Check AWS credentials and target Bedrock model identifier
-    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
-    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
-    bedrock_model_id = os.getenv(&quot;BEDROCK_NOVA_LITE&quot;, os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;))
+    # ④ Execute the natural language prompt through the agentic loop
+    response = agent(prompt)
 
-    # ② Attempt execution through Strands Agent on Amazon Bedrock Nova Lite
-    if aws_key and aws_secret:
-        try:
-            from strands import Agent
-            from strands.models.bedrock import BedrockModel
-
-            model = BedrockModel(model_id=bedrock_model_id)
-            agent = Agent(model=model)
-            response = agent(prompt)
-            return {
-                &quot;prompt&quot;: prompt,
-                &quot;response&quot;: str(response),
-                &quot;provider&quot;: f&quot;Amazon Bedrock ({bedrock_model_id}) via Strands&quot;,
-            }
-        except Exception as exc:
-            # If Bedrock connection fails, continue to fallback
-            print(f&quot;Bedrock invocation failed ({exc}), falling back to OpenAI&quot;)
-
-    # ③ OpenAI Fallback when AWS credentials are unavailable
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
-    )
-    completion = client.chat.completions.create(
-        model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-        messages=[
-            {
-                &quot;role&quot;: &quot;system&quot;,
-                &quot;content&quot;: &quot;You are a helpful Strands-style AI agent powered by Amazon Bedrock Nova Lite.&quot;,
-            },
-            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt},
-        ],
-        temperature=0.7,
-    )
-    # ④ Extract and return the assistant reply with provider metadata
-    reply = completion.choices[0].message.content or &quot;&quot;
     return {
         &quot;prompt&quot;: prompt,
-        &quot;response&quot;: reply,
-        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (Strands Bedrock Fallback)&quot;,
+        &quot;response&quot;: str(response),
+        &quot;provider&quot;: f&quot;Amazon Bedrock ({model_id}) via Strands&quot;,
     }
 
 
 if __name__ == &quot;__main__&quot;:
-    test_prompt = &quot;Hello! Tell me a fun fact about AI agents.&quot;
-    print(&quot;Testing Hello World Agent...&quot;)
-    res = run_hello_world_agent(test_prompt)
+    res = run_hello_world_agent()
     print(&quot;Provider:&quot;, res[&quot;provider&quot;])
     print(&quot;Response:\n&quot;, res[&quot;response&quot;])</code></pre>
                 </div>

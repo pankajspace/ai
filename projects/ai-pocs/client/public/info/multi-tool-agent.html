@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Multi-Tool Agent &middot; AI POCs</title>
     <meta name="description"
-        content="🛠️ Multi-Tool Agent equips a LangChain agent with three distinct tools (get_weather, multiply, word_Stats) and lets the LLM dynamically select one or more tools in a single query." />
+        content="🛠️ Multi-Tool Agent gives the same LangChain agent four tools &amp;mdash; get_weather, add, multiply and get_population &amp;mdash; and lets the model pick zero, one or several for each question." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🛠️ Multi-Tool Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🛠️ Multi-Tool Agent</strong> equips a LangChain agent with three distinct tools (<code>get_weather</code>, <code>multiply</code>, <code>word_Stats</code>) and lets the LLM dynamically select one or more tools in a single query. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🛠️ Multi-Tool Agent</strong> gives the same LangChain agent four tools &mdash; <code>get_weather</code>, <code>add</code>, <code>multiply</code> and <code>get_population</code> &mdash; and lets the model pick zero, one or several for each question.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🛠️ Multi-Tool Agent</strong> equips a LangChain agent with three distinct tools (<code>get_weather</code>, <code>multiply</code>, <code>word_Stats</code>) and lets the LLM dynamically select one or more tools in a single query.</p>
-                    <p>When a user asks a compound question like <em>"What's the weather in Tokyo, and what is 12 times 12?"</em>, the LLM inspects all three tool docstrings, emits parallel or sequential tool calls for both <code>get_weather</code> and <code>multiply</code>, and merges their outputs into a single cohesive response.</p>
+                    <p>With more than one tool, the model has to choose. The docstrings are what it reads to decide: &quot;Multiply two numbers together&quot; vs &quot;Get the current weather for a given city&quot;.</p>
+                    <p>A question like &quot;What's the weather in Tokyo, and what is 12 times 12?&quot; makes the agent call two different tools before answering; &quot;Who wrote Romeo and Juliet?&quot; needs none.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Semantic Tool Routing:</strong> The model discriminates between tools based on their docstrings and parameter signatures.</li><li><strong>Multi-Tool Composition:</strong> Modern tool-calling models can emit multiple <code>tool_calls</code> in one turn or chain them across turns.</li><li><strong>Deterministic Offloading:</strong> Offloading arithmetic (<code>multiply</code>) and character counting (<code>word_Stats</code>) to Python eliminates LLM tokenization math errors.</li></ul>
+                    <ul>
+                        <li><strong>Tool selection:</strong> the model compares the question with every tool description.</li>
+                        <li><strong>Multiple calls per turn:</strong> the agent can request several tools and combine their results.</li>
+                        <li><strong>Focused tools:</strong> small single-purpose tools are easier for the model to pick correctly.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>MultiToolAgentCard.tsx</code> sends <code>POST /api/multi-tool-agent</code> with a compound query.</span>
+                            <span class="flow-detail"><code>MultiToolAgentCard.tsx</code> sends <code>POST /api/multi-tool-agent</code> with <code>{ message }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>multi_tool_agent_service(req)</code> validates the message and calls <code>run_multi_tool_agent(message_text)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>multi_tool_agent_service(req)</code> calls <code>run_multi_tool_agent(message)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent Initialization (<code>07_langchain_multi_tools.py</code>)</span>
-                            <span class="flow-detail"><code>create_agent()</code> registers <code>[get_weather, multiply, word_Stats]</code> with <code>ChatOpenAI</code>.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Multi-Tool Dispatch</span>
-                            <span class="flow-detail">The agent executes each tool selected by the LLM and records every invocation in <code>tools_called</code>.</span>
+                            <span class="flow-title">Agent (<code>07_langchain_multi_tools.py</code>)</span>
+                            <span class="flow-detail">The Groq model picks from the four tools; LangChain runs them and feeds results back.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns the combined answer and comma-joined tool call log in <code>MultiToolAgentResponse</code>.</span>
+                            <span class="flow-detail">Shows <code>{ response, tool_called }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -197,32 +196,25 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["MultiToolAgentCard.tsx<br/>POST /api/multi-tool-agent"]:::entry
-                                Route["main.py<br/>multi_tool_agent_service(req)"]:::fn
-                                Svc["07_langchain_multi_tools.py<br/>run_multi_tool_agent(message)"]:::fn
-                                Agent["LangChain create_agent()<br/>3 registered @tools"]:::fn
-                                Tools["@tool get_weather / multiply / word_Stats"]:::fn
-                                LLM[("OpenAI API<br/>gpt-4o-mini")]:::ext
-                                Ret(["MultiToolAgentResponse JSON<br/>{ message, response, tool_called }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_multi_tool_agent()"| Svc
-                                Svc -->|"③ agent.invoke(messages)"| Agent
-                                Agent -->|"④ query + 3 tool schemas"| LLM
-                                LLM -.->|"returns selected tool_calls"| Agent
-                                Agent -->|"⑤ dispatch matched tools"| Tools
-                                Tools -.->|"returns tool outputs"| Agent
-                                Agent -->|"⑥ feed ToolMessages"| LLM
-                                LLM -.->|"returns synthesized answer"| Agent
-                                Agent -.->|"returns message history"| Svc
-                                Svc -.->|"returns (answer, tools_str)"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["MultiToolAgentCard.tsx<br/>POST /api/multi-tool-agent"]:::entry -->|"message"| R["main.py<br/>multi_tool_agent_service()"]:::fn
+    R -->|"question"| A["07_langchain_multi_tools.py<br/>agent.invoke()"]:::fn
+    A -->|"question + 4 tool specs"| G[("Groq API")]:::ext
+    G -->|"tool calls"| A
+    A -->|"city"| W["get_weather()"]:::fn
+    A -->|"a, b"| M["add() / multiply()"]:::fn
+    A -->|"city"| P["get_population()"]:::fn
+    W -->|"result"| A
+    M -->|"result"| A
+    P -->|"result"| A
+    A -->|"tool results"| G
+    G -->|"final answer"| A
+    A -->|"answer + tool_called"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -233,7 +225,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -248,7 +240,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">161 lines</span>
+                        <span class="topic-meta-chip">141 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -282,30 +274,14 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
-# Load environment / API keys
+# Configuration &amp; Provider Selection
 # ---------------------------------------------------------------------------
-load_dotenv(find_dotenv(), override=True)
+load_dotenv(find_dotenv())
 
-# ---------------------------------------------------------------------------
-# Pick your provider here.
-# ---------------------------------------------------------------------------
-# &quot;groq&quot;   -&gt; free + fast.  Key: https://console.groq.com      (GROQ_API_KEY)
-# &quot;gemini&quot; -&gt; free tier.    Key: https://aistudio.google.com   (GEMINI_API_KEY / GOOGLE_API_KEY)
-# &quot;openai&quot; -&gt; needs billing/credits set up.                    (OPENAI_API_KEY)
+# Pick a provider: &quot;groq&quot; (free + fast), &quot;gemini&quot; (free tier) or &quot;openai&quot; (needs billing).
+# Its settings are read from &lt;PROVIDER&gt;_MODEL / &lt;PROVIDER&gt;_API_KEY / &lt;PROVIDER&gt;_BASE_URL in .env
 PROVIDER = &quot;groq&quot;
-
-if PROVIDER == &quot;groq&quot;:
-    MODEL = os.getenv(&quot;GROQ_MODEL&quot;) or &quot;openai/gpt-oss-20b&quot;
-    BASE_URL = os.getenv(&quot;GROQ_BASE_URL&quot;) or &quot;https://api.groq.com/openai/v1&quot;
-    REQUIRED_KEY = os.getenv(&quot;GROQ_API_KEY&quot;) or &quot;missing-key&quot;
-elif PROVIDER == &quot;gemini&quot;:
-    MODEL = os.getenv(&quot;GEMINI_MODEL&quot;) or os.getenv(&quot;GOOGLE_MODEL&quot;) or &quot;gemini-3.8-flash&quot;
-    BASE_URL = os.getenv(&quot;GEMINI_BASE_URL&quot;) or &quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;
-    REQUIRED_KEY = os.getenv(&quot;GEMINI_API_KEY&quot;) or &quot;missing-key&quot;
-else:  # openai
-    MODEL = os.getenv(&quot;OPENAI_MODEL&quot;) or &quot;gpt-4o-mini&quot;
-    BASE_URL = os.getenv(&quot;OPENAI_BASE_URL&quot;) or &quot;https://api.openai.com/v1&quot;
-    REQUIRED_KEY = os.getenv(&quot;OPENAI_API_KEY&quot;) or &quot;missing-key&quot;
+prefix = PROVIDER.upper()
 
 
 # ---------------------------------------------------------------------------
@@ -359,16 +335,14 @@ def get_population(city: str) -&gt; str:
     return data.get(city.lower(), f&quot;Sorry, I don&#x27;t have population data for {city}.&quot;)
 
 
-TOOLS = [get_weather, add, multiply, get_population]
-
 # ---------------------------------------------------------------------------
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
-    model=MODEL,
-    api_key=REQUIRED_KEY,
-    base_url=BASE_URL if BASE_URL else None,
+    model=os.getenv(f&quot;{prefix}_MODEL&quot;),
+    api_key=os.getenv(f&quot;{prefix}_API_KEY&quot;) or &quot;missing-key&quot;,
+    base_url=os.getenv(f&quot;{prefix}_BASE_URL&quot;) or None,
     temperature=0,
     timeout=20.0,
 )
@@ -376,7 +350,7 @@ llm = ChatOpenAI(
 # ② Create the multi-tool LangChain agent with all 4 tools registered
 agent = create_agent(
     model=llm,
-    tools=TOOLS,
+    tools=[get_weather, add, multiply, get_population],
     # Tighter prompt: force the model to actually state the result so we don&#x27;t
     # get vague answers like &quot;that&#x27;s the current weather&quot;.
     system_prompt=(
@@ -394,33 +368,31 @@ def run_multi_tool_agent(
 ) -&gt; tuple[str, bool]:
     &quot;&quot;&quot;Run a user question through the multi-tool LangChain agent.&quot;&quot;&quot;
     # ① Invoke the multi-tool agent with the user&#x27;s question
-    response = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]})
-    messages = response[&quot;messages&quot;]
+    messages = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]})[&quot;messages&quot;]
+
     # ② Detect whether one or more tools were executed during the turn
-    tool_called = any(msg.type == &quot;tool&quot; for msg in messages)
-    # ③ Extract and return the final synthesized answer
-    final_msg = messages[-1]
-    answer = str(final_msg.content) if hasattr(final_msg, &quot;content&quot;) else str(final_msg)
-    return answer, tool_called
+    tool_called = any(m.type == &quot;tool&quot; for m in messages)
 
-
-def ask(question: str) -&gt; None:
-    answer, tool_called = run_multi_tool_agent(question)
-    print(f&quot;\nQ: {question}&quot;)
-    print(f&quot;Tool called: {&#x27;Yes&#x27; if tool_called else &#x27;No&#x27;}&quot;)
-    print(f&quot;A: {answer}&quot;)
+    # ③ The last message is the final synthesized answer
+    return messages[-1].content, tool_called
 
 
 # ---------------------------------------------------------------------------
-# Demo
+# Standalone CLI Verification
 # ---------------------------------------------------------------------------
 if __name__ == &quot;__main__&quot;:
-    ask(&quot;What is the weather like in New York?&quot;)          # -&gt; get_weather
-    ask(&quot;What is 25 multiplied by 4?&quot;)                     # -&gt; multiply
-    ask(&quot;What is 137 plus 568?&quot;)                           # -&gt; add
-    ask(&quot;What is the population of Bangalore?&quot;)            # -&gt; get_population
-    ask(&quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;)  # -&gt; two tools
-    ask(&quot;Who wrote the play Romeo and Juliet?&quot;)   # -&gt; no tool needed</code></pre>
+    for q in [
+        &quot;What is the weather like in New York?&quot;,                  # -&gt; get_weather
+        &quot;What is 25 multiplied by 4?&quot;,                            # -&gt; multiply
+        &quot;What is 137 plus 568?&quot;,                                  # -&gt; add
+        &quot;What is the population of Bangalore?&quot;,                   # -&gt; get_population
+        &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;,  # -&gt; two tools
+        &quot;Who wrote the play Romeo and Juliet?&quot;,                   # -&gt; no tool needed
+    ]:
+        answer, tool_called = run_multi_tool_agent(q)
+        print(f&quot;\nQ: {q}&quot;)
+        print(f&quot;Tool called: {&#x27;Yes&#x27; if tool_called else &#x27;No&#x27;}&quot;)
+        print(f&quot;A: {answer}&quot;)</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->

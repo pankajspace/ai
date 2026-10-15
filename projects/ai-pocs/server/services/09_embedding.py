@@ -47,7 +47,8 @@ class EmbeddingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-_embedding_model: SentenceTransformer | None = None
+# ① Load the compact 384-dimensional SentenceTransformer embedding model once at startup
+model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
 def compute_similarity(
@@ -63,26 +64,20 @@ def compute_similarity(
     Returns:
         Dictionary matching EmbeddingResponse fields.
     """
-    global _embedding_model
-    # ① Load (or reuse cached) compact 384-dimensional SentenceTransformer embedding model
-    if _embedding_model is None:
-        _embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
-    model = _embedding_model
-
     # ② Encode both texts into 384-dimensional dense vectors
     v1 = model.encode(text1)
     v2 = model.encode(text2)
 
     # ③ Compute cosine similarity using dot product divided by the product of vector norms
-    norm_product = float(norm(v1) * norm(v2))
-    similarity = float(dot(v1, v2) / norm_product) if norm_product > 0 else 0.0
+    #   similarity = dot(v1, v2) / (||v1|| * ||v2||)
+    similarity = float(dot(v1, v2) / (norm(v1) * norm(v2)))
 
     # ④ Return similarity score, vector dimensionality, and 5-value vector previews
     return {
         "text1": text1,
         "text2": text2,
         "similarity": round(similarity, 4),
-        "dimensions": int(v1.shape[0]),
+        "dimensions": len(v1),
         "preview_text1": [round(float(x), 4) for x in v1[:5]],
         "preview_text2": [round(float(x), 4) for x in v2[:5]],
     }

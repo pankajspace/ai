@@ -5,7 +5,6 @@ export interface TravelAssistantResponse {
   query: string
   response: string
   workflow_steps: string[]
-  itinerary_data: Record<string, any>
   provider: string
 }
 

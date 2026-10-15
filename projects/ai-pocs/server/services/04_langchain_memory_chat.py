@@ -11,7 +11,6 @@ Run directly:
 """
 
 import os
-import sys
 from typing import List, Optional
 from dotenv import find_dotenv, load_dotenv
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
@@ -62,6 +61,29 @@ class MemoryChatResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
+# Model & Prompt Chain Setup
+# ---------------------------------------------------------------------------
+# ① Initialize the ChatOpenAI client
+model = ChatOpenAI(
+    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    api_key=os.getenv("OPENAI_API_KEY") or "missing-key",
+    base_url=os.getenv("OPENAI_BASE_URL") or None,
+    timeout=15.0,
+)
+
+# ② Build prompt template injecting system instructions, chat history, and current question
+#   MessagesPlaceholder("history") dynamically receives the list of past (role, content) tuples
+prompt = ChatPromptTemplate.from_messages([
+    ("system", "You are a friendly assistant. Use the conversation history to stay consistent."),
+    MessagesPlaceholder("history"),
+    ("human", "{question}"),
+])
+
+# ③ Assemble the LCEL pipeline (Prompt | Model)
+chain = prompt | model
+
+
+# ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
 def chat_with_memory(
@@ -77,49 +99,20 @@ def chat_with_memory(
     Returns:
         Tuple of (assistant_response, updated_chat_history).
     """
-    # ① Default to an empty list and format history into (role, content) tuples for MessagesPlaceholder
-    history_list = history or []
-    lc_history = [(msg.role, msg.content) for msg in history_list]
+    # ④ Convert the history sent by the browser into (role, content) tuples
+    history = history or []
+    lc_history = [(msg.role, msg.content) for msg in history]
 
-    # ② Retrieve model parameters and initialize the ChatOpenAI client
-    model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-    base_url = os.getenv("OPENAI_BASE_URL")
-    api_key = os.getenv("OPENAI_API_KEY")
+    # ⑤ Invoke the chain with accumulated history and the current user question
+    answer = chain.invoke({"history": lc_history, "question": question}).content
 
-    model = ChatOpenAI(
-        model=model_name,
-        api_key=api_key,
-        base_url=base_url if base_url else None,
-        timeout=15.0,
-    )
-
-    # ③ Build prompt template injecting system instructions, chat history, and current question
-    prompt = ChatPromptTemplate.from_messages([
-        (
-            "system",
-            "You are a friendly assistant. Use the conversation history to stay consistent.",
-        ),
-        MessagesPlaceholder("history"),  # Dynamically receives lc_history tuples
-        ("human", "{question}"),
-    ])
-
-    # ④ Assemble LCEL pipeline (Prompt | Model) and invoke with history and question
-    chain = prompt | model
-    result = chain.invoke({"history": lc_history, "question": question})
-    answer = str(result.content) if hasattr(result, "content") else str(result)
-
-    # ⑤ Build updated history list:
-    # 1. *history_list: Unpacks all existing ChatMessage items into the new list (non-mutating)
-    # 2. Appends the current user query and model answer to preserve context for the next turn
+    # ⑥ Append the current question and answer to preserve context for the next turn
     updated_history = [
-        *history_list,
+        *history,
         ChatMessage(role="user", content=question),
         ChatMessage(role="assistant", content=answer),
     ]
-
     return answer, updated_history
-
-
 
 
 # ---------------------------------------------------------------------------
@@ -127,29 +120,9 @@ def chat_with_memory(
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
     print("--- Conversational Memory Chat Service ---")
-    if sys.stdin.isatty():
-        print("Chat with the bot (type 'quit' or 'exit' to stop).")
-        session_history: List[ChatMessage] = []
-        while True:
-            try:
-                user_query = input("You: ")
-            except (EOFError, KeyboardInterrupt):
-                print()
-                break
-            if user_query.strip().lower() in {"quit", "exit"}:
-                break
-            if not user_query.strip():
-                continue
-
-            bot_reply, session_history = chat_with_memory(user_query, session_history)
-            print("Bot:", bot_reply)
-            print(f"   (history now has {len(session_history)} messages)")
-    else:
-        print("\nTurn 1: Telling bot user's preference...")
-        turn1_reply, h1 = chat_with_memory("Hi! My favorite color is navy blue.")
-        print("Bot:", turn1_reply)
-
-        print("\nTurn 2: Asking bot to recall user's preference...")
-        turn2_reply, h2 = chat_with_memory("What is my favorite color?", history=h1)
-        print("Bot:", turn2_reply)
-        print(f"   (history preserved {len(h2)} messages)")
+    session_history: List[ChatMessage] = []
+    for user_question in ["Hi! My favorite color is navy blue.", "What is my favorite color?"]:
+        reply, session_history = chat_with_memory(user_question, session_history)
+        print(f"\nYou: {user_question}")
+        print(f"Bot: {reply}")
+        print(f"   (history now has {len(session_history)} messages)")

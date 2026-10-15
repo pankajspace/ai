@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Joke Generator &middot; AI POCs</title>
     <meta name="description"
-        content="😂 Joke Generator uses OpenAI-compatible SDK routing pointed at Groq&#x27;s LPU endpoint (https://api.groq.com/openai/v1) to generate a short joke with ultra-low latency." />
+        content="😂 Joke Generator reuses the same OpenAI SDK but points it at Groq&#x27;s OpenAI-compatible endpoint, so a different provider and model answer with only a new base_url and API key." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">😂 Joke Generator<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>😂 Joke Generator</strong> uses OpenAI-compatible SDK routing pointed at Groq's LPU endpoint (<code>https://api.groq.com/openai/v1</code>) to generate a short joke with ultra-low latency. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>😂 Joke Generator</strong> reuses the same OpenAI SDK but points it at Groq's OpenAI-compatible endpoint, so a different provider and model answer with only a new <code>base_url</code> and API key.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>😂 Joke Generator</strong> uses OpenAI-compatible SDK routing pointed at Groq's LPU endpoint (<code>https://api.groq.com/openai/v1</code>) to generate a short joke with ultra-low latency.</p>
-                    <p>Because Groq implements the OpenAI Chat Completions wire specification, switching providers requires only changing <code>api_key</code>, <code>base_url</code>, and the model identifier (<code>llama-3.3-70b-versatile</code>). The application logic remains identical to an OpenAI call.</p>
+                    <p>Many providers (Groq, Gemini, local servers) speak the OpenAI Chat Completions format. You switch provider by changing <code>base_url</code>, <code>api_key</code> and the model name; the rest of the code is identical to the Travel Guide.</p>
+                    <p>The service first checks that <code>GROQ_API_KEY</code> exists, then asks the model to tell a joke about your topic.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>OpenAI-Compatible API Standard:</strong> Modern inference providers (Groq, Together, vLLM, Ollama) expose the same <code>/v1/chat/completions</code> schema, avoiding vendor lock-in.</li><li><strong>Provider Portability:</strong> Overriding <code>base_url</code> in the <code>OpenAI(...)</code> constructor decouples client code from the underlying model host.</li><li><strong>LPU Inference:</strong> Groq's Language Processing Unit delivers high tokens-per-second throughput for open-weights models like Llama 3.3 70B.</li></ul>
+                    <ul>
+                        <li><strong>OpenAI-compatible APIs:</strong> one client library, many providers, selected with <code>base_url</code>.</li>
+                        <li><strong>Configuration from .env:</strong> <code>GROQ_API_KEY</code>, <code>GROQ_BASE_URL</code> and <code>GROQ_MODEL</code> keep secrets and model choices out of the code.</li>
+                        <li><strong>Fail fast:</strong> a missing key raises a clear error instead of an unclear HTTP 401.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>JokeGeneratorCard.tsx</code> sends <code>POST /api/joke</code> with <code>{"topic": "programming"}</code>.</span>
+                            <span class="flow-detail"><code>JokeGeneratorCard.tsx</code> sends <code>POST /api/joke</code> with <code>{ topic }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>joke_generator(req)</code> normalizes <code>req.topic</code> and invokes <code>get_groq_joke(topic_name)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>joke_generator(req)</code> calls <code>get_groq_joke(topic)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">Service (<code>02_chat_groq.py</code>)</span>
-                            <span class="flow-detail"><code>get_groq_joke()</code> instantiates <code>OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)</code>.</span>
+                            <span class="flow-detail">Creates <code>OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)</code> and sends the persona + topic prompt.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Groq LPU Cloud</span>
-                            <span class="flow-detail"><code>llama-3.3-70b-versatile</code> generates a short plain-text joke on the requested topic.</span>
+                            <span class="flow-title">Groq API</span>
+                            <span class="flow-detail">Returns the joke text.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">The joke text is extracted from <code>response.choices[0].message.content</code> and returned in <code>JokeResponse</code>.</span>
+                            <span class="flow-detail">Shows <code>{ topic, joke }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -197,24 +201,17 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["JokeGeneratorCard.tsx<br/>POST /api/joke { topic }"]:::entry
-                                Route["main.py<br/>joke_generator(req: JokeRequest)"]:::fn
-                                Svc["02_chat_groq.py<br/>get_groq_joke(topic)"]:::fn
-                                Groq[("Groq LPU API<br/>llama-3.3-70b-versatile")]:::ext
-                                Ret(["JokeResponse JSON<br/>{ topic, joke }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② normalize topic"| Svc
-                                Svc -->|"③ chat.completions.create()"| Groq
-                                Groq -.->|"returns ChatCompletion"| Svc
-                                Svc -.->|"returns joke str"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["JokeGeneratorCard.tsx<br/>POST /api/joke"]:::entry -->|"topic"| R["main.py<br/>joke_generator()"]:::fn
+    R -->|"topic"| S["02_chat_groq.py<br/>get_groq_joke()"]:::fn
+    S -->|"persona + topic prompt"| G[("Groq API<br/>OpenAI-compatible")]:::ext
+    G -->|"joke text"| S
+    S -->|"joke text"| R
+    R -->|"JSON { topic, joke }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -225,7 +222,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 

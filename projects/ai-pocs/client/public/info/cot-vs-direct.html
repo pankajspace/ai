@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — CoT vs Direct Benchmark &middot; AI POCs</title>
     <meta name="description"
-        content="🧩 CoT vs Direct Benchmark demonstrates Chain-of-Thought as an engineering reliability lever on multi-step state-tracking problems (Spatial Grid Navigation, Family Tree Logic, and Temporal Scheduling)." />
+        content="🧩 CoT vs Direct Benchmark puts one logic puzzle to OpenAI twice &amp;mdash; once answering directly, once thinking step by step &amp;mdash; and scores both against the accepted answers." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🧩 CoT vs Direct Benchmark<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🧩 CoT vs Direct Benchmark</strong> demonstrates Chain-of-Thought as an engineering reliability lever on multi-step state-tracking problems (Spatial Grid Navigation, Family Tree Logic, and Temporal Scheduling). Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🧩 CoT vs Direct Benchmark</strong> puts one logic puzzle to OpenAI twice &mdash; once answering directly, once thinking step by step &mdash; and scores both against the accepted answers.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🧩 CoT vs Direct Benchmark</strong> demonstrates Chain-of-Thought as an engineering reliability lever on multi-step state-tracking problems (Spatial Grid Navigation, Family Tree Logic, and Temporal Scheduling).</p>
-                    <p>State-tracking puzzles require maintaining intermediate coordinates or ordering constraints across 4–5 sequential transformations. Forcing a model to answer in one short sentence without working frequently fails, whereas instructing it to think step by step externalizes each state transition into the context window before committing to the final answer.</p>
+                    <p>Puzzles that need tracking state (moves on a grid, family relations, meeting times) are where a one-shot answer most often fails. The Chain-of-Thought prompt lets the model write intermediate steps before the final line.</p>
+                    <p>Pick a preset puzzle or type your own question (it is scored against the preset's accepted answers). Latency is shown too, because reasoning costs time.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Externalized Working Memory:</strong> Autoregressive transformers have fixed computation per token; generating intermediate reasoning tokens gives the model additional serial compute steps.</li><li><strong>Accuracy vs. Latency Trade-off:</strong> Compare the exact latency overhead (in seconds) against the accuracy gain of Chain-of-Thought on hard logic tasks.</li></ul>
+                    <ul>
+                        <li><strong>Direct prompting:</strong> &quot;Answer in one short sentence. Do not show working.&quot;</li>
+                        <li><strong>Chain-of-Thought:</strong> &quot;Think step by step, then state your final answer.&quot;</li>
+                        <li><strong>Accepted answers:</strong> several phrasings of the right answer are allowed when scoring.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +154,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>CotVsDirectCard.tsx</code> sends <code>POST /api/cot-vs-direct</code> with <code>problem_title</code>.</span>
+                            <span class="flow-detail"><code>CotVsDirectCard.tsx</code> sends <code>POST /api/cot-vs-direct</code> with <code>{ problem_title, custom_question? }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
                             <span class="flow-detail"><code>cot_vs_direct_service(req)</code> calls <code>run_cot_vs_direct_benchmark()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Direct Run (<code>25_cot_vs_direct.py</code>)</span>
-                            <span class="flow-detail">Runs the puzzle with <em>"Answer in one short sentence. Do not show working."</em> and scores accuracy.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Chain-of-Thought Run</span>
-                            <span class="flow-detail">Runs the same puzzle with <em>"Think step by step, then state your final answer clearly on a new line."</em> and scores accuracy.</span>
+                            <span class="flow-title">Service (<code>25_cot_vs_direct.py</code>)</span>
+                            <span class="flow-detail">Two OpenAI calls (direct, then CoT), each timed and checked with <code>evaluate_cot_accuracy()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>CotVsDirectResponse</code> with side-by-side <code>direct_result</code> and <code>cot_result</code> traces.</span>
+                            <span class="flow-detail">Shows both answers side by side with correct / wrong and latency.</span>
                         </div>
                     </div>
                 </div>
@@ -197,30 +196,20 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["CotVsDirectCard.tsx<br/>POST /api/cot-vs-direct { problem_title }"]:::entry
-                                Route["main.py<br/>cot_vs_direct_service(req)"]:::fn
-                                Svc["25_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
-                                LLM1[("OpenAI API<br/>Direct Prompt (No Working)")]:::ext
-                                LLM2[("OpenAI API<br/>CoT Prompt (Step-by-Step)")]:::ext
-                                Eval["25_cot_vs_direct.py<br/>evaluate_cot_accuracy()"]:::fn
-                                Ret(["CotVsDirectResponse JSON<br/>{ direct_result, cot_result }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_cot_vs_direct_benchmark()"| Svc
-                                Svc -->|"③ Direct strategy call"| LLM1
-                                LLM1 -.->|"returns direct response"| Svc
-                                Svc -->|"④ CoT strategy call"| LLM2
-                                LLM2 -.->|"returns step-by-step response"| Svc
-                                Svc -->|"⑤ verify against accepted_answers"| Eval
-                                Eval -.->|"returns is_correct booleans"| Svc
-                                Svc -.->|"returns comparison dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["CotVsDirectCard.tsx<br/>POST /api/cot-vs-direct"]:::entry -->|"problem_title"| R["main.py<br/>cot_vs_direct_service()"]:::fn
+    R -->|"title, custom_question"| S["25_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
+    S -->|"direct prompt"| O[("OpenAI API")]:::ext
+    S -->|"step-by-step prompt"| O
+    O -->|"two replies"| S
+    S -->|"reply, accepted answers"| E["evaluate_cot_accuracy()"]:::fn
+    E -->|"correct?"| S
+    S -->|"direct_result + cot_result"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -231,7 +220,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -246,7 +235,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">167 lines</span>
+                        <span class="topic-meta-chip">168 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -289,8 +278,10 @@ class CotVsDirectRequest(BaseModel):
         default=&quot;Spatial Navigation (Grid)&quot;,
         description=&quot;Preset logic problem or &#x27;custom&#x27;&quot;,
     )
-    custom_question: Optional[str] = None
-    custom_correct_answers: Optional[List[str]] = None
+    custom_question: Optional[str] = Field(
+        default=None,
+        description=&quot;Optional replacement question, scored against the preset&#x27;s accepted answers&quot;,
+    )
 
 
 class CotVsDirectResult(BaseModel):
@@ -360,7 +351,6 @@ def evaluate_cot_accuracy(extracted: str, accepted: List[str]) -&gt; bool:
 def run_cot_vs_direct_benchmark(
     problem_title: str = &quot;Spatial Navigation (Grid)&quot;,
     custom_question: Optional[str] = None,
-    custom_correct_answers: Optional[List[str]] = None,
 ) -&gt; dict:
     &quot;&quot;&quot;Execute CoT vs Direct comparison.&quot;&quot;&quot;
     # ① Initialize OpenAI client and resolve preset or custom logic puzzle
@@ -372,7 +362,7 @@ def run_cot_vs_direct_benchmark(
 
     preset = PROBLEMS.get(problem_title, PROBLEMS[&quot;Spatial Navigation (Grid)&quot;])
     q_text = custom_question or preset[&quot;question&quot;]
-    accepted = custom_correct_answers or preset[&quot;correct_answers&quot;]
+    accepted = preset[&quot;correct_answers&quot;]
 
     # ② Run Direct Strategy (no intermediate working allowed)
     start_d = time.perf_counter()
@@ -438,7 +428,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">37 lines</span>
+                        <span class="topic-meta-chip">36 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -482,7 +472,6 @@ def cot_vs_direct_service(req: CotVsDirectRequest):
         res = run_cot_vs_direct_benchmark(
             problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
             custom_question=req.custom_question,
-            custom_correct_answers=req.custom_correct_answers,
         )
         return CotVsDirectResponse(**res)
     except Exception as exc:

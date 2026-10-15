@@ -16,30 +16,14 @@ from langchain_openai import ChatOpenAI
 from pydantic import BaseModel, Field
 
 # ---------------------------------------------------------------------------
-# Load environment / API keys
+# Configuration & Provider Selection
 # ---------------------------------------------------------------------------
-load_dotenv(find_dotenv(), override=True)
+load_dotenv(find_dotenv())
 
-# ---------------------------------------------------------------------------
-# Pick your provider here.
-# ---------------------------------------------------------------------------
-# "groq"   -> free + fast.  Key: https://console.groq.com      (GROQ_API_KEY)
-# "gemini" -> free tier.    Key: https://aistudio.google.com   (GEMINI_API_KEY / GOOGLE_API_KEY)
-# "openai" -> needs billing/credits set up.                    (OPENAI_API_KEY)
+# Pick a provider: "groq" (free + fast), "gemini" (free tier) or "openai" (needs billing).
+# Its settings are read from <PROVIDER>_MODEL / <PROVIDER>_API_KEY / <PROVIDER>_BASE_URL in .env
 PROVIDER = "groq"
-
-if PROVIDER == "groq":
-    MODEL = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
-    BASE_URL = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
-    REQUIRED_KEY = os.getenv("GROQ_API_KEY") or "missing-key"
-elif PROVIDER == "gemini":
-    MODEL = os.getenv("GEMINI_MODEL") or os.getenv("GOOGLE_MODEL") or "gemini-3.8-flash"
-    BASE_URL = os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
-    REQUIRED_KEY = os.getenv("GEMINI_API_KEY") or "missing-key"
-else:  # openai
-    MODEL = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-    BASE_URL = os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
-    REQUIRED_KEY = os.getenv("OPENAI_API_KEY") or "missing-key"
+prefix = PROVIDER.upper()
 
 
 # ---------------------------------------------------------------------------
@@ -70,16 +54,14 @@ def get_weather(city: str) -> str:
     return f"The weather in {city} is too hot to handle, 28 degrees C."
 
 
-TOOLS = [get_weather]
-
 # ---------------------------------------------------------------------------
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
-    model=MODEL,
-    api_key=REQUIRED_KEY,
-    base_url=BASE_URL if BASE_URL else None,
+    model=os.getenv(f"{prefix}_MODEL"),
+    api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key",
+    base_url=os.getenv(f"{prefix}_BASE_URL") or None,
     temperature=0,
     timeout=20.0,
 )
@@ -87,7 +69,7 @@ llm = ChatOpenAI(
 # ② Create the LangChain tool-calling agent with get_weather and system instructions
 agent = create_agent(
     model=llm,
-    tools=TOOLS,
+    tools=[get_weather],
     system_prompt=(
         "You are a helpful assistant. Use the available tools when needed. "
         "Always state the final result clearly and completely in your answer."
@@ -103,26 +85,21 @@ def run_langchain_one_tool(
 ) -> tuple[str, bool]:
     """Run a user question through the single-tool LangChain agent."""
     # ① Invoke the LangChain agent with the user's question
-    response = agent.invoke({"messages": [{"role": "user", "content": question}]})
-    messages = response["messages"]
-    # ② Check whether any tool message appears in the trace
-    tool_called = any(msg.type == "tool" for msg in messages)
-    # ③ Extract and return the final assistant reply alongside the tool flag
-    final_msg = messages[-1]
-    answer = str(final_msg.content) if hasattr(final_msg, "content") else str(final_msg)
-    return answer, tool_called
+    messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]
 
+    # ② The agent called the tool if any message in the trace has type "tool"
+    tool_called = any(m.type == "tool" for m in messages)
 
-def ask(question: str) -> None:
-    answer, tool_called = run_langchain_one_tool(question)
-    print(f"\nQ: {question}")
-    print(f"Tool called: {'Yes' if tool_called else 'No'}")
-    print(f"A: {answer}")
+    # ③ The last message is the final assistant reply
+    return messages[-1].content, tool_called
 
 
 # ---------------------------------------------------------------------------
-# Demo
+# Standalone CLI Verification
 # ---------------------------------------------------------------------------
 if __name__ == "__main__":
-    ask("What is the weather like in New York?")
-    ask("What is scaler company?")
+    for q in ["What is the weather like in New York?", "What is Scaler company?"]:
+        answer, tool_called = run_langchain_one_tool(q)
+        print(f"\nQ: {q}")
+        print(f"Tool called: {'Yes' if tool_called else 'No'}")
+        print(f"A: {answer}")

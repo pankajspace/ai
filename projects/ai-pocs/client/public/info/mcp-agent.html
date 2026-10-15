@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — FastMCP Cricket Agent &middot; AI POCs</title>
     <meta name="description"
-        content="🏏 FastMCP Cricket Agent bridges an LLM (Groq Llama 3.3 70B or OpenAI GPT-4o-mini) to the FastMCP Cricket Server so natural-language questions automatically route to get_live_score or get_player_stats." />
+        content="🏏 FastMCP Cricket Agent connects a Groq LLM to the cricket MCP server: tools are discovered with tools/list, converted to the OpenAI function format, and run with tools/call whenever the model asks." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -44,7 +44,7 @@
             <h1 id="how-it-works">🏏 FastMCP Cricket Agent<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🏏 FastMCP Cricket Agent</strong> bridges an LLM (Groq Llama 3.3 70B or OpenAI GPT-4o-mini) to the FastMCP Cricket Server so natural-language questions automatically route to <code>get_live_score</code> or <code>get_player_stats</code>. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🏏 FastMCP Cricket Agent</strong> connects a Groq LLM to the cricket MCP server: tools are discovered with <code>tools/list</code>, converted to the OpenAI function format, and run with <code>tools/call</code> whenever the model asks.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -101,8 +101,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🏏 FastMCP Cricket Agent</strong> bridges an LLM (Groq Llama 3.3 70B or OpenAI GPT-4o-mini) to the FastMCP Cricket Server so natural-language questions automatically route to <code>get_live_score</code> or <code>get_player_stats</code>.</p>
-                    <p>While Demo 29 called MCP tools manually, this service exposes the FastMCP server's tool schemas to the LLM. When a user asks <em>"What is the score in India vs West Indies?"</em> or <em>"How many runs has Shubman Gill scored?"</em>, the LLM selects the right MCP tool, extracts the arguments, executes the call against <code>cricket_server.py</code>, and turns the live JSON into a grounded commentary response.</p>
+                    <p>This is the MCP client from the previous demo with an LLM in the loop. The agent never hard-codes tool schemas &mdash; whatever the server lists is what the model can use, so adding a tool to the server needs no change in the agent.</p>
+                    <p>The loop runs up to 5 turns: send messages + tools to Groq; if the reply has tool calls, run each on the MCP server and append the output; otherwise the reply is the final answer. <code>call_llm()</code> retries when the model tries to call a tool that does not exist.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -125,7 +125,11 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>MCP-to-Function-Calling Bridge:</strong> Translates FastMCP tool descriptors into the OpenAI/Groq <code>tools=[{"type": "function", ...}]</code> schema format.</li><li><strong>Dynamic Argument Extraction:</strong> The LLM extracts entity names (e.g., <code>"India vs West Indies"</code> or <code>"Shubman Gill"</code>) from freeform user questions.</li></ul>
+                    <ul>
+                        <li><strong>Bridge:</strong> <code>to_openai_format()</code> maps MCP <code>inputSchema</code> to OpenAI <code>parameters</code>.</li>
+                        <li><strong>Tool loop:</strong> assistant <code>tool_calls</code> message, then one <code>tool</code> message per call, linked by id.</li>
+                        <li><strong>Grounding:</strong> live scores come from the server, not from the model's memory.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -151,32 +155,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>McpAgentCard.tsx</code> sends <code>POST /api/mcp-agent</code> with a cricket question.</span>
+                            <span class="flow-detail"><code>McpAgentCard.tsx</code> sends <code>POST /api/mcp-agent</code> with <code>{ question }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>mcp_agent_service(req)</code> calls <code>run_mcp_agent(req.question)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>mcp_agent_service(req)</code> runs <code>asyncio.run(run_mcp_agent(question))</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Tool Decision (<code>30_mcp_agent.py</code>)</span>
-                            <span class="flow-detail">Sends the user question and FastMCP tool schemas to Groq/OpenAI.</span>
+                            <span class="flow-title">Agent (<code>30_mcp_agent.py</code>)</span>
+                            <span class="flow-detail">Starts <code>cricket_server.py</code>, lists its tools and runs the Groq tool-calling loop.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastMCP Execution (<code>cricket_server.py</code>)</span>
-                            <span class="flow-detail">Dispatches <code>get_live_score</code> or <code>get_player_stats</code> with the LLM-extracted arguments.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Grounded Answer</span>
-                            <span class="flow-detail">Feeds the MCP JSON payload back to the LLM to generate the final answer.</span>
+                            <span class="flow-title">MCP server (<code>cricket_server.py</code>)</span>
+                            <span class="flow-detail">Answers each <code>tools/call</code> with demo match data.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>McpAgentResponse</code> with the final <code>response</code>, <code>tool_called</code>, <code>tool_arguments</code>, and <code>tool_result</code>.</span>
+                            <span class="flow-detail">Shows the answer and the first tool call with its arguments and result.</span>
                         </div>
                     </div>
                 </div>
@@ -203,29 +202,23 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["McpAgentCard.tsx<br/>POST /api/mcp-agent { question }"]:::entry
-                                Route["main.py<br/>mcp_agent_service(req)"]:::fn
-                                Svc["30_mcp_agent.py<br/>run_mcp_agent(question)"]:::fn
-                                LLM[("Groq / OpenAI API<br/>FastMCP Tool Schemas")]:::ext
-                                MCP["mcp/cricket_server.py<br/>get_live_score() / get_player_stats()"]:::fn
-                                Ret(["McpAgentResponse JSON<br/>{ response, tool_called, tool_arguments, tool_result }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_mcp_agent()"| Svc
-                                Svc -->|"③ question + MCP tool schemas"| LLM
-                                LLM -.->|"returns tool_call + args"| Svc
-                                Svc -->|"④ invoke MCP server tool"| MCP
-                                MCP -.->|"returns cricket data dict"| Svc
-                                Svc -->|"⑤ append role=tool result"| LLM
-                                LLM -.->|"returns grounded answer"| Svc
-                                Svc -.->|"returns agent trace dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["McpAgentCard.tsx<br/>POST /api/mcp-agent"]:::entry -->|"question"| R["main.py<br/>mcp_agent_service()"]:::fn
+    R -->|"asyncio.run()"| A["30_mcp_agent.py<br/>run_mcp_agent() / run_agent()"]:::fn
+    A -->|"initialize + tools/list"| M[("cricket_server.py<br/>FastMCP")]:::ext
+    M -->|"tool schemas"| A
+    A -->|"messages + tools"| G[("Groq API")]:::ext
+    G -->|"tool_calls"| A
+    A -->|"tools/call name, args"| M
+    M -->|"JSON result"| A
+    A -->|"tool messages"| G
+    G -->|"final answer"| A
+    A -->|"answer + first tool"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -236,7 +229,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -251,7 +244,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">151 lines</span>
+                        <span class="topic-meta-chip">169 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -265,24 +258,29 @@
                     <p class="file-label">MCP-Enabled LLM Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP-Enabled LLM Agent Service.
 
-Demonstrates combining LLM intelligence with Model Context Protocol (MCP) tools:
-1. Translates FastMCP tool definitions into LLM function calling schemas.
-2. The LLM decides WHICH tool to invoke (`get_live_score`, `get_player_stats`) and extracts arguments.
-3. Our code executes the tool against the MCP cricket server and feeds the output back.
-4. Generates an accurate, factually grounded answer.
+Connects an LLM to the FastMCP cricket server:
+1. Starts `cricket_server.py` over stdio and discovers its tools with `tools/list`.
+2. Converts the MCP tool descriptors into the OpenAI function-calling format.
+3. Runs the tool-calling loop: the LLM asks for a tool, the client runs it with `tools/call`,
+   and the tool output is fed back until the LLM gives a final answer.
 
 Run directly:
     python projects/ai-pocs/server/services/30_mcp_agent.py
 &quot;&quot;&quot;
 
+import asyncio
 import json
 import os
-from typing import Any, Dict, List, Optional
+import re
+import sys
+from pathlib import Path
+from typing import Any, Dict, Optional
+
 from dotenv import find_dotenv, load_dotenv
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
 from openai import OpenAI
 from pydantic import BaseModel, Field
-
-from services.mcp.cricket_server import get_live_score, get_player_stats
 
 load_dotenv(find_dotenv())
 
@@ -307,112 +305,125 @@ class McpAgentResponse(BaseModel):
     provider: str
 
 
-def run_mcp_agent(question: str = &quot;What is the score in India vs West Indies?&quot;) -&gt; dict:
-    &quot;&quot;&quot;Run the MCP-Enabled LLM agent.&quot;&quot;&quot;
-    # ① Select Groq or OpenAI client based on available environment credentials
-    groq_key = os.getenv(&quot;GROQ_API_KEY&quot;)
-    openai_key = os.getenv(&quot;OPENAI_API_KEY&quot;)
+# ① Model settings (Groq&#x27;s OpenAI-compatible endpoint) and the MCP server to spawn over stdio
+MODEL = os.getenv(&quot;GROQ_MODEL&quot;, &quot;openai/gpt-oss-20b&quot;)
+GROQ_BASE_URL = os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;)
+server_script = str(Path(__file__).with_name(&quot;cricket_server.py&quot;))
+server = StdioServerParameters(command=sys.executable, args=[server_script])
 
-    if groq_key:
-        client = OpenAI(api_key=groq_key, base_url=os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;))
-        model = os.getenv(&quot;GROQ_MODEL&quot;, &quot;llama-3.3-70b-versatile&quot;)
-        provider_name = f&quot;Groq ({model}) + FastMCP&quot;
-    else:
-        client = OpenAI(api_key=openai_key, base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;))
-        model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
-        provider_name = f&quot;OpenAI ({model}) + FastMCP&quot;
 
-    # ② Convert FastMCP server tool definitions into LLM function-calling schemas
-    tools_schema = [
+def to_openai_format(mcp_tools):
+    &quot;&quot;&quot;MCP tool list -&gt; format expected by OpenAI-compatible API.&quot;&quot;&quot;
+    return [
         {
             &quot;type&quot;: &quot;function&quot;,
             &quot;function&quot;: {
-                &quot;name&quot;: &quot;get_live_score&quot;,
-                &quot;description&quot;: &quot;Get the LIVE score of a cricket match. Use this for questions about the current score, who is winning, or runs required.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;teams&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The two teams playing, e.g. &#x27;India vs West Indies&#x27;&quot;}
-                    },
-                    &quot;required&quot;: [&quot;teams&quot;],
-                },
+                &quot;name&quot;: t.name,
+                &quot;description&quot;: t.description or &quot;&quot;,
+                &quot;parameters&quot;: t.inputSchema,
             },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;get_player_stats&quot;,
-                &quot;description&quot;: &quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs or innings.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {
-                        &quot;player_name&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;}
-                    },
-                    &quot;required&quot;: [&quot;player_name&quot;],
-                },
-            },
-        },
+        }
+        for t in mcp_tools
     ]
 
-    # ③ Send user question and MCP tool schemas to the model
+
+def call_llm(llm, kwargs, retries=2):
+    &quot;&quot;&quot;Call the model, retrying when it tries to call a tool we never gave it.&quot;&quot;&quot;
+    last = None
+    for _ in range(retries + 1):
+        try:
+            return llm.chat.completions.create(**kwargs).choices[0].message, None
+        except Exception as e:
+            last = str(e)
+            if &quot;tool_use_failed&quot; not in last:
+                return None, f&quot;API ERROR: {last}&quot;
+    m = re.search(r&#x27;&quot;name&quot;:\s*&quot;([^&quot;]+)&quot;&#x27;, last or &quot;&quot;)
+    tool = m.group(1) if m else &quot;a tool&quot;
+    return None, f&quot;MODEL TRIED TO CALL A TOOL WE NEVER GAVE IT ({tool}). Try running again.&quot;
+
+
+async def run_agent(question: str) -&gt; dict:
+    &quot;&quot;&quot;Run the MCP agent loop for a single user question; returns the answer and a tool trace.&quot;&quot;&quot;
+    # ② Initialize the Groq OpenAI-compatible client
+    api_key = os.getenv(&quot;GROQ_API_KEY&quot;)
+    if not api_key:
+        raise ValueError(&quot;GROQ_API_KEY is not set. Free key: https://console.groq.com/keys&quot;)
+    llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
+    trace = []
+
     messages = [
         {
             &quot;role&quot;: &quot;system&quot;,
-            &quot;content&quot;: &quot;You are a cricket assistant with access to real-time match data via FastMCP tools. Use tools when asked about scores or player stats.&quot;,
+            &quot;content&quot;: (
+                &quot;You are a cricket assistant. Use ONLY the functions provided to get live data. &quot;
+                &quot;Do not use any browser or code tools. Be brief.&quot;
+            ),
         },
         {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
     ]
 
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=tools_schema,
-        tool_choice=&quot;auto&quot;,
-    )
-    msg = resp.choices[0].message
+    # ③ Connect to the FastMCP cricket server over stdio and discover its tools
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = to_openai_format((await session.list_tools()).tools)
 
-    if not msg.tool_calls:
-        return {
-            &quot;question&quot;: question,
-            &quot;response&quot;: msg.content or &quot;&quot;,
-            &quot;tool_called&quot;: None,
-            &quot;tool_arguments&quot;: None,
-            &quot;tool_result&quot;: None,
-            &quot;provider&quot;: provider_name,
-        }
+            # ④ Run the multi-step tool-calling loop (up to 5 turns)
+            for _ in range(5):
+                reply, error = call_llm(llm, {&quot;model&quot;: MODEL, &quot;messages&quot;: messages, &quot;tools&quot;: tools, &quot;temperature&quot;: 0})
+                if error:
+                    return {&quot;answer&quot;: f&quot;({error})&quot;, &quot;trace&quot;: trace}
 
-    # ④ Execute the selected tool against the FastMCP cricket server
-    tc = msg.tool_calls[0]
-    fname = tc.function.name
-    args = json.loads(tc.function.arguments or &quot;{}&quot;)
+                # No tool requested -&gt; this is the final answer
+                if not reply.tool_calls:
+                    return {&quot;answer&quot;: reply.content or &quot;&quot;, &quot;trace&quot;: trace}
 
-    if fname == &quot;get_live_score&quot;:
-        tool_res = get_live_score(args.get(&quot;teams&quot;, &quot;India vs West Indies&quot;))
-    elif fname == &quot;get_player_stats&quot;:
-        tool_res = get_player_stats(args.get(&quot;player_name&quot;, &quot;Shubman Gill&quot;))
-    else:
-        tool_res = {&quot;error&quot;: f&quot;Unknown tool: {fname}&quot;}
+                # ⑤ Run each requested tool on the MCP server and feed the output back to the LLM
+                messages.append(
+                    {
+                        &quot;role&quot;: &quot;assistant&quot;,
+                        &quot;content&quot;: reply.content or &quot;&quot;,
+                        &quot;tool_calls&quot;: [
+                            {
+                                &quot;id&quot;: c.id,
+                                &quot;type&quot;: &quot;function&quot;,
+                                &quot;function&quot;: {&quot;name&quot;: c.function.name, &quot;arguments&quot;: c.function.arguments},
+                            }
+                            for c in reply.tool_calls
+                        ],
+                    }
+                )
+                for call in reply.tool_calls:
+                    args = json.loads(call.function.arguments)
+                    result = await session.call_tool(call.function.name, args)
+                    text = result.content[0].text if result.content else &quot;{}&quot;
+                    trace.append({
+                        &quot;tool&quot;: call.function.name,
+                        &quot;args&quot;: args,
+                        &quot;result&quot;: {&quot;error&quot;: text} if result.isError else json.loads(text),
+                    })
+                    messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: call.id, &quot;content&quot;: text})
 
-    # ⑤ Feed the MCP tool output back to the LLM to synthesize the final grounded answer
-    messages.append(msg)
-    messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(tool_res)})
+    return {&quot;answer&quot;: &quot;(stopped: too many steps)&quot;, &quot;trace&quot;: trace}
 
-    final_resp = client.chat.completions.create(model=model, messages=messages)
-    final_text = final_resp.choices[0].message.content or &quot;&quot;
 
+async def run_mcp_agent(question: str = &quot;What is the score in India vs West Indies?&quot;) -&gt; dict:
+    &quot;&quot;&quot;Run the MCP-enabled agent and report the first tool it used.&quot;&quot;&quot;
+    out = await run_agent(question)
+    first = out[&quot;trace&quot;][0] if out[&quot;trace&quot;] else None
     return {
         &quot;question&quot;: question,
-        &quot;response&quot;: final_text,
-        &quot;tool_called&quot;: fname,
-        &quot;tool_arguments&quot;: args,
-        &quot;tool_result&quot;: tool_res,
-        &quot;provider&quot;: provider_name,
+        &quot;response&quot;: out[&quot;answer&quot;],
+        &quot;tool_called&quot;: first[&quot;tool&quot;] if first else None,
+        &quot;tool_arguments&quot;: first[&quot;args&quot;] if first else None,
+        &quot;tool_result&quot;: first[&quot;result&quot;] if first else None,
+        &quot;provider&quot;: f&quot;Groq ({MODEL}) + FastMCP&quot;,
     }
 
 
 if __name__ == &quot;__main__&quot;:
-    out = run_mcp_agent()
-    print(&quot;Tool Called:&quot;, out[&quot;tool_called&quot;])
+    out = asyncio.run(run_mcp_agent())
+    print(&quot;Tool Called:&quot;, out[&quot;tool_called&quot;], out[&quot;tool_arguments&quot;])
     print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
                 </div>
             </section>
@@ -427,7 +438,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">69 lines</span>
+                        <span class="topic-meta-chip">76 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -437,21 +448,33 @@ if __name__ == &quot;__main__&quot;:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-cricket-server-py">
-                    <span class="file-path">server/services/mcp/cricket_server.py</span>
-                    <p class="file-label">Cricket MCP Server.</p>
-                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket MCP Server.
+                    <span class="file-path">server/services/cricket_server.py</span>
+                    <p class="file-label">Cricket FastMCP Server (`cricket_server.py`).</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket FastMCP Server (`cricket_server.py`).
 
-Provides Model Context Protocol (MCP) tool endpoints for cricket matches and player statistics:
-1. `get_live_score(teams)`: Fetches live scorecard and match situation.
-2. `get_player_stats(player_name)`: Fetches series stats and high scores.
+Provides Model Context Protocol (MCP) tool endpoints for live cricket matches and player statistics:
+1. `get_live_score(teams)`: Fetches the live scorecard, target, and match situation.
+2. `get_player_stats(player_name)`: Fetches series batting statistics and highest scores.
+3. Communicates over standard input/output (`stdio`) transport so MCP clients can spawn it as a subprocess.
 
-Run directly:
-    python projects/ai-pocs/server/services/mcp/cricket_server.py
+Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
+
+Run directly (normally the MCP clients 29-31 start it for you as a subprocess):
+    python projects/ai-pocs/server/services/cricket_server.py
 &quot;&quot;&quot;
 
 import sys
 from pydantic import Field
+from mcp.server.fastmcp import FastMCP
 
+# ---------------------------------------------------------------------------
+# FastMCP Server Initialization
+# ---------------------------------------------------------------------------
+mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
+
+# ---------------------------------------------------------------------------
+# Mock Data Store (Simulated Third-Party Sports API Data)
+# ---------------------------------------------------------------------------
 LIVE_MATCHES = {
     &quot;india vs west indies&quot;: {
         &quot;series&quot;: &quot;India vs West Indies ODI Series, Sep-Oct 2026 (DEMO DATA)&quot;,
@@ -471,43 +494,38 @@ PLAYER_STATS = {
 }
 
 
-def get_live_score(teams: str) -&gt; dict:
+# ---------------------------------------------------------------------------
+# FastMCP Tool Definitions
+# ---------------------------------------------------------------------------
+@mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for any question about the current score, who is winning, or runs required.&quot;)
+def get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
     &quot;&quot;&quot;Get the LIVE score of a cricket match.&quot;&quot;&quot;
-    # ① Normalize team names and look up the live match scorecard
+    # ① Log diagnostic trace to stderr (stdout is reserved strictly for MCP JSON-RPC frames)
+    print(f&quot;[server] get_live_score called with teams={teams!r}&quot;, file=sys.stderr)  # logs go to stderr, NEVER stdout
+    # ② Normalize team names and look up the live match scorecard
     key = teams.strip().lower().replace(&quot;windies&quot;, &quot;west indies&quot;)
     if key not in LIVE_MATCHES:
         return {&quot;error&quot;: f&quot;No live match found for &#x27;{teams}&#x27;. Try &#x27;India vs West Indies&#x27;.&quot;}
     return LIVE_MATCHES[key]
 
 
-def get_player_stats(player_name: str) -&gt; dict:
+@mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
+def get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
     &quot;&quot;&quot;Get a player&#x27;s batting stats for the current series.&quot;&quot;&quot;
-    # ① Normalize player name and return series batting statistics
+    # ① Log diagnostic trace to stderr
+    print(f&quot;[server] get_player_stats called with player_name={player_name!r}&quot;, file=sys.stderr)
+    # ② Normalize player name and return series batting statistics
     key = player_name.strip().lower()
     if key not in PLAYER_STATS:
         return {&quot;error&quot;: f&quot;No stats found for &#x27;{player_name}&#x27;.&quot;}
     return PLAYER_STATS[key]
 
 
-# If FastMCP is available, register tools
-try:
-    from mcp.server.fastmcp import FastMCP
-
-    mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
-
-    @mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for questions about the current score or runs required.&quot;)
-    def mcp_get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
-        return get_live_score(teams)
-
-    @mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
-    def mcp_get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
-        return get_player_stats(player_name)
-
-    if __name__ == &quot;__main__&quot;:
-        mcp.run(transport=&quot;stdio&quot;)
-except ImportError:
-    if __name__ == &quot;__main__&quot;:
-        print(&quot;FastMCP not installed, direct functions available.&quot;)</code></pre>
+# ---------------------------------------------------------------------------
+# Entry Point (Stdio Transport)
+# ---------------------------------------------------------------------------
+if __name__ == &quot;__main__&quot;:
+    mcp.run(transport=&quot;stdio&quot;)</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 7 -->
@@ -521,7 +539,7 @@ except ImportError:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">33 lines</span>
+                        <span class="topic-meta-chip">35 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -533,7 +551,9 @@ except ImportError:
                 <div class="topic-content" id="content-source-main-py">
                     <span class="file-path">server/main.py</span>
                     <p class="file-label">FastAPI route handler for <code>POST /api/mcp-agent</code> (mcp_agent_service) in <code>server/main.py</code>.</p>
-                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+                    <pre><code data-lang="python">import asyncio
+
+from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -562,7 +582,7 @@ app.add_middleware(
 def mcp_agent_service(req: McpAgentRequest):
     # ① Run LLM agent connected to FastMCP cricket tools
     try:
-        res = run_mcp_agent(question=req.question)
+        res = asyncio.run(run_mcp_agent(question=req.question))
         return McpAgentResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>

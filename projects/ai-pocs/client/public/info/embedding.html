@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Sentence Embedding &middot; AI POCs</title>
     <meta name="description"
-        content="🔢 Sentence Embedding encodes two sentences into 384-dimensional dense vectors using a local SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;) model and computes their cosine similarity." />
+        content="🔢 Sentence Embedding turns two sentences into 384-number vectors with the local all-MiniLM-L6-v2 model and measures how close their meanings are with cosine similarity. No API key is needed." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🔢 Sentence Embedding<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🔢 Sentence Embedding</strong> encodes two sentences into 384-dimensional dense vectors using a local <code>SentenceTransformer("all-MiniLM-L6-v2")</code> model and computes their cosine similarity. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🔢 Sentence Embedding</strong> turns two sentences into 384-number vectors with the local <code>all-MiniLM-L6-v2</code> model and measures how close their meanings are with cosine similarity. No API key is needed.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🔢 Sentence Embedding</strong> encodes two sentences into 384-dimensional dense vectors using a local <code>SentenceTransformer("all-MiniLM-L6-v2")</code> model and computes their cosine similarity.</p>
-                    <p>Unlike keyword matching, dense embeddings map semantically similar phrases (such as <em>"I love machine learning"</em> and <em>"AI and deep learning are my passion"</em>) to nearby points in high-dimensional vector space, even when they share almost no words.</p>
+                    <p>An embedding model maps text to a list of numbers so that texts with similar meaning end up pointing in a similar direction. &quot;A cat is sleeping on the couch&quot; and &quot;A kitten is napping on the sofa&quot; share almost no words but score high.</p>
+                    <p>The model is loaded once when the server starts, then each request encodes the two sentences and computes <code>dot(v1, v2) / (|v1| &times; |v2|)</code>.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Bi-Encoder Sentence Transformers:</strong> Maps variable-length text into fixed-length 384-D vectors locally on CPU/GPU without external API calls.</li><li><strong>Cosine Similarity:</strong> Measures the cosine of the angle between two vectors ($\frac{A \cdot B}{\|A\| \|B\|}$), ranging from $-1$ (opposite) to $+1$ (identical meaning).</li><li><strong>Lazy Singleton Caching:</strong> <code>_get_model()</code> loads the weights once into memory and reuses the model across requests.</li></ul>
+                    <ul>
+                        <li><strong>Vectors:</strong> each sentence becomes 384 numbers (the model's dimension).</li>
+                        <li><strong>Cosine similarity:</strong> near 1 = same meaning, near 0 = unrelated.</li>
+                        <li><strong>Meaning over words:</strong> &quot;bank&quot; (river) vs &quot;bank&quot; (loan) scores low even though the word matches.</li>
+                        <li><strong>Why it matters:</strong> this similarity is how RAG finds the right chunk for a question.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,27 +155,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>EmbeddingCard.tsx</code> sends <code>POST /api/embedding</code> with <code>text1</code> and <code>text2</code>.</span>
+                            <span class="flow-detail"><code>EmbeddingCard.tsx</code> sends <code>POST /api/embedding</code> with <code>{ text1, text2 }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>embedding_service(req)</code> validates both texts and calls <code>compute_similarity(text1, text2)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>embedding_service(req)</code> calls <code>compute_similarity(text1, text2)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Vector Encoding (<code>09_embedding.py</code>)</span>
-                            <span class="flow-detail"><code>_get_model()</code> retrieves the cached <code>all-MiniLM-L6-v2</code> model and encodes <code>[text1, text2]</code> into 384-D vectors.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Similarity Calculation</span>
-                            <span class="flow-detail"><code>cosine_similarity(v1, v2)</code> computes the dot product divided by the product of Euclidean norms.</span>
+                            <span class="flow-title">Service (<code>09_embedding.py</code>)</span>
+                            <span class="flow-detail"><code>model.encode()</code> both sentences, then cosine similarity with NumPy.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>EmbeddingResponse</code> containing vector dimensions, 5-float previews, and the cosine similarity score.</span>
+                            <span class="flow-detail">Shows the score, the dimension count and 5-number previews of each vector.</span>
                         </div>
                     </div>
                 </div>
@@ -197,27 +197,17 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["EmbeddingCard.tsx<br/>POST /api/embedding { text1, text2 }"]:::entry
-                                Route["main.py<br/>embedding_service(req: EmbeddingRequest)"]:::fn
-                                Svc["09_embedding.py<br/>compute_similarity(text1, text2)"]:::fn
-                                Model[("SentenceTransformer<br/>all-MiniLM-L6-v2 (384-D)")]:::ext
-                                Cos["09_embedding.py<br/>cosine_similarity(v1, v2)"]:::fn
-                                Ret(["EmbeddingResponse JSON<br/>{ dimensions, previews, similarity }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② compute_similarity(text1, text2)"| Svc
-                                Svc -->|"③ _get_model().encode([text1, text2])"| Model
-                                Model -.->|"returns 2x384 float vectors"| Svc
-                                Svc -->|"④ dot(v1,v2) / (norm(v1) * norm(v2))"| Cos
-                                Cos -.->|"returns similarity float"| Svc
-                                Svc -.->|"returns dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["EmbeddingCard.tsx<br/>POST /api/embedding"]:::entry -->|"text1, text2"| R["main.py<br/>embedding_service()"]:::fn
+    R -->|"text1, text2"| S["09_embedding.py<br/>compute_similarity()"]:::fn
+    S -->|"sentences"| M[("SentenceTransformer<br/>all-MiniLM-L6-v2 (local)")]:::ext
+    M -->|"two 384-d vectors"| S
+    S -->|"cosine similarity"| R
+    R -->|"JSON { similarity, dimensions, previews }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -228,7 +218,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -243,7 +233,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">98 lines</span>
+                        <span class="topic-meta-chip">99 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -304,7 +294,8 @@ class EmbeddingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-_embedding_model: SentenceTransformer | None = None
+# ① Load the compact 384-dimensional SentenceTransformer embedding model once at startup
+model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
 
 
 def compute_similarity(
@@ -320,26 +311,20 @@ def compute_similarity(
     Returns:
         Dictionary matching EmbeddingResponse fields.
     &quot;&quot;&quot;
-    global _embedding_model
-    # ① Load (or reuse cached) compact 384-dimensional SentenceTransformer embedding model
-    if _embedding_model is None:
-        _embedding_model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
-    model = _embedding_model
-
     # ② Encode both texts into 384-dimensional dense vectors
     v1 = model.encode(text1)
     v2 = model.encode(text2)
 
     # ③ Compute cosine similarity using dot product divided by the product of vector norms
-    norm_product = float(norm(v1) * norm(v2))
-    similarity = float(dot(v1, v2) / norm_product) if norm_product &gt; 0 else 0.0
+    #   similarity = dot(v1, v2) / (||v1|| * ||v2||)
+    similarity = float(dot(v1, v2) / (norm(v1) * norm(v2)))
 
     # ④ Return similarity score, vector dimensionality, and 5-value vector previews
     return {
         &quot;text1&quot;: text1,
         &quot;text2&quot;: text2,
         &quot;similarity&quot;: round(similarity, 4),
-        &quot;dimensions&quot;: int(v1.shape[0]),
+        &quot;dimensions&quot;: len(v1),
         &quot;preview_text1&quot;: [round(float(x), 4) for x in v1[:5]],
         &quot;preview_text2&quot;: [round(float(x), 4) for x in v2[:5]],
     }
@@ -372,7 +357,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">53 lines</span>
+                        <span class="topic-meta-chip">37 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -384,9 +369,7 @@ if __name__ == &quot;__main__&quot;:
                 <div class="topic-content" id="content-source-main-py">
                     <span class="file-path">server/main.py</span>
                     <p class="file-label">FastAPI route handler for <code>POST /api/embedding</code> (embedding_service) in <code>server/main.py</code>.</p>
-                    <pre><code data-lang="python">import threading
-from contextlib import asynccontextmanager
-from dotenv import find_dotenv, load_dotenv
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -399,21 +382,7 @@ from services import (
 # Load environment variables
 load_dotenv(find_dotenv())
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # Pre-warm SentenceTransformer in background
-    def warmup_embedding():
-        try:
-            compute_similarity(&quot;warmup&quot;, &quot;warmup&quot;)
-        except Exception:
-            pass
-
-    threading.Thread(target=warmup_embedding, daemon=True).start()
-    yield
-
-
-app = FastAPI(title=&quot;AI POCs API&quot;, lifespan=lifespan)
+app = FastAPI(title=&quot;AI POCs API&quot;)
 
 # Enable CORS for frontend requests
 app.add_middleware(

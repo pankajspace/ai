@@ -14,8 +14,9 @@ export interface MultiPrebuiltToolsCardProps {
 }
 
 const PRESETS = [
-  'Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt',
-  'Query https://httpbin.org/json, extract author, and save it to author_info.txt',
+  'Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d, extract the latest closing prices, calculate the average price over the period, and save the results to stock_summary.txt',
+  'Fetch crypto data from https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=1d&range=3d, compute the average closing price, and write a summary to btc_summary.txt',
+  'Query https://httpbin.org/json, extract the slideshow author, and save it to author_info.txt',
 ]
 
 export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltToolsCardProps = {}) {

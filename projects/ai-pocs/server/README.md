@@ -22,17 +22,17 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 10. `services/08_chunking.py`: Document chunking service using RecursiveCharacterTextSplitter.
 11. `services/09_embedding.py`: Sentence similarity computation via all-MiniLM-L6-v2 embeddings.
 12. `services/10_rag.py`: Paragraph retrieval-augmented generation service.
-13. `services/11_hello_world_agent.py`: Minimal Strands agent on Amazon Bedrock Nova Lite (with OpenAI fallback).
-14. `services/12_hello_world_langgraph.py`: LangGraph ReAct agent loop with greeting tool.
+13. `services/11_hello_world_agent.py`: Minimal Strands agent on Amazon Bedrock Nova Lite.
+14. `services/12_hello_world_langgraph.py`: LangGraph ReAct agent loop on Bedrock Converse with a greeting tool.
 15. `services/13_function_to_tool.py`: Converting Python functions to agent tools via `@tool`, type hints, and docstrings.
 16. `services/14_tip_calculator.py`: Natural language intent-driven bill and tip calculator agent.
 17. `services/15_multi_tool_sales.py`: Autonomous sales pipeline orchestration (`get_data` -> `analyze` -> `email`).
 18. `services/16_custom_tool_inventory.py`: Domain-specific catalog stock lookup tool (`check_inventory`).
-19. `services/17_prebuilt_tools.py`: Math assistant agent using pre-built mathematical evaluation tools.
-20. `services/18_multi_prebuilt_tools.py`: Multi-step data pipeline combining HTTP requests, calculations, and file writes.
-21. `services/19_use_aws.py`: Natural language AWS cloud management interface for read-only inspections.
+19. `services/17_prebuilt_tools.py`: Math assistant agent using the prebuilt `strands_tools.calculator`.
+20. `services/18_multi_prebuilt_tools.py`: Multi-step pipeline with the prebuilt `http_request`, `calculator`, and `file_write` (writes real files; sets `BYPASS_TOOL_CONSENT=true`).
+21. `services/19_use_aws.py`: Natural language AWS assistant using the prebuilt `use_aws` tool (real API calls; use read-only credentials).
 22. `services/20_class_based_tools.py`: Class-based tools sharing state/connection pool to prevent DB connection bloat.
-23. `services/21_async_tools.py`: Parallel async tool execution across multiple warehouses via `asyncio.gather`.
+23. `services/21_async_tools.py`: Async Strands tool run with `agent.invoke_async`, so warehouse lookups run in parallel.
 24. `services/22_travel_assistant.py`: Capstone travel agent combining weather forecasts, packing lists, and cost estimation.
 25. `services/23_prompting_strategies.py`: Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning.
 26. `services/24_sycophancy_trap.py`: 4-round escalating pushback evaluator testing model sycophancy and integrity.
@@ -40,10 +40,10 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 28. `services/26_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
 29. `services/27_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
 30. `services/28_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
-31. `services/29_mcp_client.py`: FastMCP protocol plumbing without LLM (handshake, tool discovery, direct tool execution).
-32. `services/30_mcp_agent.py`: LLM-guided FastMCP cricket assistant routing questions to live match tools.
-33. `services/31_mcp_evals.py`: Automated assertion unit-test suite evaluating MCP tool routing and factual accuracy.
-34. `services/mcp/cricket_server.py`: FastMCP server providing live scores and player statistics.
+31. `services/29_mcp_client.py`: MCP client over stdio without an LLM (handshake, tool discovery, direct tool call).
+32. `services/30_mcp_agent.py`: Groq agent that discovers and calls the MCP server's tools over stdio.
+33. `services/31_mcp_evals.py`: 5-case eval suite running the service 30 agent and asserting tool routing and facts.
+34. `services/cricket_server.py`: FastMCP stdio server (demo live scores and player stats) started as a subprocess by services 29-31.
 35. `requirements.txt`: Python package dependencies.
 36. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
 37. `.env.example`: Configuration variables for port, host, and API keys.
@@ -101,7 +101,7 @@ From the `projects/ai-pocs/server` directory:
 5. `POST /api/summarize`: LangChain LCEL text summarizer.
 6. `POST /api/memory-chat`: Conversational memory chat.
 7. `POST /api/agent`: Autonomous single-tool price lookup agent.
-8. `POST /api/langchain-agent`: LangChain single-tool weather agent.
+8. `POST /api/langchain-one-tool`: LangChain single-tool weather agent.
 9. `POST /api/multi-tool-agent`: LangChain multi-tool agent.
 10. `POST /api/chunk`: Text chunking service.
 11. `POST /api/embedding`: Sentence similarity embedding service.
@@ -116,7 +116,7 @@ From the `projects/ai-pocs/server` directory:
 20. `POST /api/multi-prebuilt-tools`: Chained HTTP, math, and file write workflow agent.
 21. `POST /api/use-aws`: Natural language AWS cloud management interface.
 22. `POST /api/class-based-tools`: Class-based tools sharing state/connection pool.
-23. `POST /api/async-tools`: Concurrent async warehouse lookup agent.
+23. `POST /api/async-tools`: Parallel async warehouse lookup agent.
 24. `POST /api/travel-assistant`: Capstone weather, packing, and cost planner agent.
 25. `POST /api/prompting-strategies`: Benchmarking Direct vs Zero-Shot CoT vs Few-Shot CoT.
 26. `POST /api/sycophancy-trap`: Multi-turn pushback and capitulation evaluator.

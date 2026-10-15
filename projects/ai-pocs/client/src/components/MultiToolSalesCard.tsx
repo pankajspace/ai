@@ -18,12 +18,8 @@ const PRESETS = [
   "Get sales data for Q4 and send an email report to sales-team@company.com",
 ]
 
-const SALES_DATA = [
-  { quarter: 'Q1', revenue: '$950K', deals: 35 },
-  { quarter: 'Q2', revenue: '$1.10M', deals: 42 },
-  { quarter: 'Q3', revenue: '$1.25M', deals: 47 },
-  { quarter: 'Q4', revenue: '$1.45M', deals: 55 },
-]
+// get_sales_data is a mock tool: it returns the same numbers for every quarter
+const SALES_DATA = ['Q1', 'Q2', 'Q3', 'Q4'].map((quarter) => ({ quarter, revenue: '$1.25M', deals: 47 }))
 
 export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardProps = {}) {
   const [task, setTask] = useState<string>(PRESETS[0])
@@ -72,7 +68,7 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
       </p>
 
       <details className="data-preview" open>
-        <summary>In-Memory Quarterly Sales DB (4 quarters)</summary>
+        <summary>Mock sales data (same numbers for every quarter)</summary>
         <div className="data-preview-grid">
           {SALES_DATA.map((s) => (
             <span

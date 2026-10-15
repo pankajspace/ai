@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Paragraph RAG &middot; AI POCs</title>
     <meta name="description"
-        content="📚 Paragraph RAG runs a complete 4-stage Retrieval-Augmented Generation pipeline in memory: splitting a paragraph into sentences, embedding them with all-MiniLM-L6-v2, ranking every sentence against the question by cosine similarity, and passing the top-k sentences to OpenAI to generate a grounded answer." />
+        content="📚 Paragraph RAG answers a question only from the paragraph you paste: chunk it, embed the chunks into an in-memory Chroma store, retrieve the closest chunks, and let OpenAI answer from them." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">📚 Paragraph RAG<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>📚 Paragraph RAG</strong> runs a complete 4-stage Retrieval-Augmented Generation pipeline in memory: splitting a paragraph into sentences, embedding them with <code>all-MiniLM-L6-v2</code>, ranking every sentence against the question by cosine similarity, and passing the top-k sentences to OpenAI to generate a grounded answer. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>📚 Paragraph RAG</strong> answers a question only from the paragraph you paste: chunk it, embed the chunks into an in-memory Chroma store, retrieve the closest chunks, and let OpenAI answer from them.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>📚 Paragraph RAG</strong> runs a complete 4-stage Retrieval-Augmented Generation pipeline in memory: splitting a paragraph into sentences, embedding them with <code>all-MiniLM-L6-v2</code>, ranking every sentence against the question by cosine similarity, and passing the top-k sentences to OpenAI to generate a grounded answer.</p>
-                    <p>Instead of asking the LLM to answer from parametric memory (which risks hallucination) or stuffing an entire document into the prompt, RAG retrieves only the highest-scoring evidence chunks and instructs the model to answer <em>exclusively</em> from that retrieved context.</p>
+                    <p>Retrieval-Augmented Generation keeps the model honest by giving it the relevant facts in the prompt. The paragraph is split into chunks, each chunk is embedded locally, and a similarity search picks the top 3 chunks for the question.</p>
+                    <p>The prompt tells the model to use ONLY that context and to say &quot;I couldn't find that in the provided paragraph&quot; otherwise. The retrieved chunks are returned as sources so you can check the answer.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,7 +124,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>4-Stage RAG Pipeline:</strong> Chunking (sentence boundary regex) → Embedding (<code>SentenceTransformer</code>) → Vector Retrieval (cosine similarity top-$k$) → Grounded Generation (<code>gpt-4o-mini</code>).</li><li><strong>Grounding Constraint:</strong> The prompt explicitly instructs: <em>"Answer the question using ONLY the context below."</em></li><li><strong>Retrieval Transparency:</strong> Returning all ranked sentences with their cosine scores lets users inspect why specific chunks were selected.</li></ul>
+                    <ul>
+                        <li><strong>Chunk &rarr; embed &rarr; store &rarr; retrieve &rarr; generate:</strong> the five RAG steps.</li>
+                        <li><strong>Vector store:</strong> Chroma keeps chunk vectors and finds the nearest ones to the question vector.</li>
+                        <li><strong>Grounded prompt:</strong> the instruction &quot;answer using ONLY the context&quot; reduces made-up answers.</li>
+                        <li><strong>One request, one store:</strong> the in-memory collection is deleted after retrieval so the next request starts empty.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -150,32 +155,27 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>RagCard.tsx</code> sends <code>POST /api/rag</code> with <code>paragraph</code> and <code>question</code>.</span>
+                            <span class="flow-detail"><code>RagCard.tsx</code> sends <code>POST /api/rag</code> with <code>{ paragraph, question }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>rag_service(req)</code> validates the inputs and invokes <code>answer_rag(paragraph, question)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>rag_service(req)</code> checks both fields and calls <code>answer_rag()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Chunk & Embed (<code>10_rag.py</code>)</span>
-                            <span class="flow-detail"><code>split_sentences()</code> splits the paragraph; <code>all-MiniLM-L6-v2</code> encodes all sentences and the query into 384-D vectors.</span>
+                            <span class="flow-title">Retrieve (<code>10_rag.py</code>)</span>
+                            <span class="flow-detail">Split into 200-char chunks &rarr; <code>Chroma.from_texts()</code> with local embeddings &rarr; <code>similarity_search(question, k)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Rank & Retrieve</span>
-                            <span class="flow-detail">Computes cosine similarity for each sentence, sorts descending, and selects the top-3 sentences as context.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Grounded Generation</span>
-                            <span class="flow-detail">Sends the top-3 sentences and question to OpenAI <code>gpt-4o-mini</code> to synthesize the final answer.</span>
+                            <span class="flow-title">Generate</span>
+                            <span class="flow-detail">The context + question prompt goes to OpenAI with temperature 0.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>RagResponse</code> with the grounded <code>answer</code>, <code>top_context</code>, and full <code>ranked_chunks</code> list.</span>
+                            <span class="flow-detail">Shows the answer and the retrieved source chunks.</span>
                         </div>
                     </div>
                 </div>
@@ -202,30 +202,22 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["RagCard.tsx<br/>POST /api/rag { paragraph, question }"]:::entry
-                                Route["main.py<br/>rag_service(req: RagRequest)"]:::fn
-                                Svc["10_rag.py<br/>answer_rag(paragraph, question)"]:::fn
-                                Split["10_rag.py<br/>split_sentences(paragraph)"]:::fn
-                                Embed[("SentenceTransformer<br/>all-MiniLM-L6-v2")]:::ext
-                                LLM[("OpenAI API<br/>gpt-4o-mini")]:::ext
-                                Ret(["RagResponse JSON<br/>{ answer, top_context, ranked_chunks }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② answer_rag()"| Svc
-                                Svc -->|"③ split into sentences"| Split
-                                Split -.->|"returns List[str]"| Svc
-                                Svc -->|"④ encode sentences + question"| Embed
-                                Embed -.->|"returns 384-D embeddings"| Svc
-                                Svc -->|"⑤ top-k context + question"| LLM
-                                LLM -.->|"returns grounded answer"| Svc
-                                Svc -.->|"returns RAG result dict"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["RagCard.tsx<br/>POST /api/rag"]:::entry -->|"paragraph, question"| R["main.py<br/>rag_service()"]:::fn
+    R -->|"paragraph, question"| S["10_rag.py<br/>answer_rag()"]:::fn
+    S -->|"paragraph"| C["RecursiveCharacterTextSplitter"]:::fn
+    C -->|"chunks"| S
+    S -->|"chunks"| V[("Chroma + HuggingFaceEmbeddings<br/>in memory")]:::ext
+    S -->|"question"| V
+    V -->|"top-k chunks"| S
+    S -->|"context + question"| O[("OpenAI API")]:::ext
+    O -->|"grounded answer"| S
+    S -->|"answer + sources"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -236,7 +228,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -251,7 +243,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">148 lines</span>
+                        <span class="topic-meta-chip">135 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -277,11 +269,12 @@ Run directly:
 
 import os
 from dotenv import find_dotenv, load_dotenv
+from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel, Field
 
 load_dotenv(find_dotenv())
 
@@ -335,23 +328,10 @@ class RagResponse(BaseModel):
 
 
 # ---------------------------------------------------------------------------
-# Retrieval &amp; RAG Logic
+# RAG Pipeline: Chunk -&gt; Embed &amp; Store -&gt; Retrieve -&gt; Generate
 # ---------------------------------------------------------------------------
-def _retrieve_relevant_chunks(chunks: list[str], question: str, k: int = 3) -&gt; list[str]:
-    &quot;&quot;&quot;Retrieve top relevant chunks using Chroma vector store and HuggingFace embeddings.&quot;&quot;&quot;
-    # ① Short-circuit if total chunks are already within the top-k limit
-    if len(chunks) &lt;= k:
-        return chunks
-
-    from langchain_chroma import Chroma
-    from langchain_huggingface import HuggingFaceEmbeddings
-
-    # ② Embed all chunks into an ephemeral Chroma vector store
-    embedder = HuggingFaceEmbeddings(model_name=&quot;all-MiniLM-L6-v2&quot;)
-    db = Chroma.from_texts(chunks, embedder)
-    # ③ Run similarity search for the user question and return top-k passages
-    results = db.similarity_search(question, k=k)
-    return [r.page_content for r in results]
+# Load the local embedding model once (no API key needed)
+embedder = HuggingFaceEmbeddings(model_name=&quot;all-MiniLM-L6-v2&quot;)
 
 
 def answer_rag(
@@ -370,32 +350,31 @@ def answer_rag(
     # ① Chunk the paragraph into overlapping pieces
     splitter = RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=40)
     chunks = splitter.split_text(paragraph)
-    if not chunks:
-        chunks = [paragraph]
 
-    # ② Retrieve the most relevant chunks for the question
-    relevant_chunks = _retrieve_relevant_chunks(chunks, question, k=3)
+    # ② Embed every chunk and store the vectors in an in-memory Chroma vector store
+    db = Chroma.from_texts(chunks, embedder)
 
-    # ③ Format the retrieved chunks into context string
+    # ③ Retrieve the top-k chunks most similar to the question
+    k = min(3, len(chunks))
+    relevant_chunks = [doc.page_content for doc in db.similarity_search(question, k=k)]
+    # Drop the in-memory collection so the next request starts with an empty store
+    db.delete_collection()
+
+    # ④ Join the retrieved chunks into one context string
     context = &quot;\n\n&quot;.join(relevant_chunks)
 
-    # ④ Initialize chat model
+    # ⑤ Generate an answer grounded only in the retrieved context
     model = ChatOpenAI(
         model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
         base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
         temperature=0,
     )
-
-    # ⑤ Synthesize answer with prompt chain
-    chain = RAG_PROMPT | model
-    result = chain.invoke({&quot;context&quot;: context, &quot;question&quot;: question})
-    answer = result.content if hasattr(result, &quot;content&quot;) else str(result)
+    answer = (RAG_PROMPT | model).invoke({&quot;context&quot;: context, &quot;question&quot;: question}).content
 
     return {
         &quot;paragraph&quot;: paragraph,
         &quot;question&quot;: question,
-        &quot;answer&quot;: str(answer).strip(),
+        &quot;answer&quot;: answer.strip(),
         &quot;sources&quot;: relevant_chunks,
     }
 

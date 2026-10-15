@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — FastMCP Evals Suite &middot; AI POCs</title>
     <meta name="description"
-        content="🧪 FastMCP Evals Suite runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both Tool Routing Accuracy (did it pick the right tool or abstain on irrelevant queries?) and Ground-Truth Keyword Verification." />
+        content="🧪 FastMCP Evals Suite tests the MCP cricket agent like unit tests: 5 questions, each with an expected tool and facts the answer must contain, scored into a pass rate." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -34,6 +34,7 @@
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-31-mcp-evals-py">31_mcp_evals.py</a></li>
+                    <li><a href="#source-30-mcp-agent-py">30_mcp_agent.py</a></li>
                     <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
@@ -44,15 +45,15 @@
             <h1 id="how-it-works">🧪 FastMCP Evals Suite<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🧪 FastMCP Evals Suite</strong> runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both <strong>Tool Routing Accuracy</strong> (did it pick the right tool or abstain on irrelevant queries?) and <strong>Ground-Truth Keyword Verification</strong>. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+            <p class="lede"><strong>🧪 FastMCP Evals Suite</strong> tests the MCP cricket agent like unit tests: 5 questions, each with an expected tool and facts the answer must contain, scored into a pass rate.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>7 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
                     <span>4 Explainers</span>
                     <span class="dot">&bull;</span>
-                    <span>3 Python Files in Full</span>
+                    <span>4 Python Files in Full</span>
                 </div>
             </div>
             <div class="course-toolbar-actions">
@@ -101,8 +102,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p><strong>🧪 FastMCP Evals Suite</strong> runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both <strong>Tool Routing Accuracy</strong> (did it pick the right tool or abstain on irrelevant queries?) and <strong>Ground-Truth Keyword Verification</strong>.</p>
-                    <p>Production AI agents require automated regression suites before deploying prompt or schema changes. This evaluation runner executes 3 test cases—a live match score query (must call <code>get_live_score</code>), a player stats query (must call <code>get_player_stats</code>), and an out-of-domain general knowledge query (must call <code>None</code>)—and computes overall pass/fail accuracy and per-case latency.</p>
+                    <p>Every case runs the real agent from <code>30_mcp_agent.py</code> and applies two assertions: <strong>tool routing</strong> (did it call the expected tool, or no tool for &quot;What is 2 + 2?&quot;) and <strong>ground truth</strong> (does the answer contain e.g. &quot;287&quot; or &quot;164&quot;).</p>
+                    <p>Re-running the suite after changing a prompt, model or tool description shows quickly whether the agent got better or worse.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -125,7 +126,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Trajectory Evaluation (Tool Routing Assertion):</strong> Verifies that <code>actual_tool == expected_tool</code>, including negative testing (<code>expected_tool=None</code>) so the agent does not over-trigger tools on general questions.</li><li><strong>Outcome Evaluation (Ground-Truth Verification):</strong> Asserts that all expected factual tokens (e.g., <code>["287", "198", "india", "west indies"]</code>) appear in the final response.</li></ul>
+                    <ul>
+                        <li><strong>Evals:</strong> automated checks for LLM behaviour, run like a test suite.</li>
+                        <li><strong>Routing assertion:</strong> checks the agent's decisions, not just its words.</li>
+                        <li><strong>Ground-truth assertion:</strong> required facts must appear in the final answer.</li>
+                        <li><strong>Negative case:</strong> a question that needs no tool catches over-eager tool use.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -151,27 +157,22 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>McpEvalsCard.tsx</code> sends <code>POST /api/mcp-evals</code> with <code>{"run_all": true}</code>.</span>
+                            <span class="flow-detail"><code>McpEvalsCard.tsx</code> sends <code>POST /api/mcp-evals</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
-                            <span class="flow-detail"><code>mcp_evals_service(req)</code> calls <code>run_mcp_evals_suite(req.run_all)</code>.</span>
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>mcp_evals_service()</code> runs <code>asyncio.run(run_mcp_evals_suite())</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Test Suite Runner (<code>31_mcp_evals.py</code>)</span>
-                            <span class="flow-detail">Iterates through <code>TEST_SUITE</code> and calls <code>run_single_mcp_eval_case()</code> for each case.</span>
-                        </div>
-                        <div class="flow-arrow">&rarr;</div>
-                        <div class="flow-step">
-                            <span class="flow-title">Trajectory & Outcome Assertions</span>
-                            <span class="flow-detail">Checks <code>actual_tool == case["expected_tool"]</code>, runs the MCP tool on <code>cricket_server.py</code> if called, and verifies all <code>expected_keywords</code> in the final answer.</span>
+                            <span class="flow-title">Suite (<code>31_mcp_evals.py</code>)</span>
+                            <span class="flow-detail">For each of the 5 <code>TEST_CASES</code>, <code>run_case()</code> calls <code>run_agent()</code> from <code>30_mcp_agent.py</code> and applies both assertions.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Returns <code>McpEvalsResponse</code> with <code>total_cases</code>, <code>passed_cases</code>, <code>accuracy_percentage</code>, and per-case <code>TestCaseEvalResult</code> items.</span>
+                            <span class="flow-detail">Shows pass / fail per case and the overall score.</span>
                         </div>
                     </div>
                 </div>
@@ -198,30 +199,23 @@
                 <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
-                            flowchart TD
-                                UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals { run_all }"]:::entry
-                                Route["main.py<br/>mcp_evals_service(req)"]:::fn
-                                Svc["31_mcp_evals.py<br/>run_mcp_evals_suite(run_all)"]:::fn
-                                Case["31_mcp_evals.py<br/>run_single_mcp_eval_case(case)"]:::fn
-                                LLM[("Groq / OpenAI API<br/>Tool Routing + Synthesis")]:::ext
-                                MCP["mcp/cricket_server.py<br/>get_live_score() / get_player_stats()"]:::fn
-                                Ret(["McpEvalsResponse JSON<br/>{ passed_cases, accuracy_percentage, results }"]):::ret
-                            
-                                UI -->|"① POST JSON"| Route
-                                Route -->|"② run_mcp_evals_suite()"| Svc
-                                Svc -->|"③ loop over TEST_SUITE"| Case
-                                Case -->|"④ send test prompt + schemas"| LLM
-                                LLM -.->|"returns tool_calls or direct answer"| Case
-                                Case -->|"⑤ invoke MCP tool if called"| MCP
-                                MCP -.->|"returns ground-truth dict"| Case
-                                Case -.->|"returns TestCaseEvalResult"| Svc
-                                Svc -.->|"returns suite summary + results"| Route
-                                Route -.->|"returns HTTP 200"| Ret
-                            
-                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+flowchart TD
+    UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals"]:::entry --> R["main.py<br/>mcp_evals_service()"]:::fn
+    R -->|"asyncio.run()"| E["31_mcp_evals.py<br/>run_mcp_evals_suite()"]:::fn
+    E -->|"each test case"| C["run_case()"]:::fn
+    C -->|"question"| A["30_mcp_agent.py<br/>run_agent()"]:::fn
+    A -->|"tools/list, tools/call"| M[("cricket_server.py<br/>FastMCP")]:::ext
+    A -->|"messages + tools"| G[("Groq API")]:::ext
+    G -->|"tool calls / answer"| A
+    M -->|"match data"| A
+    A -->|"answer + trace"| C
+    C -->|"routing ok? facts ok?"| E
+    E -->|"score + results"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
                         </div>
                     </div>
                 </div>
@@ -232,7 +226,7 @@
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
                 </div>
             </div>
 
@@ -247,7 +241,7 @@
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">203 lines</span>
+                        <span class="topic-meta-chip">104 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -261,35 +255,24 @@
                     <p class="file-label">MCP Agent Evaluation Suite Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP Agent Evaluation Suite Service.
 
-Runs unit-test style evaluation assertions against the MCP-enabled cricket agent:
-1. Tool routing assertion: verifies the LLM chooses the correct tool (`get_live_score`, `get_player_stats`, or None).
-2. Ground truth verification: checks whether expected factual tokens appear in the agent&#x27;s final answer.
-3. Computes suite pass/fail metrics, execution latencies, and assertion details.
+Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 30):
+1. Tool routing assertion: verifies the LLM chooses the expected MCP tool (`get_live_score`, `get_player_stats`, or none).
+2. Ground-truth verification: checks whether required factual tokens appear in the agent&#x27;s final answer.
+3. Suite scoring: aggregates pass/fail counts and overall accuracy percentage across all test cases.
 
 Run directly:
     python projects/ai-pocs/server/services/31_mcp_evals.py
 &quot;&quot;&quot;
 
-import json
-import os
+import asyncio
+import importlib
 import time
-from typing import Any, Dict, List, Optional
-from dotenv import find_dotenv, load_dotenv
-from openai import OpenAI
-from pydantic import BaseModel, Field
+from typing import List, Optional
 
-from services.mcp.cricket_server import get_live_score, get_player_stats
+from pydantic import BaseModel
 
-load_dotenv(find_dotenv())
-
-
-class McpEvalsRequest(BaseModel):
-    &quot;&quot;&quot;Input payload for MCP Evals Suite.&quot;&quot;&quot;
-
-    run_all: bool = Field(
-        default=True,
-        description=&quot;Whether to run full evaluation suite across all cases&quot;,
-    )
+# ① Reuse the MCP agent loop from 30_mcp_agent.py (importlib, because the file name starts with a digit)
+mcp_agent = importlib.import_module(f&quot;{__package__}.30_mcp_agent&quot; if __package__ else &quot;30_mcp_agent&quot;)
 
 
 class TestCaseEvalResult(BaseModel):
@@ -316,166 +299,272 @@ class McpEvalsResponse(BaseModel):
     model: str
 
 
-TEST_SUITE = [
-    {
-        &quot;name&quot;: &quot;Live Match Score Routing&quot;,
-        &quot;prompt&quot;: &quot;What is the score in India vs West Indies?&quot;,
-        &quot;expected_tool&quot;: &quot;get_live_score&quot;,
-        &quot;keywords&quot;: [&quot;287&quot;, &quot;198&quot;, &quot;india&quot;, &quot;west indies&quot;],
-    },
-    {
-        &quot;name&quot;: &quot;Player Batting Stats Routing&quot;,
-        &quot;prompt&quot;: &quot;How many runs has Shubman Gill scored in this series?&quot;,
-        &quot;expected_tool&quot;: &quot;get_player_stats&quot;,
-        &quot;keywords&quot;: [&quot;164&quot;, &quot;shubman&quot;],
-    },
-    {
-        &quot;name&quot;: &quot;Non-Tool General Query&quot;,
-        &quot;prompt&quot;: &quot;What is the capital of France?&quot;,
-        &quot;expected_tool&quot;: None,
-        &quot;keywords&quot;: [&quot;paris&quot;],
-    },
+# ② Evaluation test suite: question, expected tool (None = no tool) and facts the answer must contain
+TEST_CASES = [
+    {&quot;q&quot;: &quot;What&#x27;s the live score of India vs West Indies?&quot;, &quot;tool&quot;: &quot;get_live_score&quot;, &quot;must_contain&quot;: [&quot;287&quot;]},
+    {&quot;q&quot;: &quot;How many runs does West Indies need to win?&quot;, &quot;tool&quot;: &quot;get_live_score&quot;, &quot;must_contain&quot;: [&quot;90&quot;]},
+    {&quot;q&quot;: &quot;How many runs has Shubman Gill scored this series?&quot;, &quot;tool&quot;: &quot;get_player_stats&quot;, &quot;must_contain&quot;: [&quot;164&quot;]},
+    {&quot;q&quot;: &quot;Shai Hope&#x27;s highest score in the series?&quot;, &quot;tool&quot;: &quot;get_player_stats&quot;, &quot;must_contain&quot;: [&quot;78&quot;]},
+    {&quot;q&quot;: &quot;What is 2 + 2?&quot;, &quot;tool&quot;: None, &quot;must_contain&quot;: [&quot;4&quot;]},
 ]
 
 
-def run_single_mcp_eval_case(case: dict, client: OpenAI, model: str) -&gt; TestCaseEvalResult:
-    &quot;&quot;&quot;Execute a single test case evaluation.&quot;&quot;&quot;
-    # ① Start timer and declare MCP tool schemas for the evaluation run
-    start_t = time.perf_counter()
+async def run_case(i: int, case: dict) -&gt; dict:
+    &quot;&quot;&quot;Run the agent on one test case and apply both assertions.&quot;&quot;&quot;
+    start = time.perf_counter()
+    result = await mcp_agent.run_agent(case[&quot;q&quot;])
+    tools_used = [step[&quot;tool&quot;] for step in result[&quot;trace&quot;]]
+    answer = result[&quot;answer&quot;] or &quot;&quot;
 
-    tools_schema = [
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;get_live_score&quot;,
-                &quot;description&quot;: &quot;Get the LIVE score of a cricket match.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {&quot;teams&quot;: {&quot;type&quot;: &quot;string&quot;}},
-                    &quot;required&quot;: [&quot;teams&quot;],
-                },
-            },
-        },
-        {
-            &quot;type&quot;: &quot;function&quot;,
-            &quot;function&quot;: {
-                &quot;name&quot;: &quot;get_player_stats&quot;,
-                &quot;description&quot;: &quot;Get batting stats for a player in the series.&quot;,
-                &quot;parameters&quot;: {
-                    &quot;type&quot;: &quot;object&quot;,
-                    &quot;properties&quot;: {&quot;player_name&quot;: {&quot;type&quot;: &quot;string&quot;}},
-                    &quot;required&quot;: [&quot;player_name&quot;],
-                },
-            },
-        },
-    ]
-
-    messages = [
-        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a cricket assistant. Answer concisely and use tools when appropriate.&quot;},
-        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: case[&quot;prompt&quot;]},
-    ]
-
-    # ② Invoke the LLM and assert tool routing accuracy against expected_tool
-    resp = client.chat.completions.create(
-        model=model,
-        messages=messages,
-        tools=tools_schema,
-        tool_choice=&quot;auto&quot;,
-    )
-    msg = resp.choices[0].message
-    actual_tool = msg.tool_calls[0].function.name if msg.tool_calls else None
-    tool_routing_passed = (actual_tool == case[&quot;expected_tool&quot;])
-
-    # ③ Execute the MCP tool if called and synthesize the agent&#x27;s final response
-    if msg.tool_calls:
-        tc = msg.tool_calls[0]
-        args = json.loads(tc.function.arguments or &quot;{}&quot;)
-        if tc.function.name == &quot;get_live_score&quot;:
-            t_res = get_live_score(args.get(&quot;teams&quot;, &quot;India vs West Indies&quot;))
-        else:
-            t_res = get_player_stats(args.get(&quot;player_name&quot;, &quot;Shubman Gill&quot;))
-
-        messages.append(msg)
-        messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(t_res)})
-        final_resp = client.chat.completions.create(model=model, messages=messages)
-        answer = final_resp.choices[0].message.content or &quot;&quot;
-    else:
-        answer = msg.content or &quot;&quot;
-
-    # ④ Verify ground-truth keywords in the final answer and compute overall pass/fail
-    dur = time.perf_counter() - start_t
-    lowered_answer = answer.lower()
-    answer_verified = all(kw.lower() in lowered_answer for kw in case[&quot;keywords&quot;])
-    overall = tool_routing_passed and answer_verified
-
-    return TestCaseEvalResult(
-        case_name=case[&quot;name&quot;],
-        prompt=case[&quot;prompt&quot;],
-        expected_tool=case[&quot;expected_tool&quot;],
-        actual_tool=actual_tool,
-        tool_routing_passed=tool_routing_passed,
-        expected_keywords=case[&quot;keywords&quot;],
-        answer_verified=answer_verified,
-        overall_passed=overall,
-        agent_answer=answer,
-        latency_seconds=round(dur, 3),
-    )
-
-
-def run_mcp_evals_suite(run_all: bool = True) -&gt; dict:
-    &quot;&quot;&quot;Execute complete MCP evaluation suite.&quot;&quot;&quot;
-    # ① Initialize Groq or OpenAI client for the test suite
-    groq_key = os.getenv(&quot;GROQ_API_KEY&quot;)
-    openai_key = os.getenv(&quot;OPENAI_API_KEY&quot;)
-
-    if groq_key:
-        client = OpenAI(api_key=groq_key, base_url=os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;))
-        model = os.getenv(&quot;GROQ_MODEL&quot;, &quot;llama-3.3-70b-versatile&quot;)
-    else:
-        client = OpenAI(api_key=openai_key, base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;))
-        model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
-
-    # ② Execute each test case in TEST_SUITE and collect assertion results
-    results = []
-    cases_to_run = TEST_SUITE if run_all else TEST_SUITE[:1]
-
-    for c in cases_to_run:
-        res = run_single_mcp_eval_case(c, client, model)
-        results.append(res)
-
-    # ③ Aggregate pass/fail counts and accuracy percentage
-    total = len(results)
-    passed = sum(1 for r in results if r.overall_passed)
-    failed = total - passed
-    pct = round((passed / total * 100), 1) if total &gt; 0 else 0.0
+    # ③ Assertion 1 (Tool Routing): the agent picked the expected tool (or no tool at all)
+    tool_ok = (case[&quot;tool&quot;] in tools_used) if case[&quot;tool&quot;] else (tools_used == [])
+    # ④ Assertion 2 (Ground Truth): the final answer contains every required fact
+    answer_ok = all(word.lower() in answer.lower() for word in case[&quot;must_contain&quot;])
 
     return {
-        &quot;total_cases&quot;: total,
+        &quot;case_name&quot;: f&quot;Test {i}&quot;,
+        &quot;prompt&quot;: case[&quot;q&quot;],
+        &quot;expected_tool&quot;: case[&quot;tool&quot;],
+        &quot;actual_tool&quot;: &quot;, &quot;.join(tools_used) or None,
+        &quot;tool_routing_passed&quot;: tool_ok,
+        &quot;expected_keywords&quot;: case[&quot;must_contain&quot;],
+        &quot;answer_verified&quot;: answer_ok,
+        &quot;overall_passed&quot;: tool_ok and answer_ok,
+        &quot;agent_answer&quot;: answer,
+        &quot;latency_seconds&quot;: round(time.perf_counter() - start, 2),
+    }
+
+
+async def run_mcp_evals_suite() -&gt; dict:
+    &quot;&quot;&quot;Execute the complete MCP evaluation suite.&quot;&quot;&quot;
+    # ⑤ Run every test case in turn
+    results = [await run_case(i, case) for i, case in enumerate(TEST_CASES, 1)]
+
+    # ⑥ Compute the final suite score
+    passed = sum(r[&quot;overall_passed&quot;] for r in results)
+    return {
+        &quot;total_cases&quot;: len(results),
         &quot;passed_cases&quot;: passed,
-        &quot;failed_cases&quot;: failed,
-        &quot;accuracy_percentage&quot;: pct,
-        &quot;results&quot;: [r.model_dump() for r in results],
-        &quot;model&quot;: model,
+        &quot;failed_cases&quot;: len(results) - passed,
+        &quot;accuracy_percentage&quot;: round(100 * passed / len(results), 1),
+        &quot;results&quot;: results,
+        &quot;model&quot;: mcp_agent.MODEL,
     }
 
 
 if __name__ == &quot;__main__&quot;:
-    suite_out = run_mcp_evals_suite()
-    print(f&quot;Suite: {suite_out[&#x27;passed_cases&#x27;]}/{suite_out[&#x27;total_cases&#x27;]} passed ({suite_out[&#x27;accuracy_percentage&#x27;]}%)&quot;)</code></pre>
+    out = asyncio.run(run_mcp_evals_suite())
+    for r in out[&quot;results&quot;]:
+        print(f&quot;{r[&#x27;case_name&#x27;]}: {&#x27;PASS&#x27; if r[&#x27;overall_passed&#x27;] else &#x27;FAIL&#x27;} | {r[&#x27;prompt&#x27;]} | tools: {r[&#x27;actual_tool&#x27;]}&quot;)
+    print(f&quot;==== SCORE: {out[&#x27;passed_cases&#x27;]}/{out[&#x27;total_cases&#x27;]} passed ({out[&#x27;accuracy_percentage&#x27;]}%) ====&quot;)</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-30-mcp-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-30-mcp-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-30-mcp-agent-py" class="topic-title is-file">30_mcp_agent.py<a class="headerlink" href="#source-30-mcp-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">169 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-30-mcp-agent-py">
+                    <span class="file-path">server/services/30_mcp_agent.py</span>
+                    <p class="file-label">MCP-Enabled LLM Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;MCP-Enabled LLM Agent Service.
+
+Connects an LLM to the FastMCP cricket server:
+1. Starts `cricket_server.py` over stdio and discovers its tools with `tools/list`.
+2. Converts the MCP tool descriptors into the OpenAI function-calling format.
+3. Runs the tool-calling loop: the LLM asks for a tool, the client runs it with `tools/call`,
+   and the tool output is fed back until the LLM gives a final answer.
+
+Run directly:
+    python projects/ai-pocs/server/services/30_mcp_agent.py
+&quot;&quot;&quot;
+
+import asyncio
+import json
+import os
+import re
+import sys
+from pathlib import Path
+from typing import Any, Dict, Optional
+
+from dotenv import find_dotenv, load_dotenv
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+load_dotenv(find_dotenv())
+
+
+class McpAgentRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for MCP Agent.&quot;&quot;&quot;
+
+    question: str = Field(
+        default=&quot;What is the score in India vs West Indies?&quot;,
+        description=&quot;Natural language question about cricket scores or player stats&quot;,
+    )
+
+
+class McpAgentResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from MCP Agent.&quot;&quot;&quot;
+
+    question: str
+    response: str
+    tool_called: Optional[str]
+    tool_arguments: Optional[Dict[str, Any]]
+    tool_result: Optional[Dict[str, Any]]
+    provider: str
+
+
+# ① Model settings (Groq&#x27;s OpenAI-compatible endpoint) and the MCP server to spawn over stdio
+MODEL = os.getenv(&quot;GROQ_MODEL&quot;, &quot;openai/gpt-oss-20b&quot;)
+GROQ_BASE_URL = os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;)
+server_script = str(Path(__file__).with_name(&quot;cricket_server.py&quot;))
+server = StdioServerParameters(command=sys.executable, args=[server_script])
+
+
+def to_openai_format(mcp_tools):
+    &quot;&quot;&quot;MCP tool list -&gt; format expected by OpenAI-compatible API.&quot;&quot;&quot;
+    return [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: t.name,
+                &quot;description&quot;: t.description or &quot;&quot;,
+                &quot;parameters&quot;: t.inputSchema,
+            },
+        }
+        for t in mcp_tools
+    ]
+
+
+def call_llm(llm, kwargs, retries=2):
+    &quot;&quot;&quot;Call the model, retrying when it tries to call a tool we never gave it.&quot;&quot;&quot;
+    last = None
+    for _ in range(retries + 1):
+        try:
+            return llm.chat.completions.create(**kwargs).choices[0].message, None
+        except Exception as e:
+            last = str(e)
+            if &quot;tool_use_failed&quot; not in last:
+                return None, f&quot;API ERROR: {last}&quot;
+    m = re.search(r&#x27;&quot;name&quot;:\s*&quot;([^&quot;]+)&quot;&#x27;, last or &quot;&quot;)
+    tool = m.group(1) if m else &quot;a tool&quot;
+    return None, f&quot;MODEL TRIED TO CALL A TOOL WE NEVER GAVE IT ({tool}). Try running again.&quot;
+
+
+async def run_agent(question: str) -&gt; dict:
+    &quot;&quot;&quot;Run the MCP agent loop for a single user question; returns the answer and a tool trace.&quot;&quot;&quot;
+    # ② Initialize the Groq OpenAI-compatible client
+    api_key = os.getenv(&quot;GROQ_API_KEY&quot;)
+    if not api_key:
+        raise ValueError(&quot;GROQ_API_KEY is not set. Free key: https://console.groq.com/keys&quot;)
+    llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
+    trace = []
+
+    messages = [
+        {
+            &quot;role&quot;: &quot;system&quot;,
+            &quot;content&quot;: (
+                &quot;You are a cricket assistant. Use ONLY the functions provided to get live data. &quot;
+                &quot;Do not use any browser or code tools. Be brief.&quot;
+            ),
+        },
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+    ]
+
+    # ③ Connect to the FastMCP cricket server over stdio and discover its tools
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = to_openai_format((await session.list_tools()).tools)
+
+            # ④ Run the multi-step tool-calling loop (up to 5 turns)
+            for _ in range(5):
+                reply, error = call_llm(llm, {&quot;model&quot;: MODEL, &quot;messages&quot;: messages, &quot;tools&quot;: tools, &quot;temperature&quot;: 0})
+                if error:
+                    return {&quot;answer&quot;: f&quot;({error})&quot;, &quot;trace&quot;: trace}
+
+                # No tool requested -&gt; this is the final answer
+                if not reply.tool_calls:
+                    return {&quot;answer&quot;: reply.content or &quot;&quot;, &quot;trace&quot;: trace}
+
+                # ⑤ Run each requested tool on the MCP server and feed the output back to the LLM
+                messages.append(
+                    {
+                        &quot;role&quot;: &quot;assistant&quot;,
+                        &quot;content&quot;: reply.content or &quot;&quot;,
+                        &quot;tool_calls&quot;: [
+                            {
+                                &quot;id&quot;: c.id,
+                                &quot;type&quot;: &quot;function&quot;,
+                                &quot;function&quot;: {&quot;name&quot;: c.function.name, &quot;arguments&quot;: c.function.arguments},
+                            }
+                            for c in reply.tool_calls
+                        ],
+                    }
+                )
+                for call in reply.tool_calls:
+                    args = json.loads(call.function.arguments)
+                    result = await session.call_tool(call.function.name, args)
+                    text = result.content[0].text if result.content else &quot;{}&quot;
+                    trace.append({
+                        &quot;tool&quot;: call.function.name,
+                        &quot;args&quot;: args,
+                        &quot;result&quot;: {&quot;error&quot;: text} if result.isError else json.loads(text),
+                    })
+                    messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: call.id, &quot;content&quot;: text})
+
+    return {&quot;answer&quot;: &quot;(stopped: too many steps)&quot;, &quot;trace&quot;: trace}
+
+
+async def run_mcp_agent(question: str = &quot;What is the score in India vs West Indies?&quot;) -&gt; dict:
+    &quot;&quot;&quot;Run the MCP-enabled agent and report the first tool it used.&quot;&quot;&quot;
+    out = await run_agent(question)
+    first = out[&quot;trace&quot;][0] if out[&quot;trace&quot;] else None
+    return {
+        &quot;question&quot;: question,
+        &quot;response&quot;: out[&quot;answer&quot;],
+        &quot;tool_called&quot;: first[&quot;tool&quot;] if first else None,
+        &quot;tool_arguments&quot;: first[&quot;args&quot;] if first else None,
+        &quot;tool_result&quot;: first[&quot;result&quot;] if first else None,
+        &quot;provider&quot;: f&quot;Groq ({MODEL}) + FastMCP&quot;,
+    }
+
+
+if __name__ == &quot;__main__&quot;:
+    out = asyncio.run(run_mcp_agent())
+    print(&quot;Tool Called:&quot;, out[&quot;tool_called&quot;], out[&quot;tool_arguments&quot;])
+    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-cricket-server-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-cricket-server-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-cricket-server-py" class="topic-title is-file">cricket_server.py<a class="headerlink" href="#source-cricket-server-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">69 lines</span>
+                        <span class="topic-meta-chip">76 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -485,21 +574,33 @@ if __name__ == &quot;__main__&quot;:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-cricket-server-py">
-                    <span class="file-path">server/services/mcp/cricket_server.py</span>
-                    <p class="file-label">Cricket MCP Server.</p>
-                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket MCP Server.
+                    <span class="file-path">server/services/cricket_server.py</span>
+                    <p class="file-label">Cricket FastMCP Server (`cricket_server.py`).</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket FastMCP Server (`cricket_server.py`).
 
-Provides Model Context Protocol (MCP) tool endpoints for cricket matches and player statistics:
-1. `get_live_score(teams)`: Fetches live scorecard and match situation.
-2. `get_player_stats(player_name)`: Fetches series stats and high scores.
+Provides Model Context Protocol (MCP) tool endpoints for live cricket matches and player statistics:
+1. `get_live_score(teams)`: Fetches the live scorecard, target, and match situation.
+2. `get_player_stats(player_name)`: Fetches series batting statistics and highest scores.
+3. Communicates over standard input/output (`stdio`) transport so MCP clients can spawn it as a subprocess.
 
-Run directly:
-    python projects/ai-pocs/server/services/mcp/cricket_server.py
+Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
+
+Run directly (normally the MCP clients 29-31 start it for you as a subprocess):
+    python projects/ai-pocs/server/services/cricket_server.py
 &quot;&quot;&quot;
 
 import sys
 from pydantic import Field
+from mcp.server.fastmcp import FastMCP
 
+# ---------------------------------------------------------------------------
+# FastMCP Server Initialization
+# ---------------------------------------------------------------------------
+mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
+
+# ---------------------------------------------------------------------------
+# Mock Data Store (Simulated Third-Party Sports API Data)
+# ---------------------------------------------------------------------------
 LIVE_MATCHES = {
     &quot;india vs west indies&quot;: {
         &quot;series&quot;: &quot;India vs West Indies ODI Series, Sep-Oct 2026 (DEMO DATA)&quot;,
@@ -519,57 +620,52 @@ PLAYER_STATS = {
 }
 
 
-def get_live_score(teams: str) -&gt; dict:
+# ---------------------------------------------------------------------------
+# FastMCP Tool Definitions
+# ---------------------------------------------------------------------------
+@mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for any question about the current score, who is winning, or runs required.&quot;)
+def get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
     &quot;&quot;&quot;Get the LIVE score of a cricket match.&quot;&quot;&quot;
-    # ① Normalize team names and look up the live match scorecard
+    # ① Log diagnostic trace to stderr (stdout is reserved strictly for MCP JSON-RPC frames)
+    print(f&quot;[server] get_live_score called with teams={teams!r}&quot;, file=sys.stderr)  # logs go to stderr, NEVER stdout
+    # ② Normalize team names and look up the live match scorecard
     key = teams.strip().lower().replace(&quot;windies&quot;, &quot;west indies&quot;)
     if key not in LIVE_MATCHES:
         return {&quot;error&quot;: f&quot;No live match found for &#x27;{teams}&#x27;. Try &#x27;India vs West Indies&#x27;.&quot;}
     return LIVE_MATCHES[key]
 
 
-def get_player_stats(player_name: str) -&gt; dict:
+@mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
+def get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
     &quot;&quot;&quot;Get a player&#x27;s batting stats for the current series.&quot;&quot;&quot;
-    # ① Normalize player name and return series batting statistics
+    # ① Log diagnostic trace to stderr
+    print(f&quot;[server] get_player_stats called with player_name={player_name!r}&quot;, file=sys.stderr)
+    # ② Normalize player name and return series batting statistics
     key = player_name.strip().lower()
     if key not in PLAYER_STATS:
         return {&quot;error&quot;: f&quot;No stats found for &#x27;{player_name}&#x27;.&quot;}
     return PLAYER_STATS[key]
 
 
-# If FastMCP is available, register tools
-try:
-    from mcp.server.fastmcp import FastMCP
-
-    mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
-
-    @mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for questions about the current score or runs required.&quot;)
-    def mcp_get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
-        return get_live_score(teams)
-
-    @mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
-    def mcp_get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
-        return get_player_stats(player_name)
-
-    if __name__ == &quot;__main__&quot;:
-        mcp.run(transport=&quot;stdio&quot;)
-except ImportError:
-    if __name__ == &quot;__main__&quot;:
-        print(&quot;FastMCP not installed, direct functions available.&quot;)</code></pre>
+# ---------------------------------------------------------------------------
+# Entry Point (Stdio Transport)
+# ---------------------------------------------------------------------------
+if __name__ == &quot;__main__&quot;:
+    mcp.run(transport=&quot;stdio&quot;)</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 7 -->
+<!-- ============================================================ 8 -->
 
             <section class="topic-section is-collapsed" id="sec-source-main-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-main-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">7</span>
+                        <span class="topic-badge">8</span>
                         <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">33 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -581,12 +677,13 @@ except ImportError:
                 <div class="topic-content" id="content-source-main-py">
                     <span class="file-path">server/main.py</span>
                     <p class="file-label">FastAPI route handler for <code>POST /api/mcp-evals</code> (mcp_evals_service) in <code>server/main.py</code>.</p>
-                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+                    <pre><code data-lang="python">import asyncio
+
+from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from services import (
-    McpEvalsRequest,
     McpEvalsResponse,
     run_mcp_evals_suite,
 )
@@ -607,10 +704,10 @@ app.add_middleware(
 
 
 @app.post(&quot;/api/mcp-evals&quot;, response_model=McpEvalsResponse)
-def mcp_evals_service(req: McpEvalsRequest):
+def mcp_evals_service():
     # ① Execute MCP agent evaluation suite and return assertion metrics
     try:
-        res = run_mcp_evals_suite(run_all=req.run_all)
+        res = asyncio.run(run_mcp_evals_suite())
         return McpEvalsResponse(**res)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>

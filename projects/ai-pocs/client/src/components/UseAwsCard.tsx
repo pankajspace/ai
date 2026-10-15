@@ -5,7 +5,6 @@ export interface UseAwsResponse {
   prompt: string
   response: string
   operations_executed: string[]
-  cloud_data: Record<string, any>
   provider: string
 }
 
