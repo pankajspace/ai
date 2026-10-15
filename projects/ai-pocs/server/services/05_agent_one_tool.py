@@ -122,7 +122,7 @@ def run_agent_with_tool(user_message: str = "How much are the shoes?") -> str:
     # ② Phase 1: Send user message along with available tool definitions.
     # The model inspects the prompt and decides whether to respond directly
     # or request a tool invocation.
-    model = os.getenv("OPENAI_MODEL")
+    model = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
     response = client.chat.completions.create(
         model=model,
         messages=messages,

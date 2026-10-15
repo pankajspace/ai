@@ -304,6 +304,9 @@ class EmbeddingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
+_embedding_model: SentenceTransformer | None = None
+
+
 def compute_similarity(
     text1: str = &quot;A cat is sleeping on the couch&quot;,
     text2: str = &quot;A kitten is napping on the sofa&quot;,
@@ -317,8 +320,11 @@ def compute_similarity(
     Returns:
         Dictionary matching EmbeddingResponse fields.
     &quot;&quot;&quot;
-    # ① Load the compact 384-dimensional SentenceTransformer embedding model
-    model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+    global _embedding_model
+    # ① Load (or reuse cached) compact 384-dimensional SentenceTransformer embedding model
+    if _embedding_model is None:
+        _embedding_model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+    model = _embedding_model
 
     # ② Encode both texts into 384-dimensional dense vectors
     v1 = model.encode(text1)

@@ -232,11 +232,11 @@ jobs:
                   server:
                     condition: service_healthy
                 healthcheck:
-                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/PROJECT_NAME/"]
+                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://127.0.0.1:5173/PROJECT_NAME/"]
                   interval: 5s
-                  timeout: 3s
-                  retries: 5
-                  start_period: 10s
+                  timeout: 5s
+                  retries: 12
+                  start_period: 30s
 
               server:
                 image: $SERVER_IMAGE
@@ -246,14 +246,23 @@ jobs:
                 environment:
                   - PORT=8000
                   - HOST=0.0.0.0
+                  - OPENAI_MODEL=gpt-4o-mini
+                  - OPENAI_BASE_URL=https://api.openai.com/v1
+                  - GEMINI_MODEL=gemini-3.8-flash
+                  - GEMINI_BASE_URL=https://generativelanguage.googleapis.com/v1beta/openai/
+                  - GROQ_MODEL=openai/gpt-oss-20b
+                  - GROQ_BASE_URL=https://api.groq.com/openai/v1
+                  - AWS_DEFAULT_REGION=us-east-1
+                  - BEDROCK_MODEL_ID=amazon.nova-lite-v1:0
+                  - BEDROCK_NOVA_LITE=amazon.nova-lite-v1:0
                 env_file:
                   - $HOME/secrets/PROJECT_NAME.env
                 healthcheck:
-                  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+                  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health')"]
                   interval: 5s
-                  timeout: 3s
-                  retries: 5
-                  start_period: 10s
+                  timeout: 5s
+                  retries: 12
+                  start_period: 60s
             COMPOSE
 
             # --- Deploy: free disk, pull, restart both services ---

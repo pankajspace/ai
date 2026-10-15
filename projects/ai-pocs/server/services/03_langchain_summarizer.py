@@ -31,9 +31,9 @@ DEFAULT_SAMPLE_TEXT = (
     "developers to build complex AI-driven workflows efficiently."
 )
 
-model_name = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+model_name = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
 base_url = os.getenv("OPENAI_BASE_URL")
-api_key = os.getenv("OPENAI_API_KEY")
+api_key = os.getenv("OPENAI_API_KEY") or "missing-key"
 
 
 # ---------------------------------------------------------------------------

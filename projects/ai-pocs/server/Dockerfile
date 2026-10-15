@@ -31,7 +31,8 @@ COPY requirements.txt .
 #   will reuse it and will never pull in any NVIDIA packages.
 RUN --mount=type=cache,target=/root/.cache/uv \
     uv pip install --system --index-url https://download.pytorch.org/whl/cpu torch && \
-    uv pip install --system -r requirements.txt
+    uv pip install --system -r requirements.txt && \
+    python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
 
 # 6. Application Source Code
 # Copy server application files into the container. Placed after dependency

@@ -33,17 +33,17 @@ load_dotenv(find_dotenv(), override=True)
 PROVIDER = "groq"
 
 if PROVIDER == "groq":
-    MODEL = os.getenv("GROQ_MODEL")
-    BASE_URL = os.getenv("GROQ_BASE_URL")
-    REQUIRED_KEY = os.getenv("GROQ_API_KEY")
+    MODEL = os.getenv("GROQ_MODEL") or "openai/gpt-oss-20b"
+    BASE_URL = os.getenv("GROQ_BASE_URL") or "https://api.groq.com/openai/v1"
+    REQUIRED_KEY = os.getenv("GROQ_API_KEY") or "missing-key"
 elif PROVIDER == "gemini":
-    MODEL = os.getenv("GEMINI_MODEL") or os.getenv("GOOGLE_MODEL")
-    BASE_URL = os.getenv("GEMINI_BASE_URL")
-    REQUIRED_KEY = os.getenv("GEMINI_API_KEY")
+    MODEL = os.getenv("GEMINI_MODEL") or os.getenv("GOOGLE_MODEL") or "gemini-3.8-flash"
+    BASE_URL = os.getenv("GEMINI_BASE_URL") or "https://generativelanguage.googleapis.com/v1beta/openai/"
+    REQUIRED_KEY = os.getenv("GEMINI_API_KEY") or "missing-key"
 else:  # openai
-    MODEL = os.getenv("OPENAI_MODEL")
-    BASE_URL = os.getenv("OPENAI_BASE_URL")
-    REQUIRED_KEY = os.getenv("OPENAI_API_KEY")
+    MODEL = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
+    BASE_URL = os.getenv("OPENAI_BASE_URL") or "https://api.openai.com/v1"
+    REQUIRED_KEY = os.getenv("OPENAI_API_KEY") or "missing-key"
 
 
 # ---------------------------------------------------------------------------
