@@ -1,8 +1,11 @@
-"""LangChain Summarizer - prompt | model | parser.
+"""LangChain Text Summarizer - prompt | model | parser.
 
-Builds a tiny LCEL (LangChain Expression Language) chain that turns long text
-into a short, friendly summary. The pipe `|` means "then".
-To summarize a different text, change the choice in step 2.
+This script demonstrates prompt chaining using LangChain LCEL (LangChain Expression Language):
+1. Loads API credentials and model configuration from environment variables (.env).
+2. Defines sample input paragraphs to summarize.
+3. Sets up a reusable ChatPromptTemplate with a `{data}` placeholder.
+4. Chains `ChatPromptTemplate | ChatOpenAI | StrOutputParser` using the LCEL pipe operator (`|`).
+5. Invokes the chain with input text to produce a concise, friendly summary.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -20,11 +23,17 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
 
-# 1. Load API keys and model names from .env
-#    (in Docker they are passed in with --env-file instead)
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load API keys and model names from .env
+#   (in Docker, environment variables are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
-# 2. Inputs - sample texts; pick one at the bottom of this step
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# Sample texts to summarize - pick one at the bottom of this section
 TEXT_LANGCHAIN = (
     "Information about LangChain and its usage in building AI applications. "
     "We will explore how it simplifies the integration of language models into "
@@ -52,12 +61,15 @@ text = TEXT_LANGCHAIN
 # text = TEXT_DOCKER
 # text = TEXT_EMAIL
 
-# 3. Prompt: a reusable template with a {data} blank
+# ---------------------------------------------------------------------------
+# LangChain LCEL Chain Definition
+# ---------------------------------------------------------------------------
+# ② Create a reusable prompt template with a {data} placeholder
 prompt = ChatPromptTemplate.from_template(
     "Give a short, friendly summary of this long text:\n\n{data}"
 )
 
-# 4. Model: the OpenAI chat model, wrapped for LangChain
+# ③ Initialize the OpenAI chat model wrapped for LangChain
 model = ChatOpenAI(
     model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
     base_url=os.getenv("OPENAI_BASE_URL") or None,
@@ -65,13 +77,16 @@ model = ChatOpenAI(
     timeout=20.0,
 )
 
-# 5. Parser: unwraps the model's message into plain text
+# ④ Create the output parser that unwraps the AIMessage into a plain string
 parser = StrOutputParser()
 
-# 6. Chain them together: prompt -> model -> parser
+# ⑤ Snap the components together using the LCEL pipe operator (| means "then")
 chain = prompt | model | parser
 
-# 7. Run the chain; the dict fills the {data} blank by name
+# ---------------------------------------------------------------------------
+# Chain Execution
+# ---------------------------------------------------------------------------
+# ⑥ Invoke the chain; the input dictionary fills the {data} placeholder by name
 summary = chain.invoke({"data": text})
 
 print("Original text:\n", text, "\n")

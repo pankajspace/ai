@@ -1,11 +1,9 @@
-"""Module 2 · Lesson 7 — AWS integration with use_aws.
+"""Module 2 · Lesson 7 — Natural Language Cloud Operations with `use_aws`.
 
-One tool, many services. use_aws translates plain English into AWS API calls.
-You don't write boto3 code, don't handle AWS responses, and don't even
-specify which operation to use. The agent works it out.
-
-SAFETY: this script only does a READ-ONLY request (listing S3 buckets).
-An empty list is a valid result, not an error.
+Demonstrates natural language AWS management using the pre-built `use_aws` tool:
+1. Translates plain-English cloud queries into AWS service API calls without hand-written `boto3` code.
+2. Uses a read-only default prompt (listing S3 buckets) for safe cloud inspection.
+3. Formats the raw AWS API response into a clear human-readable summary.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -23,26 +21,39 @@ from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import use_aws
 
-# 1. Load AWS and Bedrock configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
-# 2. Inputs - AWS command in plain English; uncomment another line to try a different action
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ② Select an AWS command in plain English; uncomment another line to try a different action
 prompt = "List all S3 buckets in my account"
 # prompt = "Show the current AWS region and account identity details"
 # prompt = "Look up customer ID 12345 in the DynamoDB customers table and update their email to newemail@example.com"
 # prompt = "Invoke the Lambda function 'order-processor' with order ID 67890"
 # prompt = "List all DynamoDB tables available in my current AWS region"
 
-# 3. Model configuration
+# ③ Resolve the target Bedrock model identifier
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
-# 4. Initialize agent with use_aws tool
+# ---------------------------------------------------------------------------
+# Model & Agent Initialization
+# ---------------------------------------------------------------------------
+# ④ Initialize the Strands Agent with the prebuilt use_aws tool and cloud assistant system prompt
 agent = Agent(
     model=BedrockModel(model_id=model_id),
     tools=[use_aws],
     system_prompt="You are an AWS assistant that helps manage cloud resources.",
 )
 
+# ---------------------------------------------------------------------------
+# Agent Execution
+# ---------------------------------------------------------------------------
+# ⑤ Execute the natural language AWS request and print the cloud inspection result
 print(f"Prompt: {prompt}\n" + "-" * 50)
 response = agent(prompt)
 print(response)

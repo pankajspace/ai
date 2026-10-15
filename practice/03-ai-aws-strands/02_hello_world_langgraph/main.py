@@ -1,7 +1,11 @@
-"""Module 1 · Lesson 2 — Same idea in LangGraph, WITH a tool.
+"""Module 1 · Lesson 2 — LangGraph ReAct Hello World Agent with a Tool.
 
-Strands isn't the only framework. This uses LangGraph and adds a small tool,
-so you can watch the agentic loop actually loop.
+Demonstrates the LangGraph tool-calling ReAct agentic loop on Amazon Bedrock:
+1. Defines a custom tool `greet(name: str)` decorated with `@tool`.
+2. Initializes the Bedrock Converse chat model via `init_chat_model`.
+3. Builds a prebuilt ReAct agent (`create_react_agent`) equipped with the tool.
+4. Executes the prompt, traces each intermediate message (Reason -> Act -> Observe),
+   and synthesizes the final response.
 
 WHAT TO LOOK FOR in the output:
     human: Please greet Alice and Bob.
@@ -29,37 +33,52 @@ from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
 
-# 1. Load AWS and Bedrock configuration from .env
-#    (in Docker they are passed in with --env-file instead)
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load AWS credentials and Bedrock configuration from .env
+#   (in Docker they are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
-# 2. Inputs - prompt to send; uncomment another line to try a different input
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ② Select a prompt to send; uncomment another line to try a different input
 prompt = "Please greet Alice and Bob."
 # prompt = "Please greet Charlie, Diana, and Edward individually."
 # prompt = "Say hello to Dr. Watson."
 # prompt = "Hi there, who are you and what tools do you have?"
 
-# 3. Model configuration
+# ③ Resolve the target Bedrock model identifier
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
-# 4. Define a simple tool
+# ---------------------------------------------------------------------------
+# Tool Definitions
+# ---------------------------------------------------------------------------
 @tool
 def greet(name: str) -> str:
     """Greet someone by name."""
+    # ① Format and return a personalized greeting string for the given name
     return f"Hello, {name}! Welcome to the world of AI agents."
 
 
-# 5. Initialize the LLM via Bedrock Converse
+# ---------------------------------------------------------------------------
+# Model & Agent Initialization
+# ---------------------------------------------------------------------------
+# ④ Initialize the LLM via Amazon Bedrock Converse provider
 llm = init_chat_model(
     model_id,
     model_provider="bedrock_converse",
 )
 
-# 6. Create a ReAct agent with the tool
+# ⑤ Create a LangGraph ReAct agent bound to the greet tool
 agent = create_react_agent(model=llm, tools=[greet])
 
-# 7. Run the agent and display execution steps
+# ---------------------------------------------------------------------------
+# Agent Execution
+# ---------------------------------------------------------------------------
+# ⑥ Invoke the ReAct agent loop and inspect every message turn (human, ai, tool)
 print(f"Prompt: {prompt}\n" + "-" * 50)
 response = agent.invoke(
     {"messages": [{"role": "user", "content": prompt}]}

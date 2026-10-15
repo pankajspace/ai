@@ -1,13 +1,10 @@
-"""Module 2 · Lesson 9 — Async tools (parallel execution).
+"""Module 2 · Lesson 9 — Async Parallel Tool Execution (`invoke_async`).
 
-THE PROBLEM:
-Three warehouse lookups at 2 seconds each = 6 seconds if done one by one.
-
-THE FIX:
-Make the tool `async` and use agent.invoke_async(). The three calls run in
-PARALLEL, so the whole thing takes about 2 seconds instead of 6.
-
-WATCH THE PRINTED TIMING at the end — that IS the lesson.
+Demonstrates concurrent asynchronous tool execution to reduce I/O latency:
+1. Problem: Three sequential 2-second warehouse lookups take ~6 seconds total.
+2. Solution: Define the tool with `async def` and invoke the agent via `await agent.invoke_async(query)`.
+3. Tool: `check_warehouse_inventory(product_id: str, warehouse: str)` queries `east`, `west`, and `central` concurrently.
+4. Measures and prints wall-clock elapsed time (~2s parallel vs ~6s sequential baseline).
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -26,20 +23,28 @@ from dotenv import find_dotenv, load_dotenv
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
-# 1. Load AWS and Bedrock configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
-# 2. Inputs - warehouse inventory inquiry; uncomment another line to test different requests
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ② Select a multi-warehouse inventory inquiry; uncomment another line to test different requests
 query = "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
 # query = "Check warehouse inventory for PROD-456 across east, west, and central to see if we have 30 units."
 # query = "Which warehouse has the highest stock of PROD-123: east, west, or central?"
 # query = "Can we fulfill an order of 50 units for PROD-456 across all locations?"
 
-# 3. Model configuration
+# ③ Resolve the target Bedrock model identifier
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
-# 4. Async tool definition
+# ---------------------------------------------------------------------------
+# Tool Definitions (Asynchronous)
+# ---------------------------------------------------------------------------
 @tool
 async def check_warehouse_inventory(product_id: str, warehouse: str) -> dict:
     """Check inventory at a specific warehouse.
@@ -48,9 +53,10 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -> dict:
         product_id: Product ID to check
         warehouse: Warehouse identifier (e.g., "east", "west", "central")
     """
-    # Simulate an API call delay
+    # ① Simulate a 2-second network I/O delay without blocking the asyncio event loop
     await asyncio.sleep(2)
 
+    # ② Look up stock count for the requested warehouse and product SKU
     data = {
         "east":    {"PROD-123": 45, "PROD-456": 12},
         "west":    {"PROD-123": 30, "PROD-456": 0},
@@ -61,16 +67,23 @@ async def check_warehouse_inventory(product_id: str, warehouse: str) -> dict:
     return {"warehouse": warehouse, "product_id": product_id, "quantity": quantity}
 
 
+# ---------------------------------------------------------------------------
+# Async Agent Initialization & Execution
+# ---------------------------------------------------------------------------
 async def main():
+    # ① Initialize the Strands Agent with the async warehouse inventory tool
     agent = Agent(
         model=BedrockModel(model_id=model_id),
         tools=[check_warehouse_inventory],
     )
     print(f"Query: {query}\n" + "-" * 50)
+
+    # ② Record start time and invoke the agent asynchronously so tool calls run in parallel
     start = time.time()
     response = await agent.invoke_async(query)
     elapsed = time.time() - start
 
+    # ③ Extract and print the synthesized fulfillment answer and total wall-clock duration
     if hasattr(response, "message") and isinstance(response.message, dict) and "content" in response.message:
         print(response.message["content"][0]["text"])
     else:

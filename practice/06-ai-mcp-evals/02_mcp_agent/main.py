@@ -1,7 +1,10 @@
 """Step 2 — MCP-Enabled LLM Agent.
 
-The LLM decides WHICH tool to call and WITH WHAT arguments.
-Our code executes the actual tool call via MCP.
+Demonstrates combining LLM intelligence with Model Context Protocol (MCP) tools:
+1. Translates FastMCP tool definitions into OpenAI-compatible function-calling schemas.
+2. The LLM decides WHICH tool to invoke (`get_live_score`, `get_player_stats`, or none) and extracts structured arguments.
+3. Our agent loop executes the requested tool against the MCP cricket server over stdio and feeds the result back.
+4. Synthesizes an accurate, factually grounded natural-language answer.
 
 Uses Groq (OpenAI-compatible format).
 Usage:
@@ -30,17 +33,23 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
 
-# 1. Load configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & MCP Server Setup
+# ---------------------------------------------------------------------------
 load_dotenv(find_dotenv())
 
 MODEL = os.getenv("DEMO_MODEL", "openai/gpt-oss-20b")
 GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 
-# MCP Server parameters
+# Spawn cricket_server.py over stdio using the current Python interpreter
 server_script = str(Path(__file__).with_name("cricket_server.py"))
 server = StdioServerParameters(command=sys.executable, args=[server_script])
 
-# 2. Inputs - default question to ask; uncomment another line to try a different query
+# ---------------------------------------------------------------------------
+# Sample Inputs (Default User Questions)
+# ---------------------------------------------------------------------------
+# Uncomment another option below to test different natural-language queries:
+
 # Option 1: Live score query (default - triggers get_live_score)
 default_question = "What is the score in India vs West Indies?"
 
@@ -57,8 +66,12 @@ default_question = "What is the score in India vs West Indies?"
 # default_question = "What is 2 + 2?"
 
 
+# ---------------------------------------------------------------------------
+# Helper & Bridge Functions
+# ---------------------------------------------------------------------------
 def to_openai_format(mcp_tools):
     """MCP tool list -> format expected by OpenAI-compatible API."""
+    # ① Convert each MCP tool descriptor into an OpenAI function-calling schema
     return [
         {
             "type": "function",
@@ -74,6 +87,7 @@ def to_openai_format(mcp_tools):
 
 def call_llm(llm, kwargs, retries=2):
     """Call the model with error handling and retries."""
+    # ① Attempt LLM completion with automatic retry on transient tool-use failures
     last = None
     for _ in range(retries + 1):
         try:
@@ -82,6 +96,7 @@ def call_llm(llm, kwargs, retries=2):
             last = str(e)
             if "tool_use_failed" not in last:
                 return None, f"API ERROR: {last}"
+    # ② Extract hallucinated tool name if the model tried calling an unavailable tool
     m = re.search(r'"name":\s*"([^"]+)"', last or "")
     tool = m.group(1) if m else "a tool"
     return None, (
@@ -90,8 +105,12 @@ def call_llm(llm, kwargs, retries=2):
     )
 
 
+# ---------------------------------------------------------------------------
+# Core MCP Agent Execution Loop
+# ---------------------------------------------------------------------------
 async def run_agent(question: str, use_tools: bool = True, verbose: bool = True) -> dict:
     """Runs the MCP agent loop for a single user query."""
+    # ① Validate API key and initialize the Groq OpenAI-compatible client
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         sys.exit(
@@ -101,6 +120,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
     llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
     trace = []
 
+    # ② Build the system prompt and initial conversation history
     if use_tools:
         system = (
             "You are a cricket assistant. Use ONLY the functions provided to get live data. "
@@ -116,6 +136,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
         {"role": "user", "content": question},
     ]
 
+    # ③ Connect to the FastMCP cricket server over stdio and discover tools
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
@@ -125,6 +146,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
                 else None
             )
 
+            # ④ Run the multi-step tool-calling loop (up to 5 turns)
             for _ in range(5):
                 kwargs = {"model": MODEL, "messages": messages, "temperature": 0}
                 if tools:
@@ -135,11 +157,13 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
                         print(f"\n{error}")
                     return {"answer": f"({error})", "trace": trace}
 
+                # If the LLM did not request any tool calls, return its final response
                 if not reply.tool_calls:
                     if verbose:
                         print(f"\nFINAL ANSWER: {reply.content}")
                     return {"answer": reply.content, "trace": trace}
 
+                # ⑤ Execute each requested MCP tool call and append the tool output to messages
                 messages.append(
                     {
                         "role": "assistant",
@@ -186,4 +210,5 @@ if __name__ == "__main__":
     question = passed_q if passed_q else default_question
     print(f"QUESTION: {question}   (tools {'ON' if use_tools else 'OFF'})")
     asyncio.run(run_agent(question, use_tools))
+
 

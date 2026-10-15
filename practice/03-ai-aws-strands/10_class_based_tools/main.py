@@ -1,13 +1,10 @@
-"""Module 2 · Lesson 8 — Class-based tools (the shared-resource pattern).
+"""Module 2 · Lesson 8 — Class-Based Tools (The Shared-Resource Pattern).
 
-THE PROBLEM:
-Your DBA messages you: "Why is your agent opening 50 database connections
-per minute?" Each @tool function opened its own connection. Five tools =
-five connections per request. Multiply by concurrent users -> the DB drowns.
-
-THE FIX:
-Group related tools in a class. They share ONE connection (here, one dict)
-via self, created once in __init__.
+Demonstrates class-based tools that share state and connections across calls:
+1. Architectural Problem: Standalone `@tool` functions opening separate DB connections per call can exhaust connection pools.
+2. The Solution: Group related tools inside a class (`InventoryTools`) sharing a single resource (`self.products`) initialized once in `__init__`.
+3. Bound Methods as Tools: Exposes `inventory.check_stock` and `inventory.update_stock` to the agent.
+4. Persists state mutations across sequential tool invocations within the same session.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -24,10 +21,16 @@ from dotenv import find_dotenv, load_dotenv
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
-# 1. Load AWS and Bedrock configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
-# 2. Inputs - queries to execute; uncomment another list to test different operations
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ② Define the sequence of inventory queries; uncomment another list to test different operations
 queries = [
     "Check stock for PROD-123",
     "Update PROD-456 stock to 25 units, then confirm the new level",
@@ -40,16 +43,18 @@ queries = [
 #     "Check stock for PROD-999",
 # ]
 
-# 3. Model configuration
+# ③ Resolve the target Bedrock model identifier
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
-# 4. Class-based tools sharing state
+# ---------------------------------------------------------------------------
+# Tool Definitions (Class-Based Shared State)
+# ---------------------------------------------------------------------------
 class InventoryTools:
     """Grouped inventory tools sharing a single state."""
 
     def __init__(self):
-        # Shared state: in production this is a single DB connection or pool
+        # ① Initialize the shared in-memory product store (represents a single DB connection pool)
         self.products = {
             "PROD-123": {"name": "Wireless Mouse", "quantity": 15, "price": 29.99},
             "PROD-456": {"name": "USB-C Cable",    "quantity": 0,  "price": 12.99},
@@ -63,6 +68,7 @@ class InventoryTools:
         Args:
             product_id: The product ID to look up (e.g. 'PROD-123')
         """
+        # ① Look up the product record in the shared self.products dictionary
         product = self.products.get(product_id)
         if not product:
             return f"Product {product_id} not found"
@@ -76,19 +82,27 @@ class InventoryTools:
             product_id: The product ID to update
             quantity: New quantity to set
         """
+        # ① Mutate the product quantity in the shared self.products store
         if product_id in self.products:
             self.products[product_id]["quantity"] = quantity
             return f"Updated {product_id} to {quantity} units"
         return f"Product {product_id} not found"
 
 
-# 5. One instance, shared state, multiple tools
+# ---------------------------------------------------------------------------
+# Model & Agent Initialization
+# ---------------------------------------------------------------------------
+# ④ Instantiate InventoryTools once and bind its methods to the Strands Agent
 inventory = InventoryTools()
 agent = Agent(
     model=BedrockModel(model_id=model_id),
     tools=[inventory.check_stock, inventory.update_stock],
 )
 
+# ---------------------------------------------------------------------------
+# Agent Execution
+# ---------------------------------------------------------------------------
+# ⑤ Run each query against the shared InventoryTools instance so updates persist across turns
 for q in queries:
     print(f"\nQuery: {q}\n" + "-" * 50)
     response = agent(q)

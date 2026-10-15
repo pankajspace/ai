@@ -1,14 +1,14 @@
-"""Prototype: Chain-of-Thought vs. Direct Answer.
+"""Chain-of-Thought vs. Direct Answer Reliability Benchmark.
 
-Demonstrates that asking a model to "think step by step" is a reliability
-lever - not just a stylistic choice.
-
-For each multi-step reasoning problem we run two prompt strategies N times:
-  - Direct  - "Answer in one short sentence. Do not show working."
-  - CoT     - "Think step by step, then state your final answer."
-
-We score every response, aggregate accuracy across all runs, and display
-a side-by-side comparison so the distribution is visible.
+Demonstrates that asking a model to "think step by step" acts as a reliability
+lever across multi-step reasoning problems — not merely a stylistic choice:
+1. Benchmarks challenging multi-step logic problems (Spatial Navigation, Relational Logic,
+   Temporal Scheduling, Inventory State Tracking, and Truth-Tellers Logic Puzzle).
+2. Runs two prompt strategies N times per problem:
+   - Direct: "Answer in one short sentence only. Do not show any working or reasoning."
+   - CoT: "Think step by step. Show each step of your reasoning clearly, then state your final answer."
+3. Scores every response, aggregates accuracy and latency distributions across all runs,
+   and displays a side-by-side comparison table.
 
 IMPORTANT: use a NON-reasoning model (e.g. gpt-4o-mini). Reasoning models
 think internally even when told not to show working, which erases the gap
@@ -35,6 +35,10 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+
 # 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
@@ -42,6 +46,10 @@ console = Console()
 
 MODEL_NAME = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 TEMPERATURE = float(os.getenv("TEMPERATURE", "0.7"))
+
+# ---------------------------------------------------------------------------
+# Benchmark Dataset & Input Options
+# ---------------------------------------------------------------------------
 
 # 2. Inputs - number of runs per problem and problem test suite
 #    Uncomment another option below to test different scenarios:
@@ -160,12 +168,17 @@ PROBLEMS = [
 #     }
 # ]
 
+# ---------------------------------------------------------------------------
+# Helper & Scoring Functions
+# ---------------------------------------------------------------------------
+
 _client = None
 
 
 def get_client() -> OpenAI:
     """Returns a module-level OpenAI client, creating it on first use."""
     global _client
+    # ① Lazily initialize the OpenAI client and verify that OPENAI_API_KEY is configured
     if _client is None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -178,6 +191,7 @@ def get_client() -> OpenAI:
 
 def direct_prompt(question: str) -> str:
     """Returns a prompt requesting a direct answer without reasoning."""
+    # ① Construct a constrained prompt that forbids intermediate reasoning steps
     return (
         f"{question}\n\n"
         "Answer in one short sentence only. Do not show any working or reasoning."
@@ -186,6 +200,7 @@ def direct_prompt(question: str) -> str:
 
 def cot_prompt(question: str) -> str:
     """Returns a prompt requesting step-by-step reasoning (Chain-of-Thought)."""
+    # ① Construct a Chain-of-Thought prompt requesting explicit step-by-step working
     return (
         f"{question}\n\n"
         "Think step by step. Show each step of your reasoning clearly, "
@@ -195,6 +210,7 @@ def cot_prompt(question: str) -> str:
 
 def ask(prompt: str) -> str:
     """Sends a prompt to the model and returns the verbatim response text."""
+    # ① Optionally render the input prompt panel when SHOW_EXCHANGES is enabled
     if SHOW_EXCHANGES:
         console.print(
             Panel(
@@ -208,6 +224,7 @@ def ask(prompt: str) -> str:
             )
         )
 
+    # ② Send the chat completion request to the configured model
     try:
         response = get_client().chat.completions.create(
             model=MODEL_NAME,
@@ -218,6 +235,7 @@ def ask(prompt: str) -> str:
     except Exception as e:
         response_text = f"Error: {e}"
 
+    # ③ Optionally render the model response panel when SHOW_EXCHANGES is enabled
     if SHOW_EXCHANGES:
         wrapped_response = textwrap.fill(
             response_text, width=82, subsequent_indent="           "
@@ -240,6 +258,7 @@ def ask(prompt: str) -> str:
 
 def is_correct(response: str, correct_answers: list[str]) -> bool:
     """Check whether the model's FINAL answer matches an accepted answer."""
+    # ① Reject error responses or empty outputs immediately
     if response.startswith("Error:"):
         return False
 
@@ -247,6 +266,7 @@ def is_correct(response: str, correct_answers: list[str]) -> bool:
     if not lines:
         return False
 
+    # ② Check whether any accepted answer appears in the trailing TAIL_LINES of the response
     tail = " ".join(lines[-TAIL_LINES:]).lower()
     for ans in correct_answers:
         if ans.lower() in tail:
@@ -254,12 +274,19 @@ def is_correct(response: str, correct_answers: list[str]) -> bool:
     return False
 
 
+# ---------------------------------------------------------------------------
+# Terminal Rendering & Visualization
+# ---------------------------------------------------------------------------
+
+
 def run_strategy(prompt_fn, strategy_name: str, problem: dict):
     """Runs one strategy across RUNS_PER_PROBLEM iterations."""
+    # ① Build the strategy-specific prompt for the current reasoning problem
     prompt = prompt_fn(problem["question"])
     results: list[bool] = []
     latencies: list[float] = []
 
+    # ② Execute RUNS_PER_PROBLEM independent trials and record accuracy and latency
     for i in range(1, RUNS_PER_PROBLEM + 1):
         t0 = time.time()
         resp = ask(prompt)
@@ -268,6 +295,7 @@ def run_strategy(prompt_fn, strategy_name: str, problem: dict):
         results.append(ok)
         latencies.append(dt)
 
+        # ③ Print per-run status indicator, latency, and extracted tail line
         dot = "[green]o[/green]" if ok else "[red]x[/red]"
         scored_on = " ".join(
             [ln for ln in resp.splitlines() if ln.strip()][-TAIL_LINES:]
@@ -282,6 +310,7 @@ def run_strategy(prompt_fn, strategy_name: str, problem: dict):
 
 def accuracy_bar(correct: int, total: int, width: int = 16) -> Text:
     """Renders a text progress bar coloured by accuracy."""
+    # ① Compute success ratio and render a color-coded Unicode block progress bar
     pct = correct / total if total else 0
     filled = round(pct * width)
     bar = "█" * filled + "░" * (width - filled)
@@ -289,8 +318,14 @@ def accuracy_bar(correct: int, total: int, width: int = 16) -> Text:
     return Text(f"{bar} {pct * 100:3.0f}%", style=color)
 
 
+# ---------------------------------------------------------------------------
+# Benchmark Execution Loop
+# ---------------------------------------------------------------------------
+
+
 def run_demo():
     """Runs the full CoT vs Direct comparison benchmark."""
+    # ① Initialize OpenAI client and display the benchmark overview panel
     get_client()
 
     console.print(
@@ -305,6 +340,7 @@ def run_demo():
 
     summary: list[dict] = []
 
+    # ② Iterate through each reasoning problem and run both Direct and CoT strategies
     for i, problem in enumerate(PROBLEMS, start=1):
         console.print(
             Rule(
@@ -321,6 +357,7 @@ def run_demo():
         )
         console.print(f"[dim]{problem['explanation']}[/dim]\n")
 
+        # ③ Run Direct prompt trials and Chain-of-Thought prompt trials
         console.print(
             "[bold cyan]-- Direct prompts --------------------------[/bold cyan]"
         )
@@ -333,6 +370,7 @@ def run_demo():
         cot_results, cot_times = run_strategy(cot_prompt, "CoT   ", problem)
         console.print()
 
+        # ④ Compute per-problem accuracy and latency averages and display comparison table
         direct_acc = sum(direct_results)
         cot_acc = sum(cot_results)
         direct_avg_t = sum(direct_times) / len(direct_times)
@@ -372,7 +410,7 @@ def run_demo():
             }
         )
 
-    # Overall summary
+    # ⑤ Build and render the overall cross-problem summary table and CoT accuracy lift
     console.print(Rule("[bold yellow]Overall Summary[/bold yellow]", style="yellow"))
 
     total_runs = RUNS_PER_PROBLEM * len(PROBLEMS)
@@ -435,6 +473,7 @@ def run_demo():
     console.print(summary_table)
     console.print()
 
+    # ⑥ Report final accuracy gain vs latency overhead trade-off
     accuracy_gain = (total_cot - total_direct) / total_runs * 100
     latency_cost = (avg_cot_t / avg_direct_t - 1) * 100 if avg_direct_t else 0
     console.print(
@@ -444,6 +483,10 @@ def run_demo():
     )
     console.print()
 
+
+# ---------------------------------------------------------------------------
+# Standalone CLI Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     run_demo()

@@ -1,13 +1,14 @@
-"""LangChain Agent with Multiple Tools (with a visible tool trace).
+"""LangChain Multi-Tool Agent Demonstration (with Visible Tool Call Trace).
 
-Give the agent several tools and watch its loop:
-read the question -> pick a tool -> call it -> read the result -> answer.
-Each tool call is printed so you can see what happens inside.
+This script demonstrates how a LangChain agent selects and orchestrates multiple tools:
+1. Registers four distinct tools (`get_weather`, `add`, `multiply`, `get_population`).
+2. For each user query, the agent inspects tool schemas and docstrings to decide which
+   tool(s) to invoke—or answers directly if no tool is needed.
+3. Prints a step-by-step trace of every tool call (`call`) and tool output (`result`)
+   before displaying the final synthesized response.
 
-Tip: an OpenAI 429 'insufficient_quota' error is a billing issue, not a bug -
-keep PROVIDER = "groq" (free) to practise without OpenAI credits.
-
-To try other questions, edit the list in step 2.
+NOTE on OpenAI 429 ('insufficient_quota'): that is a billing state, not a code bug.
+Keeping `PROVIDER = "groq"` (free) lets you run without OpenAI credits.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -24,11 +25,17 @@ from dotenv import find_dotenv, load_dotenv
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
 
-# 1. Load API keys and model names from .env
-#    (in Docker they are passed in with --env-file instead)
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load API keys and model names from .env
+#   (in Docker, environment variables are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
-# 2. Inputs - questions to ask; uncomment more lines to try them
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# Questions to ask the agent - uncomment additional lines to test different scenarios
 questions = [
     "What is the weather like in New York?",                    # -> get_weather
     "What is 25 multiplied by 4?",                              # -> multiply
@@ -41,13 +48,17 @@ questions = [
     # "What is the population of Paris?",                       # -> tool has no data; model falls back on own knowledge
 ]
 
-# 3. Pick a provider - all three speak the OpenAI-compatible API
-#    "groq"   -> free + fast   (GROQ_API_KEY,   https://console.groq.com)
-#    "gemini" -> free tier     (GEMINI_API_KEY, https://aistudio.google.com)
-#    "openai" -> needs billing (OPENAI_API_KEY)
+# ---------------------------------------------------------------------------
+# Provider & LLM Initialization
+# ---------------------------------------------------------------------------
+# Pick your provider here - all three speak the OpenAI-compatible API:
+#   "groq"   -> free + fast   (GROQ_API_KEY,   https://console.groq.com)
+#   "gemini" -> free tier     (GEMINI_API_KEY, https://aistudio.google.com)
+#   "openai" -> needs billing (OPENAI_API_KEY)
 PROVIDER = "groq"
 prefix = PROVIDER.upper()
 
+# ② Initialize the LLM client pointed at the configured provider
 llm = ChatOpenAI(
     model=os.getenv(f"{prefix}_MODEL"),
     api_key=os.getenv(f"{prefix}_API_KEY"),
@@ -57,7 +68,11 @@ llm = ChatOpenAI(
 )
 
 
-# 4. The tools: type hints say WHAT to pass, docstrings say WHEN to use them
+# ---------------------------------------------------------------------------
+# Tool Definitions
+#   1. Type hints (city: str) -> tell the model WHAT arguments to pass
+#   2. The docstring          -> tells the model WHEN to use this tool
+# ---------------------------------------------------------------------------
 def get_weather(city: str) -> str:
     """Get the current weather for a given city."""
     return f"The weather in {city} is sunny, 28 degrees C."
@@ -84,8 +99,11 @@ def get_population(city: str) -> str:
     return data.get(city.lower(), f"Sorry, I don't have population data for {city}.")
 
 
-# 5. Build the agent (model + tools + instructions)
-#    The prompt asks for a clear final result so answers aren't vague.
+# ---------------------------------------------------------------------------
+# Build the Agent
+# ---------------------------------------------------------------------------
+# ③ Create the multi-tool LangChain agent with all 4 tools registered.
+#   The system prompt instructs the model to state the final result clearly.
 agent = create_agent(
     model=llm,
     tools=[get_weather, add, multiply, get_population],
@@ -95,19 +113,21 @@ agent = create_agent(
     ),
 )
 
-# 6. Run the agent on every question from step 2
+# ---------------------------------------------------------------------------
+# Agent Execution Loop & Trace Inspection
+# ---------------------------------------------------------------------------
 for q in questions:
     print(f"\nQ: {q}")
 
-    # 6a. Run the agent; it returns the full message list of the conversation
+    # ④ Invoke the multi-tool agent; returns the full conversation message list
     messages = agent.invoke({"messages": [{"role": "user", "content": q}]})["messages"]
 
-    # 6b. Print the trace: every tool the model asked for, and what it got back
+    # ⑤ Print the execution trace: every tool the model requested and the result it received
     for m in messages:
         for call in getattr(m, "tool_calls", None) or []:
             print(f"   🔧 call   {call['name']}({call['args']})")
         if m.type == "tool":
             print(f"   📦 result {m.name} -> {m.content}")
 
-    # 6c. The last message is the final answer
+    # ⑥ Extract and print the final synthesized answer
     print(f"A: {messages[-1].content}")

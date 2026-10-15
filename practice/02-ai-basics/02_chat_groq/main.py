@@ -1,8 +1,11 @@
-"""Groq Chat - Joke Generator.
+"""Groq Chat Completion - Joke Generator.
 
-Groq hosts open-weights models (e.g. Llama 3.3 70B) behind an OpenAI-compatible
-API, so the same `openai` client works - just point `base_url` at Groq.
-To try another topic, change the value in step 2.
+This script demonstrates using an alternative high-speed LLM provider (Groq)
+via the OpenAI-compatible client interface:
+1. Groq hosts open-weights models (such as LLaMA 3.3 70B) with high inference speed.
+2. Validates that `GROQ_API_KEY` is configured in the environment before calling.
+3. Reuses the standard `openai.OpenAI` client by pointing `base_url` at Groq's endpoint.
+4. Formats system persona and user topic messages and executes the chat completion call.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -19,21 +22,31 @@ import sys
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
 
-# 1. Load API keys and model names from .env
-#    (in Docker they are passed in with --env-file instead)
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Automatically locate and load the nearest .env file
+#   (in Docker, environment variables are passed in with --env-file instead)
 load_dotenv(find_dotenv())
 
+# ② Verify that the Groq API key is present in environment variables
 api_key = os.getenv("GROQ_API_KEY")
 if not api_key:
     sys.exit("GROQ_API_KEY is not set in .env")
 
-# 2. Inputs - change the value (or uncomment another line) to see a different output
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ③ Pick a joke topic - change the value (or uncomment another line) to see a different output
 topic = "programming"
 # topic = "cats"
 # topic = "coffee"
 # topic = "Monday mornings"
 
-# 3. Create an OpenAI client that talks to Groq instead of OpenAI
+# ---------------------------------------------------------------------------
+# Client & Model Initialization
+# ---------------------------------------------------------------------------
+# ④ Initialize the OpenAI SDK client configured for Groq's base URL and model
 client = OpenAI(
     api_key=api_key,
     base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
@@ -41,15 +54,17 @@ client = OpenAI(
 )
 model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
-# 4. Build the messages (system = persona, user = request)
+# ---------------------------------------------------------------------------
+# Prompt Construction & Chat Completion
+# ---------------------------------------------------------------------------
+# ⑤ Build the messages (system = persona, user = topic request)
 messages = [
     {"role": "system", "content": "You are a funny joke teller."},
     {"role": "user", "content": f"Tell me a joke about {topic}."},
 ]
 
-# 5. Call the Chat Completions API (same call as OpenAI)
+# ⑥ Call the Chat Completions API endpoint and print the generated joke
 response = client.chat.completions.create(model=model, messages=messages)
 
-# 6. Print the joke
 print(f"Topic: {topic}\n")
 print(response.choices[0].message.content)

@@ -1,10 +1,12 @@
-"""Prototype: Variance & Non-Determinism in Structured Outputs.
+"""Structured Output Variance & Determinism Benchmark.
 
-How output constraints turn an unreliable model into a reliable pipeline component.
-Demonstrates:
-  - Strategy A: Unconstrained Prompt (freeform text)
-  - Strategy B: Prompt-Constrained (instructing JSON in prompt)
-  - Strategy C: Schema-Enforced (API guarantees JSON structure)
+Evaluates how output constraints transform stochastic LLMs into reliable pipeline components:
+1. Strategy A (Unconstrained Prompt): Model asked for review extraction in freeform text
+   (high variance, crashes strict downstream JSON parsers).
+2. Strategy B (Prompt-Constrained): Prompt instructs JSON output with specific keys
+   (occasionally wraps markdown code fences or drifts from schema).
+3. Strategy C (Schema-Enforced): Uses OpenAI Structured Outputs (`response_format` with strict JSON schema)
+   guaranteeing 100% valid, schema-compliant JSON across all iterations.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -29,12 +31,20 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+
 # 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
 console = Console()
 
 MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+# ---------------------------------------------------------------------------
+# Benchmark Dataset & Input Options
+# ---------------------------------------------------------------------------
 
 # 2. Inputs - iterations count and review text
 #    Uncomment another option below to test different scenarios:
@@ -79,12 +89,17 @@ RESPONSE_SCHEMA = {
     "additionalProperties": False,
 }
 
+# ---------------------------------------------------------------------------
+# Helper & Scoring Functions
+# ---------------------------------------------------------------------------
+
 _client = None
 
 
 def get_openai_client():
     """Initializes and returns the OpenAI API client."""
     global _client
+    # ① Lazily initialize the OpenAI client and verify that OPENAI_API_KEY is configured
     if _client is None:
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
@@ -100,6 +115,7 @@ def get_openai_client():
 def call_model(client, prompt, response_format=None, model_name=MODEL, max_retries=4):
     """Generates a text response from the model, retrying on transient errors."""
     last_err = ""
+    # ① Attempt chat completion with optional response_format and exponential backoff on rate/server errors
     for attempt in range(max_retries):
         try:
             kwargs = {
@@ -128,6 +144,7 @@ def call_model(client, prompt, response_format=None, model_name=MODEL, max_retri
 
 def parse_downstream(raw):
     """Simulates a strict downstream consumer parsing the model output."""
+    # ① Attempt strict json.loads() parsing without any markdown fence stripping
     if raw.startswith("Error:"):
         return False, False
 
@@ -139,6 +156,7 @@ def parse_downstream(raw):
     if not isinstance(data, dict):
         return True, False
 
+    # ② Verify that the parsed JSON object conforms to the expected sentiment and entities schema
     sentiment = data.get("sentiment")
     entities = data.get("entities")
 
@@ -151,8 +169,14 @@ def parse_downstream(raw):
     return True, schema_ok
 
 
+# ---------------------------------------------------------------------------
+# Terminal Rendering & Visualization
+# ---------------------------------------------------------------------------
+
+
 def display_exchange(prompt, response):
     """Prints the prompt, the model response and the parser verdict."""
+    # ① Render the user prompt inside a styled Model Input panel
     input_elements = []
     messages = [{"role": "user", "content": prompt}]
 
@@ -175,6 +199,7 @@ def display_exchange(prompt, response):
     )
     console.print()
 
+    # ② Render the raw model output inside a Model Response panel
     wrapped_response = textwrap.fill(response, width=82, subsequent_indent="           ")
     response_content = Text.assemble(
         ("ASSISTANT: ", "bold green"), (wrapped_response, "italic")
@@ -190,6 +215,7 @@ def display_exchange(prompt, response):
         )
     )
 
+    # ③ Evaluate and display the downstream JSON/schema parser verdict
     parsed_ok, schema_ok = parse_downstream(response)
     if parsed_ok and schema_ok:
         verdict = "[bold green]Downstream parser: OK - valid JSON, schema matched[/bold green]"
@@ -208,6 +234,7 @@ def run_experiment(client, name, prompt, response_format=None, iterations=ITERAT
 
     responses = []
 
+    # ① Execute and display the first sample iteration in full detail
     console.print("[dim]  Waiting for first response...[/dim]")
     sample_response = call_model(client, prompt, response_format=response_format)
     display_exchange(prompt, sample_response)
@@ -215,6 +242,7 @@ def run_experiment(client, name, prompt, response_format=None, iterations=ITERAT
 
     console.print("  [dim]Collecting remaining responses:[/dim]")
 
+    # ② Execute remaining iterations and print compact parser status indicators
     for i in range(2, iterations + 1):
         resp = call_model(client, prompt, response_format=response_format)
         responses.append(resp)
@@ -238,6 +266,7 @@ def run_experiment(client, name, prompt, response_format=None, iterations=ITERAT
 
 def calculate_metrics(responses):
     """Calculates statistical and parser-success metrics for a set of responses."""
+    # ① Count unique responses and modal frequency to quantify output consistency
     total = len(responses)
     if total == 0:
         return {
@@ -253,6 +282,7 @@ def calculate_metrics(responses):
     unique_count = len(counts)
     most_common_count = counts.most_common(1)[0][1]
 
+    # ② Compute JSON parse rate and strict target schema compliance rate
     parse_success = 0
     schema_success = 0
     for r in responses:
@@ -280,6 +310,7 @@ def pct_cell(pct):
 
 def log_responses_to_file(filename, prompt, responses):
     """Writes all raw responses to a markdown file for inspection."""
+    # ① Persist all raw outputs and their downstream parser statuses to a Markdown log file
     with open(filename, "w", encoding="utf-8") as f:
         f.write(f"# Responses Log\n\nPrompt:\n```\n{prompt}\n```\n\n")
         for i, resp in enumerate(responses, 1):
@@ -288,8 +319,14 @@ def log_responses_to_file(filename, prompt, responses):
             f.write(f"## Run {i} [{status}]\n```\n{resp}\n```\n\n")
 
 
+# ---------------------------------------------------------------------------
+# Benchmark Execution Loop
+# ---------------------------------------------------------------------------
+
+
 def main():
     """Runs the 3-strategy comparison and prints the summary."""
+    # ① Initialize OpenAI client and display the benchmark banner
     client = get_openai_client()
 
     console.print(
@@ -302,6 +339,7 @@ def main():
     )
     console.print()
 
+    # ② Define prompts and strict JSON schema format for Strategies A, B, and C
     task = (
         "Extract the sentiment and key entities from this customer review: "
         f"'{base_review}'"
@@ -325,18 +363,21 @@ def main():
         },
     }
 
+    # ③ Run Strategy A (Unconstrained freeform prompt) and compute metrics
     res_a = run_experiment(
         client, "Strategy A: Unconstrained Prompt", unconstrained_prompt
     )
     log_responses_to_file("output-a-unconstrained.md", unconstrained_prompt, res_a)
     metrics_a = calculate_metrics(res_a)
 
+    # ④ Run Strategy B (Prompt-Constrained JSON instructions) and compute metrics
     res_b = run_experiment(
         client, "Strategy B: Prompt-Constrained (asks for JSON)", constrained_prompt
     )
     log_responses_to_file("output-b-prompt-json.md", constrained_prompt, res_b)
     metrics_b = calculate_metrics(res_b)
 
+    # ⑤ Run Strategy C (Schema-Enforced Structured Outputs API) and compute metrics
     res_c = run_experiment(
         client,
         "Strategy C: Schema-Enforced (API guarantees JSON)",
@@ -346,6 +387,7 @@ def main():
     log_responses_to_file("output-c-schema.md", constrained_prompt, res_c)
     metrics_c = calculate_metrics(res_c)
 
+    # ⑥ Render the comparative Variance & Pipeline Reliability summary table
     console.print(Rule("[bold yellow]Overall Summary[/bold yellow]", style="yellow"))
     console.print()
 
@@ -383,6 +425,10 @@ def main():
     console.print(table)
     console.print()
 
+
+# ---------------------------------------------------------------------------
+# Standalone CLI Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()

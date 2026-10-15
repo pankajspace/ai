@@ -1,11 +1,9 @@
 """Step 3 — MCP Agent Evaluation Suite.
 
-A test suite for evaluating the MCP-enabled cricket agent.
-Follows the unit test paradigm:
-  - Definitive test cases (user prompt, expected tool selection, required keywords)
-  - Tool routing assertion (correct tool or None when no tool needed)
-  - Answer verification (checking presence of expected facts)
-  - Pass/fail scoring across the suite
+Runs unit-test style evaluation assertions against the MCP-enabled cricket agent:
+1. Tool routing assertion: verifies the LLM chooses the expected MCP tool (`get_live_score`, `get_player_stats`, or `None`).
+2. Ground-truth verification: checks whether required factual tokens appear in the agent's final response.
+3. Suite scoring: aggregates pass/fail metrics and overall accuracy percentage across all test cases.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -28,18 +26,22 @@ from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
 
-# 1. Load configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & MCP Server Setup
+# ---------------------------------------------------------------------------
 load_dotenv(find_dotenv())
 
 MODEL = os.getenv("DEMO_MODEL", "openai/gpt-oss-20b")
 GROQ_BASE_URL = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
 
-# MCP Server parameters
+# Spawn cricket_server.py over stdio using the current Python interpreter
 server_script = str(Path(__file__).with_name("cricket_server.py"))
 server = StdioServerParameters(command=sys.executable, args=[server_script])
 
-# 2. Inputs - evaluation test cases suite
-#    Uncomment another option below to test different subsets:
+# ---------------------------------------------------------------------------
+# Sample Inputs / Evaluation Test Suite
+# ---------------------------------------------------------------------------
+# Uncomment another option below to run different evaluation test subsets:
 
 # Option 1: Full evaluation test suite (default - 5 cases testing both tools + no-tool fallback)
 TEST_CASES = [
@@ -88,8 +90,12 @@ TEST_CASES = [
 # ]
 
 
+# ---------------------------------------------------------------------------
+# Helper & Bridge Functions
+# ---------------------------------------------------------------------------
 def to_openai_format(mcp_tools):
     """MCP tool list -> format expected by OpenAI-compatible API."""
+    # ① Convert each MCP tool descriptor into an OpenAI function-calling schema
     return [
         {
             "type": "function",
@@ -105,6 +111,7 @@ def to_openai_format(mcp_tools):
 
 def call_llm(llm, kwargs, retries=2):
     """Calls the model with error handling and retries."""
+    # ① Attempt LLM completion with automatic retry on transient tool-use failures
     last = None
     for _ in range(retries + 1):
         try:
@@ -113,6 +120,7 @@ def call_llm(llm, kwargs, retries=2):
             last = str(e)
             if "tool_use_failed" not in last:
                 return None, f"API ERROR: {last}"
+    # ② Extract hallucinated tool name if the model tried calling an unavailable tool
     m = re.search(r'"name":\s*"([^"]+)"', last or "")
     tool = m.group(1) if m else "a tool"
     return None, (
@@ -121,8 +129,12 @@ def call_llm(llm, kwargs, retries=2):
     )
 
 
+# ---------------------------------------------------------------------------
+# Core MCP Agent & Evaluation Suite Runner
+# ---------------------------------------------------------------------------
 async def run_agent(question: str, use_tools: bool = True, verbose: bool = True) -> dict:
     """Agent loop interacting with MCP server and LLM."""
+    # ① Validate API key and initialize the Groq OpenAI-compatible client
     api_key = os.getenv("GROQ_API_KEY")
     if not api_key:
         sys.exit(
@@ -132,6 +144,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
     llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
     trace = []
 
+    # ② Build the system prompt and initial conversation history
     if use_tools:
         system = (
             "You are a cricket assistant. Use ONLY the functions provided to get live data. "
@@ -147,6 +160,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
         {"role": "user", "content": question},
     ]
 
+    # ③ Connect to the FastMCP cricket server over stdio and discover tools
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
             await session.initialize()
@@ -156,6 +170,7 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
                 else None
             )
 
+            # ④ Run the multi-step tool-calling loop (up to 5 turns)
             for _ in range(5):
                 kwargs = {"model": MODEL, "messages": messages, "temperature": 0}
                 if tools:
@@ -166,11 +181,13 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
                         print(f"\n{error}")
                     return {"answer": f"({error})", "trace": trace}
 
+                # If no tool call was requested, return the final answer and recorded trace
                 if not reply.tool_calls:
                     if verbose:
                         print(f"\nFINAL ANSWER: {reply.content}")
                     return {"answer": reply.content, "trace": trace}
 
+                # ⑤ Execute each requested MCP tool call and feed the result back into the conversation
                 messages.append(
                     {
                         "role": "assistant",
@@ -207,21 +224,24 @@ async def run_agent(question: str, use_tools: bool = True, verbose: bool = True)
 
 
 async def main():
+    """Run all test cases in TEST_CASES and compute tool-routing and ground-truth accuracy."""
     print(f"Running evaluation suite ({len(TEST_CASES)} cases)...")
     passed = 0
 
+    # ① Iterate through each evaluation test case and run the MCP agent silently
     for i, case in enumerate(TEST_CASES, 1):
         result = await run_agent(case["q"], verbose=False)
         tools_used = [step["tool"] for step in result["trace"]]
         answer = result["answer"] or ""
 
-        # Check 1: did it pick the right tool (or no tool when none is needed)?
+        # ② Assertion 1 (Tool Routing): verify the agent picked the expected tool (or None)
         tool_ok = (case["tool"] in tools_used) if case["tool"] else (tools_used == [])
-        # Check 2: does the answer contain the key fact?
+        # ③ Assertion 2 (Ground Truth): verify the final answer contains all required facts
         answer_ok = all(
             word.lower() in answer.lower() for word in case["must_contain"]
         )
 
+        # ④ Combine assertions and print per-case diagnostic report
         ok = tool_ok and answer_ok
         passed += ok
         print(f"\nTest {i}: {'PASS' if ok else 'FAIL'}  |  {case['q']}")
@@ -232,10 +252,12 @@ async def main():
             f"   answer: {answer[:120]}  -> {'ok' if answer_ok else 'missing ' + str(case['must_contain'])}"
         )
 
+    # ⑤ Compute and display the final evaluation suite score percentage
     score_pct = 100 * passed // len(TEST_CASES) if TEST_CASES else 0
     print(f"\n==== SCORE: {passed}/{len(TEST_CASES)} passed ({score_pct}%) ====")
 
 
 if __name__ == "__main__":
     asyncio.run(main())
+
 

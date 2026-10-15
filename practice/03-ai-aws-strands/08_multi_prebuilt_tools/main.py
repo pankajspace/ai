@@ -1,11 +1,9 @@
-"""Module 2 · Lesson 6 — Combining several pre-built tools.
+"""Module 2 · Lesson 6 — Chaining Multiple Pre-Built Tools (`http_request`, `calculator`, `file_write`).
 
-Fetch data from the web, do maths on it, save a file — one request, three tools.
-
-ABOUT BYPASS_TOOL_CONSENT:
-Some tools are sensitive (they write files, touch cloud resources), so Strands
-PAUSES and asks your permission before running them. Setting this to "true"
-turns that prompt off so the script runs unattended.
+Demonstrates combining multiple pre-built tools and configuring unattended tool consent:
+1. Equips the agent with three community tools: `http_request`, `calculator`, and `file_write`.
+2. Sets `BYPASS_TOOL_CONSENT="true"` so sensitive tools (`file_write`) run unattended without interactive prompts.
+3. Executes a multi-step pipeline: Fetch external JSON data -> Calculate average -> Write summary file.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -23,10 +21,16 @@ from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator, file_write, http_request
 
-# 1. Load AWS and Bedrock configuration from .env
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+# ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
-# 2. Inputs - multi-step task; uncomment another line to try a different task
+# ---------------------------------------------------------------------------
+# Sample Inputs
+# ---------------------------------------------------------------------------
+# ② Define the multi-step data pipeline task; uncomment another block to try a different task
 task = (
     "Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d, "
     "extract the latest closing prices, "
@@ -42,19 +46,26 @@ task = (
 #     "and save it to author_info.txt"
 # )
 
-# 3. Model configuration
+# ③ Resolve the target Bedrock model identifier
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
-# 4. Turn off interactive tool consent prompts for unattended execution
+# ④ Disable interactive tool consent prompts so file_write runs unattended
 os.environ["BYPASS_TOOL_CONSENT"] = os.getenv("BYPASS_TOOL_CONSENT", "true")
 
-# 5. Initialize agent with combined prebuilt tools
+# ---------------------------------------------------------------------------
+# Model & Agent Initialization
+# ---------------------------------------------------------------------------
+# ⑤ Initialize the Strands Agent with http_request, calculator, and file_write
 agent = Agent(
     model=BedrockModel(model_id=model_id),
     tools=[http_request, calculator, file_write],
     system_prompt="You help with data analysis tasks.",
 )
 
+# ---------------------------------------------------------------------------
+# Agent Execution
+# ---------------------------------------------------------------------------
+# ⑥ Execute the multi-step pipeline: fetch HTTP data -> compute average -> save artifact file
 print(f"Task: {task}\n" + "-" * 50)
 response = agent(task)
 print(response)

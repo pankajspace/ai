@@ -1,8 +1,13 @@
-"""Prototype: Direct vs. Zero-Shot CoT vs. Few-Shot CoT.
+"""Prompting Strategies Benchmark (Direct vs. Zero-Shot CoT vs. Few-Shot CoT).
 
-Benchmarks three prompting strategies on a set of questions chosen because
-the intuitive answer is wrong. Reports accuracy AND token cost, so the
-accuracy gain can be weighed against what it costs to buy.
+Benchmarks three fundamental prompting strategies on multi-step reasoning problems
+where the intuitive answer is easily miscalculated:
+1. Direct: "Answer in one short sentence. State only the final answer."
+2. Zero-Shot CoT: "Think step by step, then state your final answer..."
+3. Few-Shot CoT: Provides explicit worked reasoning examples before the question.
+
+Reports accuracy AND token cost, so the accuracy gain can be weighed against
+what it costs to buy in tokens and latency.
 
 IMPORTANT: use a NON-reasoning model (e.g. gpt-4o-mini). Reasoning models
 think internally even under a "just the final answer" prompt, which erases
@@ -34,6 +39,10 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+
 # 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
@@ -58,6 +67,7 @@ def get_client() -> OpenAI:
         rather than a bare KeyError at import time.
     """
     global _client
+    # ① Lazily initialize the OpenAI client and verify that OPENAI_API_KEY is configured
     if _client is None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -73,6 +83,10 @@ def get_client() -> OpenAI:
         _client = OpenAI(api_key=api_key, base_url=base_url)
     return _client
 
+
+# ---------------------------------------------------------------------------
+# Benchmark Dataset & Input Options
+# ---------------------------------------------------------------------------
 
 # 2. Inputs - default benchmark suite or targeted single test cases
 #    Uncomment another option below to test different scenarios:
@@ -151,6 +165,11 @@ Answer: 60
 """
 
 
+# ---------------------------------------------------------------------------
+# Helper & Scoring Functions
+# ---------------------------------------------------------------------------
+
+
 def get_model_response(prompt):
     """Sends a prompt to the model and returns the response text and token counts.
 
@@ -167,6 +186,7 @@ def get_model_response(prompt):
     Edge cases / gotchas:
         Never raises, so a single failed call does not abort the benchmark.
     """
+    # ① Dispatch chat completion request and extract response text plus token usage
     try:
         response = get_client().chat.completions.create(
             model=MODEL_NAME,
@@ -198,6 +218,7 @@ def extract_final_answer(response_text):
         what a Direct response is. This is what stops a reasoning trace from
         being searched for the right answer.
     """
+    # ① Look for explicit 'Answer:' delimiter or fallback to the final non-empty line
     text = response_text.strip()
 
     matches = list(re.finditer(r"answer\s*:", text, flags=re.IGNORECASE))
@@ -207,7 +228,7 @@ def extract_final_answer(response_text):
         lines = [ln for ln in text.splitlines() if ln.strip()]
         segment = lines[-1] if lines else ""
 
-    # take only the first line of the segment, and drop markdown emphasis
+    # ② Take only the first line of the segment and strip markdown formatting
     segment = segment.strip().splitlines()[0] if segment.strip() else ""
     return segment.replace("*", "").replace("`", "").strip().lower()
 
@@ -228,10 +249,12 @@ def first_clause(segment):
         The sentence break is '. ' (period plus space) so decimals like 0.05
         survive intact.
     """
+    # ① Locate punctuation or conjunction cut points that introduce trailing explanations
     cut_points = [segment.find(sep) for sep in (",", ";", ". ")]
     for word in (" since ", " because ", " which ", " as ", " so ", " therefore "):
         cut_points.append(segment.find(word))
 
+    # ② Slice up to the earliest valid cut point to isolate the asserted answer
     valid = [p for p in cut_points if p > 0]
     return segment[: min(valid)].strip() if valid else segment.strip()
 
@@ -251,6 +274,7 @@ def evaluate_accuracy(response_text, correct_answer):
         Scores only the stated final answer, with word boundaries, and for a
         numeric answer requires the FIRST number stated to be the answer.
     """
+    # ① Guard against error responses and normalize expected answers into a list
     if response_text.startswith("Error:"):
         return False
 
@@ -258,6 +282,7 @@ def evaluate_accuracy(response_text, correct_answer):
         [correct_answer] if isinstance(correct_answer, str) else list(correct_answer)
     )
 
+    # ② Extract the final answer segment and trim trailing justification clauses
     answer_segment = extract_final_answer(response_text)
     if not answer_segment:
         return False
@@ -266,6 +291,7 @@ def evaluate_accuracy(response_text, correct_answer):
     clause = first_clause(answer_segment)
     cleaned_clause = clause.replace("$", "").replace(",", "")
 
+    # ③ Match the cleaned answer clause against each accepted ground-truth candidate
     for candidate in accepted:
         cleaned_answer = candidate.strip().lower().replace("$", "").replace(",", "")
 
@@ -284,8 +310,14 @@ def evaluate_accuracy(response_text, correct_answer):
     return False
 
 
+# ---------------------------------------------------------------------------
+# Terminal Rendering & Visualization
+# ---------------------------------------------------------------------------
+
+
 def display_prompt_block(prompt, prompt_type):
     """Styles and prints the prompt to the terminal."""
+    # ① Wrap and render the user prompt inside a styled Rich panel
     indent = " " * (len(prompt_type) + 2)
     wrapped = textwrap.fill(prompt.strip(), width=82, subsequent_indent=indent)
 
@@ -307,6 +339,7 @@ def display_prompt_block(prompt, prompt_type):
 
 def accuracy_bar(correct, total, width=20):
     """Generates a text-based progress bar indicating success rate."""
+    # ① Compute accuracy ratio and format a color-coded ASCII progress bar
     if total == 0:
         return Text("N/A", style="dim")
     pct = correct / total
@@ -314,6 +347,11 @@ def accuracy_bar(correct, total, width=20):
     bar = "X" * filled + "." * (width - filled)
     color = "green" if pct >= 0.8 else "yellow" if pct >= 0.5 else "red"
     return Text(f"{bar}  {correct}/{total}  ({int(pct * 100)}%)", style=color)
+
+
+# ---------------------------------------------------------------------------
+# Benchmark Execution Loop
+# ---------------------------------------------------------------------------
 
 
 def run_benchmark():
@@ -325,6 +363,7 @@ def run_benchmark():
     Side effects:
         Makes network requests and prints formatted output to stdout.
     """
+    # ① Define the three prompting strategy templates (Direct, Zero-Shot CoT, Few-Shot CoT)
     strategies = {
         "Direct": lambda q: f"{q}\nAnswer in one short sentence. State only the final answer.",
         "Zero-Shot CoT": lambda q: f"{q}\nThink step by step, then state your final answer on the last line as 'Answer: <value>'.",
@@ -336,6 +375,7 @@ def run_benchmark():
         for name in strategies
     }
 
+    # ② Print the benchmark overview header
     console.print(
         Panel.fit(
             "[bold yellow]Benchmarking Prompting Strategies[/bold yellow]\n"
@@ -346,6 +386,7 @@ def run_benchmark():
     )
     console.print()
 
+    # ③ Execute each prompting strategy across all benchmark questions
     for name, strategy_fn in strategies.items():
         console.print(Rule(f"[bold cyan]Strategy: {name}[/bold cyan]", style="cyan"))
         console.print()
@@ -360,10 +401,12 @@ def run_benchmark():
 
             display_prompt_block(prompt, "User")
 
+            # ④ Call the model and measure response latency and token consumption
             start_time = time.time()
             response, p_tokens, c_tokens = get_model_response(prompt)
             elapsed = time.time() - start_time
 
+            # ⑤ Score accuracy against expected ground truth and display the response
             total_tokens += p_tokens + c_tokens
             is_correct = evaluate_accuracy(response, expected)
             if is_correct:
@@ -395,6 +438,7 @@ def run_benchmark():
             )
             console.print()
 
+        # ⑥ Aggregate accuracy percentage and total token cost for the current strategy
         results[name]["accuracy"] = (total_correct / len(BENCHMARK_DATA)) * 100
         results[name]["total_correct"] = total_correct
         results[name]["tokens"] = total_tokens
@@ -413,10 +457,12 @@ def plot_results(results):
     Side effects:
         Writes benchmark_results.png to the current directory.
     """
+    # ① Extract strategy names, accuracy percentages, and token counts
     names = list(results.keys())
     accuracies = [results[n]["accuracy"] for n in names]
     tokens = [results[n]["tokens"] for n in names]
 
+    # ② Plot accuracy bars on the primary Y-axis and token cost line on the secondary Y-axis
     fig, ax1 = plt.subplots(figsize=(10, 6))
 
     color = "tab:blue"
@@ -433,6 +479,7 @@ def plot_results(results):
     ax2.plot(names, tokens, color=color, marker="o", label="Token Cost")
     ax2.tick_params(axis="y", labelcolor=color)
 
+    # ③ Save the chart to disk as benchmark_results.png
     plt.title(f"Accuracy vs. Token Cost ({MODEL_NAME})")
     fig.tight_layout()
     plt.savefig("benchmark_results.png")
@@ -447,6 +494,7 @@ def display_stats(results):
     Side effects:
         Writes tables and a verdict panel to stdout.
     """
+    # ① Build and print the comparative Rich summary table across all strategies
     console.print(Rule("[bold yellow]Overall Summary[/bold yellow]", style="yellow"))
     console.print()
 
@@ -470,6 +518,7 @@ def display_stats(results):
     console.print(table)
     console.print()
 
+    # ② Compute top accuracy, token efficiency (accuracy points per 1k tokens), and CoT deltas
     best_acc = max(results.values(), key=lambda x: x["accuracy"])["accuracy"]
     best_strategies = [n for n, d in results.items() if d["accuracy"] == best_acc]
 
@@ -495,6 +544,7 @@ def display_stats(results):
             f"[dim]{name}: {acc_delta:+.0f}pp accuracy for {token_mult:.1f}x the tokens[/dim]"
         )
 
+    # ③ Render the final verdict panel
     console.print(
         Panel.fit(
             "\n".join(verdict_lines),
@@ -505,6 +555,10 @@ def display_stats(results):
     console.print()
     console.print("[dim]Plot saved to benchmark_results.png[/dim]")
 
+
+# ---------------------------------------------------------------------------
+# Standalone CLI Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     results = run_benchmark()

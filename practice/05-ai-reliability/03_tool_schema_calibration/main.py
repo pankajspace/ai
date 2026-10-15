@@ -1,13 +1,13 @@
-"""Prototype: Tool Schema Calibration.
+"""Tool Schema Routing Calibration Benchmark.
 
-Measures which part of a tool schema an LLM actually routes on.
-Three weather tools are offered under a 2x2 of conditions:
-              loose descriptions   tight descriptions
-  descriptive names      A                  B
-  opaque names           C                  D
-
-Crossing names with descriptions separates the signals and reveals whether
-the model relies on function names or docstring descriptions.
+Measures which part of a tool schema an LLM actually routes on using a 2x2 factorial design:
+1. 2x2 Matrix of Conditions:
+   - Condition A: Descriptive Names (`get_weather_current`, etc.) + Loose Descriptions
+   - Condition B: Descriptive Names (`get_weather_current`, etc.) + Tight Descriptions
+   - Condition C: Opaque Names (`weather_service_a`, `b`, `c`) + Loose Descriptions
+   - Condition D: Opaque Names (`weather_service_a`, `b`, `c`) + Tight Descriptions
+2. Crossing function names with docstring descriptions separates the two signals and
+   reveals whether the model relies on identifier keywords or semantic docstrings.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -31,6 +31,10 @@ from rich.rule import Rule
 from rich.table import Table
 from rich.text import Text
 
+# ---------------------------------------------------------------------------
+# Configuration & Environment Setup
+# ---------------------------------------------------------------------------
+
 # 1. Load API keys and settings from .env
 load_dotenv(find_dotenv())
 
@@ -45,6 +49,7 @@ _client = None
 def get_client() -> OpenAI:
     """Returns a module-level OpenAI client, creating it on first use."""
     global _client
+    # ① Lazily initialize the OpenAI client and verify that OPENAI_API_KEY is configured
     if _client is None:
         api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
@@ -57,8 +62,14 @@ def get_client() -> OpenAI:
     return _client
 
 
+# ---------------------------------------------------------------------------
+# Tool Schema Definitions & 2x2 Calibration Matrix
+# ---------------------------------------------------------------------------
+
+
 def tool(name, description):
     """Builds one OpenAI tool definition."""
+    # ① Construct an OpenAI function-calling schema for a given tool name and description
     return {
         "type": "function",
         "function": {
@@ -115,12 +126,17 @@ DESCRIPTION_SETS = {
 
 def build_condition(name_style, desc_style):
     """Builds the tool list and a name->canonical map for one condition."""
+    # ① Pair the chosen naming style with the chosen description style for all three tools
     names = NAME_SETS[name_style]
     descs = DESCRIPTION_SETS[desc_style]
     tools = [tool(names[c], descs[c]) for c in CANONICAL]
     lookup = {names[c]: c for c in CANONICAL}
     return tools, lookup
 
+
+# ---------------------------------------------------------------------------
+# Benchmark Dataset & Input Options
+# ---------------------------------------------------------------------------
 
 # 2. Inputs - query dataset
 #    Uncomment another option below to test different scenarios:
@@ -200,11 +216,16 @@ QUERIES = [
 #     ("Give me the 5-day forecast for Sydney.", "forecast"),
 # ]
 
+# ---------------------------------------------------------------------------
+# Terminal Rendering & Visualization
+# ---------------------------------------------------------------------------
+
 SHORT_NAME = {None: "(no call)", "ERROR": "(error)"}
 
 
 def accuracy_bar(correct, total, width=20):
     """Generates a text-based progress bar indicating success rate."""
+    # ① Compute accuracy ratio and format a color-coded ASCII progress bar
     pct = correct / total if total else 0
     filled = round(pct * width)
     bar = "X" * filled + "." * (width - filled)
@@ -214,6 +235,7 @@ def accuracy_bar(correct, total, width=20):
 
 def display_llm_exchange(query, response_text):
     """Renders visual representation of the LLM input and output."""
+    # ① Render the user query inside a styled Model Input panel
     messages = [{"role": "user", "content": query}]
     input_elements = []
     for msg in messages:
@@ -239,6 +261,7 @@ def display_llm_exchange(query, response_text):
     )
     console.print()
 
+    # ② Render the selected tool call inside a Model Response panel
     wrapped_response = textwrap.fill(
         response_text, width=82, subsequent_indent="           "
     )
@@ -257,8 +280,14 @@ def display_llm_exchange(query, response_text):
     console.print()
 
 
+# ---------------------------------------------------------------------------
+# Helper & Scoring Functions
+# ---------------------------------------------------------------------------
+
+
 def select_tool(query, tools, lookup):
     """Asks the model to route one query and returns the tool it picked."""
+    # ① Force a tool selection via tool_choice="required" and map back to the canonical category
     try:
         response = get_client().chat.completions.create(
             model=MODEL_ID,
@@ -276,14 +305,21 @@ def select_tool(query, tools, lookup):
         return "ERROR"
 
 
+# ---------------------------------------------------------------------------
+# Benchmark Execution Loop
+# ---------------------------------------------------------------------------
+
+
 def run_condition(name_style, desc_style, label):
     """Evaluates the benchmark queries under one cell of the 2x2 design."""
+    # ① Build the condition's tool definitions and canonical lookup table
     tools, lookup = build_condition(name_style, desc_style)
     console.print(
         f"[bold cyan]-- Condition {label}: {name_style.title()} names + "
         f"{desc_style.title()} descriptions ----------------[/bold cyan]"
     )
 
+    # ② Route the first query and display the sample LLM exchange panel
     t0 = time.time()
     sample_picked = select_tool(QUERIES[0][0], tools, lookup)
     t_first = time.time() - t0
@@ -305,6 +341,7 @@ def run_condition(name_style, desc_style, label):
 
     console.print("  [dim]Collecting remaining responses:[/dim]")
 
+    # ③ Route all remaining queries and record routing accuracy and latency
     for idx, (query, expected) in enumerate(QUERIES[1:], start=2):
         t0 = time.time()
         picked = select_tool(query, tools, lookup)
@@ -327,6 +364,7 @@ def run_condition(name_style, desc_style, label):
             highlight=False,
         )
 
+    # ④ Return aggregated routing accuracy and per-category counts for this condition
     console.print()
     correct_count = sum(1 for r in records if r["correct"])
     return {
@@ -342,6 +380,7 @@ def run_condition(name_style, desc_style, label):
 
 def main():
     """Runs the 2x2 routing experiment and displays the summary."""
+    # ① Initialize OpenAI client and display the benchmark overview panel
     get_client()
 
     console.print(
@@ -354,6 +393,7 @@ def main():
     )
     console.print()
 
+    # ② Define and execute all four conditions (A, B, C, D) of the 2x2 schema matrix
     conditions = [
         ("A", "descriptive", "loose"),
         ("B", "descriptive", "tight"),
@@ -365,6 +405,7 @@ def main():
     for code, n_style, d_style in conditions:
         results[code] = run_condition(n_style, d_style, code)
 
+    # ③ Render the comparative routing accuracy summary table across Conditions A–D
     console.print(Rule("[bold yellow]Overall Summary[/bold yellow]", style="yellow"))
     console.print()
 
@@ -396,6 +437,10 @@ def main():
     console.print(table)
     console.print()
 
+
+# ---------------------------------------------------------------------------
+# Standalone CLI Entrypoint
+# ---------------------------------------------------------------------------
 
 if __name__ == "__main__":
     main()

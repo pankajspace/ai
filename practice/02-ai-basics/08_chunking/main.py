@@ -1,9 +1,11 @@
-"""Text Chunking.
+"""Text Chunking for RAG Pipelines.
 
-Splits a long document into small, overlapping chunks - the first step of RAG.
-Small chunks embed and search better; the overlap keeps sentences that cross a
-chunk boundary from losing their context.
-To try another text or chunk size, change the values in step 1.
+This script demonstrates splitting long documents into smaller, overlapping chunks
+suitable for vector embeddings and retrieval (RAG):
+1. Defines sample document texts and chunking hyperparameters (`CHUNK_SIZE`, `CHUNK_OVERLAP`).
+2. Configures `RecursiveCharacterTextSplitter`, which splits on paragraph breaks, line breaks,
+   and spaces to keep semantically related sentences together.
+3. Applies sliding-window character overlap so context across chunk boundaries is preserved.
 
 Run locally (from this folder):
     pip install -r requirements.txt
@@ -16,7 +18,10 @@ Run with Docker (from this folder):
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# 1. Inputs - sample texts and splitter settings; pick one text at the bottom
+# ---------------------------------------------------------------------------
+# Sample Inputs & Chunking Hyperparameters
+# ---------------------------------------------------------------------------
+# ① Choose a sample text and chunking parameters below
 TEXT_RAG = (
     "Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. "
     "Before documents can be searched efficiently, they must be broken down into smaller pieces. "
@@ -43,18 +48,24 @@ text = TEXT_RAG
 CHUNK_SIZE = 200      # max characters per chunk          - try 100 or 400
 CHUNK_OVERLAP = 40    # characters shared by neighbours   - try 0 or 80
 
-# 2. Configure the splitter
-#    It tries to split on paragraphs, then lines, then spaces, so related
-#    words stay together while keeping each chunk under CHUNK_SIZE.
+# ---------------------------------------------------------------------------
+# Text Splitter Configuration & Execution
+# ---------------------------------------------------------------------------
+# ② Configure RecursiveCharacterTextSplitter with target chunk size and overlap.
+#   It tries to split on paragraphs (\n\n), then lines (\n), then spaces, so related
+#   sentences stay together while keeping each chunk under CHUNK_SIZE.
 splitter = RecursiveCharacterTextSplitter(
-    chunk_size=CHUNK_SIZE,
-    chunk_overlap=CHUNK_OVERLAP,
+    chunk_size=CHUNK_SIZE,        # aim for target chars per chunk
+    chunk_overlap=CHUNK_OVERLAP,  # adjacent chunks share chars (context glue)
 )
 
-# 3. Split the text into chunks
+# ③ Split the document text into overlapping chunks preserving natural boundaries
 chunks = splitter.split_text(text)
 
-# 4. Print each chunk with its length
+# ---------------------------------------------------------------------------
+# Output Results
+# ---------------------------------------------------------------------------
+# ④ Print each generated chunk along with its character count
 print(f"Total chunks: {len(chunks)} (size={CHUNK_SIZE}, overlap={CHUNK_OVERLAP})")
 for i, chunk in enumerate(chunks, start=1):
     print(f"\nChunk #{i} ({len(chunk)} chars):\n{chunk}")
