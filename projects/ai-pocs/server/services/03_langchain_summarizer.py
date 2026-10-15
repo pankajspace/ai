@@ -6,34 +6,29 @@ This service demonstrates prompt chaining using LangChain LCEL (LangChain Expres
 3. Chains ChatPromptTemplate | ChatOpenAI | StrOutputParser using the LCEL pipe operator (|).
 4. Uses Pydantic models (SummarizerRequest, SummarizerResponse) for structured serialization.
 5. Invokes the chain with input text to produce a concise, friendly summary.
-
-Run directly:
-    python projects/ai-pocs/server/services/03_langchain_summarizer.py
 """
 
 import os
+
 from dotenv import find_dotenv, load_dotenv
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration & Environment Setup
 # ---------------------------------------------------------------------------
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
-DEFAULT_SAMPLE_TEXT = (
+TEXT_LANGCHAIN = (
     "Information about LangChain and its usage in building AI applications. "
     "We will explore how it simplifies the integration of language models into "
     "various applications. It provides a structured way to create prompts, manage "
     "outputs, and chain together multiple language model calls. This allows "
     "developers to build complex AI-driven workflows efficiently."
 )
-
-model_name = os.getenv("OPENAI_MODEL") or "gpt-4o-mini"
-base_url = os.getenv("OPENAI_BASE_URL")
-api_key = os.getenv("OPENAI_API_KEY") or "missing-key"
 
 
 # ---------------------------------------------------------------------------
@@ -42,10 +37,7 @@ api_key = os.getenv("OPENAI_API_KEY") or "missing-key"
 class SummarizerRequest(BaseModel):
     """Input payload for text summarization queries."""
 
-    text: str = Field(
-        default=DEFAULT_SAMPLE_TEXT,
-        description="Text content to summarize",
-    )
+    text: str = TEXT_LANGCHAIN
 
 
 class SummarizerResponse(BaseModel):
@@ -53,7 +45,6 @@ class SummarizerResponse(BaseModel):
 
     text: str
     summary: str
-
 
 
 # ---------------------------------------------------------------------------
@@ -65,15 +56,17 @@ prompt = ChatPromptTemplate.from_template(
 )
 
 # ② the same model from Class 1, wrapped for LangChain
+#   (placeholder key avoids an import-time crash when OPENAI_API_KEY is unset)
 model = ChatOpenAI(
-    model=model_name,
-    api_key=api_key,
-    base_url=base_url if base_url else None,
+    model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"),
+    api_key=os.getenv("OPENAI_API_KEY") or "missing-key",
+    base_url=os.getenv("OPENAI_BASE_URL") or None,
     temperature=0.3,
     timeout=20.0,
 )
 
 # ③ the package-opener: hands back plain text
+#   (StrOutputParser unwraps the AIMessage into a plain string)
 parser = StrOutputParser()
 
 # ④ snap them together  (| means "then")
@@ -83,7 +76,7 @@ chain = prompt | model | parser
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def summarize(long_text: str = DEFAULT_SAMPLE_TEXT) -> str:
+def summarize(long_text: str = TEXT_LANGCHAIN) -> str:
     """Summarize long text into a concise, friendly summary using LangChain.
 
     Args:
@@ -94,12 +87,3 @@ def summarize(long_text: str = DEFAULT_SAMPLE_TEXT) -> str:
     """
     # ⑤ run it; the dict fills the {data} blank by name
     return chain.invoke({"data": long_text})
-
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    print("--- LangChain Text Summarizer Service ---")
-    print(summarize(DEFAULT_SAMPLE_TEXT))

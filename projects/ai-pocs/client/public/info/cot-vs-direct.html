@@ -101,7 +101,7 @@
                 </div>
                 <div class="topic-content" id="content-concept">
                     <p>Puzzles that need tracking state (moves on a grid, family relations, meeting times) are where a one-shot answer most often fails. The Chain-of-Thought prompt lets the model write intermediate steps before the final line.</p>
-                    <p>Pick a preset puzzle or type your own question (it is scored against the preset's accepted answers). Latency is shown too, because reasoning costs time.</p>
+                    <p>Pick a preset puzzle; both answers are scored against its accepted answers. Latency is shown too, because reasoning costs time.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -154,7 +154,7 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>CotVsDirectCard.tsx</code> sends <code>POST /api/cot-vs-direct</code> with <code>{ problem_title, custom_question? }</code>.</span>
+                            <span class="flow-detail"><code>CotVsDirectCard.tsx</code> sends <code>POST /api/cot-vs-direct</code> with <code>{ problem_title }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -198,7 +198,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["CotVsDirectCard.tsx<br/>POST /api/cot-vs-direct"]:::entry -->|"problem_title"| R["main.py<br/>cot_vs_direct_service()"]:::fn
-    R -->|"title, custom_question"| S["25_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
+    R -->|"problem_title"| S["25_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
     S -->|"direct prompt"| O[("OpenAI API")]:::ext
     S -->|"step-by-step prompt"| O
     O -->|"two replies"| S
@@ -235,7 +235,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">168 lines</span>
+                        <span class="topic-meta-chip">145 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -255,18 +255,15 @@ Demonstrates that Chain-of-Thought (step-by-step reasoning) acts as a reliabilit
    - Direct: &quot;Answer in one short sentence. Do not show working.&quot;
    - CoT: &quot;Think step by step, then state your final answer.&quot;
 3. Measures accuracy, latency, and step-by-step cognitive traces.
-
-Run directly:
-    python projects/ai-pocs/server/services/25_cot_vs_direct.py
 &quot;&quot;&quot;
 
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -274,14 +271,7 @@ load_dotenv(find_dotenv())
 class CotVsDirectRequest(BaseModel):
     &quot;&quot;&quot;Input payload for CoT vs Direct Benchmark.&quot;&quot;&quot;
 
-    problem_title: Optional[str] = Field(
-        default=&quot;Spatial Navigation (Grid)&quot;,
-        description=&quot;Preset logic problem or &#x27;custom&#x27;&quot;,
-    )
-    custom_question: Optional[str] = Field(
-        default=None,
-        description=&quot;Optional replacement question, scored against the preset&#x27;s accepted answers&quot;,
-    )
+    problem_title: str = &quot;Spatial Navigation (Grid)&quot;
 
 
 class CotVsDirectResult(BaseModel):
@@ -296,11 +286,9 @@ class CotVsDirectResponse(BaseModel):
     &quot;&quot;&quot;Output payload from CoT vs Direct Benchmark.&quot;&quot;&quot;
 
     problem_title: str
-    question: str
     accepted_answers: List[str]
     direct_result: CotVsDirectResult
     cot_result: CotVsDirectResult
-    model: str
 
 
 PROBLEMS = {
@@ -348,12 +336,9 @@ def evaluate_cot_accuracy(extracted: str, accepted: List[str]) -&gt; bool:
     return False
 
 
-def run_cot_vs_direct_benchmark(
-    problem_title: str = &quot;Spatial Navigation (Grid)&quot;,
-    custom_question: Optional[str] = None,
-) -&gt; dict:
+def run_cot_vs_direct_benchmark(problem_title: str = &quot;Spatial Navigation (Grid)&quot;) -&gt; dict:
     &quot;&quot;&quot;Execute CoT vs Direct comparison.&quot;&quot;&quot;
-    # ① Initialize OpenAI client and resolve preset or custom logic puzzle
+    # ① Initialize OpenAI client and resolve preset logic puzzle
     client = OpenAI(
         api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
         base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
@@ -361,7 +346,7 @@ def run_cot_vs_direct_benchmark(
     model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
 
     preset = PROBLEMS.get(problem_title, PROBLEMS[&quot;Spatial Navigation (Grid)&quot;])
-    q_text = custom_question or preset[&quot;question&quot;]
+    q_text = preset[&quot;question&quot;]
     accepted = preset[&quot;correct_answers&quot;]
 
     # ② Run Direct Strategy (no intermediate working allowed)
@@ -391,7 +376,6 @@ def run_cot_vs_direct_benchmark(
     # ④ Return side-by-side accuracy, latency, and reasoning traces
     return {
         &quot;problem_title&quot;: problem_title,
-        &quot;question&quot;: q_text,
         &quot;accepted_answers&quot;: accepted,
         &quot;direct_result&quot;: {
             &quot;strategy&quot;: &quot;Direct (No Working)&quot;,
@@ -407,14 +391,7 @@ def run_cot_vs_direct_benchmark(
             &quot;is_correct&quot;: correct_c,
             &quot;latency_seconds&quot;: round(dur_c, 3),
         },
-        &quot;model&quot;: model,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_cot_vs_direct_benchmark()
-    print(&quot;Direct Correct:&quot;, out[&quot;direct_result&quot;][&quot;is_correct&quot;])
-    print(&quot;CoT Correct:&quot;, out[&quot;cot_result&quot;][&quot;is_correct&quot;])</code></pre>
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -428,7 +405,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">36 lines</span>
+                        <span class="topic-meta-chip">32 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -469,11 +446,7 @@ app.add_middleware(
 def cot_vs_direct_service(req: CotVsDirectRequest):
     # ① Run Chain-of-Thought vs Direct answer benchmark
     try:
-        res = run_cot_vs_direct_benchmark(
-            problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
-            custom_question=req.custom_question,
-        )
-        return CotVsDirectResponse(**res)
+        return CotVsDirectResponse(**run_cot_vs_direct_benchmark(req.problem_title))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

@@ -248,7 +248,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">167 lines</span>
+                        <span class="topic-meta-chip">146 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -270,16 +270,12 @@ Demonstrates comprehensive multi-step autonomous planning:
    - `calculator` (prebuilt from `strands_tools`)
 2. The agentic loop feeds the weather forecast into packing recommendations,
    estimates stay, food and travel costs, and checks them against the traveller&#x27;s budget.
-
-Run directly:
-    python projects/ai-pocs/server/services/22_travel_assistant.py
 &quot;&quot;&quot;
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
@@ -291,12 +287,9 @@ load_dotenv(find_dotenv())
 class TravelAssistantRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Travel Assistant Agent.&quot;&quot;&quot;
 
-    query: str = Field(
-        default=(
-            &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. &quot;
-            &quot;What should I pack, and does it fit my budget?&quot;
-        ),
-        description=&quot;Natural language travel planning query&quot;,
+    query: str = (
+        &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. &quot;
+        &quot;What should I pack, and does it fit my budget?&quot;
     )
 
 
@@ -305,8 +298,7 @@ class TravelAssistantResponse(BaseModel):
 
     query: str
     response: str
-    workflow_steps: List[str]
-    provider: str
+    workflow_steps: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -388,9 +380,7 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict:
     }
 
 
-def run_travel_assistant_agent(
-    query: str = TravelAssistantRequest.model_fields[&quot;query&quot;].default,
-) -&gt; dict:
+def run_travel_assistant_agent(query: str) -&gt; dict:
     &quot;&quot;&quot;Run the Capstone Travel Assistant Agent.&quot;&quot;&quot;
     # ③ Initialize the Travel Assistant Agent with custom tools, calculator, and system prompt
     agent = Agent(
@@ -408,25 +398,14 @@ def run_travel_assistant_agent(
     response = agent(query)
 
     # ⑤ Collect the tool calls in the order the agent made them
-    workflow_steps = [
+    tool_calls = [
         f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
         for message in agent.messages
         for block in message[&quot;content&quot;]
         if &quot;toolUse&quot; in block
     ]
 
-    return {
-        &quot;query&quot;: query,
-        &quot;response&quot;: str(response),
-        &quot;workflow_steps&quot;: workflow_steps,
-        &quot;provider&quot;: f&quot;Strands Travel Assistant + Bedrock ({model_id})&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_travel_assistant_agent()
-    print(&quot;Steps:&quot;, out[&quot;workflow_steps&quot;])
-    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+    return {&quot;query&quot;: query, &quot;response&quot;: str(response), &quot;workflow_steps&quot;: tool_calls}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -479,11 +458,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/travel-assistant&quot;, response_model=TravelAssistantResponse)
 def travel_assistant_service(req: TravelAssistantRequest):
-    # ① Normalize query and invoke 5-tool capstone travel planner agent
-    q = req.query.strip() if req.query else &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;
+    # ① Validate query and invoke 5-tool capstone travel planner agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail=&quot;Query cannot be empty&quot;)
     try:
-        res = run_travel_assistant_agent(q)
-        return TravelAssistantResponse(**res)
+        return TravelAssistantResponse(**run_travel_assistant_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

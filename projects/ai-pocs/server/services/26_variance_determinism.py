@@ -4,9 +4,6 @@ Evaluates how output constraints transform stochastic models into deterministic 
 1. Strategy A (Unconstrained): Model asked for review summary freeform (high variance, brittle to parse).
 2. Strategy B (Prompt-Constrained): Prompt instructs JSON format (occasionally wraps markdown code blocks or violates schema).
 3. Strategy C (Schema-Enforced): Uses OpenAI Structured Outputs (`response_format: {"type": "json_object"}` or schema) guaranteeing valid parseable JSON.
-
-Run directly:
-    python projects/ai-pocs/server/services/26_variance_determinism.py
 """
 
 import json
@@ -14,7 +11,7 @@ import os
 from typing import Any, Dict, List, Optional
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -22,10 +19,7 @@ load_dotenv(find_dotenv())
 class VarianceDeterminismRequest(BaseModel):
     """Input payload for Variance & Determinism Benchmark."""
 
-    review_text: str = Field(
-        default="The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars.",
-        description="Unstructured review text to extract sentiment and metadata from",
-    )
+    review_text: str = "The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars."
 
 
 class StrategyOutput(BaseModel):
@@ -39,9 +33,7 @@ class StrategyOutput(BaseModel):
 class VarianceDeterminismResponse(BaseModel):
     """Output payload from Variance & Determinism Benchmark."""
 
-    review_text: str
     strategies: List[StrategyOutput]
-    model: str
 
 
 def check_json(strategy_name: str, raw_output: str, text_to_parse: str) -> dict:
@@ -92,7 +84,6 @@ def run_variance_determinism_benchmark(
 
     # ⑤ Check which outputs parse as JSON and return all three side by side
     return {
-        "review_text": review_text,
         "strategies": [
             check_json("Strategy A: Unconstrained (Freeform Prompt)", text_a, text_a),
             check_json(
@@ -102,12 +93,5 @@ def run_variance_determinism_benchmark(
             ),
             check_json("Strategy C: Schema-Enforced (API Guaranteed JSON)", text_c, text_c),
         ],
-        "model": model,
     }
-
-
-if __name__ == "__main__":
-    out = run_variance_determinism_benchmark()
-    for s in out["strategies"]:
-        print(f"[{s['strategy_name']}] Valid JSON: {s['is_valid_json']}")
 

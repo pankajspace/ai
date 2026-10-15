@@ -7,16 +7,12 @@ Demonstrates autonomous multi-tool planning and chained orchestration:
    - `send_email(to: str, subject: str, body: str)`
 2. The agent plans the workflow: Fetch Data -> Compute Analysis -> Dispatch Email.
 3. Passes the output of each tool directly as inputs into the next step of the agentic loop.
-
-Run directly:
-    python projects/ai-pocs/server/services/15_multi_tool_sales.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -27,10 +23,7 @@ load_dotenv(find_dotenv())
 class MultiToolSalesRequest(BaseModel):
     """Input payload for Multi-Tool Sales Agent."""
 
-    task: str = Field(
-        default="Pull last quarter's sales data and email a summary to the team",
-        description="Business workflow task requiring multi-tool orchestration",
-    )
+    task: str = "Pull last quarter's sales data and email a summary to the team"
 
 
 class MultiToolSalesResponse(BaseModel):
@@ -38,8 +31,7 @@ class MultiToolSalesResponse(BaseModel):
 
     task: str
     response: str
-    tool_sequence: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -82,26 +74,16 @@ def run_multi_tool_sales_agent(
     response = agent(task)
 
     # ⑤ Collect the tool calls in the order the agent made them
-    tool_sequence = [
+    tool_calls = [
         f"{block['toolUse']['name']}({block['toolUse']['input']})"
         for message in agent.messages
         for block in message["content"]
         if "toolUse" in block
     ]
 
-    return {
-        "task": task,
-        "response": str(response),
-        "tool_sequence": tool_sequence,
-        "provider": f"Strands Multi-Tool + Bedrock ({model_id})",
-    }
+    return {"task": task, "response": str(response), "tool_calls": tool_calls}
 
 
 # RULE OF THUMB: build focused, single-purpose tools.
 # One mega-tool that does everything is harder to maintain, harder for the
 # agent to reason about, and impossible to reuse elsewhere.
-
-if __name__ == "__main__":
-    res = run_multi_tool_sales_agent()
-    print("Sequence:", res["tool_sequence"])
-    print("Response:", res["response"])

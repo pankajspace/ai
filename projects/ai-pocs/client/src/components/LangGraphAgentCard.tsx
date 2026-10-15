@@ -5,7 +5,6 @@ export interface LangGraphAgentResponse {
   prompt: string
   response: string
   tool_calls: string[]
-  provider: string
 }
 
 export interface LangGraphAgentCardProps {
@@ -98,9 +97,6 @@ export function LangGraphAgentCard({ apiBase = API_BASE }: LangGraphAgentCardPro
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           {result.tool_calls.length > 0 && (
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Tool Loop:</strong>

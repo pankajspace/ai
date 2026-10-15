@@ -6,18 +6,15 @@ Benchmarks three fundamental prompting strategies:
 3. Few-Shot CoT: Provides explicit worked reasoning examples.
 
 Measures accuracy, prompt tokens, completion tokens, and latency trade-offs.
-
-Run directly:
-    python projects/ai-pocs/server/services/23_prompting_strategies.py
 """
 
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -25,14 +22,8 @@ load_dotenv(find_dotenv())
 class PromptingStrategiesRequest(BaseModel):
     """Input payload for Prompting Strategies Benchmark."""
 
-    question: str = Field(
-        default="A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)",
-        description="Reasoning question where intuitive answer is easily miscalculated",
-    )
-    expected_answer: Optional[str] = Field(
-        default="293",
-        description="Ground truth expected answer for automatic scoring",
-    )
+    question: str = "A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)"
+    expected_answer: str = "293"
 
 
 class StrategyResult(BaseModel):
@@ -49,10 +40,8 @@ class StrategyResult(BaseModel):
 class PromptingStrategiesResponse(BaseModel):
     """Output payload from Prompting Strategies Benchmark."""
 
-    question: str
     expected_answer: str
     strategies: List[StrategyResult]
-    model: str
 
 
 FEW_SHOT_EXAMPLES = """
@@ -152,17 +141,5 @@ def run_prompting_strategies(
         )
 
     # ⑤ Return comparative benchmark metrics across all three strategies
-    return {
-        "question": question,
-        "expected_answer": expected_answer,
-        "strategies": results,
-        "model": model,
-    }
-
-
-if __name__ == "__main__":
-    out = run_prompting_strategies()
-    print("Model:", out["model"])
-    for s in out["strategies"]:
-        print(f"[{s['name']}] Correct: {s['is_correct']} | Latency: {s['latency_seconds']}s | Tokens: {s['total_tokens']}")
+    return {"expected_answer": expected_answer, "strategies": results}
 

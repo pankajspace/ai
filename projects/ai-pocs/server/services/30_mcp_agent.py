@@ -5,24 +5,19 @@ Connects an LLM to the FastMCP cricket server:
 2. Converts the MCP tool descriptors into the OpenAI function-calling format.
 3. Runs the tool-calling loop: the LLM asks for a tool, the client runs it with `tools/call`,
    and the tool output is fed back until the LLM gives a final answer.
-
-Run directly:
-    python projects/ai-pocs/server/services/30_mcp_agent.py
 """
 
-import asyncio
 import json
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 from dotenv import find_dotenv, load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -30,21 +25,14 @@ load_dotenv(find_dotenv())
 class McpAgentRequest(BaseModel):
     """Input payload for MCP Agent."""
 
-    question: str = Field(
-        default="What is the score in India vs West Indies?",
-        description="Natural language question about cricket scores or player stats",
-    )
+    question: str = "What is the score in India vs West Indies?"
 
 
 class McpAgentResponse(BaseModel):
     """Output payload from MCP Agent."""
 
-    question: str
-    response: str
-    tool_called: Optional[str]
-    tool_arguments: Optional[Dict[str, Any]]
-    tool_result: Optional[Dict[str, Any]]
-    provider: str
+    answer: str
+    trace: list[dict]
 
 
 # ① Model settings (Groq's OpenAI-compatible endpoint) and the MCP server to spawn over stdio
@@ -84,13 +72,10 @@ def call_llm(llm, kwargs, retries=2):
     return None, f"MODEL TRIED TO CALL A TOOL WE NEVER GAVE IT ({tool}). Try running again."
 
 
-async def run_agent(question: str) -> dict:
+async def run_mcp_agent(question: str) -> dict:
     """Run the MCP agent loop for a single user question; returns the answer and a tool trace."""
     # ② Initialize the Groq OpenAI-compatible client
-    api_key = os.getenv("GROQ_API_KEY")
-    if not api_key:
-        raise ValueError("GROQ_API_KEY is not set. Free key: https://console.groq.com/keys")
-    llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
+    llm = OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=GROQ_BASE_URL)
     trace = []
 
     messages = [
@@ -138,32 +123,8 @@ async def run_agent(question: str) -> dict:
                 for call in reply.tool_calls:
                     args = json.loads(call.function.arguments)
                     result = await session.call_tool(call.function.name, args)
-                    text = result.content[0].text if result.content else "{}"
-                    trace.append({
-                        "tool": call.function.name,
-                        "args": args,
-                        "result": {"error": text} if result.isError else json.loads(text),
-                    })
+                    text = result.content[0].text if result.content else "(empty)"
+                    trace.append({"tool": call.function.name, "args": args, "result": text})
                     messages.append({"role": "tool", "tool_call_id": call.id, "content": text})
 
     return {"answer": "(stopped: too many steps)", "trace": trace}
-
-
-async def run_mcp_agent(question: str = "What is the score in India vs West Indies?") -> dict:
-    """Run the MCP-enabled agent and report the first tool it used."""
-    out = await run_agent(question)
-    first = out["trace"][0] if out["trace"] else None
-    return {
-        "question": question,
-        "response": out["answer"],
-        "tool_called": first["tool"] if first else None,
-        "tool_arguments": first["args"] if first else None,
-        "tool_result": first["result"] if first else None,
-        "provider": f"Groq ({MODEL}) + FastMCP",
-    }
-
-
-if __name__ == "__main__":
-    out = asyncio.run(run_mcp_agent())
-    print("Tool Called:", out["tool_called"], out["tool_arguments"])
-    print("Response:", out["response"])

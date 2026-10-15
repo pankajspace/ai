@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { API_BASE } from '../config'
 
+export interface McpToolStep {
+  tool: string
+  args: Record<string, any>
+  result: string
+}
+
 export interface McpAgentResponse {
-  question: string
-  response: string
-  tool_called: string | null
-  tool_arguments: Record<string, any> | null
-  tool_result: Record<string, any> | null
-  provider: string
+  answer: string
+  trace: McpToolStep[]
 }
 
 export interface McpAgentCardProps {
@@ -126,19 +128,21 @@ export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
-          {result.tool_called ? (
-            <div style={{ background: 'var(--bg-elevated-2)', padding: '0.4rem', borderRadius: '4px', marginBottom: '0.4rem', fontSize: '0.8rem' }}>
-              🔧 Tool: <code>{result.tool_called}</code> &bull; Args: <code>{JSON.stringify(result.tool_arguments)}</code>
-            </div>
+          {result.trace.length > 0 ? (
+            result.trace.map((step, i) => (
+              <div key={i} style={{ background: 'var(--bg-elevated-2)', padding: '0.4rem', borderRadius: '4px', marginBottom: '0.4rem', fontSize: '0.8rem' }}>
+                🔧 Tool: <code>{step.tool}</code> &bull; Args: <code>{JSON.stringify(step.args)}</code>
+                <pre style={{ fontSize: '0.75rem', margin: '0.3rem 0 0', overflowX: 'auto', background: 'var(--bg)', padding: '0.4rem', borderRadius: '3px' }}>
+                  {step.result}
+                </pre>
+              </div>
+            ))
           ) : (
             <div style={{ fontSize: '0.8rem', color: 'var(--text-faint)', marginBottom: '0.4rem' }}>
               (No tool needed &bull; Direct Answer)
             </div>
           )}
-          <div style={{ marginTop: '0.3rem' }}>{result.response}</div>
+          <div style={{ marginTop: '0.3rem' }}>{result.answer}</div>
         </div>
       )}
     </div>

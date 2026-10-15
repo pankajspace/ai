@@ -238,7 +238,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">105 lines</span>
+                        <span class="topic-meta-chip">92 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -249,31 +249,31 @@ flowchart TD
                 </div>
                 <div class="topic-content" id="content-source-06-langchain-one-tool-py">
                     <span class="file-path">server/services/06_langchain_one_tool.py</span>
-                    <p class="file-label">Langchain Version V1 - Agents (single tool)</p>
+                    <p class="file-label"></p>
                     <pre><code data-lang="python">&quot;&quot;&quot;
 Langchain Version V1 - Agents (single tool)
 
 Teaching idea: give the agent ONE tool (get_weather), and show how LangChain&#x27;s
 `create_agent` automatically inspects tool signatures, triggers the tool
 when needed (e.g. weather queries), and answers general queries directly.
-
-Run directly:
-    python projects/ai-pocs/server/services/06_langchain_one_tool.py
 &quot;&quot;&quot;
 
 import os
+
 from dotenv import find_dotenv, load_dotenv
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration &amp; Provider Selection
 # ---------------------------------------------------------------------------
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
 # Pick a provider: &quot;groq&quot; (free + fast), &quot;gemini&quot; (free tier) or &quot;openai&quot; (needs billing).
 # Its settings are read from &lt;PROVIDER&gt;_MODEL / &lt;PROVIDER&gt;_API_KEY / &lt;PROVIDER&gt;_BASE_URL in .env
+# (get keys at https://console.groq.com or https://aistudio.google.com)
 PROVIDER = &quot;groq&quot;
 prefix = PROVIDER.upper()
 
@@ -284,10 +284,7 @@ prefix = PROVIDER.upper()
 class LangchainOneToolRequest(BaseModel):
     &quot;&quot;&quot;Input payload for single-tool LangChain agent queries.&quot;&quot;&quot;
 
-    message: str = Field(
-        default=&quot;What is the weather like in New York?&quot;,
-        description=&quot;Question for the single-tool LangChain agent&quot;,
-    )
+    message: str = &quot;What is the weather like in New York?&quot;
 
 
 class LangchainOneToolResponse(BaseModel):
@@ -295,12 +292,14 @@ class LangchainOneToolResponse(BaseModel):
 
     message: str
     response: str
-    tool_called: bool = False
+    tool_called: bool
 
 
 # ---------------------------------------------------------------------------
 # Tools
 # ---------------------------------------------------------------------------
+# Type hints (city: str) tell the model WHAT arguments to pass;
+# the docstring tells the model WHEN to invoke this tool.
 def get_weather(city: str) -&gt; str:
     &quot;&quot;&quot;Get the current weather for a given city.&quot;&quot;&quot;
     return f&quot;The weather in {city} is too hot to handle, 28 degrees C.&quot;
@@ -310,6 +309,7 @@ def get_weather(city: str) -&gt; str:
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
+#   (placeholder key avoids an import-time crash when the key is unset)
 llm = ChatOpenAI(
     model=os.getenv(f&quot;{prefix}_MODEL&quot;),
     api_key=os.getenv(f&quot;{prefix}_API_KEY&quot;) or &quot;missing-key&quot;,
@@ -332,29 +332,16 @@ agent = create_agent(
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def run_langchain_one_tool(
-    question: str = &quot;What is the weather like in New York?&quot;,
-) -&gt; tuple[str, bool]:
+def run_langchain_one_tool(question: str = &quot;What is the weather like in New York?&quot;) -&gt; tuple[str, bool]:
     &quot;&quot;&quot;Run a user question through the single-tool LangChain agent.&quot;&quot;&quot;
-    # ① Invoke the LangChain agent with the user&#x27;s question
+    # ③ Invoke the LangChain agent with the user&#x27;s question
     messages = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]})[&quot;messages&quot;]
 
-    # ② The agent called the tool if any message in the trace has type &quot;tool&quot;
+    # ④ The agent called the tool if any message in the trace has type &quot;tool&quot;
     tool_called = any(m.type == &quot;tool&quot; for m in messages)
 
-    # ③ The last message is the final assistant reply
-    return messages[-1].content, tool_called
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    for q in [&quot;What is the weather like in New York?&quot;, &quot;What is Scaler company?&quot;]:
-        answer, tool_called = run_langchain_one_tool(q)
-        print(f&quot;\nQ: {q}&quot;)
-        print(f&quot;Tool called: {&#x27;Yes&#x27; if tool_called else &#x27;No&#x27;}&quot;)
-        print(f&quot;A: {answer}&quot;)</code></pre>
+    # ⑤ The last message is the final assistant reply
+    return messages[-1].content, tool_called</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -368,7 +355,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">40 lines</span>
+                        <span class="topic-meta-chip">35 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -408,16 +395,11 @@ app.add_middleware(
 @app.post(&quot;/api/langchain-one-tool&quot;, response_model=LangchainOneToolResponse)
 def langchain_one_tool_service(req: LangchainOneToolRequest):
     # ① Validate message and invoke LangChain single-tool agent
-    message_text = req.message.strip() if req.message else &quot;What is the weather like in New York?&quot;
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
     try:
-        reply, tool_called = run_langchain_one_tool(message_text)
-        return LangchainOneToolResponse(
-            message=message_text,
-            response=reply,
-            tool_called=tool_called,
-        )
+        reply, tool_called = run_langchain_one_tool(req.message)
+        return LangchainOneToolResponse(message=req.message, response=reply, tool_called=tool_called)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

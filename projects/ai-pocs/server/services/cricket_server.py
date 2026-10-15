@@ -7,8 +7,8 @@ Provides Model Context Protocol (MCP) tool endpoints for live cricket matches an
 
 Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
 
-Run directly (normally the MCP clients 29-31 start it for you as a subprocess):
-    python projects/ai-pocs/server/services/cricket_server.py
+Run locally (from this folder):
+    python cricket_server.py
 """
 
 import sys

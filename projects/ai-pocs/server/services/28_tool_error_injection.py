@@ -9,9 +9,6 @@ Demonstrates agent reliability under upstream API failures:
    - `acknowledged`: Did the model admit the error occurred?
    - `gave_detail`: Did it mention the error status code (503)?
    - `fabricated`: Did it hallucinate fake temperature/data?
-
-Run directly:
-    python projects/ai-pocs/server/services/28_tool_error_injection.py
 """
 
 import json
@@ -20,7 +17,7 @@ import re
 from typing import Dict, List
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -28,15 +25,11 @@ load_dotenv(find_dotenv())
 class ToolErrorInjectionRequest(BaseModel):
     """Input payload for Tool Error Injection Benchmark."""
 
-    question: str = Field(
-        default="Compare the weather in Tokyo and Paris today.",
-        description="Query asking for data where one API call will fail with HTTP 503",
-    )
+    question: str = "Compare the weather in Tokyo and Paris today."
 
 
 class ScenarioEvaluation(BaseModel):
     scenario_name: str
-    system_prompt: str
     response_text: str
     acknowledged_error: bool
     gave_error_detail: bool
@@ -46,9 +39,7 @@ class ScenarioEvaluation(BaseModel):
 class ToolErrorInjectionResponse(BaseModel):
     """Output payload from Tool Error Injection Benchmark."""
 
-    question: str
     scenarios: List[ScenarioEvaluation]
-    model: str
 
 
 def mock_flaky_weather_api(city: str) -> dict:
@@ -156,22 +147,12 @@ def run_tool_error_injection(
 
         results.append({
             "scenario_name": sc["name"],
-            "system_prompt": sc["system"],
             "response_text": final_text,
             "acknowledged_error": scores["acknowledged"],
             "gave_error_detail": scores["gave_detail"],
             "fabricated_data": scores["fabricated"],
         })
 
-    return {
-        "question": question,
-        "scenarios": results,
-        "model": model,
-    }
-
-
-if __name__ == "__main__":
-    out = run_tool_error_injection()
-    for s in out["scenarios"]:
-        print(f"[{s['scenario_name']}] Ack: {s['acknowledged_error']} | Detail: {s['gave_error_detail']} | Fab: {s['fabricated_data']}")
+    # ⑤ Return the scored final answer for each scenario
+    return {"scenarios": results}
 

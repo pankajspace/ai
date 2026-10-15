@@ -4,16 +4,12 @@ Demonstrates building domain-specific custom tools:
 1. Simulates an internal proprietary system or inventory database.
 2. Custom tool `check_inventory(product_id: str)` with strict typing & docstrings.
 3. Natural language query resolution against mock product inventory.
-
-Run directly:
-    python projects/ai-pocs/server/services/16_custom_tool_inventory.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -24,10 +20,7 @@ load_dotenv(find_dotenv())
 class CustomInventoryRequest(BaseModel):
     """Input payload for Custom Inventory Agent."""
 
-    question: str = Field(
-        default="Is PROD-123 in stock?",
-        description="Natural language question about product availability",
-    )
+    question: str = "Is PROD-123 in stock?"
 
 
 class CustomInventoryResponse(BaseModel):
@@ -35,8 +28,7 @@ class CustomInventoryResponse(BaseModel):
 
     question: str
     response: str
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -83,15 +75,4 @@ def run_custom_inventory_agent(question: str = "Is PROD-123 in stock?") -> dict:
         if "toolUse" in block
     ]
 
-    return {
-        "question": question,
-        "response": str(response),
-        "tool_calls": tool_calls,
-        "provider": f"Strands + Bedrock ({model_id})",
-    }
-
-
-if __name__ == "__main__":
-    res = run_custom_inventory_agent()
-    print("Tool calls:", res["tool_calls"])
-    print("Response:", res["response"])
+    return {"question": question, "response": str(response), "tool_calls": tool_calls}

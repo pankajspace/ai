@@ -4,7 +4,6 @@ import { API_BASE } from '../config'
 export interface HelloWorldAgentResponse {
   prompt: string
   response: string
-  provider: string
 }
 
 export interface HelloWorldAgentCardProps {
@@ -98,9 +97,6 @@ export function HelloWorldAgentCard({ apiBase = API_BASE }: HelloWorldAgentCardP
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           {result.response}
         </div>
       )}

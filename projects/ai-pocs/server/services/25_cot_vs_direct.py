@@ -6,18 +6,15 @@ Demonstrates that Chain-of-Thought (step-by-step reasoning) acts as a reliabilit
    - Direct: "Answer in one short sentence. Do not show working."
    - CoT: "Think step by step, then state your final answer."
 3. Measures accuracy, latency, and step-by-step cognitive traces.
-
-Run directly:
-    python projects/ai-pocs/server/services/25_cot_vs_direct.py
 """
 
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -25,14 +22,7 @@ load_dotenv(find_dotenv())
 class CotVsDirectRequest(BaseModel):
     """Input payload for CoT vs Direct Benchmark."""
 
-    problem_title: Optional[str] = Field(
-        default="Spatial Navigation (Grid)",
-        description="Preset logic problem or 'custom'",
-    )
-    custom_question: Optional[str] = Field(
-        default=None,
-        description="Optional replacement question, scored against the preset's accepted answers",
-    )
+    problem_title: str = "Spatial Navigation (Grid)"
 
 
 class CotVsDirectResult(BaseModel):
@@ -47,11 +37,9 @@ class CotVsDirectResponse(BaseModel):
     """Output payload from CoT vs Direct Benchmark."""
 
     problem_title: str
-    question: str
     accepted_answers: List[str]
     direct_result: CotVsDirectResult
     cot_result: CotVsDirectResult
-    model: str
 
 
 PROBLEMS = {
@@ -99,12 +87,9 @@ def evaluate_cot_accuracy(extracted: str, accepted: List[str]) -> bool:
     return False
 
 
-def run_cot_vs_direct_benchmark(
-    problem_title: str = "Spatial Navigation (Grid)",
-    custom_question: Optional[str] = None,
-) -> dict:
+def run_cot_vs_direct_benchmark(problem_title: str = "Spatial Navigation (Grid)") -> dict:
     """Execute CoT vs Direct comparison."""
-    # ① Initialize OpenAI client and resolve preset or custom logic puzzle
+    # ① Initialize OpenAI client and resolve preset logic puzzle
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
         base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
@@ -112,7 +97,7 @@ def run_cot_vs_direct_benchmark(
     model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
 
     preset = PROBLEMS.get(problem_title, PROBLEMS["Spatial Navigation (Grid)"])
-    q_text = custom_question or preset["question"]
+    q_text = preset["question"]
     accepted = preset["correct_answers"]
 
     # ② Run Direct Strategy (no intermediate working allowed)
@@ -142,7 +127,6 @@ def run_cot_vs_direct_benchmark(
     # ④ Return side-by-side accuracy, latency, and reasoning traces
     return {
         "problem_title": problem_title,
-        "question": q_text,
         "accepted_answers": accepted,
         "direct_result": {
             "strategy": "Direct (No Working)",
@@ -158,12 +142,5 @@ def run_cot_vs_direct_benchmark(
             "is_correct": correct_c,
             "latency_seconds": round(dur_c, 3),
         },
-        "model": model,
     }
-
-
-if __name__ == "__main__":
-    out = run_cot_vs_direct_benchmark()
-    print("Direct Correct:", out["direct_result"]["is_correct"])
-    print("CoT Correct:", out["cot_result"]["is_correct"])
 

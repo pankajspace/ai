@@ -8,24 +8,24 @@ makes that loop visible so students can see the function calls happen.
 
 NOTE on the OpenAI 429 ('insufficient_quota'): billing state, not a bug.
 PROVIDER="groq" (free) keeps you teaching without OpenAI credits.
-
-Run directly:
-    python projects/ai-pocs/server/services/07_langchain_multi_tools.py
 """
 
 import os
+
 from dotenv import find_dotenv, load_dotenv
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration & Provider Selection
 # ---------------------------------------------------------------------------
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
 # Pick a provider: "groq" (free + fast), "gemini" (free tier) or "openai" (needs billing).
 # Its settings are read from <PROVIDER>_MODEL / <PROVIDER>_API_KEY / <PROVIDER>_BASE_URL in .env
+# (get keys at https://console.groq.com or https://aistudio.google.com)
 PROVIDER = "groq"
 prefix = PROVIDER.upper()
 
@@ -36,10 +36,7 @@ prefix = PROVIDER.upper()
 class MultiToolAgentRequest(BaseModel):
     """Input payload for multi-tool LangChain agent queries."""
 
-    message: str = Field(
-        default="What's the weather in Tokyo, and what is 12 times 12?",
-        description="Question for the multi-tool LangChain agent",
-    )
+    message: str = "What's the weather in Tokyo, and what is 12 times 12?"
 
 
 class MultiToolAgentResponse(BaseModel):
@@ -47,7 +44,7 @@ class MultiToolAgentResponse(BaseModel):
 
     message: str
     response: str
-    tool_called: bool = False
+    tool_called: bool
 
 
 # ---------------------------------------------------------------------------
@@ -85,6 +82,7 @@ def get_population(city: str) -> str:
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
+#   (placeholder key avoids an import-time crash when the key is unset)
 llm = ChatOpenAI(
     model=os.getenv(f"{prefix}_MODEL"),
     api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key",
@@ -109,33 +107,13 @@ agent = create_agent(
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def run_multi_tool_agent(
-    question: str = "What's the weather in Tokyo, and what is 12 times 12?",
-) -> tuple[str, bool]:
+def run_multi_tool_agent(question: str = "What's the weather in Tokyo, and what is 12 times 12?") -> tuple[str, bool]:
     """Run a user question through the multi-tool LangChain agent."""
-    # ① Invoke the multi-tool agent with the user's question
+    # ③ Invoke the multi-tool agent with the user's question
     messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]
 
-    # ② Detect whether one or more tools were executed during the turn
+    # ④ Detect whether one or more tools were executed during the turn
     tool_called = any(m.type == "tool" for m in messages)
 
-    # ③ The last message is the final synthesized answer
+    # ⑤ The last message is the final synthesized answer
     return messages[-1].content, tool_called
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    for q in [
-        "What is the weather like in New York?",                  # -> get_weather
-        "What is 25 multiplied by 4?",                            # -> multiply
-        "What is 137 plus 568?",                                  # -> add
-        "What is the population of Bangalore?",                   # -> get_population
-        "What's the weather in Tokyo, and what is 12 times 12?",  # -> two tools
-        "Who wrote the play Romeo and Juliet?",                   # -> no tool needed
-    ]:
-        answer, tool_called = run_multi_tool_agent(q)
-        print(f"\nQ: {q}")
-        print(f"Tool called: {'Yes' if tool_called else 'No'}")
-        print(f"A: {answer}")

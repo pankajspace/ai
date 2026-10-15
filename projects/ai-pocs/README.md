@@ -9,7 +9,7 @@ Each interactive card in the React dashboard features a green `ⓘ` icon in its 
 ## Architecture
 
 1. **Multi-Container Orchestration**: Docker Compose orchestrates an isolated FastAPI backend (`ai-pocs-server` on port `8000`) and a React + Vite single-page application (`ai-pocs-client` on container port `5173`, mapped locally to `8091` and `5173`, and on EC2 to `5010`).
-2. **Service Modularity**: Each service in `server/services/` is self-contained with Pydantic schemas, typed handlers, circled numeral step comments (`# ①`, `# ②`, ...), and a standalone CLI entrypoint (`python services/<filename>.py`). Each service keeps only the code its practice topic teaches (one provider, no fallbacks), mirroring the matching `practice/` script.
+2. **Service Modularity**: Each service in `server/services/` is self-contained with Pydantic schemas, typed handlers, and circled numeral step comments (`# ①`, `# ②`, ...). Each service keeps only the code its practice topic teaches (one provider, no fallbacks, no UI-only post-processing or CLI test block), mirroring the matching `practice/` script; responses carry just the POC result, plus a `tool_calls` list where tool calling is the lesson. Every route returns `400` for empty text input and `500` with the error detail if the service fails.
 3. **Path-Prefix & Reverse Proxy Routing**: In production behind Nginx at `https://app.techtoday.click/ai-pocs/`, `VITE_BASE_PATH=/ai-pocs/` and `VITE_SERVER_URL=/ai-pocs` serve all frontend assets and explainer pages under `/ai-pocs/`, while Vite proxies `/ai-pocs/api/*` and `/ai-pocs/health` over the internal Docker Compose network to `http://server:8000`. The client image runs `npm run build` at image build time and serves the minified bundle with `vite preview`; local `docker compose` overrides this with the `npm run dev` hot-reload server. Never run the dev server in production — it ships the unbundled ~3 MB development build of React and makes the landing page take 15–20 s to load.
 
 ```text
@@ -99,7 +99,7 @@ Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-cl
 8. `POST /api/agent` — Single-tool price agent (`{"message": "How much are the shoes?"}`).
 9. `POST /api/langchain-one-tool` — LangChain weather agent (`{"message": "..."}`).
 10. `POST /api/multi-tool-agent` — LangChain multi-tool agent (`{"message": "..."}`).
-11. `POST /api/chunk` — Sliding-window document chunker (`{"text": "...", "chunk_size": 120, "chunk_overlap": 30}`).
+11. `POST /api/chunk` — Sliding-window document chunker (`{"text": "...", "chunk_size": 250, "chunk_overlap": 40}`).
 12. `POST /api/embedding` — Sentence embedding cosine similarity (`{"text1": "...", "text2": "..."}`).
 13. `POST /api/rag` — 4-stage RAG Q&A (`{"paragraph": "...", "question": "..."}`).
 14. `POST /api/hello-world-agent` — AWS Strands single-turn agent (`{"prompt": "..."}`).
@@ -115,8 +115,8 @@ Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-cl
 24. `POST /api/async-tools` — Parallel async warehouse lookups via `agent.invoke_async` (`{"query": "..."}`).
 25. `POST /api/travel-assistant` — 5-tool capstone travel planner (`{"query": "..."}`).
 26. `POST /api/prompting-strategies` — Direct vs Zero-Shot CoT vs Few-Shot CoT (`{"question": "...", "expected_answer": "293"}`).
-27. `POST /api/sycophancy-trap` — Multi-turn pushback resilience benchmark (`{"case_type": "Math Gaslight", "custom_question": "..."}`; `custom_question` is optional).
-28. `POST /api/cot-vs-direct` — CoT vs Direct puzzle benchmark (`{"problem_title": "Spatial Navigation (Grid)", "custom_question": "..."}`; `custom_question` is optional).
+27. `POST /api/sycophancy-trap` — Multi-turn pushback resilience benchmark (`{"case_type": "Math Gaslight"}`).
+28. `POST /api/cot-vs-direct` — CoT vs Direct puzzle benchmark (`{"problem_title": "Spatial Navigation (Grid)"}`).
 29. `POST /api/variance-determinism` — Unconstrained vs Prompt-Constrained vs Schema-Enforced JSON (`{"review_text": "..."}`).
 30. `POST /api/tool-schema-calibration` — 2x2 tool name vs docstring routing calibration (`{"query": "..."}`).
 31. `POST /api/tool-error-injection` — HTTP 503 error injection and hallucination test (`{"question": "..."}`).

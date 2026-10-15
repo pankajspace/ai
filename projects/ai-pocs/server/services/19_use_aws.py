@@ -5,16 +5,12 @@ Demonstrates `use_aws` natural language cloud operations:
 2. The agent translates a plain-English request into service_name + operation_name + parameters.
 3. Calls run against the real AWS account of the configured credentials, so give them a read-only IAM policy.
    Mutating calls and secret reads ask for confirmation, which is refused in the server (no terminal).
-
-Run directly:
-    python projects/ai-pocs/server/services/19_use_aws.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import use_aws
@@ -26,10 +22,7 @@ load_dotenv(find_dotenv())
 class UseAwsRequest(BaseModel):
     """Input payload for Use AWS Agent."""
 
-    prompt: str = Field(
-        default="List all S3 buckets in my account",
-        description="Natural language AWS cloud operation request",
-    )
+    prompt: str = "List all S3 buckets in my account"
 
 
 class UseAwsResponse(BaseModel):
@@ -37,8 +30,7 @@ class UseAwsResponse(BaseModel):
 
     prompt: str
     response: str
-    operations_executed: List[str]
-    provider: str
+    operations_executed: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -57,23 +49,12 @@ def run_use_aws_agent(prompt: str = "List all S3 buckets in my account") -> dict
     # ④ Execute the natural language AWS request
     response = agent(prompt)
 
-    # ⑤ List the AWS API operations the agent chose (service.operation)
-    operations = [
-        f"{block['toolUse']['input']['service_name']}.{block['toolUse']['input']['operation_name']}"
+    # ⑤ List the AWS API operations the agent chose (service, operation, parameters)
+    tool_calls = [
+        f"{block['toolUse']['name']}({block['toolUse']['input']})"
         for message in agent.messages
         for block in message["content"]
         if "toolUse" in block
     ]
 
-    return {
-        "prompt": prompt,
-        "response": str(response),
-        "operations_executed": operations,
-        "provider": f"Strands use_aws + Bedrock ({model_id})",
-    }
-
-
-if __name__ == "__main__":
-    out = run_use_aws_agent()
-    print("Operations:", out["operations_executed"])
-    print("Response:", out["response"])
+    return {"prompt": prompt, "response": str(response), "operations_executed": tool_calls}

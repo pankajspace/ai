@@ -7,16 +7,12 @@ Demonstrates class-based tools that share state and resources across calls:
    - `check_stock(product_id: str)`
    - `update_stock(product_id: str, quantity: int)`
 4. Handles multi-step state mutations within a single conversation session.
-
-Run directly:
-    python projects/ai-pocs/server/services/20_class_based_tools.py
 """
 
 import os
-from typing import Dict, List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -27,10 +23,7 @@ load_dotenv(find_dotenv())
 class ClassBasedToolsRequest(BaseModel):
     """Input payload for Class-Based Tools Agent."""
 
-    query: str = Field(
-        default="Update PROD-456 stock to 25 units, then confirm the new level",
-        description="Query requesting inventory check or state modification",
-    )
+    query: str = "Update PROD-456 stock to 25 units, then confirm the new level"
 
 
 class ClassBasedToolsResponse(BaseModel):
@@ -38,9 +31,8 @@ class ClassBasedToolsResponse(BaseModel):
 
     query: str
     response: str
-    tool_calls: List[str]
-    current_inventory: Dict[str, int]
-    provider: str
+    tool_calls: list[str]
+    current_inventory: dict[str, int]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -116,13 +108,5 @@ def run_class_based_tools_agent(
         "response": str(response),
         "tool_calls": tool_calls,
         "current_inventory": {pid: p["quantity"] for pid, p in inventory.products.items()},
-        "provider": f"Strands Class-Based + Bedrock ({model_id})",
     }
 
-
-if __name__ == "__main__":
-    for q in ["Check stock for PROD-123", "Update PROD-456 stock to 25 units, then confirm the new level"]:
-        out = run_class_based_tools_agent(q)
-        print("Calls:", out["tool_calls"])
-        print("Inventory:", out["current_inventory"])
-        print("Response:", out["response"])

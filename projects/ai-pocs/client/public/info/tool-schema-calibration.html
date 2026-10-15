@@ -235,7 +235,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">162 lines</span>
+                        <span class="topic-meta-chip">145 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -256,16 +256,13 @@ Measures which part of a tool schema an LLM actually routes on:
    - Condition C: Opaque Name (`tool_alpha`, `tool_beta`) + Loose Description
    - Condition D: Opaque Name (`tool_alpha`, `tool_beta`) + Tight Description
 2. Evaluates whether the model routes by function name keywords or deep semantic docstrings.
-
-Run directly:
-    python projects/ai-pocs/server/services/27_tool_schema_calibration.py
 &quot;&quot;&quot;
 
 import os
 from typing import List, Optional
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -273,10 +270,7 @@ load_dotenv(find_dotenv())
 class ToolSchemaCalibrationRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Tool Schema Calibration.&quot;&quot;&quot;
 
-    query: str = Field(
-        default=&quot;What is the current hourly precipitation forecast for Seattle?&quot;,
-        description=&quot;Query testing weather tool routing precision&quot;,
-    )
+    query: str = &quot;What is the current hourly precipitation forecast for Seattle?&quot;
 
 
 class ConditionResult(BaseModel):
@@ -289,11 +283,9 @@ class ConditionResult(BaseModel):
 class ToolSchemaCalibrationResponse(BaseModel):
     &quot;&quot;&quot;Output payload from Tool Schema Calibration.&quot;&quot;&quot;
 
-    query: str
     target_intent: str
     condition_results: List[ConditionResult]
     analysis_summary: str
-    model: str
 
 
 def run_tool_schema_calibration(
@@ -393,22 +385,13 @@ def run_tool_schema_calibration(
 
     # ④ Summarize routing accuracy across the 4 schema conditions
     correct_count = sum(1 for r in results if r[&quot;is_correct_routing&quot;])
-    summary = f&quot;Routed accurately in {correct_count} of 4 calibration conditions. Tight docstrings enable successful routing even with opaque names (Condition D).&quot;
+    summary = f&quot;Routed accurately in {correct_count} of 4 calibration conditions.&quot;
 
     return {
-        &quot;query&quot;: query,
         &quot;target_intent&quot;: &quot;Hourly Precipitation Forecast&quot;,
         &quot;condition_results&quot;: results,
         &quot;analysis_summary&quot;: summary,
-        &quot;model&quot;: model,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_tool_schema_calibration()
-    print(&quot;Summary:&quot;, out[&quot;analysis_summary&quot;])
-    for r in out[&quot;condition_results&quot;]:
-        print(f&quot;[{r[&#x27;condition_code&#x27;]}] {r[&#x27;condition_label&#x27;]}: Selected={r[&#x27;selected_tool&#x27;]} (Correct: {r[&#x27;is_correct_routing&#x27;]})&quot;)</code></pre>
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -422,7 +405,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">33 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -462,9 +445,10 @@ app.add_middleware(
 @app.post(&quot;/api/tool-schema-calibration&quot;, response_model=ToolSchemaCalibrationResponse)
 def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
     # ① Run 2x2 tool schema routing calibration benchmark
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail=&quot;Query cannot be empty&quot;)
     try:
-        res = run_tool_schema_calibration(query=req.query)
-        return ToolSchemaCalibrationResponse(**res)
+        return ToolSchemaCalibrationResponse(**run_tool_schema_calibration(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

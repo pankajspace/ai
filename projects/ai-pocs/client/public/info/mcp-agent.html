@@ -102,7 +102,7 @@
                 </div>
                 <div class="topic-content" id="content-concept">
                     <p>This is the MCP client from the previous demo with an LLM in the loop. The agent never hard-codes tool schemas &mdash; whatever the server lists is what the model can use, so adding a tool to the server needs no change in the agent.</p>
-                    <p>The loop runs up to 5 turns: send messages + tools to Groq; if the reply has tool calls, run each on the MCP server and append the output; otherwise the reply is the final answer. <code>call_llm()</code> retries when the model tries to call a tool that does not exist.</p>
+                    <p>The loop runs up to 5 turns: send messages + tools to Groq; if the reply has tool calls, run each on the MCP server and append the output; otherwise the reply is the final answer. Each tool call is recorded in a <code>trace</code> list (tool, args, result) that the evals demo also reuses. <code>call_llm()</code> retries when the model tries to call a tool that does not exist.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -175,7 +175,7 @@
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Shows the answer and the first tool call with its arguments and result.</span>
+                            <span class="flow-detail">Shows the <code>answer</code> and every step in <code>trace</code>: tool name, arguments and the MCP tool result.</span>
                         </div>
                     </div>
                 </div>
@@ -204,7 +204,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["McpAgentCard.tsx<br/>POST /api/mcp-agent"]:::entry -->|"question"| R["main.py<br/>mcp_agent_service()"]:::fn
-    R -->|"asyncio.run()"| A["30_mcp_agent.py<br/>run_mcp_agent() / run_agent()"]:::fn
+    R -->|"asyncio.run()"| A["30_mcp_agent.py<br/>run_mcp_agent()"]:::fn
     A -->|"initialize + tools/list"| M[("cricket_server.py<br/>FastMCP")]:::ext
     M -->|"tool schemas"| A
     A -->|"messages + tools"| G[("Groq API")]:::ext
@@ -213,7 +213,7 @@ flowchart TD
     M -->|"JSON result"| A
     A -->|"tool messages"| G
     G -->|"final answer"| A
-    A -->|"answer + first tool"| R
+    A -->|"answer + trace"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -244,7 +244,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">169 lines</span>
+                        <span class="topic-meta-chip">130 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,24 +263,19 @@ Connects an LLM to the FastMCP cricket server:
 2. Converts the MCP tool descriptors into the OpenAI function-calling format.
 3. Runs the tool-calling loop: the LLM asks for a tool, the client runs it with `tools/call`,
    and the tool output is fed back until the LLM gives a final answer.
-
-Run directly:
-    python projects/ai-pocs/server/services/30_mcp_agent.py
 &quot;&quot;&quot;
 
-import asyncio
 import json
 import os
 import re
 import sys
 from pathlib import Path
-from typing import Any, Dict, Optional
 
 from dotenv import find_dotenv, load_dotenv
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -288,21 +283,14 @@ load_dotenv(find_dotenv())
 class McpAgentRequest(BaseModel):
     &quot;&quot;&quot;Input payload for MCP Agent.&quot;&quot;&quot;
 
-    question: str = Field(
-        default=&quot;What is the score in India vs West Indies?&quot;,
-        description=&quot;Natural language question about cricket scores or player stats&quot;,
-    )
+    question: str = &quot;What is the score in India vs West Indies?&quot;
 
 
 class McpAgentResponse(BaseModel):
     &quot;&quot;&quot;Output payload from MCP Agent.&quot;&quot;&quot;
 
-    question: str
-    response: str
-    tool_called: Optional[str]
-    tool_arguments: Optional[Dict[str, Any]]
-    tool_result: Optional[Dict[str, Any]]
-    provider: str
+    answer: str
+    trace: list[dict]
 
 
 # ① Model settings (Groq&#x27;s OpenAI-compatible endpoint) and the MCP server to spawn over stdio
@@ -342,13 +330,10 @@ def call_llm(llm, kwargs, retries=2):
     return None, f&quot;MODEL TRIED TO CALL A TOOL WE NEVER GAVE IT ({tool}). Try running again.&quot;
 
 
-async def run_agent(question: str) -&gt; dict:
+async def run_mcp_agent(question: str) -&gt; dict:
     &quot;&quot;&quot;Run the MCP agent loop for a single user question; returns the answer and a tool trace.&quot;&quot;&quot;
     # ② Initialize the Groq OpenAI-compatible client
-    api_key = os.getenv(&quot;GROQ_API_KEY&quot;)
-    if not api_key:
-        raise ValueError(&quot;GROQ_API_KEY is not set. Free key: https://console.groq.com/keys&quot;)
-    llm = OpenAI(api_key=api_key, base_url=GROQ_BASE_URL)
+    llm = OpenAI(api_key=os.getenv(&quot;GROQ_API_KEY&quot;), base_url=GROQ_BASE_URL)
     trace = []
 
     messages = [
@@ -396,35 +381,11 @@ async def run_agent(question: str) -&gt; dict:
                 for call in reply.tool_calls:
                     args = json.loads(call.function.arguments)
                     result = await session.call_tool(call.function.name, args)
-                    text = result.content[0].text if result.content else &quot;{}&quot;
-                    trace.append({
-                        &quot;tool&quot;: call.function.name,
-                        &quot;args&quot;: args,
-                        &quot;result&quot;: {&quot;error&quot;: text} if result.isError else json.loads(text),
-                    })
+                    text = result.content[0].text if result.content else &quot;(empty)&quot;
+                    trace.append({&quot;tool&quot;: call.function.name, &quot;args&quot;: args, &quot;result&quot;: text})
                     messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: call.id, &quot;content&quot;: text})
 
-    return {&quot;answer&quot;: &quot;(stopped: too many steps)&quot;, &quot;trace&quot;: trace}
-
-
-async def run_mcp_agent(question: str = &quot;What is the score in India vs West Indies?&quot;) -&gt; dict:
-    &quot;&quot;&quot;Run the MCP-enabled agent and report the first tool it used.&quot;&quot;&quot;
-    out = await run_agent(question)
-    first = out[&quot;trace&quot;][0] if out[&quot;trace&quot;] else None
-    return {
-        &quot;question&quot;: question,
-        &quot;response&quot;: out[&quot;answer&quot;],
-        &quot;tool_called&quot;: first[&quot;tool&quot;] if first else None,
-        &quot;tool_arguments&quot;: first[&quot;args&quot;] if first else None,
-        &quot;tool_result&quot;: first[&quot;result&quot;] if first else None,
-        &quot;provider&quot;: f&quot;Groq ({MODEL}) + FastMCP&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = asyncio.run(run_mcp_agent())
-    print(&quot;Tool Called:&quot;, out[&quot;tool_called&quot;], out[&quot;tool_arguments&quot;])
-    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+    return {&quot;answer&quot;: &quot;(stopped: too many steps)&quot;, &quot;trace&quot;: trace}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -459,8 +420,8 @@ Provides Model Context Protocol (MCP) tool endpoints for live cricket matches an
 
 Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
 
-Run directly (normally the MCP clients 29-31 start it for you as a subprocess):
-    python projects/ai-pocs/server/services/cricket_server.py
+Run locally (from this folder):
+    python cricket_server.py
 &quot;&quot;&quot;
 
 import sys
@@ -539,7 +500,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">35 lines</span>
+                        <span class="topic-meta-chip">36 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -581,9 +542,10 @@ app.add_middleware(
 @app.post(&quot;/api/mcp-agent&quot;, response_model=McpAgentResponse)
 def mcp_agent_service(req: McpAgentRequest):
     # ① Run LLM agent connected to FastMCP cricket tools
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
     try:
-        res = asyncio.run(run_mcp_agent(question=req.question))
-        return McpAgentResponse(**res)
+        return McpAgentResponse(**asyncio.run(run_mcp_agent(req.question)))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

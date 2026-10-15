@@ -10,9 +10,7 @@ export interface StrategyOutput {
 }
 
 export interface VarianceDeterminismResponse {
-  review_text: string
   strategies: StrategyOutput[]
-  model: string
 }
 
 export interface VarianceDeterminismCardProps {

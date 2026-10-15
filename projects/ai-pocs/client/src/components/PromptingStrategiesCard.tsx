@@ -13,10 +13,8 @@ export interface StrategyResult {
 }
 
 export interface PromptingStrategiesResponse {
-  question: string
   expected_answer: string
   strategies: StrategyResult[]
-  model: string
 }
 
 export interface PromptingStrategiesCardProps {
@@ -130,7 +128,7 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
       {result && (
         <div className="result visible">
           <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Model: {result.model} &bull; Target Answer: <strong>{result.expected_answer}</strong>
+            Target Answer: <strong>{result.expected_answer}</strong>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {result.strategies.map((s) => (

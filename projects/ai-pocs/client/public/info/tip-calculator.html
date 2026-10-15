@@ -101,7 +101,7 @@
                 </div>
                 <div class="topic-content" id="content-concept">
                     <p>The point is <em>intent over keywords</em>: &quot;The bill is $85, 20% tip, split 4 ways&quot; and &quot;Bill is $120, we want to tip 18%, split between 3 people&quot; both end up as the same structured tool call, whatever the wording.</p>
-                    <p>The tool does the maths exactly (no model arithmetic), and the card shows the breakdown: the tool's arguments plus the dict it returned, read from the agent's <code>toolUse</code> and <code>toolResult</code> messages.</p>
+                    <p>The tool does the maths exactly (no model arithmetic), and the card shows the <code>calculate_tip(...)</code> call the agent made, read from the <code>toolUse</code> blocks in <code>agent.messages</code>, so you can see the numbers it extracted.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -128,7 +128,7 @@
                         <li><strong>Parameter extraction:</strong> the model fills typed arguments (<code>float</code>, <code>int</code>) from free text.</li>
                         <li><strong>Default arguments:</strong> <code>num_people: int = 1</code> becomes an optional tool parameter.</li>
                         <li><strong>Tools for exact work:</strong> let code do the arithmetic; let the model do the language.</li>
-                        <li><strong>Reading results:</strong> Strands stores a dict tool result as JSON text in the <code>toolResult</code> block.</li>
+                        <li><strong>Reading tool calls:</strong> every tool request is a <code>toolUse</code> block (name + input) in <code>agent.messages</code>.</li>
                     </ul>
                 </div>
             </section>
@@ -169,13 +169,13 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Read the trace</span>
-                            <span class="flow-detail">The service collects the <code>toolUse</code> arguments and the JSON <code>toolResult</code> into <code>calculation</code>.</span>
+                            <span class="flow-title">Collect tool calls</span>
+                            <span class="flow-detail">The service collects every <code>toolUse</code> block into <code>tool_calls</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Shows the answer and the bill / tip / total / per-person breakdown.</span>
+                            <span class="flow-detail">Shows the answer and the <code>calculate_tip</code> call with its extracted arguments.</span>
                         </div>
                     </div>
                 </div>
@@ -213,7 +213,7 @@ flowchart TD
     A -->|"toolResult"| B
     B -->|"final text"| A
     A -->|"reply + agent.messages"| S
-    S -->|"reply + calculation"| R
+    S -->|"reply + tool_calls"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -244,7 +244,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">105 lines</span>
+                        <span class="topic-meta-chip">80 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,17 +263,12 @@ Demonstrates intent-driven tool invocation over keyword matching:
 2. Extracts numeric parameters: bill amount, tip percentage, and number of people.
 3. Invokes `calculate_tip(bill_amount, tip_percentage, num_people)`.
 4. Returns computed totals and split amounts.
-
-Run directly:
-    python projects/ai-pocs/server/services/14_tip_calculator.py
 &quot;&quot;&quot;
 
-import json
 import os
-from typing import Any, Dict, List, Optional
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -284,10 +279,7 @@ load_dotenv(find_dotenv())
 class TipCalculatorRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Tip Calculator Agent.&quot;&quot;&quot;
 
-    query: str = Field(
-        default=&quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;,
-        description=&quot;Natural language bill and tip inquiry&quot;,
-    )
+    query: str = &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
 
 
 class TipCalculatorResponse(BaseModel):
@@ -295,9 +287,7 @@ class TipCalculatorResponse(BaseModel):
 
     query: str
     response: str
-    calculation: Optional[Dict[str, Any]] = None
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -337,30 +327,15 @@ def run_tip_calculator_agent(
     # ④ The agent extracts bill, tip % and group size from plain English and calls the tool
     response = agent(query)
 
-    # ⑤ Collect every tool call (toolUse) and tool output (toolResult) from the message history
-    blocks = [block for message in agent.messages for block in message[&quot;content&quot;]]
-    tool_uses = [b[&quot;toolUse&quot;] for b in blocks if &quot;toolUse&quot; in b]
-    tool_results = [b[&quot;toolResult&quot;] for b in blocks if &quot;toolResult&quot; in b]
+    # ⑤ Collect every tool call (toolUse) from the message history
+    tool_calls = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
+    ]
 
-    # ⑥ Show the last calculation: the tool&#x27;s arguments plus the dict it returned (stored as JSON text)
-    calculation = None
-    if tool_results and tool_results[-1][&quot;status&quot;] == &quot;success&quot;:
-        result = json.loads(tool_results[-1][&quot;content&quot;][0][&quot;text&quot;])
-        calculation = {&quot;num_people&quot;: 1, **tool_uses[-1][&quot;input&quot;], **result}
-
-    return {
-        &quot;query&quot;: query,
-        &quot;response&quot;: str(response),
-        &quot;calculation&quot;: calculation,
-        &quot;tool_calls&quot;: [f&quot;{t[&#x27;name&#x27;]}({t[&#x27;input&#x27;]})&quot; for t in tool_uses],
-        &quot;provider&quot;: f&quot;Strands + Bedrock ({model_id})&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    res = run_tip_calculator_agent()
-    print(&quot;Calls:&quot;, res[&quot;tool_calls&quot;])
-    print(&quot;Response:&quot;, res[&quot;response&quot;])</code></pre>
+    return {&quot;query&quot;: query, &quot;response&quot;: str(response), &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -413,11 +388,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/tip-calculator&quot;, response_model=TipCalculatorResponse)
 def tip_calculator_service(req: TipCalculatorRequest):
-    # ① Normalize query and run tip and bill-split agent
-    q = req.query.strip() if req.query else &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
+    # ① Validate query and run tip and bill-split agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail=&quot;Query cannot be empty&quot;)
     try:
-        res = run_tip_calculator_agent(q)
-        return TipCalculatorResponse(**res)
+        return TipCalculatorResponse(**run_tip_calculator_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

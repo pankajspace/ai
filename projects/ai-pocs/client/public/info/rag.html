@@ -243,7 +243,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">135 lines</span>
+                        <span class="topic-meta-chip">111 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -262,23 +262,22 @@ This service implements a RAG workflow for answering questions over a paragraph:
 2. Indexes chunks and retrieves the top matching passages for the user question.
 3. Formulates a grounded prompt with the retrieved context.
 4. Generates a concise, fact-based answer using ChatOpenAI.
-
-Run directly:
-    python projects/ai-pocs/server/services/10_rag.py
 &quot;&quot;&quot;
 
 import os
+
 from dotenv import find_dotenv, load_dotenv
 from langchain_chroma import Chroma
 from langchain_core.prompts import ChatPromptTemplate
 from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
-DEFAULT_SAMPLE_PARAGRAPH = (
+PARAGRAPH = (
     &quot;TechToday Return Policy: Customers may return any eligible product within 30 days &quot;
     &quot;of the purchase date. All returned merchandise must be unworn, undamaged, and in its &quot;
     &quot;original packaging with all tags attached. Refunds are processed back to the original &quot;
@@ -287,20 +286,6 @@ DEFAULT_SAMPLE_PARAGRAPH = (
     &quot;orders and clearance items marked as final sale cannot be returned or exchanged.&quot;
 )
 
-DEFAULT_SAMPLE_QUESTION = &quot;How long do I have to return something?&quot;
-
-# RAG prompt: instructs the model to answer strictly from retrieved context
-RAG_PROMPT = ChatPromptTemplate.from_template(&quot;&quot;&quot;
-Answer the question using ONLY the context below. If the context doesn&#x27;t contain
-the answer, say &quot;I couldn&#x27;t find that in the provided paragraph.&quot;
-Be concise and quote facts directly.
-
-Context:
-{context}
-
-Question: {question}
-&quot;&quot;&quot;)
-
 
 # ---------------------------------------------------------------------------
 # Request &amp; Response Schemas (Pydantic)
@@ -308,14 +293,8 @@ Question: {question}
 class RagRequest(BaseModel):
     &quot;&quot;&quot;Input payload for paragraph-based RAG query.&quot;&quot;&quot;
 
-    paragraph: str = Field(
-        default=DEFAULT_SAMPLE_PARAGRAPH,
-        description=&quot;Paragraph or document text to query&quot;,
-    )
-    question: str = Field(
-        default=DEFAULT_SAMPLE_QUESTION,
-        description=&quot;Question to ask about the paragraph&quot;,
-    )
+    paragraph: str = PARAGRAPH
+    question: str = &quot;How long do I have to return something?&quot;
 
 
 class RagResponse(BaseModel):
@@ -333,11 +312,20 @@ class RagResponse(BaseModel):
 # Load the local embedding model once (no API key needed)
 embedder = HuggingFaceEmbeddings(model_name=&quot;all-MiniLM-L6-v2&quot;)
 
+# RAG prompt: instructs the model to answer strictly from retrieved context
+prompt = ChatPromptTemplate.from_template(&quot;&quot;&quot;
+Answer the question using ONLY the context below. If the context doesn&#x27;t contain
+the answer, say &quot;I couldn&#x27;t find that in the provided paragraph.&quot;
+Be concise and quote facts directly.
 
-def answer_rag(
-    paragraph: str = DEFAULT_SAMPLE_PARAGRAPH,
-    question: str = DEFAULT_SAMPLE_QUESTION,
-) -&gt; dict:
+Context:
+{context}
+
+Question: {question}
+&quot;&quot;&quot;)
+
+
+def answer_rag(paragraph: str, question: str) -&gt; dict:
     &quot;&quot;&quot;Execute the complete paragraph RAG pipeline: chunk -&gt; retrieve -&gt; synthesize.
 
     Args:
@@ -357,39 +345,27 @@ def answer_rag(
     # ③ Retrieve the top-k chunks most similar to the question
     k = min(3, len(chunks))
     relevant_chunks = [doc.page_content for doc in db.similarity_search(question, k=k)]
-    # Drop the in-memory collection so the next request starts with an empty store
-    db.delete_collection()
 
     # ④ Join the retrieved chunks into one context string
     context = &quot;\n\n&quot;.join(relevant_chunks)
+    # Drop the in-memory collection so the next request starts with an empty store
+    db.delete_collection()
 
     # ⑤ Generate an answer grounded only in the retrieved context
+    #   (temperature=0 for deterministic, factual responses)
     model = ChatOpenAI(
         model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
         base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
         temperature=0,
     )
-    answer = (RAG_PROMPT | model).invoke({&quot;context&quot;: context, &quot;question&quot;: question}).content
+    answer = (prompt | model).invoke({&quot;context&quot;: context, &quot;question&quot;: question}).content
 
     return {
         &quot;paragraph&quot;: paragraph,
         &quot;question&quot;: question,
         &quot;answer&quot;: answer.strip(),
         &quot;sources&quot;: relevant_chunks,
-    }
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    print(&quot;--- Paragraph RAG Service ---&quot;)
-    res = answer_rag(DEFAULT_SAMPLE_PARAGRAPH, DEFAULT_SAMPLE_QUESTION)
-    print(f&quot;\nQuestion: {res[&#x27;question&#x27;]}&quot;)
-    print(f&quot;\nRetrieved Chunks ({len(res[&#x27;sources&#x27;])}):&quot;)
-    for i, s in enumerate(res[&#x27;sources&#x27;], 1):
-        print(f&quot; [{i}] {s}&quot;)
-    print(f&quot;\nAnswer:\n{res[&#x27;answer&#x27;]}&quot;)</code></pre>
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -403,7 +379,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">39 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -443,15 +419,10 @@ app.add_middleware(
 @app.post(&quot;/api/rag&quot;, response_model=RagResponse)
 def rag_service(req: RagRequest):
     # ① Validate paragraph and question before running the 4-stage RAG pipeline
-    paragraph = req.paragraph.strip() if req.paragraph else &quot;&quot;
-    question = req.question.strip() if req.question else &quot;&quot;
-    if not paragraph:
-        raise HTTPException(status_code=400, detail=&quot;Paragraph cannot be empty&quot;)
-    if not question:
-        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
+    if not req.paragraph.strip() or not req.question.strip():
+        raise HTTPException(status_code=400, detail=&quot;Paragraph and question are required&quot;)
     try:
-        res = answer_rag(paragraph=paragraph, question=question)
-        return RagResponse(**res)
+        return RagResponse(**answer_rag(req.paragraph, req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

@@ -8,12 +8,8 @@ export interface McpToolDescriptor {
 }
 
 export interface McpClientResponse {
-  handshake_status: string
   server_tools: McpToolDescriptor[]
-  invoked_tool: string
-  arguments: Record<string, any>
-  result: Record<string, any>
-  protocol_transport: string
+  result: string
 }
 
 export interface McpClientCardProps {
@@ -142,14 +138,11 @@ export function McpClientCard({ apiBase = API_BASE }: McpClientCardProps = {}) {
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Handshake: {result.handshake_status} &bull; Transport: {result.protocol_transport}
-          </div>
           <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginBottom: '0.3rem' }}>
             Discovered Tools: {result.server_tools.map((t) => t.name).join(', ')}
           </div>
           <pre style={{ fontSize: '0.75rem', margin: 0, overflowX: 'auto', background: 'var(--bg)', padding: '0.4rem', borderRadius: '3px' }}>
-            {JSON.stringify(result.result, null, 2)}
+            {result.result}
           </pre>
         </div>
       )}

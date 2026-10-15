@@ -238,7 +238,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">81 lines</span>
+                        <span class="topic-meta-chip">62 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -257,19 +257,15 @@ Demonstrates the LangGraph tool-calling ReAct agentic loop on Amazon Bedrock:
 2. Passes the prompt to a LangGraph ReAct agent backed by Bedrock Converse.
 3. Observes tool execution steps (calling greet for each person).
 4. Synthesizes the final response.
-
-Run directly:
-    python projects/ai-pocs/server/services/12_hello_world_langgraph.py
 &quot;&quot;&quot;
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
@@ -278,10 +274,7 @@ load_dotenv(find_dotenv())
 class LangGraphAgentRequest(BaseModel):
     &quot;&quot;&quot;Input payload for LangGraph Hello World Agent.&quot;&quot;&quot;
 
-    prompt: str = Field(
-        default=&quot;Please greet Alice and Bob.&quot;,
-        description=&quot;User request for greeting individuals&quot;,
-    )
+    prompt: str = &quot;Please greet Alice and Bob.&quot;
 
 
 class LangGraphAgentResponse(BaseModel):
@@ -289,8 +282,7 @@ class LangGraphAgentResponse(BaseModel):
 
     prompt: str
     response: str
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -319,18 +311,7 @@ def run_langgraph_agent(prompt: str = &quot;Please greet Alice and Bob.&quot;) -
     # ⑥ Every &quot;tool&quot; message is the observation from one greet() call
     tool_calls = [f&quot;{m.name} -&gt; {m.content}&quot; for m in messages if m.type == &quot;tool&quot;]
 
-    return {
-        &quot;prompt&quot;: prompt,
-        &quot;response&quot;: messages[-1].text,
-        &quot;tool_calls&quot;: tool_calls,
-        &quot;provider&quot;: f&quot;LangGraph + Bedrock Converse ({model_id})&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    res = run_langgraph_agent()
-    print(&quot;Tool calls:&quot;, res[&quot;tool_calls&quot;])
-    print(&quot;Response:&quot;, res[&quot;response&quot;])</code></pre>
+    return {&quot;prompt&quot;: prompt, &quot;response&quot;: messages[-1].text, &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -383,11 +364,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
 def langgraph_agent_service(req: LangGraphAgentRequest):
-    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
-    prompt_text = req.prompt.strip() if req.prompt else &quot;Please greet Alice and Bob.&quot;
+    # ① Validate prompt and invoke LangGraph ReAct greeting agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail=&quot;Prompt cannot be empty&quot;)
     try:
-        res = run_langgraph_agent(prompt_text)
-        return LangGraphAgentResponse(**res)
+        return LangGraphAgentResponse(**run_langgraph_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

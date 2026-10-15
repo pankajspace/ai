@@ -4,16 +4,12 @@ Demonstrates integrating pre-built community tools with system prompts:
 1. Standing System Prompt: "You are a helpful math assistant."
 2. Prebuilt `calculator` tool from the `strands_tools` package (no tool code to write).
 3. Evaluates complex mathematical queries with precise computation.
-
-Run directly:
-    python projects/ai-pocs/server/services/17_prebuilt_tools.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
@@ -25,10 +21,7 @@ load_dotenv(find_dotenv())
 class PrebuiltCalculatorRequest(BaseModel):
     """Input payload for Prebuilt Calculator Agent."""
 
-    query: str = Field(
-        default="What's 42 raised to the power of 9?",
-        description="Math problem or expression to solve",
-    )
+    query: str = "What's 42 raised to the power of 9?"
 
 
 class PrebuiltCalculatorResponse(BaseModel):
@@ -36,8 +29,7 @@ class PrebuiltCalculatorResponse(BaseModel):
 
     query: str
     response: str
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -64,15 +56,4 @@ def run_prebuilt_calculator_agent(query: str = "What's 42 raised to the power of
         if "toolUse" in block
     ]
 
-    return {
-        "query": query,
-        "response": str(response),
-        "tool_calls": tool_calls,
-        "provider": f"Strands + Bedrock ({model_id})",
-    }
-
-
-if __name__ == "__main__":
-    out = run_prebuilt_calculator_agent()
-    print("Calls:", out["tool_calls"])
-    print("Response:", out["response"])
+    return {"query": query, "response": str(response), "tool_calls": tool_calls}

@@ -11,11 +11,9 @@ export interface CotVsDirectResult {
 
 export interface CotVsDirectResponse {
   problem_title: string
-  question: string
   accepted_answers: string[]
   direct_result: CotVsDirectResult
   cot_result: CotVsDirectResult
-  model: string
 }
 
 export interface CotVsDirectCardProps {
@@ -56,16 +54,10 @@ export function CotVsDirectCard({ apiBase = API_BASE }: CotVsDirectCardProps = {
     setSubmitting(true)
     setError(null)
     try {
-      const selectedProblem = PROBLEMS.find((p) => p.title === problemTitle)
-      const payload: Record<string, any> = { problem_title: problemTitle }
-      if (selectedProblem && question !== selectedProblem.question) {
-        payload.custom_question = question
-      }
-
       const res = await fetch(`${apiBase}/api/cot-vs-direct`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ problem_title: problemTitle }),
         signal: AbortSignal.timeout(30000),
       })
 
@@ -99,8 +91,7 @@ export function CotVsDirectCard({ apiBase = API_BASE }: CotVsDirectCardProps = {
           rows={3}
           placeholder="Logic problem question…"
           value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          required
+          readOnly
         />
 
         <div className="preset-row">

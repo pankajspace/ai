@@ -2,16 +2,12 @@
 
 This service splits long documents into smaller, overlapping chunks suitable
 for vector embeddings and retrieval (RAG).
-
-Run directly:
-    python projects/ai-pocs/server/services/08_chunking.py
 """
 
-from pydantic import BaseModel, Field
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
 
-DEFAULT_SAMPLE_TEXT = (
+TEXT_RAG = (
     "Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. "
     "Before documents can be searched efficiently, they must be broken down into smaller pieces. "
     "This process is called chunking. "
@@ -29,22 +25,9 @@ DEFAULT_SAMPLE_TEXT = (
 class ChunkingRequest(BaseModel):
     """Input payload for text chunking."""
 
-    text: str = Field(
-        default=DEFAULT_SAMPLE_TEXT,
-        description="Document text to split into chunks",
-    )
-    chunk_size: int = Field(
-        default=250,
-        ge=20,
-        le=5000,
-        description="Target maximum characters per chunk",
-    )
-    chunk_overlap: int = Field(
-        default=40,
-        ge=0,
-        le=1000,
-        description="Character overlap between adjacent chunks",
-    )
+    text: str = TEXT_RAG
+    chunk_size: int = 250
+    chunk_overlap: int = 40
 
 
 class ChunkingResponse(BaseModel):
@@ -59,11 +42,7 @@ class ChunkingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def chunk_text(
-    text: str = DEFAULT_SAMPLE_TEXT,
-    chunk_size: int = 250,
-    chunk_overlap: int = 40,
-) -> list[str]:
+def chunk_text(text: str = TEXT_RAG, chunk_size: int = 250, chunk_overlap: int = 40) -> list[str]:
     """Split text into overlapping chunks using RecursiveCharacterTextSplitter.
 
     Args:
@@ -74,21 +53,12 @@ def chunk_text(
     Returns:
         List of text chunks.
     """
-    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap
+    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap.
+    #   It tries to split on paragraphs (\n\n), then lines (\n), then spaces, so related
+    #   sentences stay together while keeping each chunk under chunk_size.
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,        # aim for target chars per chunk
         chunk_overlap=chunk_overlap,  # adjacent chunks share chars (context glue)
     )
     # ② Split the document text into overlapping chunks preserving natural boundaries
     return splitter.split_text(text)
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    print("--- Text Chunking Service ---")
-    chunks = chunk_text(DEFAULT_SAMPLE_TEXT, chunk_size=200, chunk_overlap=40)
-    print(f"Total chunks: {len(chunks)}")
-    for idx, c in enumerate(chunks, 1):
-        print(f"\nChunk #{idx} ({len(c)} chars):\n{c}")

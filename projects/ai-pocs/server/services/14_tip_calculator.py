@@ -5,17 +5,12 @@ Demonstrates intent-driven tool invocation over keyword matching:
 2. Extracts numeric parameters: bill amount, tip percentage, and number of people.
 3. Invokes `calculate_tip(bill_amount, tip_percentage, num_people)`.
 4. Returns computed totals and split amounts.
-
-Run directly:
-    python projects/ai-pocs/server/services/14_tip_calculator.py
 """
 
-import json
 import os
-from typing import Any, Dict, List, Optional
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -26,10 +21,7 @@ load_dotenv(find_dotenv())
 class TipCalculatorRequest(BaseModel):
     """Input payload for Tip Calculator Agent."""
 
-    query: str = Field(
-        default="The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?",
-        description="Natural language bill and tip inquiry",
-    )
+    query: str = "The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"
 
 
 class TipCalculatorResponse(BaseModel):
@@ -37,9 +29,7 @@ class TipCalculatorResponse(BaseModel):
 
     query: str
     response: str
-    calculation: Optional[Dict[str, Any]] = None
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -79,27 +69,12 @@ def run_tip_calculator_agent(
     # ④ The agent extracts bill, tip % and group size from plain English and calls the tool
     response = agent(query)
 
-    # ⑤ Collect every tool call (toolUse) and tool output (toolResult) from the message history
-    blocks = [block for message in agent.messages for block in message["content"]]
-    tool_uses = [b["toolUse"] for b in blocks if "toolUse" in b]
-    tool_results = [b["toolResult"] for b in blocks if "toolResult" in b]
+    # ⑤ Collect every tool call (toolUse) from the message history
+    tool_calls = [
+        f"{block['toolUse']['name']}({block['toolUse']['input']})"
+        for message in agent.messages
+        for block in message["content"]
+        if "toolUse" in block
+    ]
 
-    # ⑥ Show the last calculation: the tool's arguments plus the dict it returned (stored as JSON text)
-    calculation = None
-    if tool_results and tool_results[-1]["status"] == "success":
-        result = json.loads(tool_results[-1]["content"][0]["text"])
-        calculation = {"num_people": 1, **tool_uses[-1]["input"], **result}
-
-    return {
-        "query": query,
-        "response": str(response),
-        "calculation": calculation,
-        "tool_calls": [f"{t['name']}({t['input']})" for t in tool_uses],
-        "provider": f"Strands + Bedrock ({model_id})",
-    }
-
-
-if __name__ == "__main__":
-    res = run_tip_calculator_agent()
-    print("Calls:", res["tool_calls"])
-    print("Response:", res["response"])
+    return {"query": query, "response": str(response), "tool_calls": tool_calls}

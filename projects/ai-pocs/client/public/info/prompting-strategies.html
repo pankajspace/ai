@@ -155,7 +155,7 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question }</code>.</span>
+                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question, expected_answer }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -203,7 +203,7 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry -->|"question"| R["main.py<br/>prompting_strategies_service()"]:::fn
+    UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry -->|"question, expected_answer"| R["main.py<br/>prompting_strategies_service()"]:::fn
     R -->|"question, expected"| S["23_prompting_strategies.py<br/>run_prompting_strategies()"]:::fn
     S -->|"Direct prompt"| O[("OpenAI API")]:::ext
     S -->|"Zero-Shot CoT prompt"| O
@@ -211,7 +211,7 @@ flowchart TD
     O -->|"3 replies + token usage"| S
     S -->|"reply"| X["extract_final_answer()<br/>evaluate_accuracy()"]:::fn
     X -->|"answer, correct?"| S
-    S -->|"strategies table"| R
+    S -->|"expected_answer + strategies"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -242,7 +242,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">167 lines</span>
+                        <span class="topic-meta-chip">144 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -262,18 +262,15 @@ Benchmarks three fundamental prompting strategies:
 3. Few-Shot CoT: Provides explicit worked reasoning examples.
 
 Measures accuracy, prompt tokens, completion tokens, and latency trade-offs.
-
-Run directly:
-    python projects/ai-pocs/server/services/23_prompting_strategies.py
 &quot;&quot;&quot;
 
 import os
 import re
 import time
-from typing import Any, Dict, List, Optional
+from typing import List
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -281,14 +278,8 @@ load_dotenv(find_dotenv())
 class PromptingStrategiesRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Prompting Strategies Benchmark.&quot;&quot;&quot;
 
-    question: str = Field(
-        default=&quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;,
-        description=&quot;Reasoning question where intuitive answer is easily miscalculated&quot;,
-    )
-    expected_answer: Optional[str] = Field(
-        default=&quot;293&quot;,
-        description=&quot;Ground truth expected answer for automatic scoring&quot;,
-    )
+    question: str = &quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;
+    expected_answer: str = &quot;293&quot;
 
 
 class StrategyResult(BaseModel):
@@ -305,10 +296,8 @@ class StrategyResult(BaseModel):
 class PromptingStrategiesResponse(BaseModel):
     &quot;&quot;&quot;Output payload from Prompting Strategies Benchmark.&quot;&quot;&quot;
 
-    question: str
     expected_answer: str
     strategies: List[StrategyResult]
-    model: str
 
 
 FEW_SHOT_EXAMPLES = &quot;&quot;&quot;
@@ -408,19 +397,7 @@ def run_prompting_strategies(
         )
 
     # ⑤ Return comparative benchmark metrics across all three strategies
-    return {
-        &quot;question&quot;: question,
-        &quot;expected_answer&quot;: expected_answer,
-        &quot;strategies&quot;: results,
-        &quot;model&quot;: model,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_prompting_strategies()
-    print(&quot;Model:&quot;, out[&quot;model&quot;])
-    for s in out[&quot;strategies&quot;]:
-        print(f&quot;[{s[&#x27;name&#x27;]}] Correct: {s[&#x27;is_correct&#x27;]} | Latency: {s[&#x27;latency_seconds&#x27;]}s | Tokens: {s[&#x27;total_tokens&#x27;]}&quot;)</code></pre>
+    return {&quot;expected_answer&quot;: expected_answer, &quot;strategies&quot;: results}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -434,7 +411,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">36 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -474,12 +451,10 @@ app.add_middleware(
 @app.post(&quot;/api/prompting-strategies&quot;, response_model=PromptingStrategiesResponse)
 def prompting_strategies_service(req: PromptingStrategiesRequest):
     # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
     try:
-        res = run_prompting_strategies(
-            question=req.question,
-            expected_answer=req.expected_answer or &quot;293&quot;,
-        )
-        return PromptingStrategiesResponse(**res)
+        return PromptingStrategiesResponse(**run_prompting_strategies(req.question, req.expected_answer))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

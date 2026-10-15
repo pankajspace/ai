@@ -5,19 +5,15 @@ Demonstrates the LangGraph tool-calling ReAct agentic loop on Amazon Bedrock:
 2. Passes the prompt to a LangGraph ReAct agent backed by Bedrock Converse.
 3. Observes tool execution steps (calling greet for each person).
 4. Synthesizes the final response.
-
-Run directly:
-    python projects/ai-pocs/server/services/12_hello_world_langgraph.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
 from langchain.chat_models import init_chat_model
 from langchain.tools import tool
 from langgraph.prebuilt import create_react_agent
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
@@ -26,10 +22,7 @@ load_dotenv(find_dotenv())
 class LangGraphAgentRequest(BaseModel):
     """Input payload for LangGraph Hello World Agent."""
 
-    prompt: str = Field(
-        default="Please greet Alice and Bob.",
-        description="User request for greeting individuals",
-    )
+    prompt: str = "Please greet Alice and Bob."
 
 
 class LangGraphAgentResponse(BaseModel):
@@ -37,8 +30,7 @@ class LangGraphAgentResponse(BaseModel):
 
     prompt: str
     response: str
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -67,15 +59,4 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
     # ⑥ Every "tool" message is the observation from one greet() call
     tool_calls = [f"{m.name} -> {m.content}" for m in messages if m.type == "tool"]
 
-    return {
-        "prompt": prompt,
-        "response": messages[-1].text,
-        "tool_calls": tool_calls,
-        "provider": f"LangGraph + Bedrock Converse ({model_id})",
-    }
-
-
-if __name__ == "__main__":
-    res = run_langgraph_agent()
-    print("Tool calls:", res["tool_calls"])
-    print("Response:", res["response"])
+    return {"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}

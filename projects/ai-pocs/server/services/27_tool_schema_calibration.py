@@ -7,16 +7,13 @@ Measures which part of a tool schema an LLM actually routes on:
    - Condition C: Opaque Name (`tool_alpha`, `tool_beta`) + Loose Description
    - Condition D: Opaque Name (`tool_alpha`, `tool_beta`) + Tight Description
 2. Evaluates whether the model routes by function name keywords or deep semantic docstrings.
-
-Run directly:
-    python projects/ai-pocs/server/services/27_tool_schema_calibration.py
 """
 
 import os
 from typing import List, Optional
 from dotenv import find_dotenv, load_dotenv
 from openai import OpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 load_dotenv(find_dotenv())
 
@@ -24,10 +21,7 @@ load_dotenv(find_dotenv())
 class ToolSchemaCalibrationRequest(BaseModel):
     """Input payload for Tool Schema Calibration."""
 
-    query: str = Field(
-        default="What is the current hourly precipitation forecast for Seattle?",
-        description="Query testing weather tool routing precision",
-    )
+    query: str = "What is the current hourly precipitation forecast for Seattle?"
 
 
 class ConditionResult(BaseModel):
@@ -40,11 +34,9 @@ class ConditionResult(BaseModel):
 class ToolSchemaCalibrationResponse(BaseModel):
     """Output payload from Tool Schema Calibration."""
 
-    query: str
     target_intent: str
     condition_results: List[ConditionResult]
     analysis_summary: str
-    model: str
 
 
 def run_tool_schema_calibration(
@@ -144,20 +136,11 @@ def run_tool_schema_calibration(
 
     # ④ Summarize routing accuracy across the 4 schema conditions
     correct_count = sum(1 for r in results if r["is_correct_routing"])
-    summary = f"Routed accurately in {correct_count} of 4 calibration conditions. Tight docstrings enable successful routing even with opaque names (Condition D)."
+    summary = f"Routed accurately in {correct_count} of 4 calibration conditions."
 
     return {
-        "query": query,
         "target_intent": "Hourly Precipitation Forecast",
         "condition_results": results,
         "analysis_summary": summary,
-        "model": model,
     }
-
-
-if __name__ == "__main__":
-    out = run_tool_schema_calibration()
-    print("Summary:", out["analysis_summary"])
-    for r in out["condition_results"]:
-        print(f"[{r['condition_code']}] {r['condition_label']}: Selected={r['selected_tool']} (Correct: {r['is_correct_routing']})")
 

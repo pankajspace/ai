@@ -127,7 +127,7 @@
                     <ul>
                         <li><strong>Natural language to API calls:</strong> the model fills <code>service_name</code>, <code>operation_name</code>, <code>parameters</code> and <code>region</code>.</li>
                         <li><strong>Least privilege:</strong> the IAM policy is the real safety boundary for an agent with cloud access.</li>
-                        <li><strong>Operations list:</strong> the card shows each <code>service.operation</code> the agent called, read from the <code>toolUse</code> blocks.</li>
+                        <li><strong>Operations list:</strong> after the run, the service reads <code>agent.messages</code> and lists every <code>use_aws</code> call with its arguments (service, operation, parameters), read from the <code>toolUse</code> blocks.</li>
                     </ul>
                 </div>
             </section>
@@ -243,7 +243,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">79 lines</span>
+                        <span class="topic-meta-chip">60 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -262,16 +262,12 @@ Demonstrates `use_aws` natural language cloud operations:
 2. The agent translates a plain-English request into service_name + operation_name + parameters.
 3. Calls run against the real AWS account of the configured credentials, so give them a read-only IAM policy.
    Mutating calls and secret reads ask for confirmation, which is refused in the server (no terminal).
-
-Run directly:
-    python projects/ai-pocs/server/services/19_use_aws.py
 &quot;&quot;&quot;
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import use_aws
@@ -283,10 +279,7 @@ load_dotenv(find_dotenv())
 class UseAwsRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Use AWS Agent.&quot;&quot;&quot;
 
-    prompt: str = Field(
-        default=&quot;List all S3 buckets in my account&quot;,
-        description=&quot;Natural language AWS cloud operation request&quot;,
-    )
+    prompt: str = &quot;List all S3 buckets in my account&quot;
 
 
 class UseAwsResponse(BaseModel):
@@ -294,8 +287,7 @@ class UseAwsResponse(BaseModel):
 
     prompt: str
     response: str
-    operations_executed: List[str]
-    provider: str
+    operations_executed: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -314,26 +306,15 @@ def run_use_aws_agent(prompt: str = &quot;List all S3 buckets in my account&quot
     # ④ Execute the natural language AWS request
     response = agent(prompt)
 
-    # ⑤ List the AWS API operations the agent chose (service.operation)
-    operations = [
-        f&quot;{block[&#x27;toolUse&#x27;][&#x27;input&#x27;][&#x27;service_name&#x27;]}.{block[&#x27;toolUse&#x27;][&#x27;input&#x27;][&#x27;operation_name&#x27;]}&quot;
+    # ⑤ List the AWS API operations the agent chose (service, operation, parameters)
+    tool_calls = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
         for message in agent.messages
         for block in message[&quot;content&quot;]
         if &quot;toolUse&quot; in block
     ]
 
-    return {
-        &quot;prompt&quot;: prompt,
-        &quot;response&quot;: str(response),
-        &quot;operations_executed&quot;: operations,
-        &quot;provider&quot;: f&quot;Strands use_aws + Bedrock ({model_id})&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_use_aws_agent()
-    print(&quot;Operations:&quot;, out[&quot;operations_executed&quot;])
-    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+    return {&quot;prompt&quot;: prompt, &quot;response&quot;: str(response), &quot;operations_executed&quot;: tool_calls}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -386,11 +367,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/use-aws&quot;, response_model=UseAwsResponse)
 def use_aws_service(req: UseAwsRequest):
-    # ① Normalize prompt and invoke AWS cloud assistant agent
-    p = req.prompt.strip() if req.prompt else &quot;List all S3 buckets in my account&quot;
+    # ① Validate prompt and invoke AWS cloud assistant agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail=&quot;Prompt cannot be empty&quot;)
     try:
-        res = run_use_aws_agent(p)
-        return UseAwsResponse(**res)
+        return UseAwsResponse(**run_use_aws_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

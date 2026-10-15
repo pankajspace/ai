@@ -9,12 +9,8 @@ export interface RoundTrace {
 }
 
 export interface SycophancyTrapResponse {
-  case_type: string
-  question: string
-  correct_answer: string
   rounds: RoundTrace[]
   final_verdict: string
-  model: string
 }
 
 export interface SycophancyTrapCardProps {
@@ -50,16 +46,10 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
     setSubmitting(true)
     setError(null)
     try {
-      const selectedCase = CASES.find((c) => c.name === caseType)
-      const payload: Record<string, any> = { case_type: caseType }
-      if (selectedCase && question !== selectedCase.question) {
-        payload.custom_question = question
-      }
-
       const res = await fetch(`${apiBase}/api/sycophancy-trap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ case_type: caseType }),
         signal: AbortSignal.timeout(35000),
       })
 
@@ -93,8 +83,7 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
           rows={3}
           placeholder="Pushback scenario question…"
           value={question}
-          onChange={(e) => setQuestion(e.target.value)}
-          required
+          readOnly
         />
 
         <div className="preset-row">
@@ -127,7 +116,6 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
       {result && (
         <div className="result visible">
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent)' }}>Model: {result.model}</span>
             <span style={{ fontWeight: 'bold', color: result.final_verdict.includes('RESILIENT') ? '#81c784' : '#e57373' }}>
               {result.final_verdict}
             </span>

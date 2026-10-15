@@ -8,16 +8,12 @@ Demonstrates comprehensive multi-step autonomous planning:
    - `calculator` (prebuilt from `strands_tools`)
 2. The agentic loop feeds the weather forecast into packing recommendations,
    estimates stay, food and travel costs, and checks them against the traveller's budget.
-
-Run directly:
-    python projects/ai-pocs/server/services/22_travel_assistant.py
 """
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator
@@ -29,12 +25,9 @@ load_dotenv(find_dotenv())
 class TravelAssistantRequest(BaseModel):
     """Input payload for Travel Assistant Agent."""
 
-    query: str = Field(
-        default=(
-            "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
-            "What should I pack, and does it fit my budget?"
-        ),
-        description="Natural language travel planning query",
+    query: str = (
+        "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. "
+        "What should I pack, and does it fit my budget?"
     )
 
 
@@ -43,8 +36,7 @@ class TravelAssistantResponse(BaseModel):
 
     query: str
     response: str
-    workflow_steps: List[str]
-    provider: str
+    workflow_steps: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -126,9 +118,7 @@ def estimate_trip_cost(city: str, days: int, travellers: int = 1) -> dict:
     }
 
 
-def run_travel_assistant_agent(
-    query: str = TravelAssistantRequest.model_fields["query"].default,
-) -> dict:
+def run_travel_assistant_agent(query: str) -> dict:
     """Run the Capstone Travel Assistant Agent."""
     # ③ Initialize the Travel Assistant Agent with custom tools, calculator, and system prompt
     agent = Agent(
@@ -146,22 +136,12 @@ def run_travel_assistant_agent(
     response = agent(query)
 
     # ⑤ Collect the tool calls in the order the agent made them
-    workflow_steps = [
+    tool_calls = [
         f"{block['toolUse']['name']}({block['toolUse']['input']})"
         for message in agent.messages
         for block in message["content"]
         if "toolUse" in block
     ]
 
-    return {
-        "query": query,
-        "response": str(response),
-        "workflow_steps": workflow_steps,
-        "provider": f"Strands Travel Assistant + Bedrock ({model_id})",
-    }
+    return {"query": query, "response": str(response), "workflow_steps": tool_calls}
 
-
-if __name__ == "__main__":
-    out = run_travel_assistant_agent()
-    print("Steps:", out["workflow_steps"])
-    print("Response:", out["response"])

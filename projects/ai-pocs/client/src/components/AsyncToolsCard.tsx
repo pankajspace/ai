@@ -4,11 +4,8 @@ import { API_BASE } from '../config'
 export interface AsyncToolsResponse {
   query: string
   response: string
-  warehouse_results: Record<string, number>
   parallel_duration_seconds: number
-  sequential_baseline_seconds: number
   tool_calls: string[]
-  provider: string
 }
 
 export interface AsyncToolsCardProps {
@@ -67,7 +64,7 @@ export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {})
         <a className="info-link" href="info/async-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p className="card-concept">
-        Dispatches parallel warehouse queries concurrently with <code>asyncio.gather</code> and compares total elapsed time against sequential execution.
+        Dispatches parallel warehouse queries concurrently with async tools and reports the total elapsed time (~2 s in parallel vs ~6 s if run one after another).
       </p>
       <p>
         Executes concurrent async warehouse lookups simultaneously, slashing latency compared to sequential queries.
@@ -125,12 +122,8 @@ export function AsyncToolsCard({ apiBase = API_BASE }: AsyncToolsCardProps = {})
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           <div style={{ display: 'flex', gap: '1rem', background: 'var(--bg-elevated-2)', padding: '0.4rem 0.6rem', borderRadius: '4px', margin: '0.4rem 0', fontSize: '0.85rem' }}>
             <div>🚀 Parallel: <strong>{result.parallel_duration_seconds}s</strong></div>
-            <div>🐢 Sequential Baseline: <strong>{result.sequential_baseline_seconds}s</strong></div>
           </div>
           {result.tool_calls.map((c, i) => (
             <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>

@@ -238,7 +238,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">128 lines</span>
+                        <span class="topic-meta-chip">97 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -257,21 +257,19 @@ This service demonstrates conversational memory using LangChain LCEL (LangChain 
 2. Maintains conversation context across multiple turns using ChatPromptTemplate with MessagesPlaceholder.
 3. Uses Pydantic models (ChatMessage, MemoryChatRequest, MemoryChatResponse) for structured serialization.
 4. Dynamically appends user questions and assistant answers to preserve context across turns.
-
-Run directly:
-    python projects/ai-pocs/server/services/04_langchain_memory_chat.py
 &quot;&quot;&quot;
 
 import os
-from typing import List, Optional
+
 from dotenv import find_dotenv, load_dotenv
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration &amp; Environment Setup
 # ---------------------------------------------------------------------------
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
 
@@ -281,27 +279,15 @@ load_dotenv(find_dotenv())
 class ChatMessage(BaseModel):
     &quot;&quot;&quot;Single chat turn in conversation history.&quot;&quot;&quot;
 
-    role: str = Field(
-        default=&quot;user&quot;,
-        description=&quot;Author role: &#x27;user&#x27; or &#x27;assistant&#x27;&quot;,
-    )
-    content: str = Field(
-        default=&quot;&quot;,
-        description=&quot;Text content of the message&quot;,
-    )
+    role: str
+    content: str
 
 
 class MemoryChatRequest(BaseModel):
     &quot;&quot;&quot;Input payload for memory chat queries.&quot;&quot;&quot;
 
-    message: str = Field(
-        default=&quot;My favorite color is navy blue.&quot;,
-        description=&quot;Current user prompt or question&quot;,
-    )
-    history: List[ChatMessage] = Field(
-        default_factory=list,
-        description=&quot;Previous conversation turns preserving message context&quot;,
-    )
+    message: str = &quot;My favorite color is navy blue.&quot;
+    history: list[ChatMessage] = []
 
 
 class MemoryChatResponse(BaseModel):
@@ -309,13 +295,14 @@ class MemoryChatResponse(BaseModel):
 
     message: str
     response: str
-    history: List[ChatMessage]
+    history: list[ChatMessage]
 
 
 # ---------------------------------------------------------------------------
 # Model &amp; Prompt Chain Setup
 # ---------------------------------------------------------------------------
 # ① Initialize the ChatOpenAI client
+#   (placeholder key avoids an import-time crash when OPENAI_API_KEY is unset)
 model = ChatOpenAI(
     model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
     api_key=os.getenv(&quot;OPENAI_API_KEY&quot;) or &quot;missing-key&quot;,
@@ -338,10 +325,7 @@ chain = prompt | model
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def chat_with_memory(
-    question: str = &quot;My favorite color is navy blue.&quot;,
-    history: Optional[List[ChatMessage]] = None,
-) -&gt; tuple[str, List[ChatMessage]]:
+def chat_with_memory(question: str, history: list[ChatMessage]) -&gt; tuple[str, list[ChatMessage]]:
     &quot;&quot;&quot;Execute a conversational chat turn with memory retention.
 
     Args:
@@ -352,32 +336,17 @@ def chat_with_memory(
         Tuple of (assistant_response, updated_chat_history).
     &quot;&quot;&quot;
     # ④ Convert the history sent by the browser into (role, content) tuples
-    history = history or []
     lc_history = [(msg.role, msg.content) for msg in history]
 
     # ⑤ Invoke the chain with accumulated history and the current user question
     answer = chain.invoke({&quot;history&quot;: lc_history, &quot;question&quot;: question}).content
 
     # ⑥ Append the current question and answer to preserve context for the next turn
-    updated_history = [
+    return answer, [
         *history,
         ChatMessage(role=&quot;user&quot;, content=question),
         ChatMessage(role=&quot;assistant&quot;, content=answer),
-    ]
-    return answer, updated_history
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    print(&quot;--- Conversational Memory Chat Service ---&quot;)
-    session_history: List[ChatMessage] = []
-    for user_question in [&quot;Hi! My favorite color is navy blue.&quot;, &quot;What is my favorite color?&quot;]:
-        reply, session_history = chat_with_memory(user_question, session_history)
-        print(f&quot;\nYou: {user_question}&quot;)
-        print(f&quot;Bot: {reply}&quot;)
-        print(f&quot;   (history now has {len(session_history)} messages)&quot;)</code></pre>
+    ]</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -391,7 +360,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">40 lines</span>
+                        <span class="topic-meta-chip">35 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -431,16 +400,11 @@ app.add_middleware(
 @app.post(&quot;/api/memory-chat&quot;, response_model=MemoryChatResponse)
 def memory_chat_service(req: MemoryChatRequest):
     # ① Validate user message and pass conversation history to memory chat service
-    message_text = req.message.strip() if req.message else &quot;&quot;
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
     try:
-        reply, updated_history = chat_with_memory(message_text, req.history)
-        return MemoryChatResponse(
-            message=message_text,
-            response=reply,
-            history=updated_history,
-        )
+        reply, history = chat_with_memory(req.message, req.history)
+        return MemoryChatResponse(message=req.message, response=reply, history=history)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

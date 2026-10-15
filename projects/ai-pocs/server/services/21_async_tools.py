@@ -4,20 +4,15 @@ Demonstrates parallel asynchronous tool execution:
 1. Problem: Sequential tool invocations cause linear latency accumulation (3 x 2s = 6s).
 2. Solution: An `async` tool lets the agent run all lookups concurrently (~2s total).
 3. Tool: `check_warehouse_inventory(product_id: str, warehouse: str)` across `east`, `west`, `central`.
-4. Measures and returns the total duration vs the sequential estimate.
-
-Run directly:
-    python projects/ai-pocs/server/services/21_async_tools.py
+4. Measures and returns the total duration (sequential would be ~6s).
 """
 
 import asyncio
-import json
 import os
 import time
-from typing import Any, Dict, List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -28,10 +23,7 @@ load_dotenv(find_dotenv())
 class AsyncToolsRequest(BaseModel):
     """Input payload for Async Tools Agent."""
 
-    query: str = Field(
-        default="Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.",
-        description="Query requesting multi-warehouse inventory check",
-    )
+    query: str = "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
 
 
 class AsyncToolsResponse(BaseModel):
@@ -39,11 +31,8 @@ class AsyncToolsResponse(BaseModel):
 
     query: str
     response: str
-    warehouse_results: Dict[str, Any]
     parallel_duration_seconds: float
-    sequential_baseline_seconds: float
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -87,28 +76,17 @@ async def run_async_tools_agent(
     response = await agent.invoke_async(query)
     elapsed = time.time() - start
 
-    # ⑤ Collect the tool calls and their results (dict results are stored as JSON text)
-    blocks = [block for message in agent.messages for block in message["content"]]
-    tool_calls = [f"{b['toolUse']['name']}({b['toolUse']['input']})" for b in blocks if "toolUse" in b]
-    results = [
-        json.loads(b["toolResult"]["content"][0]["text"])
-        for b in blocks
-        if "toolResult" in b and b["toolResult"]["status"] == "success"
+    # ⑤ Collect the tool calls
+    tool_calls = [
+        f"{block['toolUse']['name']}({block['toolUse']['input']})"
+        for message in agent.messages
+        for block in message["content"]
+        if "toolUse" in block
     ]
 
     return {
         "query": query,
         "response": str(response),
-        "warehouse_results": {r["warehouse"]: r["quantity"] for r in results},
         "parallel_duration_seconds": round(elapsed, 1),
-        # Run one after another, every extra 2-second lookup would add 2 more seconds
-        "sequential_baseline_seconds": round(elapsed + 2 * max(len(tool_calls) - 1, 0), 1),
         "tool_calls": tool_calls,
-        "provider": f"Strands Async Tools + Bedrock ({model_id})",
     }
-
-
-if __name__ == "__main__":
-    out = asyncio.run(run_async_tools_agent())
-    print("Response:", out["response"])
-    print(f"\nTotal time: {out['parallel_duration_seconds']}s (sequential would be ~{out['sequential_baseline_seconds']}s)")

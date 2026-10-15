@@ -233,7 +233,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">99 lines</span>
+                        <span class="topic-meta-chip">69 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -251,18 +251,13 @@ This service demonstrates how text embeddings work:
 1. Encodes text into dense numeric vectors using SentenceTransformer (&quot;all-MiniLM-L6-v2&quot;, 384 dims).
 2. Computes cosine similarity between two sentences using dot product and vector norms.
 3. Provides dimension count and vector preview values.
-
-Run directly:
-    python projects/ai-pocs/server/services/09_embedding.py
 &quot;&quot;&quot;
 
-from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
 from numpy import dot
 from numpy.linalg import norm
+from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 
-load_dotenv(find_dotenv())
 
 # ---------------------------------------------------------------------------
 # Request &amp; Response Schemas (Pydantic)
@@ -270,14 +265,8 @@ load_dotenv(find_dotenv())
 class EmbeddingRequest(BaseModel):
     &quot;&quot;&quot;Input payload for text embedding and similarity comparison.&quot;&quot;&quot;
 
-    text1: str = Field(
-        default=&quot;A cat is sleeping on the couch&quot;,
-        description=&quot;First text to encode&quot;,
-    )
-    text2: str = Field(
-        default=&quot;A kitten is napping on the sofa&quot;,
-        description=&quot;Second text to encode and compare&quot;,
-    )
+    text1: str = &quot;A cat is sleeping on the couch&quot;
+    text2: str = &quot;A kitten is napping on the sofa&quot;
 
 
 class EmbeddingResponse(BaseModel):
@@ -298,10 +287,7 @@ class EmbeddingResponse(BaseModel):
 model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
 
 
-def compute_similarity(
-    text1: str = &quot;A cat is sleeping on the couch&quot;,
-    text2: str = &quot;A kitten is napping on the sofa&quot;,
-) -&gt; dict:
+def compute_similarity(text1: str, text2: str) -&gt; dict:
     &quot;&quot;&quot;Compute embeddings for two texts and calculate their cosine similarity.
 
     Args:
@@ -327,23 +313,7 @@ def compute_similarity(
         &quot;dimensions&quot;: len(v1),
         &quot;preview_text1&quot;: [round(float(x), 4) for x in v1[:5]],
         &quot;preview_text2&quot;: [round(float(x), 4) for x in v2[:5]],
-    }
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    print(&quot;--- Sentence Embedding &amp; Similarity Service ---&quot;)
-    s1 = &quot;A cat is sleeping on the couch&quot;
-    s2 = &quot;A kitten is napping on the sofa&quot;
-    result = compute_similarity(s1, s2)
-    print(f&quot;Sentence 1: &#x27;{s1}&#x27;&quot;)
-    print(f&quot;Sentence 2: &#x27;{s2}&#x27;&quot;)
-    print(f&quot;Vector dimensions: {result[&#x27;dimensions&#x27;]}&quot;)
-    print(f&quot;Vector 1 preview: {result[&#x27;preview_text1&#x27;]}&quot;)
-    print(f&quot;Vector 2 preview: {result[&#x27;preview_text2&#x27;]}&quot;)
-    print(f&quot;Cosine similarity: {result[&#x27;similarity&#x27;]}&quot;)</code></pre>
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -357,7 +327,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">37 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -397,13 +367,10 @@ app.add_middleware(
 @app.post(&quot;/api/embedding&quot;, response_model=EmbeddingResponse)
 def embedding_service(req: EmbeddingRequest):
     # ① Validate both sentences and compute cosine similarity via SentenceTransformer
-    text1 = req.text1.strip() if req.text1 else &quot;&quot;
-    text2 = req.text2.strip() if req.text2 else &quot;&quot;
-    if not text1 or not text2:
+    if not req.text1.strip() or not req.text2.strip():
         raise HTTPException(status_code=400, detail=&quot;Both texts are required&quot;)
     try:
-        res = compute_similarity(text1, text2)
-        return EmbeddingResponse(**res)
+        return EmbeddingResponse(**compute_similarity(req.text1, req.text2))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

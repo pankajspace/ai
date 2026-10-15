@@ -2,25 +2,19 @@ import { useState } from 'react'
 import { API_BASE } from '../config'
 
 export interface TestCaseEvalResult {
-  case_name: string
   prompt: string
   expected_tool: string | null
-  actual_tool: string | null
+  tools_used: string[]
   tool_routing_passed: boolean
-  expected_keywords: string[]
   answer_verified: boolean
   overall_passed: boolean
-  agent_answer: string
-  latency_seconds: number
 }
 
 export interface McpEvalsResponse {
   total_cases: number
   passed_cases: number
-  failed_cases: number
   accuracy_percentage: number
   results: TestCaseEvalResult[]
-  model: string
 }
 
 export interface McpEvalsCardProps {
@@ -83,17 +77,16 @@ export function McpEvalsCard({ apiBase = API_BASE }: McpEvalsCardProps = {}) {
 
       {result && (
         <div className="result visible">
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.4rem' }}>
-            <span style={{ fontSize: '0.75rem', color: 'var(--accent)' }}>Model: {result.model}</span>
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.4rem' }}>
             <span style={{ fontWeight: 'bold', color: result.accuracy_percentage === 100 ? '#81c784' : '#ffb74d' }}>
               Score: {result.passed_cases}/{result.total_cases} ({result.accuracy_percentage}%)
             </span>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-            {result.results.map((r) => (
-              <div key={r.case_name} style={{ background: 'var(--bg-elevated-2)', padding: '0.4rem', borderRadius: '4px', fontSize: '0.8rem' }}>
+            {result.results.map((r, i) => (
+              <div key={r.prompt} style={{ background: 'var(--bg-elevated-2)', padding: '0.4rem', borderRadius: '4px', fontSize: '0.8rem' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                  <strong>{r.case_name}</strong>
+                  <strong>Test {i + 1}</strong>
                   <span style={{ color: r.overall_passed ? '#81c784' : '#e57373', fontWeight: 'bold' }}>
                     {r.overall_passed ? '✓ PASSED' : '✗ FAILED'}
                   </span>
@@ -102,9 +95,8 @@ export function McpEvalsCard({ apiBase = API_BASE }: McpEvalsCardProps = {}) {
                   Prompt: <em>"{r.prompt}"</em>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                  <span>Tool: <code>{r.actual_tool || 'None'}</code> (exp: <code>{r.expected_tool || 'None'}</code>)</span>
+                  <span>Tool: <code>{r.tools_used.join(', ') || 'None'}</code> (exp: <code>{r.expected_tool || 'None'}</code>)</span>
                   <span>&bull; Facts: {r.answer_verified ? 'Verified' : 'Missing'}</span>
-                  <span>&bull; ⏱ {r.latency_seconds}s</span>
                 </div>
               </div>
             ))}

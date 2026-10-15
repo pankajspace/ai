@@ -5,7 +5,6 @@ export interface UseAwsResponse {
   prompt: string
   response: string
   operations_executed: string[]
-  provider: string
 }
 
 export interface UseAwsCardProps {
@@ -122,9 +121,6 @@ export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           {result.operations_executed.map((op, i) => (
             <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               ☁️ {op}

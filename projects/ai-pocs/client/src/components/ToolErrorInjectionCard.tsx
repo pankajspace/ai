@@ -3,7 +3,6 @@ import { API_BASE } from '../config'
 
 export interface ScenarioEvaluation {
   scenario_name: string
-  system_prompt: string
   response_text: string
   acknowledged_error: boolean
   gave_error_detail: boolean
@@ -11,9 +10,7 @@ export interface ScenarioEvaluation {
 }
 
 export interface ToolErrorInjectionResponse {
-  question: string
   scenarios: ScenarioEvaluation[]
-  model: string
 }
 
 export interface ToolErrorInjectionCardProps {

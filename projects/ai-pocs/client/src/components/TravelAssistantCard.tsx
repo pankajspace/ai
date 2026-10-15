@@ -5,7 +5,6 @@ export interface TravelAssistantResponse {
   query: string
   response: string
   workflow_steps: string[]
-  provider: string
 }
 
 export interface TravelAssistantCardProps {
@@ -125,9 +124,6 @@ export function TravelAssistantCard({ apiBase = API_BASE }: TravelAssistantCardP
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           {result.workflow_steps.length > 0 && (
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Autonomous Tool Execution Chain:</strong>

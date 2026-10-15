@@ -137,24 +137,22 @@ def health_check():
 @app.post("/api/travel", response_model=TravelResponse)
 def travel_suggestion(req: TravelRequest):
     # ① Validate city input and delegate to OpenAI travel suggestion service
-    city_name = req.city.strip() if req.city else "Bangalore"
-    if not city_name:
+    if not req.city.strip():
         raise HTTPException(status_code=400, detail="City cannot be empty")
     try:
         # ② Invoke service and wrap in TravelResponse
-        suggestion = get_travel_suggestion(city_name)
-        return TravelResponse(city=city_name, suggestion=suggestion)
+        return TravelResponse(city=req.city, suggestion=get_travel_suggestion(req.city))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/joke", response_model=JokeResponse)
 def joke_generator(req: JokeRequest):
-    # ① Normalize topic and call Groq joke generator service
-    topic_name = req.topic.strip() if req.topic else "programming"
+    # ① Validate topic and call Groq joke generator service
+    if not req.topic.strip():
+        raise HTTPException(status_code=400, detail="Topic cannot be empty")
     try:
-        joke_text = get_groq_joke(topic_name)
-        return JokeResponse(topic=topic_name, joke=joke_text)
+        return JokeResponse(topic=req.topic, joke=get_groq_joke(req.topic))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -162,12 +160,10 @@ def joke_generator(req: JokeRequest):
 @app.post("/api/summarize", response_model=SummarizerResponse)
 def summarizer_service(req: SummarizerRequest):
     # ① Ensure input text is non-empty before summarizing via LangChain LCEL
-    text_content = req.text.strip() if req.text else ""
-    if not text_content:
+    if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     try:
-        summary_result = summarize(text_content)
-        return SummarizerResponse(text=text_content, summary=summary_result)
+        return SummarizerResponse(text=req.text, summary=summarize(req.text))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -175,16 +171,11 @@ def summarizer_service(req: SummarizerRequest):
 @app.post("/api/memory-chat", response_model=MemoryChatResponse)
 def memory_chat_service(req: MemoryChatRequest):
     # ① Validate user message and pass conversation history to memory chat service
-    message_text = req.message.strip() if req.message else ""
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     try:
-        reply, updated_history = chat_with_memory(message_text, req.history)
-        return MemoryChatResponse(
-            message=message_text,
-            response=reply,
-            history=updated_history,
-        )
+        reply, history = chat_with_memory(req.message, req.history)
+        return MemoryChatResponse(message=req.message, response=reply, history=history)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -192,12 +183,10 @@ def memory_chat_service(req: MemoryChatRequest):
 @app.post("/api/agent", response_model=AgentResponse)
 def agent_service(req: AgentRequest):
     # ① Validate message and delegate to raw OpenAI single-tool agent
-    message_text = req.message.strip() if req.message else "How much are the shoes?"
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     try:
-        reply = run_agent_with_tool(message_text)
-        return AgentResponse(message=message_text, response=reply)
+        return AgentResponse(message=req.message, response=run_agent_with_tool(req.message))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -205,16 +194,11 @@ def agent_service(req: AgentRequest):
 @app.post("/api/langchain-one-tool", response_model=LangchainOneToolResponse)
 def langchain_one_tool_service(req: LangchainOneToolRequest):
     # ① Validate message and invoke LangChain single-tool agent
-    message_text = req.message.strip() if req.message else "What is the weather like in New York?"
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     try:
-        reply, tool_called = run_langchain_one_tool(message_text)
-        return LangchainOneToolResponse(
-            message=message_text,
-            response=reply,
-            tool_called=tool_called,
-        )
+        reply, tool_called = run_langchain_one_tool(req.message)
+        return LangchainOneToolResponse(message=req.message, response=reply, tool_called=tool_called)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -222,16 +206,11 @@ def langchain_one_tool_service(req: LangchainOneToolRequest):
 @app.post("/api/multi-tool-agent", response_model=MultiToolAgentResponse)
 def multi_tool_agent_service(req: MultiToolAgentRequest):
     # ① Validate message and invoke LangChain multi-tool agent
-    message_text = req.message.strip() if req.message else "What's the weather in Tokyo, and what is 12 times 12?"
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail="Message cannot be empty")
     try:
-        reply, tool_called = run_multi_tool_agent(message_text)
-        return MultiToolAgentResponse(
-            message=message_text,
-            response=reply,
-            tool_called=tool_called,
-        )
+        reply, tool_called = run_multi_tool_agent(req.message)
+        return MultiToolAgentResponse(message=req.message, response=reply, tool_called=tool_called)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -239,15 +218,10 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
 @app.post("/api/chunk", response_model=ChunkingResponse)
 def chunking_service(req: ChunkingRequest):
     # ① Validate text and split into overlapping chunks
-    text_content = req.text.strip() if req.text else ""
-    if not text_content:
+    if not req.text.strip():
         raise HTTPException(status_code=400, detail="Text cannot be empty")
     try:
-        chunks = chunk_text(
-            text=text_content,
-            chunk_size=req.chunk_size,
-            chunk_overlap=req.chunk_overlap,
-        )
+        chunks = chunk_text(req.text, req.chunk_size, req.chunk_overlap)
         return ChunkingResponse(
             total_chunks=len(chunks),
             chunk_size=req.chunk_size,
@@ -261,13 +235,10 @@ def chunking_service(req: ChunkingRequest):
 @app.post("/api/embedding", response_model=EmbeddingResponse)
 def embedding_service(req: EmbeddingRequest):
     # ① Validate both sentences and compute cosine similarity via SentenceTransformer
-    text1 = req.text1.strip() if req.text1 else ""
-    text2 = req.text2.strip() if req.text2 else ""
-    if not text1 or not text2:
+    if not req.text1.strip() or not req.text2.strip():
         raise HTTPException(status_code=400, detail="Both texts are required")
     try:
-        res = compute_similarity(text1, text2)
-        return EmbeddingResponse(**res)
+        return EmbeddingResponse(**compute_similarity(req.text1, req.text2))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -275,15 +246,10 @@ def embedding_service(req: EmbeddingRequest):
 @app.post("/api/rag", response_model=RagResponse)
 def rag_service(req: RagRequest):
     # ① Validate paragraph and question before running the 4-stage RAG pipeline
-    paragraph = req.paragraph.strip() if req.paragraph else ""
-    question = req.question.strip() if req.question else ""
-    if not paragraph:
-        raise HTTPException(status_code=400, detail="Paragraph cannot be empty")
-    if not question:
-        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    if not req.paragraph.strip() or not req.question.strip():
+        raise HTTPException(status_code=400, detail="Paragraph and question are required")
     try:
-        res = answer_rag(paragraph=paragraph, question=question)
-        return RagResponse(**res)
+        return RagResponse(**answer_rag(req.paragraph, req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -294,132 +260,132 @@ def rag_service(req: RagRequest):
 
 @app.post("/api/hello-world-agent", response_model=HelloWorldAgentResponse)
 def hello_world_agent_service(req: HelloWorldAgentRequest):
-    # ① Normalize prompt and invoke AWS Strands Hello World Agent
-    prompt_text = req.prompt.strip() if req.prompt else "Hello! Tell me a fun fact about AI agents."
+    # ① Validate prompt and invoke AWS Strands Hello World Agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
     try:
-        res = run_hello_world_agent(prompt_text)
-        return HelloWorldAgentResponse(**res)
+        return HelloWorldAgentResponse(**run_hello_world_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/langgraph-agent", response_model=LangGraphAgentResponse)
 def langgraph_agent_service(req: LangGraphAgentRequest):
-    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
-    prompt_text = req.prompt.strip() if req.prompt else "Please greet Alice and Bob."
+    # ① Validate prompt and invoke LangGraph ReAct greeting agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
     try:
-        res = run_langgraph_agent(prompt_text)
-        return LangGraphAgentResponse(**res)
+        return LangGraphAgentResponse(**run_langgraph_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/function-to-tool", response_model=FunctionToToolResponse)
 def function_to_tool_service(req: FunctionToToolRequest):
-    # ① Normalize question and invoke HTTP health-check tool agent
-    q = req.question.strip() if req.question else "Is the staging server running? Check https://httpbin.org/get"
+    # ① Validate question and invoke HTTP health-check tool agent
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        res = run_function_to_tool_agent(q)
-        return FunctionToToolResponse(**res)
+        return FunctionToToolResponse(**run_function_to_tool_agent(req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/tip-calculator", response_model=TipCalculatorResponse)
 def tip_calculator_service(req: TipCalculatorRequest):
-    # ① Normalize query and run tip and bill-split agent
-    q = req.query.strip() if req.query else "The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"
+    # ① Validate query and run tip and bill-split agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = run_tip_calculator_agent(q)
-        return TipCalculatorResponse(**res)
+        return TipCalculatorResponse(**run_tip_calculator_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/multi-tool-sales", response_model=MultiToolSalesResponse)
 def multi_tool_sales_service(req: MultiToolSalesRequest):
-    # ① Normalize task and execute chained 3-tool sales pipeline agent
-    task_text = req.task.strip() if req.task else "Pull last quarter's sales data and email a summary to the team"
+    # ① Validate task and execute chained 3-tool sales pipeline agent
+    if not req.task.strip():
+        raise HTTPException(status_code=400, detail="Task cannot be empty")
     try:
-        res = run_multi_tool_sales_agent(task_text)
-        return MultiToolSalesResponse(**res)
+        return MultiToolSalesResponse(**run_multi_tool_sales_agent(req.task))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/custom-inventory", response_model=CustomInventoryResponse)
 def custom_inventory_service(req: CustomInventoryRequest):
-    # ① Normalize question and query custom inventory tool agent
-    q = req.question.strip() if req.question else "Is PROD-123 in stock?"
+    # ① Validate question and query custom inventory tool agent
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        res = run_custom_inventory_agent(q)
-        return CustomInventoryResponse(**res)
+        return CustomInventoryResponse(**run_custom_inventory_agent(req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/prebuilt-calculator", response_model=PrebuiltCalculatorResponse)
 def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
-    # ① Normalize query and invoke safe AST math calculator agent
-    q = req.query.strip() if req.query else "What's 42 raised to the power of 9?"
+    # ① Validate query and invoke safe AST math calculator agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = run_prebuilt_calculator_agent(q)
-        return PrebuiltCalculatorResponse(**res)
+        return PrebuiltCalculatorResponse(**run_prebuilt_calculator_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/multi-prebuilt-tools", response_model=MultiPrebuiltToolsResponse)
 def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
-    # ① Normalize task and execute multi-prebuilt tools pipeline agent
-    t = req.task.strip() if req.task else "Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt"
+    # ① Validate task and execute multi-prebuilt tools pipeline agent
+    if not req.task.strip():
+        raise HTTPException(status_code=400, detail="Task cannot be empty")
     try:
-        res = run_multi_prebuilt_tools_agent(t)
-        return MultiPrebuiltToolsResponse(**res)
+        return MultiPrebuiltToolsResponse(**run_multi_prebuilt_tools_agent(req.task))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/use-aws", response_model=UseAwsResponse)
 def use_aws_service(req: UseAwsRequest):
-    # ① Normalize prompt and invoke AWS cloud assistant agent
-    p = req.prompt.strip() if req.prompt else "List all S3 buckets in my account"
+    # ① Validate prompt and invoke AWS cloud assistant agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail="Prompt cannot be empty")
     try:
-        res = run_use_aws_agent(p)
-        return UseAwsResponse(**res)
+        return UseAwsResponse(**run_use_aws_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/class-based-tools", response_model=ClassBasedToolsResponse)
 def class_based_tools_service(req: ClassBasedToolsRequest):
-    # ① Normalize query and run stateful class-based inventory tools agent
-    q = req.query.strip() if req.query else "Update PROD-456 stock to 25 units, then confirm the new level"
+    # ① Validate query and run stateful class-based inventory tools agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = run_class_based_tools_agent(q)
-        return ClassBasedToolsResponse(**res)
+        return ClassBasedToolsResponse(**run_class_based_tools_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/async-tools", response_model=AsyncToolsResponse)
 def async_tools_service(req: AsyncToolsRequest):
-    # ① Normalize query and run async parallel warehouse tools agent
-    q = req.query.strip() if req.query else "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."
+    # ① Validate query and run async parallel warehouse tools agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = asyncio.run(run_async_tools_agent(q))
-        return AsyncToolsResponse(**res)
+        return AsyncToolsResponse(**asyncio.run(run_async_tools_agent(req.query)))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 @app.post("/api/travel-assistant", response_model=TravelAssistantResponse)
 def travel_assistant_service(req: TravelAssistantRequest):
-    # ① Normalize query and invoke 5-tool capstone travel planner agent
-    q = req.query.strip() if req.query else "I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?"
+    # ① Validate query and invoke 5-tool capstone travel planner agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = run_travel_assistant_agent(q)
-        return TravelAssistantResponse(**res)
+        return TravelAssistantResponse(**run_travel_assistant_agent(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -431,12 +397,10 @@ def travel_assistant_service(req: TravelAssistantRequest):
 @app.post("/api/prompting-strategies", response_model=PromptingStrategiesResponse)
 def prompting_strategies_service(req: PromptingStrategiesRequest):
     # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        res = run_prompting_strategies(
-            question=req.question,
-            expected_answer=req.expected_answer or "293",
-        )
-        return PromptingStrategiesResponse(**res)
+        return PromptingStrategiesResponse(**run_prompting_strategies(req.question, req.expected_answer))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -445,11 +409,7 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
 def sycophancy_trap_service(req: SycophancyTrapRequest):
     # ① Execute multi-turn sycophancy resilience benchmark
     try:
-        res = run_sycophancy_trap(
-            case_type=req.case_type or "Math Gaslight",
-            custom_question=req.custom_question,
-        )
-        return SycophancyTrapResponse(**res)
+        return SycophancyTrapResponse(**run_sycophancy_trap(req.case_type))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -462,11 +422,7 @@ def sycophancy_trap_service(req: SycophancyTrapRequest):
 def cot_vs_direct_service(req: CotVsDirectRequest):
     # ① Run Chain-of-Thought vs Direct answer benchmark
     try:
-        res = run_cot_vs_direct_benchmark(
-            problem_title=req.problem_title or "Spatial Navigation (Grid)",
-            custom_question=req.custom_question,
-        )
-        return CotVsDirectResponse(**res)
+        return CotVsDirectResponse(**run_cot_vs_direct_benchmark(req.problem_title))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -474,9 +430,10 @@ def cot_vs_direct_service(req: CotVsDirectRequest):
 @app.post("/api/variance-determinism", response_model=VarianceDeterminismResponse)
 def variance_determinism_service(req: VarianceDeterminismRequest):
     # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    if not req.review_text.strip():
+        raise HTTPException(status_code=400, detail="Review text cannot be empty")
     try:
-        res = run_variance_determinism_benchmark(review_text=req.review_text)
-        return VarianceDeterminismResponse(**res)
+        return VarianceDeterminismResponse(**run_variance_determinism_benchmark(req.review_text))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -484,9 +441,10 @@ def variance_determinism_service(req: VarianceDeterminismRequest):
 @app.post("/api/tool-schema-calibration", response_model=ToolSchemaCalibrationResponse)
 def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
     # ① Run 2x2 tool schema routing calibration benchmark
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail="Query cannot be empty")
     try:
-        res = run_tool_schema_calibration(query=req.query)
-        return ToolSchemaCalibrationResponse(**res)
+        return ToolSchemaCalibrationResponse(**run_tool_schema_calibration(req.query))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -494,9 +452,10 @@ def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
 @app.post("/api/tool-error-injection", response_model=ToolErrorInjectionResponse)
 def tool_error_injection_service(req: ToolErrorInjectionRequest):
     # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        res = run_tool_error_injection(question=req.question)
-        return ToolErrorInjectionResponse(**res)
+        return ToolErrorInjectionResponse(**run_tool_error_injection(req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -509,8 +468,7 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 def mcp_client_service(req: McpClientRequest):
     # ① Invoke a FastMCP tool directly over stdio, without an LLM
     try:
-        res = asyncio.run(run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args))
-        return McpClientResponse(**res)
+        return McpClientResponse(**asyncio.run(run_mcp_client(req.tool_name, req.tool_args)))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -518,9 +476,10 @@ def mcp_client_service(req: McpClientRequest):
 @app.post("/api/mcp-agent", response_model=McpAgentResponse)
 def mcp_agent_service(req: McpAgentRequest):
     # ① Run LLM agent connected to FastMCP cricket tools
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        res = asyncio.run(run_mcp_agent(question=req.question))
-        return McpAgentResponse(**res)
+        return McpAgentResponse(**asyncio.run(run_mcp_agent(req.question)))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -529,8 +488,7 @@ def mcp_agent_service(req: McpAgentRequest):
 def mcp_evals_service():
     # ① Execute MCP agent evaluation suite and return assertion metrics
     try:
-        res = asyncio.run(run_mcp_evals_suite())
-        return McpEvalsResponse(**res)
+        return McpEvalsResponse(**asyncio.run(run_mcp_evals_suite()))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 

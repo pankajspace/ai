@@ -129,7 +129,7 @@
                         <li><strong>MCP server:</strong> <code>FastMCP</code> turns decorated functions into tools with JSON schemas.</li>
                         <li><strong>stdio transport:</strong> JSON-RPC messages over the subprocess's stdin/stdout &mdash; which is why the server logs to stderr only.</li>
                         <li><strong>Discovery:</strong> the client learns tool names and input schemas at runtime from <code>list_tools()</code>.</li>
-                        <li><strong>Results:</strong> the tool's dict comes back as JSON text in <code>result.content[0].text</code>; unknown tools return <code>isError</code>.</li>
+                        <li><strong>Results:</strong> the tool's dict comes back as JSON text in <code>result.content[0].text</code>, which the service returns as-is.</li>
                     </ul>
                 </div>
             </section>
@@ -176,7 +176,7 @@
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Shows the handshake, discovered tools and the tool result.</span>
+                            <span class="flow-detail">Shows the discovered tools (<code>server_tools</code>) and the raw tool <code>result</code> text.</span>
                         </div>
                     </div>
                 </div>
@@ -213,7 +213,7 @@ flowchart TD
     M -->|"tool names + schemas"| C
     C -->|"3. tools/call"| M
     M -->|"JSON result"| C
-    C -->|"handshake, tools, result"| R
+    C -->|"server_tools, result"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -244,7 +244,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">98 lines</span>
+                        <span class="topic-meta-chip">64 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -263,50 +263,34 @@ Demonstrates the core Model Context Protocol (MCP) plumbing without an LLM:
 2. Performs the MCP protocol handshake (`session.initialize()`).
 3. Lists all registered tools and their JSON schemas from the server (`tools/list`).
 4. Invokes an MCP tool directly (`get_live_score` or `get_player_stats`) with structured arguments (`tools/call`).
-
-Run directly:
-    python projects/ai-pocs/server/services/29_mcp_client.py
 &quot;&quot;&quot;
 
-import asyncio
-import json
 import sys
 from pathlib import Path
-from typing import Any, Dict, List, Optional
 
 from mcp import ClientSession, StdioServerParameters
 from mcp.client.stdio import stdio_client
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 
 class McpClientRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Direct MCP Client.&quot;&quot;&quot;
 
-    tool_name: str = Field(
-        default=&quot;get_live_score&quot;,
-        description=&quot;Name of tool to call directly: &#x27;get_live_score&#x27; or &#x27;get_player_stats&#x27;&quot;,
-    )
-    tool_args: Dict[str, Any] = Field(
-        default_factory=lambda: {&quot;teams&quot;: &quot;India vs West Indies&quot;},
-        description=&quot;Dictionary of arguments matching tool schema&quot;,
-    )
+    tool_name: str = &quot;get_live_score&quot;
+    tool_args: dict = {&quot;teams&quot;: &quot;India vs West Indies&quot;}
 
 
 class McpToolDescriptor(BaseModel):
     name: str
     description: str
-    input_schema: Dict[str, Any]
+    input_schema: dict
 
 
 class McpClientResponse(BaseModel):
     &quot;&quot;&quot;Output payload from Direct MCP Client.&quot;&quot;&quot;
 
-    handshake_status: str
-    server_tools: List[McpToolDescriptor]
-    invoked_tool: str
-    arguments: Dict[str, Any]
-    result: Dict[str, Any]
-    protocol_transport: str
+    server_tools: list[McpToolDescriptor]
+    result: str
 
 
 # ① Start cricket_server.py (found next to this file) over stdio using the active Python interpreter
@@ -314,46 +298,28 @@ server_script = str(Path(__file__).with_name(&quot;cricket_server.py&quot;))
 server = StdioServerParameters(command=sys.executable, args=[server_script])
 
 
-async def run_mcp_client(
-    tool_name: str = &quot;get_live_score&quot;,
-    tool_args: Optional[Dict[str, Any]] = None,
-) -&gt; dict:
+async def run_mcp_client(tool_name: str, tool_args: dict) -&gt; dict:
     &quot;&quot;&quot;Execute the 3-step MCP client protocol flow (no LLM involved).&quot;&quot;&quot;
-    tool_args = tool_args or {&quot;teams&quot;: &quot;India vs West Indies&quot;}
-
     # ② Open an MCP stdio transport pipe to the server subprocess
     async with stdio_client(server) as (read, write):
         async with ClientSession(read, write) as session:
             # ③ STEP 1: Perform the MCP protocol handshake
-            init = await session.initialize()
+            await session.initialize()
 
             # ④ STEP 2: Discover all available tools and their JSON input schemas
             tools = (await session.list_tools()).tools
 
-            # ⑤ STEP 3: Call one tool directly with structured arguments
+            # ⑤ STEP 3: Call one tool directly with structured arguments (no LLM involved)
             result = await session.call_tool(tool_name, tool_args)
 
-    # ⑥ The server returns the tool&#x27;s dict as JSON text (or an error message)
-    text = result.content[0].text if result.content else &quot;{}&quot;
-
+    # ⑥ The server returns the tool&#x27;s dict as JSON text (or an error message); pass that text back as-is
     return {
-        &quot;handshake_status&quot;: f&quot;Handshake done with {init.serverInfo.name} (protocol {init.protocolVersion})&quot;,
         &quot;server_tools&quot;: [
             {&quot;name&quot;: t.name, &quot;description&quot;: t.description or &quot;&quot;, &quot;input_schema&quot;: t.inputSchema}
             for t in tools
         ],
-        &quot;invoked_tool&quot;: tool_name,
-        &quot;arguments&quot;: tool_args,
-        &quot;result&quot;: {&quot;error&quot;: text} if result.isError else json.loads(text),
-        &quot;protocol_transport&quot;: &quot;stdio&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = asyncio.run(run_mcp_client())
-    print(out[&quot;handshake_status&quot;])
-    print(&quot;Tools:&quot;, [t[&quot;name&quot;] for t in out[&quot;server_tools&quot;]])
-    print(&quot;Result:&quot;, json.dumps(out[&quot;result&quot;], indent=2))</code></pre>
+        &quot;result&quot;: result.content[0].text if result.content else &quot;(empty response)&quot;,
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -388,8 +354,8 @@ Provides Model Context Protocol (MCP) tool endpoints for live cricket matches an
 
 Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
 
-Run directly (normally the MCP clients 29-31 start it for you as a subprocess):
-    python projects/ai-pocs/server/services/cricket_server.py
+Run locally (from this folder):
+    python cricket_server.py
 &quot;&quot;&quot;
 
 import sys
@@ -468,7 +434,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">35 lines</span>
+                        <span class="topic-meta-chip">34 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -511,8 +477,7 @@ app.add_middleware(
 def mcp_client_service(req: McpClientRequest):
     # ① Invoke a FastMCP tool directly over stdio, without an LLM
     try:
-        res = asyncio.run(run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args))
-        return McpClientResponse(**res)
+        return McpClientResponse(**asyncio.run(run_mcp_client(req.tool_name, req.tool_args)))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

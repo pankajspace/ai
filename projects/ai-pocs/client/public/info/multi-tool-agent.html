@@ -240,7 +240,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">141 lines</span>
+                        <span class="topic-meta-chip">119 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -251,7 +251,7 @@ flowchart TD
                 </div>
                 <div class="topic-content" id="content-source-07-langchain-multi-tools-py">
                     <span class="file-path">server/services/07_langchain_multi_tools.py</span>
-                    <p class="file-label">Langchain Version V1 - Agents (multiple tools + visible tool calls)</p>
+                    <p class="file-label"></p>
                     <pre><code data-lang="python">&quot;&quot;&quot;
 Langchain Version V1 - Agents (multiple tools + visible tool calls)
 
@@ -262,24 +262,24 @@ makes that loop visible so students can see the function calls happen.
 
 NOTE on the OpenAI 429 (&#x27;insufficient_quota&#x27;): billing state, not a bug.
 PROVIDER=&quot;groq&quot; (free) keeps you teaching without OpenAI credits.
-
-Run directly:
-    python projects/ai-pocs/server/services/07_langchain_multi_tools.py
 &quot;&quot;&quot;
 
 import os
+
 from dotenv import find_dotenv, load_dotenv
 from langchain.agents import create_agent
 from langchain_openai import ChatOpenAI
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 
 # ---------------------------------------------------------------------------
 # Configuration &amp; Provider Selection
 # ---------------------------------------------------------------------------
+# Load API keys and model names from .env
 load_dotenv(find_dotenv())
 
 # Pick a provider: &quot;groq&quot; (free + fast), &quot;gemini&quot; (free tier) or &quot;openai&quot; (needs billing).
 # Its settings are read from &lt;PROVIDER&gt;_MODEL / &lt;PROVIDER&gt;_API_KEY / &lt;PROVIDER&gt;_BASE_URL in .env
+# (get keys at https://console.groq.com or https://aistudio.google.com)
 PROVIDER = &quot;groq&quot;
 prefix = PROVIDER.upper()
 
@@ -290,10 +290,7 @@ prefix = PROVIDER.upper()
 class MultiToolAgentRequest(BaseModel):
     &quot;&quot;&quot;Input payload for multi-tool LangChain agent queries.&quot;&quot;&quot;
 
-    message: str = Field(
-        default=&quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;,
-        description=&quot;Question for the multi-tool LangChain agent&quot;,
-    )
+    message: str = &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
 
 
 class MultiToolAgentResponse(BaseModel):
@@ -301,7 +298,7 @@ class MultiToolAgentResponse(BaseModel):
 
     message: str
     response: str
-    tool_called: bool = False
+    tool_called: bool
 
 
 # ---------------------------------------------------------------------------
@@ -339,6 +336,7 @@ def get_population(city: str) -&gt; str:
 # Build the agent
 # ---------------------------------------------------------------------------
 # ① Initialize the LLM client pointed at the configured provider
+#   (placeholder key avoids an import-time crash when the key is unset)
 llm = ChatOpenAI(
     model=os.getenv(f&quot;{prefix}_MODEL&quot;),
     api_key=os.getenv(f&quot;{prefix}_API_KEY&quot;) or &quot;missing-key&quot;,
@@ -363,36 +361,16 @@ agent = create_agent(
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def run_multi_tool_agent(
-    question: str = &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;,
-) -&gt; tuple[str, bool]:
+def run_multi_tool_agent(question: str = &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;) -&gt; tuple[str, bool]:
     &quot;&quot;&quot;Run a user question through the multi-tool LangChain agent.&quot;&quot;&quot;
-    # ① Invoke the multi-tool agent with the user&#x27;s question
+    # ③ Invoke the multi-tool agent with the user&#x27;s question
     messages = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]})[&quot;messages&quot;]
 
-    # ② Detect whether one or more tools were executed during the turn
+    # ④ Detect whether one or more tools were executed during the turn
     tool_called = any(m.type == &quot;tool&quot; for m in messages)
 
-    # ③ The last message is the final synthesized answer
-    return messages[-1].content, tool_called
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    for q in [
-        &quot;What is the weather like in New York?&quot;,                  # -&gt; get_weather
-        &quot;What is 25 multiplied by 4?&quot;,                            # -&gt; multiply
-        &quot;What is 137 plus 568?&quot;,                                  # -&gt; add
-        &quot;What is the population of Bangalore?&quot;,                   # -&gt; get_population
-        &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;,  # -&gt; two tools
-        &quot;Who wrote the play Romeo and Juliet?&quot;,                   # -&gt; no tool needed
-    ]:
-        answer, tool_called = run_multi_tool_agent(q)
-        print(f&quot;\nQ: {q}&quot;)
-        print(f&quot;Tool called: {&#x27;Yes&#x27; if tool_called else &#x27;No&#x27;}&quot;)
-        print(f&quot;A: {answer}&quot;)</code></pre>
+    # ⑤ The last message is the final synthesized answer
+    return messages[-1].content, tool_called</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -406,7 +384,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">40 lines</span>
+                        <span class="topic-meta-chip">35 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -446,16 +424,11 @@ app.add_middleware(
 @app.post(&quot;/api/multi-tool-agent&quot;, response_model=MultiToolAgentResponse)
 def multi_tool_agent_service(req: MultiToolAgentRequest):
     # ① Validate message and invoke LangChain multi-tool agent
-    message_text = req.message.strip() if req.message else &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
-    if not message_text:
+    if not req.message.strip():
         raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
     try:
-        reply, tool_called = run_multi_tool_agent(message_text)
-        return MultiToolAgentResponse(
-            message=message_text,
-            response=reply,
-            tool_called=tool_called,
-        )
+        reply, tool_called = run_multi_tool_agent(req.message)
+        return MultiToolAgentResponse(message=req.message, response=reply, tool_called=tool_called)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

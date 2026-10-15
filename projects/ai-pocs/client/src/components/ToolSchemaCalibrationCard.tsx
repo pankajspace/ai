@@ -9,11 +9,9 @@ export interface ConditionResult {
 }
 
 export interface ToolSchemaCalibrationResponse {
-  query: string
   target_intent: string
   condition_results: ConditionResult[]
   analysis_summary: string
-  model: string
 }
 
 export interface ToolSchemaCalibrationCardProps {

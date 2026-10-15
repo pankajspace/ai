@@ -4,8 +4,7 @@ import { API_BASE } from '../config'
 export interface MultiToolSalesResponse {
   task: string
   response: string
-  tool_sequence: string[]
-  provider: string
+  tool_calls: string[]
 }
 
 export interface MultiToolSalesCardProps {
@@ -123,13 +122,10 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
-          {result.tool_sequence.length > 0 && (
+          {result.tool_calls.length > 0 && (
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Execution Plan:</strong>
-              {result.tool_sequence.map((step, i) => (
+              {result.tool_calls.map((step, i) => (
                 <div key={i} style={{ fontFamily: 'monospace' }}>&bull; {step}</div>
               ))}
             </div>

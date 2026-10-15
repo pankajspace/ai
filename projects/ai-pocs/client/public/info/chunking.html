@@ -232,7 +232,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">94 lines</span>
+                        <span class="topic-meta-chip">64 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -248,16 +248,12 @@ flowchart TD
 
 This service splits long documents into smaller, overlapping chunks suitable
 for vector embeddings and retrieval (RAG).
-
-Run directly:
-    python projects/ai-pocs/server/services/08_chunking.py
 &quot;&quot;&quot;
 
-from pydantic import BaseModel, Field
-
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
 
-DEFAULT_SAMPLE_TEXT = (
+TEXT_RAG = (
     &quot;Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. &quot;
     &quot;Before documents can be searched efficiently, they must be broken down into smaller pieces. &quot;
     &quot;This process is called chunking. &quot;
@@ -275,22 +271,9 @@ DEFAULT_SAMPLE_TEXT = (
 class ChunkingRequest(BaseModel):
     &quot;&quot;&quot;Input payload for text chunking.&quot;&quot;&quot;
 
-    text: str = Field(
-        default=DEFAULT_SAMPLE_TEXT,
-        description=&quot;Document text to split into chunks&quot;,
-    )
-    chunk_size: int = Field(
-        default=250,
-        ge=20,
-        le=5000,
-        description=&quot;Target maximum characters per chunk&quot;,
-    )
-    chunk_overlap: int = Field(
-        default=40,
-        ge=0,
-        le=1000,
-        description=&quot;Character overlap between adjacent chunks&quot;,
-    )
+    text: str = TEXT_RAG
+    chunk_size: int = 250
+    chunk_overlap: int = 40
 
 
 class ChunkingResponse(BaseModel):
@@ -305,11 +288,7 @@ class ChunkingResponse(BaseModel):
 # ---------------------------------------------------------------------------
 # Core Service Logic
 # ---------------------------------------------------------------------------
-def chunk_text(
-    text: str = DEFAULT_SAMPLE_TEXT,
-    chunk_size: int = 250,
-    chunk_overlap: int = 40,
-) -&gt; list[str]:
+def chunk_text(text: str = TEXT_RAG, chunk_size: int = 250, chunk_overlap: int = 40) -&gt; list[str]:
     &quot;&quot;&quot;Split text into overlapping chunks using RecursiveCharacterTextSplitter.
 
     Args:
@@ -320,24 +299,15 @@ def chunk_text(
     Returns:
         List of text chunks.
     &quot;&quot;&quot;
-    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap
+    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap.
+    #   It tries to split on paragraphs (\n\n), then lines (\n), then spaces, so related
+    #   sentences stay together while keeping each chunk under chunk_size.
     splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,        # aim for target chars per chunk
         chunk_overlap=chunk_overlap,  # adjacent chunks share chars (context glue)
     )
     # ② Split the document text into overlapping chunks preserving natural boundaries
-    return splitter.split_text(text)
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == &quot;__main__&quot;:
-    print(&quot;--- Text Chunking Service ---&quot;)
-    chunks = chunk_text(DEFAULT_SAMPLE_TEXT, chunk_size=200, chunk_overlap=40)
-    print(f&quot;Total chunks: {len(chunks)}&quot;)
-    for idx, c in enumerate(chunks, 1):
-        print(f&quot;\nChunk #{idx} ({len(c)} chars):\n{c}&quot;)</code></pre>
+    return splitter.split_text(text)</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -351,7 +321,7 @@ if __name__ == &quot;__main__&quot;:
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">45 lines</span>
+                        <span class="topic-meta-chip">40 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -391,15 +361,10 @@ app.add_middleware(
 @app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
 def chunking_service(req: ChunkingRequest):
     # ① Validate text and split into overlapping chunks
-    text_content = req.text.strip() if req.text else &quot;&quot;
-    if not text_content:
+    if not req.text.strip():
         raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
     try:
-        chunks = chunk_text(
-            text=text_content,
-            chunk_size=req.chunk_size,
-            chunk_overlap=req.chunk_overlap,
-        )
+        chunks = chunk_text(req.text, req.chunk_size, req.chunk_overlap)
         return ChunkingResponse(
             total_chunks=len(chunks),
             chunk_size=req.chunk_size,

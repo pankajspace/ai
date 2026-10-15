@@ -5,17 +5,13 @@ Demonstrates converting a plain Python function into an LLM Agent Tool:
 2. Type hints: inform the agent of expected parameter and return types.
 3. Docstring: guides the agent on WHEN and HOW to call the tool.
 4. Tool: `check_server_status(server_url: str)` making live HTTP checks.
-
-Run directly:
-    python projects/ai-pocs/server/services/13_function_to_tool.py
 """
 
 import os
-from typing import List
 
 import requests
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
 
@@ -26,10 +22,7 @@ load_dotenv(find_dotenv())
 class FunctionToToolRequest(BaseModel):
     """Input payload for Function-to-Tool Agent."""
 
-    question: str = Field(
-        default="Is the staging server running? Check https://httpbin.org/get",
-        description="Natural language question asking to verify a URL status",
-    )
+    question: str = "Is the staging server running? Check https://httpbin.org/get"
 
 
 class FunctionToToolResponse(BaseModel):
@@ -37,8 +30,7 @@ class FunctionToToolResponse(BaseModel):
 
     question: str
     response: str
-    tool_calls: List[str]
-    provider: str
+    tool_calls: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
@@ -80,15 +72,11 @@ def run_function_to_tool_agent(question: str = "Is the staging server running? C
         if "toolUse" in block
     ]
 
-    return {
-        "question": question,
-        "response": str(response),
-        "tool_calls": tool_calls,
-        "provider": f"Strands + Bedrock ({model_id})",
-    }
+    return {"question": question, "response": str(response), "tool_calls": tool_calls}
 
 
-if __name__ == "__main__":
-    out = run_function_to_tool_agent()
-    print("Calls:", out["tool_calls"])
-    print("Response:", out["response"])
+# TRY THIS EXPERIMENT:
+# Change the docstring above to just  """Does a thing."""  and re-run.
+# The agent will often STOP calling the tool.
+# Why? The docstring is not a comment — it is the manual the MODEL reads
+# to decide whether your tool is relevant. Vague docstring = unreliable agent.

@@ -174,7 +174,7 @@
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Shows <code>{ response, provider }</code>.</span>
+                            <span class="flow-detail">Shows <code>{ prompt, response }</code>.</span>
                         </div>
                     </div>
                 </div>
@@ -209,7 +209,7 @@ flowchart TD
     B -->|"reply"| A
     A -->|"AgentResult"| S
     S -->|"reply text"| R
-    R -->|"JSON { response, provider }"| UI
+    R -->|"JSON { prompt, response }"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
     classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
@@ -239,7 +239,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">63 lines</span>
+                        <span class="topic-meta-chip">46 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -257,15 +257,12 @@ Demonstrates the simplest possible autonomous agent:
 1. Configures a foundation model (Amazon Nova Lite on Bedrock).
 2. Wraps the model in a Strands Agent instance (the agentic loop).
 3. Executes a natural language prompt and returns the reply.
-
-Run directly:
-    python projects/ai-pocs/server/services/11_hello_world_agent.py
 &quot;&quot;&quot;
 
 import os
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 
@@ -276,10 +273,7 @@ load_dotenv(find_dotenv())
 class HelloWorldAgentRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Hello World Agent.&quot;&quot;&quot;
 
-    prompt: str = Field(
-        default=&quot;Hello! Tell me a fun fact about AI agents.&quot;,
-        description=&quot;Prompt to send to the Strands agent&quot;,
-    )
+    prompt: str = &quot;Hello! Tell me a fun fact about AI agents.&quot;
 
 
 class HelloWorldAgentResponse(BaseModel):
@@ -287,7 +281,6 @@ class HelloWorldAgentResponse(BaseModel):
 
     prompt: str
     response: str
-    provider: str
 
 
 # ② Configure the Bedrock foundation model (Amazon Nova Lite is fast and cost-effective)
@@ -303,17 +296,7 @@ def run_hello_world_agent(prompt: str = &quot;Hello! Tell me a fun fact about AI
     # ④ Execute the natural language prompt through the agentic loop
     response = agent(prompt)
 
-    return {
-        &quot;prompt&quot;: prompt,
-        &quot;response&quot;: str(response),
-        &quot;provider&quot;: f&quot;Amazon Bedrock ({model_id}) via Strands&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    res = run_hello_world_agent()
-    print(&quot;Provider:&quot;, res[&quot;provider&quot;])
-    print(&quot;Response:\n&quot;, res[&quot;response&quot;])</code></pre>
+    return {&quot;prompt&quot;: prompt, &quot;response&quot;: str(response)}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -366,11 +349,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/hello-world-agent&quot;, response_model=HelloWorldAgentResponse)
 def hello_world_agent_service(req: HelloWorldAgentRequest):
-    # ① Normalize prompt and invoke AWS Strands Hello World Agent
-    prompt_text = req.prompt.strip() if req.prompt else &quot;Hello! Tell me a fun fact about AI agents.&quot;
+    # ① Validate prompt and invoke AWS Strands Hello World Agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail=&quot;Prompt cannot be empty&quot;)
     try:
-        res = run_hello_world_agent(prompt_text)
-        return HelloWorldAgentResponse(**res)
+        return HelloWorldAgentResponse(**run_hello_world_agent(req.prompt))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

@@ -4,16 +4,7 @@ import { API_BASE } from '../config'
 export interface TipCalculatorResponse {
   query: string
   response: string
-  calculation: {
-    bill: number
-    tip: number
-    total: number
-    per_person: number
-    num_people: number
-    tip_percentage: number
-  } | null
   tool_calls: string[]
-  provider: string
 }
 
 export interface TipCalculatorCardProps {
@@ -106,16 +97,12 @@ export function TipCalculatorCard({ apiBase = API_BASE }: TipCalculatorCardProps
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
-          {result.calculation && (
-            <div style={{ background: 'var(--bg-elevated-2)', padding: '0.5rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
-              <div>Bill: ${result.calculation.bill} &bull; Tip: ${result.calculation.tip} ({result.calculation.tip_percentage}%)</div>
-              <div><strong>Total: ${result.calculation.total}</strong> | <strong>Per person ({result.calculation.num_people}): ${result.calculation.per_person}</strong></div>
+          {result.tool_calls.map((c, i) => (
+            <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              🔧 {c}
             </div>
-          )}
-          <div>{result.response}</div>
+          ))}
+          <div style={{ marginTop: '0.4rem' }}>{result.response}</div>
         </div>
       )}
     </div>

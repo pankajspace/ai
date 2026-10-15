@@ -242,7 +242,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">85 lines</span>
+                        <span class="topic-meta-chip">64 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -261,16 +261,12 @@ Demonstrates chaining multiple prebuilt tools in one pipeline:
 2. Handles multi-step pipelines: Fetch external API data -&gt; Compute statistics -&gt; Summarize.
 3. The practice script also saves the summary with the prebuilt `file_write`; this web demo
    returns the summary to the UI instead, so nothing is written on the server.
-
-Run directly:
-    python projects/ai-pocs/server/services/18_multi_prebuilt_tools.py
 &quot;&quot;&quot;
 
 import os
-from typing import List
 
 from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from strands import Agent
 from strands.models.bedrock import BedrockModel
 from strands_tools import calculator, http_request
@@ -282,13 +278,10 @@ load_dotenv(find_dotenv())
 class MultiPrebuiltToolsRequest(BaseModel):
     &quot;&quot;&quot;Input payload for Multi Prebuilt Tools Agent.&quot;&quot;&quot;
 
-    task: str = Field(
-        default=(
-            &quot;Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d, &quot;
-            &quot;extract the latest closing prices, calculate the average price over the period, &quot;
-            &quot;and show a short summary&quot;
-        ),
-        description=&quot;Multi-step data pipeline task combining HTTP fetching and calculation&quot;,
+    task: str = (
+        &quot;Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d, &quot;
+        &quot;extract the latest closing prices, calculate the average price over the period, &quot;
+        &quot;and show a short summary&quot;
     )
 
 
@@ -297,17 +290,14 @@ class MultiPrebuiltToolsResponse(BaseModel):
 
     task: str
     response: str
-    tool_sequence: List[str]
-    provider: str
+    tool_sequence: list[str]
 
 
 # ② Resolve the target Bedrock model identifier
 model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
 
 
-def run_multi_prebuilt_tools_agent(
-    task: str = MultiPrebuiltToolsRequest.model_fields[&quot;task&quot;].default,
-) -&gt; dict:
+def run_multi_prebuilt_tools_agent(task: str) -&gt; dict:
     &quot;&quot;&quot;Run the Multi Prebuilt Tools Agent.&quot;&quot;&quot;
     # ③ Initialize the Strands Agent with the prebuilt http_request and calculator tools
     agent = Agent(
@@ -320,25 +310,14 @@ def run_multi_prebuilt_tools_agent(
     response = agent(task)
 
     # ⑤ Collect the tool calls in the order the agent made them
-    tool_sequence = [
+    tool_calls = [
         f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
         for message in agent.messages
         for block in message[&quot;content&quot;]
         if &quot;toolUse&quot; in block
     ]
 
-    return {
-        &quot;task&quot;: task,
-        &quot;response&quot;: str(response),
-        &quot;tool_sequence&quot;: tool_sequence,
-        &quot;provider&quot;: f&quot;Strands Multi-Tool + Bedrock ({model_id})&quot;,
-    }
-
-
-if __name__ == &quot;__main__&quot;:
-    out = run_multi_prebuilt_tools_agent()
-    print(&quot;Sequence:&quot;, out[&quot;tool_sequence&quot;])
-    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+    return {&quot;task&quot;: task, &quot;response&quot;: str(response), &quot;tool_sequence&quot;: tool_calls}</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -391,11 +370,11 @@ app.add_middleware(
 
 @app.post(&quot;/api/multi-prebuilt-tools&quot;, response_model=MultiPrebuiltToolsResponse)
 def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
-    # ① Normalize task and execute multi-prebuilt tools pipeline agent
-    t = req.task.strip() if req.task else &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;
+    # ① Validate task and execute multi-prebuilt tools pipeline agent
+    if not req.task.strip():
+        raise HTTPException(status_code=400, detail=&quot;Task cannot be empty&quot;)
     try:
-        res = run_multi_prebuilt_tools_agent(t)
-        return MultiPrebuiltToolsResponse(**res)
+        return MultiPrebuiltToolsResponse(**run_multi_prebuilt_tools_agent(req.task))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

@@ -5,7 +5,6 @@ export interface MultiPrebuiltToolsResponse {
   task: string
   response: string
   tool_sequence: string[]
-  provider: string
 }
 
 export interface MultiPrebuiltToolsCardProps {
@@ -98,9 +97,6 @@ export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltTool
 
       {result && (
         <div className="result visible">
-          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Provider: {result.provider}
-          </div>
           {result.tool_sequence.length > 0 && (
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Execution Trace:</strong>

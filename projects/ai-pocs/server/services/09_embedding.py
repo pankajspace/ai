@@ -4,18 +4,13 @@ This service demonstrates how text embeddings work:
 1. Encodes text into dense numeric vectors using SentenceTransformer ("all-MiniLM-L6-v2", 384 dims).
 2. Computes cosine similarity between two sentences using dot product and vector norms.
 3. Provides dimension count and vector preview values.
-
-Run directly:
-    python projects/ai-pocs/server/services/09_embedding.py
 """
 
-from dotenv import find_dotenv, load_dotenv
-from pydantic import BaseModel, Field
 from numpy import dot
 from numpy.linalg import norm
+from pydantic import BaseModel
 from sentence_transformers import SentenceTransformer
 
-load_dotenv(find_dotenv())
 
 # ---------------------------------------------------------------------------
 # Request & Response Schemas (Pydantic)
@@ -23,14 +18,8 @@ load_dotenv(find_dotenv())
 class EmbeddingRequest(BaseModel):
     """Input payload for text embedding and similarity comparison."""
 
-    text1: str = Field(
-        default="A cat is sleeping on the couch",
-        description="First text to encode",
-    )
-    text2: str = Field(
-        default="A kitten is napping on the sofa",
-        description="Second text to encode and compare",
-    )
+    text1: str = "A cat is sleeping on the couch"
+    text2: str = "A kitten is napping on the sofa"
 
 
 class EmbeddingResponse(BaseModel):
@@ -51,10 +40,7 @@ class EmbeddingResponse(BaseModel):
 model = SentenceTransformer("all-MiniLM-L6-v2")
 
 
-def compute_similarity(
-    text1: str = "A cat is sleeping on the couch",
-    text2: str = "A kitten is napping on the sofa",
-) -> dict:
+def compute_similarity(text1: str, text2: str) -> dict:
     """Compute embeddings for two texts and calculate their cosine similarity.
 
     Args:
@@ -81,19 +67,3 @@ def compute_similarity(
         "preview_text1": [round(float(x), 4) for x in v1[:5]],
         "preview_text2": [round(float(x), 4) for x in v2[:5]],
     }
-
-
-# ---------------------------------------------------------------------------
-# Standalone CLI Verification
-# ---------------------------------------------------------------------------
-if __name__ == "__main__":
-    print("--- Sentence Embedding & Similarity Service ---")
-    s1 = "A cat is sleeping on the couch"
-    s2 = "A kitten is napping on the sofa"
-    result = compute_similarity(s1, s2)
-    print(f"Sentence 1: '{s1}'")
-    print(f"Sentence 2: '{s2}'")
-    print(f"Vector dimensions: {result['dimensions']}")
-    print(f"Vector 1 preview: {result['preview_text1']}")
-    print(f"Vector 2 preview: {result['preview_text2']}")
-    print(f"Cosine similarity: {result['similarity']}")
