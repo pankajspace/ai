@@ -6,7 +6,7 @@
 services:
   # ----------------------------------------------------------------------------
   # Client: Frontend React + Vite single-page application
-  # Accessible on host at http://localhost:5173
+  # Accessible on host at http://localhost:8091 (and http://localhost:5173)
   # ----------------------------------------------------------------------------
   client:
     build:
@@ -14,7 +14,8 @@ services:
       dockerfile: Dockerfile
     container_name: ai-pocs-client
     ports:
-      # Map host port 5173 to Vite dev server port 5173 inside container
+      # Map TechToday local port 8091 and Vite default port 5173 to container 5173
+      - "8091:5173"
       - "5173:5173"
     volumes:
       # Bind mount client source code for hot module replacement (HMR)
@@ -22,11 +23,22 @@ services:
       # Anonymous volume to isolate node_modules within the container
       - /app/node_modules
     environment:
+      # Base path for assets and routing ("/" locally, "/ai-pocs/" behind Nginx)
+      - VITE_BASE_PATH=${VITE_BASE_PATH:-/}
       # Backend API URL used by the browser to fetch AI service responses
       - VITE_SERVER_URL=${VITE_SERVER_URL:-http://localhost:8000}
+      # Internal Docker network target used by Vite dev proxy
+      - BACKEND_URL=${BACKEND_URL:-http://server:8000}
     depends_on:
-      # Ensure backend server container starts before the frontend client
-      - server
+      # Ensure backend server container is healthy before starting the frontend client
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
   # ----------------------------------------------------------------------------
   # Server: Backend FastAPI service exposing AI endpoints and Swagger docs
@@ -70,4 +82,10 @@ services:
       - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION:-us-east-1}
       - BEDROCK_MODEL_ID=${BEDROCK_MODEL_ID:-amazon.nova-lite-v1:0}
       - BEDROCK_NOVA_LITE=${BEDROCK_NOVA_LITE:-amazon.nova-lite-v1:0}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 

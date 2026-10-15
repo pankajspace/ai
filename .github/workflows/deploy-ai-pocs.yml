@@ -1,0 +1,275 @@
+# Builds and deploys the "ai-pocs" multi-container project (projects/ai-pocs)
+# to production at https://app.techtoday.click/ai-pocs/.
+#
+# Unlike the single-image template, ai-pocs is a two-container stack:
+#   - techtoday/ai-pocs-client (React + Vite SPA on port 5173, mapped to 5010)
+#   - techtoday/ai-pocs-server (FastAPI backend on port 8000, internal network)
+#
+# This workflow is SELF-PROVISIONING and idempotent: on every push it ensures
+# both ECR repositories exist, builds/tags/pushes both images, regenerates the
+# secrets env file, writes the Nginx /ai-pocs/ location block (with POST rate
+# limiting), writes ~/apps/ai-pocs/docker-compose.yml, and pulls/restarts both
+# containers.
+#
+# Reuses the shared GitHub secrets (AWS_REGION, AWS_ACCOUNT_ID,
+# AWS_DEPLOY_ROLE_ARN, EC2_HOST, EC2_SSH_KEY). See projects/SETUP.md § 2.11/2.12.
+name: Deploy ai-pocs
+
+on:
+  push:
+    # Every branch deploys on push, so any branch can be tested live. All
+    # branches target the same EC2 host: the most recent deploy is what's live.
+    branches: ['**']
+    paths:
+      - 'projects/ai-pocs/**'
+      - '.github/workflows/deploy-ai-pocs.yml'
+  workflow_dispatch:
+
+env:
+  AWS_REGION: ${{ secrets.AWS_REGION }}
+  CLIENT_REPOSITORY: techtoday/ai-pocs-client
+  SERVER_REPOSITORY: techtoday/ai-pocs-server
+  IMAGE_TAG: ${{ github.sha }}
+  HOST_PORT: 5010
+
+concurrency:
+  group: ${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Configure AWS credentials via OIDC
+        uses: aws-actions/configure-aws-credentials@v5
+        with:
+          role-to-assume: ${{ secrets.AWS_DEPLOY_ROLE_ARN }}
+          source-account-id: ${{ secrets.AWS_ACCOUNT_ID }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Ensure ECR repositories exist
+        run: |
+          for repo in "$CLIENT_REPOSITORY" "$SERVER_REPOSITORY"; do
+            aws ecr describe-repositories --repository-names "$repo" \
+              --region "$AWS_REGION" >/dev/null 2>&1 \
+              || aws ecr create-repository --repository-name "$repo" \
+                   --region "$AWS_REGION"
+          done
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Compute a human-readable build tag
+        id: vars
+        run: |
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          BUILD_TAG=$(date -u +'%Y%m%d-%H%M%S')-${GITHUB_RUN_NUMBER}-${SHORT_SHA}
+          echo "short_sha=$SHORT_SHA" >> "$GITHUB_OUTPUT"
+          echo "build_tag=$BUILD_TAG" >> "$GITHUB_OUTPUT"
+
+      - name: Build, tag, and push client and server images to ECR
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          BUILD_TAG: ${{ steps.vars.outputs.build_tag }}
+        run: |
+          declare -A targets=(
+            ["$CLIENT_REPOSITORY"]="projects/ai-pocs/client"
+            ["$SERVER_REPOSITORY"]="projects/ai-pocs/server"
+          )
+
+          for repo in "${!targets[@]}"; do
+            ctx="${targets[$repo]}"
+            echo "::group::Building and pushing $repo from $ctx"
+            docker buildx build \
+              --tag "$ECR_REGISTRY/$repo:$IMAGE_TAG" \
+              --tag "$ECR_REGISTRY/$repo:$BUILD_TAG" \
+              --tag "$ECR_REGISTRY/$repo:latest" \
+              --push \
+              "$ctx"
+            echo "::endgroup::"
+          done
+
+      - name: Record build tag in job summary
+        run: |
+          echo "### Deployed image tags" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch: \`$GITHUB_REF_NAME\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Build tag (use this for rollback): \`${{ steps.vars.outputs.build_tag }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Git SHA tag: \`${{ env.IMAGE_TAG }}\`" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Repositories: \`techtoday/ai-pocs-{client,server}\`" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Provision and deploy on EC2 via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ec2-user
+          key: ${{ secrets.EC2_SSH_KEY }}
+          command_timeout: 20m
+          script: |
+            set -e
+            REGION=${{ env.AWS_REGION }}
+            ACCOUNT=${{ secrets.AWS_ACCOUNT_ID }}
+            CLIENT_IMAGE=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-pocs-client:latest
+            SERVER_IMAGE=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com/techtoday/ai-pocs-server:latest
+
+            aws ecr get-login-password --region $REGION | \
+              docker login --username AWS --password-stdin \
+              $ACCOUNT.dkr.ecr.$REGION.amazonaws.com
+
+            # --- Nginx include (one-time per host, auto-ensured) ---
+            APP_CONF=/etc/nginx/conf.d/app.conf
+            if [ -f "$APP_CONF" ] && ! grep -q 'app-locations/\*\.conf' "$APP_CONF"; then
+              INC_TMP=$(mktemp)
+              awk '
+                { print }
+                !ins && /listen[[:space:]]+443/ { print "    include /etc/nginx/conf.d/app-locations/*.conf;"; ins=1 }
+              ' "$APP_CONF" > "$INC_TMP"
+              if grep -q 'app-locations/\*\.conf' "$INC_TMP"; then
+                sudo cp "$APP_CONF" "$APP_CONF.pre-app-locations.bak"
+                sudo cp "$INC_TMP" "$APP_CONF"
+                if sudo nginx -t; then
+                  sudo systemctl reload nginx
+                else
+                  echo "nginx -t failed after include insert; restoring $APP_CONF" >&2
+                  sudo cp "$APP_CONF.pre-app-locations.bak" "$APP_CONF"
+                fi
+              else
+                echo "No 'listen 443' line in $APP_CONF; add the app-locations include manually (SETUP.md § 2.8)." >&2
+              fi
+              rm -f "$INC_TMP"
+            fi
+
+            # --- Nginx rate limiting (one-time per host, auto-ensured) ---
+            RATE_CONF=/etc/nginx/conf.d/00-rate-limit.conf
+            if [ ! -f "$RATE_CONF" ]; then
+              RATE_TMP=$(mktemp)
+              printf '%s\n' \
+                'map $request_method $ai_post_limit {' \
+                '    POST     $binary_remote_addr;' \
+                '    default  "";' \
+                '}' \
+                '' \
+                'limit_req_zone $ai_post_limit zone=ai_inputs:10m rate=1r/m;' > "$RATE_TMP"
+              sudo cp "$RATE_TMP" "$RATE_CONF"
+              rm -f "$RATE_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit.conf" >&2
+                sudo rm -f "$RATE_CONF"
+              fi
+            fi
+
+            # --- Nginx 429 JSON response (auto-ensured in app-locations) ---
+            RATE_RESP=/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf
+            if [ ! -f "$RATE_RESP" ]; then
+              sudo mkdir -p /etc/nginx/conf.d/app-locations
+              RATE_RESP_TMP=$(mktemp)
+              printf '%s\n' \
+                'error_page 429 = @rate_limit_error;' \
+                'location @rate_limit_error {' \
+                '    default_type application/json;' \
+                '    return 429 '\''{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}\n'\'';' \
+                '}' > "$RATE_RESP_TMP"
+              sudo cp "$RATE_RESP_TMP" "$RATE_RESP"
+              rm -f "$RATE_RESP_TMP"
+              if sudo nginx -t; then
+                sudo systemctl reload nginx
+              else
+                echo "nginx -t failed after adding 00-rate-limit-response.conf" >&2
+                sudo rm -f "$RATE_RESP"
+              fi
+            fi
+
+            # --- Prune legacy inline location block from app.conf if present ---
+            if [ -f "$APP_CONF" ] && grep -q "location[[:space:]]*/ai-pocs/" "$APP_CONF"; then
+              sudo sed -i -e "/location[[:space:]]*\/ai-pocs\//,/^[[:space:]]*}/d" "$APP_CONF"
+            fi
+
+            # --- Nginx location (write + reload only when it changes) ---
+            sudo mkdir -p /etc/nginx/conf.d/app-locations
+            NGINX_TMP=$(mktemp)
+            cat > "$NGINX_TMP" <<'NGINX'
+            location /ai-pocs/ {
+                limit_req          zone=ai_inputs burst=9 nodelay;
+                limit_req_status   429;
+                proxy_pass         http://localhost:5010;
+                proxy_set_header   Host $host;
+                proxy_set_header   X-Real-IP $remote_addr;
+                proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header   X-Forwarded-Proto $scheme;
+            }
+            NGINX
+            NGINX_DEST=/etc/nginx/conf.d/app-locations/ai-pocs.conf
+            if ! sudo cmp -s "$NGINX_TMP" "$NGINX_DEST" 2>/dev/null; then
+              sudo cp "$NGINX_TMP" "$NGINX_DEST"
+              sudo nginx -t && sudo systemctl reload nginx
+            fi
+            rm -f "$NGINX_TMP"
+
+            # --- Secrets env file (regenerated so new keys are picked up) ---
+            mkdir -p ~/secrets
+            aws secretsmanager get-secret-value \
+              --secret-id techtoday/secrets --region $REGION \
+              --query SecretString --output text | \
+              python3 -c "import sys,json; d=json.load(sys.stdin); print('\n'.join(f'{k}={v}' for k,v in d.items()))" \
+              > ~/secrets/ai-pocs.env
+            chmod 600 ~/secrets/ai-pocs.env
+
+            # --- Per-project Compose file (multi-container: client + server) ---
+            mkdir -p ~/apps/ai-pocs
+            cat > ~/apps/ai-pocs/docker-compose.yml <<COMPOSE
+            services:
+              client:
+                image: $CLIENT_IMAGE
+                container_name: ai-pocs-client
+                restart: unless-stopped
+                ports:
+                  - "5010:5173"
+                environment:
+                  - VITE_BASE_PATH=/ai-pocs/
+                  - VITE_SERVER_URL=/ai-pocs
+                  - BACKEND_URL=http://server:8000
+                depends_on:
+                  server:
+                    condition: service_healthy
+                healthcheck:
+                  test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/ai-pocs/"]
+                  interval: 5s
+                  timeout: 3s
+                  retries: 5
+                  start_period: 10s
+
+              server:
+                image: $SERVER_IMAGE
+                container_name: ai-pocs-server
+                restart: unless-stopped
+                command: uvicorn main:app --host 0.0.0.0 --port 8000
+                environment:
+                  - PORT=8000
+                  - HOST=0.0.0.0
+                env_file:
+                  - $HOME/secrets/ai-pocs.env
+                healthcheck:
+                  test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+                  interval: 5s
+                  timeout: 3s
+                  retries: 5
+                  start_period: 10s
+            COMPOSE
+
+            # --- Deploy: free disk, pull, restart both services ---
+            docker image prune -af || true
+            docker compose -f ~/apps/ai-pocs/docker-compose.yml pull client server
+            docker compose -f ~/apps/ai-pocs/docker-compose.yml up -d --wait client server
+
