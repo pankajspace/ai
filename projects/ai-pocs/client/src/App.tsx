@@ -42,27 +42,141 @@ import { McpClientCard } from './components/McpClientCard'
 import { McpAgentCard } from './components/McpAgentCard'
 import { McpEvalsCard } from './components/McpEvalsCard'
 
-type CategoryKey = 'all' | 'basics' | 'strands' | 'systems' | 'reliability' | 'mcp'
+type SectionKey = 'basics' | 'strands' | 'systems' | 'reliability' | 'mcp'
 
-interface CategoryTab {
-  key: CategoryKey
-  label: string
-  count: number
+const ALL_SECTION_KEYS: SectionKey[] = ['basics', 'strands', 'systems', 'reliability', 'mcp']
+const STORAGE_KEY = 'ai_pocs_expanded_sections'
+
+function getInitialExpanded(): Record<SectionKey, boolean> {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY)
+    if (saved) {
+      const parsed = JSON.parse(saved) as string[]
+      if (Array.isArray(parsed)) {
+        return ALL_SECTION_KEYS.reduce((acc, key) => {
+          acc[key] = parsed.includes(key)
+          return acc
+        }, {} as Record<SectionKey, boolean>)
+      }
+    }
+  } catch {
+    // Ignore JSON or localStorage errors
+  }
+  // Default: all collapsed
+  return ALL_SECTION_KEYS.reduce((acc, key) => {
+    acc[key] = false
+    return acc
+  }, {} as Record<SectionKey, boolean>)
 }
 
-const CATEGORIES: CategoryTab[] = [
-  { key: 'all', label: 'All Services', count: 31 },
-  { key: 'basics', label: 'AI Basics', count: 10 },
-  { key: 'strands', label: 'AWS Strands & Agents', count: 12 },
-  { key: 'systems', label: 'AI Systems', count: 2 },
-  { key: 'reliability', label: 'AI Reliability', count: 4 },
-  { key: 'mcp', label: 'MCP & Evals', count: 3 },
-]
+interface SectionAccordionProps {
+  id: SectionKey
+  title: string
+  count: number
+  startCount: number
+  isExpanded: boolean
+  onToggle: () => void
+  children: React.ReactNode
+}
+
+function SectionAccordion({
+  id,
+  title,
+  count,
+  startCount,
+  isExpanded,
+  onToggle,
+  children,
+}: SectionAccordionProps) {
+  return (
+    <div
+      className={`section-accordion ${isExpanded ? '' : 'is-collapsed'}`}
+      id={`section-${id}`}
+    >
+      <button
+        type="button"
+        id={`header-${id}`}
+        className="section-accordion-header"
+        aria-expanded={isExpanded}
+        aria-controls={`content-${id}`}
+        onClick={onToggle}
+      >
+        <div className="section-header-left">
+          <span className="section-header-title">{title}</span>
+        </div>
+        <div className="section-header-right">
+          <span className="section-count-badge">{count} Services</span>
+          <span className="section-chevron" aria-hidden="true">
+            <svg
+              viewBox="0 0 24 24"
+              width="16"
+              height="16"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2.2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </span>
+        </div>
+      </button>
+      <div
+        id={`content-${id}`}
+        className="section-accordion-content"
+        role="region"
+        aria-labelledby={`header-${id}`}
+      >
+        <div className="grid" style={{ counterReset: `project-card ${startCount}` }}>
+          {children}
+        </div>
+      </div>
+    </div>
+  )
+}
 
 function App() {
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>('all')
+  const [expanded, setExpanded] = useState<Record<SectionKey, boolean>>(getInitialExpanded)
 
-  const showSection = (cat: CategoryKey) => activeCategory === 'all' || activeCategory === cat
+  const toggleSection = (key: SectionKey) => {
+    setExpanded((prev) => {
+      const next = { ...prev, [key]: !prev[key] }
+      try {
+        const activeKeys = ALL_SECTION_KEYS.filter((k) => next[k])
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(activeKeys))
+      } catch {
+        // Ignore localStorage write errors
+      }
+      return next
+    })
+  }
+
+  const expandAll = () => {
+    const next = ALL_SECTION_KEYS.reduce((acc, k) => {
+      acc[k] = true
+      return acc
+    }, {} as Record<SectionKey, boolean>)
+    setExpanded(next)
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(ALL_SECTION_KEYS))
+    } catch {
+      // Ignore
+    }
+  }
+
+  const collapseAll = () => {
+    const next = ALL_SECTION_KEYS.reduce((acc, k) => {
+      acc[k] = false
+      return acc
+    }, {} as Record<SectionKey, boolean>)
+    setExpanded(next)
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+    } catch {
+      // Ignore
+    }
+  }
 
   return (
     <>
@@ -90,109 +204,146 @@ function App() {
 
         <section id="tools">
           <div className="container">
-            {/* Category Navigation Pills */}
-            <div className="category-bar">
-              {CATEGORIES.map((cat) => (
+            {/* Accordion Toolbar: Expand All / Collapse All */}
+            <div className="accordion-toolbar">
+              <div className="accordion-toolbar-info">
+                <span>5 Domains</span>
+                <span className="toolbar-dot">&bull;</span>
+                <span>31 Interactive Services</span>
+              </div>
+              <div className="accordion-toolbar-actions">
                 <button
-                  key={cat.key}
-                  className={`category-tab ${activeCategory === cat.key ? 'active' : ''}`}
-                  onClick={() => setActiveCategory(cat.key)}
+                  type="button"
+                  className="toolbar-action-btn"
+                  onClick={expandAll}
+                  aria-label="Expand all sections"
                 >
-                  {cat.label} ({cat.count})
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="7 11 12 6 17 11" />
+                    <polyline points="7 17 12 12 17 17" />
+                  </svg>
+                  <span>Expand All</span>
                 </button>
-              ))}
+                <button
+                  type="button"
+                  className="toolbar-action-btn"
+                  onClick={collapseAll}
+                  aria-label="Collapse all sections"
+                >
+                  <svg
+                    viewBox="0 0 24 24"
+                    width="14"
+                    height="14"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    aria-hidden="true"
+                  >
+                    <polyline points="7 7 12 12 17 7" />
+                    <polyline points="7 13 12 18 17 13" />
+                  </svg>
+                  <span>Collapse All</span>
+                </button>
+              </div>
             </div>
 
             {/* SECTION 1: AI BASICS (01 - 10) */}
-            {showSection('basics') && (
-              <div>
-                <div className="section-heading">
-                  <span>Part 1 &bull; AI Basics & LangChain</span>
-                  <span className="section-count">10 Services</span>
-                </div>
-                <div className="grid">
-                  <TravelGuideCard />
-                  <JokeGeneratorCard />
-                  <SummarizerCard />
-                  <MemoryChatCard />
-                  <AgentOneToolCard />
-                  <LangchainOneToolCard />
-                  <MultiToolAgentCard />
-                  <ChunkingCard />
-                  <EmbeddingCard />
-                  <RagCard />
-                </div>
-              </div>
-            )}
+            <SectionAccordion
+              id="basics"
+              title="Part 1 • AI Basics & LangChain"
+              count={10}
+              startCount={0}
+              isExpanded={expanded.basics}
+              onToggle={() => toggleSection('basics')}
+            >
+              <TravelGuideCard />
+              <JokeGeneratorCard />
+              <SummarizerCard />
+              <MemoryChatCard />
+              <AgentOneToolCard />
+              <LangchainOneToolCard />
+              <MultiToolAgentCard />
+              <ChunkingCard />
+              <EmbeddingCard />
+              <RagCard />
+            </SectionAccordion>
 
             {/* SECTION 2: AWS STRANDS & AGENT WORKFLOWS (11 - 22) */}
-            {showSection('strands') && (
-              <div>
-                <div className="section-heading">
-                  <span>Part 2 &bull; AWS Strands & Agent Workflows</span>
-                  <span className="section-count">12 Services</span>
-                </div>
-                <div className="grid">
-                  <HelloWorldAgentCard />
-                  <LangGraphAgentCard />
-                  <FunctionToToolCard />
-                  <TipCalculatorCard />
-                  <MultiToolSalesCard />
-                  <CustomInventoryCard />
-                  <PrebuiltCalculatorCard />
-                  <MultiPrebuiltToolsCard />
-                  <UseAwsCard />
-                  <ClassBasedToolsCard />
-                  <AsyncToolsCard />
-                  <TravelAssistantCard />
-                </div>
-              </div>
-            )}
+            <SectionAccordion
+              id="strands"
+              title="Part 2 • AWS Strands & Agent Workflows"
+              count={12}
+              startCount={10}
+              isExpanded={expanded.strands}
+              onToggle={() => toggleSection('strands')}
+            >
+              <HelloWorldAgentCard />
+              <LangGraphAgentCard />
+              <FunctionToToolCard />
+              <TipCalculatorCard />
+              <MultiToolSalesCard />
+              <CustomInventoryCard />
+              <PrebuiltCalculatorCard />
+              <MultiPrebuiltToolsCard />
+              <UseAwsCard />
+              <ClassBasedToolsCard />
+              <AsyncToolsCard />
+              <TravelAssistantCard />
+            </SectionAccordion>
 
             {/* SECTION 3: AI SYSTEMS & PROMPTING STRATEGIES (23 - 24) */}
-            {showSection('systems') && (
-              <div>
-                <div className="section-heading">
-                  <span>Part 3 &bull; AI Systems & Multi-Turn Pressure</span>
-                  <span className="section-count">2 Services</span>
-                </div>
-                <div className="grid">
-                  <PromptingStrategiesCard />
-                  <SycophancyTrapCard />
-                </div>
-              </div>
-            )}
+            <SectionAccordion
+              id="systems"
+              title="Part 3 • AI Systems & Multi-Turn Pressure"
+              count={2}
+              startCount={22}
+              isExpanded={expanded.systems}
+              onToggle={() => toggleSection('systems')}
+            >
+              <PromptingStrategiesCard />
+              <SycophancyTrapCard />
+            </SectionAccordion>
 
             {/* SECTION 4: AI RELIABILITY & CALIBRATION (25 - 28) */}
-            {showSection('reliability') && (
-              <div>
-                <div className="section-heading">
-                  <span>Part 4 &bull; AI Reliability & Error Injection</span>
-                  <span className="section-count">4 Services</span>
-                </div>
-                <div className="grid">
-                  <CotVsDirectCard />
-                  <VarianceDeterminismCard />
-                  <ToolSchemaCalibrationCard />
-                  <ToolErrorInjectionCard />
-                </div>
-              </div>
-            )}
+            <SectionAccordion
+              id="reliability"
+              title="Part 4 • AI Reliability & Error Injection"
+              count={4}
+              startCount={24}
+              isExpanded={expanded.reliability}
+              onToggle={() => toggleSection('reliability')}
+            >
+              <CotVsDirectCard />
+              <VarianceDeterminismCard />
+              <ToolSchemaCalibrationCard />
+              <ToolErrorInjectionCard />
+            </SectionAccordion>
 
             {/* SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (29 - 31) */}
-            {showSection('mcp') && (
-              <div>
-                <div className="section-heading">
-                  <span>Part 5 &bull; FastMCP Protocol & Automated Evals</span>
-                  <span className="section-count">3 Services</span>
-                </div>
-                <div className="grid">
-                  <McpClientCard />
-                  <McpAgentCard />
-                  <McpEvalsCard />
-                </div>
-              </div>
-            )}
+            <SectionAccordion
+              id="mcp"
+              title="Part 5 • FastMCP Protocol & Automated Evals"
+              count={3}
+              startCount={28}
+              isExpanded={expanded.mcp}
+              onToggle={() => toggleSection('mcp')}
+            >
+              <McpClientCard />
+              <McpAgentCard />
+              <McpEvalsCard />
+            </SectionAccordion>
           </div>
         </section>
       </main>
