@@ -12,7 +12,13 @@ services:
     build:
       context: ./client
       dockerfile: Dockerfile
+      args:
+        # Base path baked into the production bundle built inside the image
+        - VITE_BASE_PATH=${VITE_BASE_PATH:-/}
+        - VITE_SERVER_URL=${VITE_SERVER_URL:-http://localhost:8000}
     container_name: ai-pocs-client
+    # The image serves a production build; locally run the Vite dev server for HMR
+    command: ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
     ports:
       # Map TechToday local port 8091 and Vite default port 5173 to container 5173
       - "8091:5173"

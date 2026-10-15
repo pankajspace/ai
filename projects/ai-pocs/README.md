@@ -10,10 +10,10 @@ Each interactive card in the React dashboard features a green `ⓘ` icon in its 
 
 1. **Multi-Container Orchestration**: Docker Compose orchestrates an isolated FastAPI backend (`ai-pocs-server` on port `8000`) and a React + Vite single-page application (`ai-pocs-client` on container port `5173`, mapped locally to `8091` and `5173`, and on EC2 to `5010`).
 2. **Service Modularity**: Each service in `server/services/` is self-contained with Pydantic schemas, typed handlers, circled numeral step comments (`# ①`, `# ②`, ...), fallback support, and a standalone CLI entrypoint (`python services/<filename>.py`).
-3. **Path-Prefix & Reverse Proxy Routing**: In production behind Nginx at `https://app.techtoday.click/ai-pocs/`, `VITE_BASE_PATH=/ai-pocs/` and `VITE_SERVER_URL=/ai-pocs` serve all frontend assets and explainer pages under `/ai-pocs/`, while Vite proxies `/ai-pocs/api/*` and `/ai-pocs/health` over the internal Docker Compose network to `http://server:8000`.
+3. **Path-Prefix & Reverse Proxy Routing**: In production behind Nginx at `https://app.techtoday.click/ai-pocs/`, `VITE_BASE_PATH=/ai-pocs/` and `VITE_SERVER_URL=/ai-pocs` serve all frontend assets and explainer pages under `/ai-pocs/`, while Vite proxies `/ai-pocs/api/*` and `/ai-pocs/health` over the internal Docker Compose network to `http://server:8000`. The client image runs `npm run build` at image build time and serves the minified bundle with `vite preview`; local `docker compose` overrides this with the `npm run dev` hot-reload server. Never run the dev server in production — it ships the unbundled ~3 MB development build of React and makes the landing page take 15–20 s to load.
 
 ```text
-Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010) ──▶ ai-pocs-client (Vite :5173)
+Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-client (vite preview :5173)
                                                      ├── Static UI & info/*.html
                                                      └── Proxy /ai-pocs/api/* ──▶ ai-pocs-server (FastAPI :8000)
                                                                                        └── 31 AI Services (OpenAI, Groq, Bedrock, FastMCP)
@@ -134,7 +134,7 @@ projects/ai-pocs/
 ├── .gitignore                  # Ignores .env, node_modules, dist, __pycache__, .DS_Store
 ├── README.md                   # Self-contained project runbook
 ├── client/
-│   ├── Dockerfile              # Node 20 Alpine image running Vite
+│   ├── Dockerfile              # Node 20 Alpine image: builds the bundle, serves it with vite preview
 │   ├── package.json            # React 19 + Vite + TypeScript dependencies
 │   ├── vite.config.ts          # Base path, allowedHosts, and /api + /ai-pocs/api proxy rules
 │   ├── index.html              # SPA HTML shell
@@ -166,8 +166,8 @@ projects/ai-pocs/
 2. **`GROQ_API_KEY`** (optional) — Groq API key used by the Joke Generator (`02_chat_groq.py`), fallback inference, and MCP services. Obtain from https://console.groq.com/keys.
 3. **`GEMINI_API_KEY`** (optional) — Google Gemini API key for Gemini-compatible endpoints. Obtain from https://aistudio.google.com/app/apikey.
 4. **`AWS_ACCESS_KEY_ID`**, **`AWS_SECRET_ACCESS_KEY`**, **`AWS_DEFAULT_REGION`** (optional) — AWS credentials used by live Amazon Bedrock / Strands services (`11`–`22`); services fall back to OpenAI/deterministic simulation when omitted.
-5. **`VITE_BASE_PATH`** (optional) — Frontend base URL path; defaults to `/` locally and `/ai-pocs/` in production.
-6. **`VITE_SERVER_URL`** (optional) — Browser API base URL; defaults to `http://localhost:8000` in local Compose and `/ai-pocs` in production.
+5. **`VITE_BASE_PATH`** (optional) — Frontend base URL path; defaults to `/` locally and `/ai-pocs/` in production. Also a client Docker build arg (default `/ai-pocs/`) because it is baked into the production bundle.
+6. **`VITE_SERVER_URL`** (optional) — Browser API base URL; defaults to `http://localhost:8000` in local Compose and `/ai-pocs` in production. Also a client Docker build arg (default `/ai-pocs`).
 7. `.env` is gitignored and must never be committed.
 
 ---

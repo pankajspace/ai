@@ -16,12 +16,22 @@ RUN npm install
 # Copy all remaining project files into the container
 COPY . .
 
-# Inform Docker that the container listens on port 5173 at runtime (default Vite dev server port).
+# Build the optimized production bundle (minified, tree-shaken, one hashed JS file).
+# Serving the Vite dev server in production made browsers download ~45 unbundled
+# modules plus the 3 MB development build of react-dom, which took 15-20 s.
+# The base path is baked in at build time; defaults match production
+# (https://app.techtoday.click/ai-pocs/). Override with --build-arg for other paths.
+ARG VITE_BASE_PATH=/ai-pocs/
+ARG VITE_SERVER_URL=/ai-pocs
+ENV VITE_BASE_PATH=$VITE_BASE_PATH \
+    VITE_SERVER_URL=$VITE_SERVER_URL
+RUN npm run build
+
+# Inform Docker that the container listens on port 5173 at runtime.
 # Note: EXPOSE serves as documentation; you still need to publish ports (e.g., -p 5173:5173) when running.
 EXPOSE 5173
 
-# Launch the development server
-# - "npm", "run", "dev": Executes the dev script defined in package.json (Vite)
-# - "--", "--host", "0.0.0.0": Passes the host flag to Vite so it binds to all network interfaces,
-#   allowing access from outside the Docker container
-CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
+# Serve the prebuilt dist/ with `vite preview`. It reuses the /api and /health
+# proxy from vite.config.ts, so BACKEND_URL is still read at runtime.
+# Local docker-compose.yml overrides this with `npm run dev` for hot reload.
+CMD ["npm", "run", "preview", "--", "--host", "0.0.0.0", "--port", "5173", "--strictPort"]

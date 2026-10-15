@@ -203,6 +203,9 @@ jobs:
             location /ai-pocs/ {
                 limit_req          zone=ai_inputs burst=9 nodelay;
                 limit_req_status   429;
+                gzip               on;
+                gzip_proxied       any;
+                gzip_types         text/css text/javascript application/javascript application/json image/svg+xml;
                 proxy_pass         http://localhost:5010;
                 proxy_set_header   Host $host;
                 proxy_set_header   X-Real-IP $remote_addr;
