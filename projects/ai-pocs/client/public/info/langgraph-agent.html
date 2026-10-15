@@ -1,0 +1,386 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — LangGraph ReAct Agent &middot; AI POCs</title>
+    <meta name="description"
+        content="🔄 LangGraph ReAct Agent builds the same kind of agent with LangGraph instead of Strands: create_react_agent + a greet(name) tool, running on Bedrock through LangChain&#x27;s bedrock_converse provider." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-12-hello-world-langgraph-py">12_hello_world_langgraph.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🔄 LangGraph ReAct Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🔄 LangGraph ReAct Agent</strong> builds the same kind of agent with LangGraph instead of Strands: <code>create_react_agent</code> + a <code>greet(name)</code> tool, running on Bedrock through LangChain's <code>bedrock_converse</code> provider.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>ReAct means <em>Reason, Act, Observe</em>: the model thinks, calls a tool, reads the result and repeats until it can answer. Asked to &quot;greet Alice and Bob&quot;, the agent calls <code>greet()</code> once per name.</p>
+                    <p>Putting this next to the Strands demos shows that the agent idea is the same across frameworks; only the API names change (<code>@tool</code> from LangChain, <code>init_chat_model(..., model_provider=&quot;bedrock_converse&quot;)</code>, <code>agent.invoke()</code>).</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <ul>
+                        <li><strong>ReAct loop:</strong> reason &rarr; act (tool) &rarr; observe (tool result) &rarr; repeat.</li>
+                        <li><strong>Message types:</strong> LangGraph returns <code>human</code>, <code>ai</code> and <code>tool</code> messages; the <code>tool</code> messages are the greet results shown on the card.</li>
+                        <li><strong>Framework-agnostic models:</strong> <code>init_chat_model</code> picks the provider by name.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>LangGraphAgentCard.tsx</code> sends <code>POST /api/langgraph-agent</code> with <code>{ prompt }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>langgraph_agent_service(req)</code> calls <code>run_langgraph_agent(prompt)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">ReAct loop (<code>12_hello_world_langgraph.py</code>)</span>
+                            <span class="flow-detail"><code>agent.invoke()</code> lets Bedrock call <code>greet(name)</code> for each person.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the final reply and one line per <code>greet</code> tool result.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["LangGraphAgentCard.tsx<br/>POST /api/langgraph-agent"]:::entry -->|"prompt"| R["main.py<br/>langgraph_agent_service()"]:::fn
+    R -->|"prompt"| S["12_hello_world_langgraph.py<br/>run_langgraph_agent()"]:::fn
+    S -->|"user message"| A["create_react_agent<br/>agent.invoke()"]:::fn
+    A -->|"messages + greet spec"| B[("Amazon Bedrock<br/>bedrock_converse")]:::ext
+    B -->|"call greet(name)"| A
+    A -->|"name"| G["greet()"]:::fn
+    G -->|"greeting"| A
+    A -->|"tool message"| B
+    B -->|"final answer"| A
+    A -->|"all messages"| S
+    S -->|"reply + tool messages"| R
+    R -->|"JSON { response, tool_calls }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-12-hello-world-langgraph-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-12-hello-world-langgraph-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-12-hello-world-langgraph-py" class="topic-title is-file">12_hello_world_langgraph.py<a class="headerlink" href="#source-12-hello-world-langgraph-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">62 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-12-hello-world-langgraph-py">
+                    <span class="file-path">server/services/12_hello_world_langgraph.py</span>
+                    <p class="file-label">LangGraph ReAct Hello World Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;LangGraph ReAct Hello World Agent Service.
+
+Demonstrates the LangGraph tool-calling ReAct agentic loop on Amazon Bedrock:
+1. Defines a tool `greet(name: str)`.
+2. Passes the prompt to a LangGraph ReAct agent backed by Bedrock Converse.
+3. Observes tool execution steps (calling greet for each person).
+4. Synthesizes the final response.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langgraph.prebuilt import create_react_agent
+from pydantic import BaseModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+
+class LangGraphAgentRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for LangGraph Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str = &quot;Please greet Alice and Bob.&quot;
+
+
+class LangGraphAgentResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from LangGraph Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str
+    response: str
+    tool_calls: list[str]
+
+
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+
+@tool
+def greet(name: str) -&gt; str:
+    &quot;&quot;&quot;Greet someone by name.&quot;&quot;&quot;
+    return f&quot;Hello, {name}! Welcome to the world of AI agents.&quot;
+
+
+# ③ Initialize the LLM via the Amazon Bedrock Converse provider
+llm = init_chat_model(model_id, model_provider=&quot;bedrock_converse&quot;)
+
+# ④ Create a LangGraph ReAct agent bound to the greet tool
+agent = create_react_agent(model=llm, tools=[greet])
+
+
+def run_langgraph_agent(prompt: str = &quot;Please greet Alice and Bob.&quot;) -&gt; dict:
+    &quot;&quot;&quot;Run the LangGraph tool-enabled ReAct agent.&quot;&quot;&quot;
+    # ⑤ Invoke the ReAct agent loop (Reason -&gt; Act -&gt; Observe)
+    response = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}]})
+    messages = response[&quot;messages&quot;]
+
+    # ⑥ Every &quot;tool&quot; message is the observation from one greet() call
+    tool_calls = [f&quot;{m.name} -&gt; {m.content}&quot; for m in messages if m.type == &quot;tool&quot;]
+
+    return {&quot;prompt&quot;: prompt, &quot;response&quot;: messages[-1].text, &quot;tool_calls&quot;: tool_calls}</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/langgraph-agent</code> (langgraph_agent_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    run_langgraph_agent,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI POCs API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
+def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Validate prompt and invoke LangGraph ReAct greeting agent
+    if not req.prompt.strip():
+        raise HTTPException(status_code=400, detail=&quot;Prompt cannot be empty&quot;)
+    try:
+        return LangGraphAgentResponse(**run_langgraph_agent(req.prompt))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 🔄 LangGraph ReAct Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

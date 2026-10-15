@@ -1,0 +1,119 @@
+# ---------------------------------------------------------------------------
+# AWS Strands Agents Practice Suite — Docker Compose Configuration
+#
+# Run any individual lesson container from this directory:
+#   docker compose run --rm <service_name>
+# Example:
+#   docker compose run --rm 01_hello_world_agent
+# ---------------------------------------------------------------------------
+
+services:
+  # ① Lesson 1.1: Minimal autonomous agent with Strands + Amazon Bedrock Nova Lite
+  01_hello_world_agent:
+    build: ./01_hello_world_agent
+    env_file:
+      - path: ./01_hello_world_agent/.env
+        required: false
+    volumes:
+      - ./01_hello_world_agent/main.py:/app/main.py
+
+  # ② Lesson 1.2: ReAct tool-calling agent loop implemented with LangGraph + Bedrock Converse
+  02_hello_world_langgraph:
+    build: ./02_hello_world_langgraph
+    env_file:
+      - path: ./02_hello_world_langgraph/.env
+        required: false
+    volumes:
+      - ./02_hello_world_langgraph/main.py:/app/main.py
+
+  # ③ Lesson 2.1: Converting a plain Python function into an agent tool (@tool, type hints, docstring)
+  03_function_to_tool:
+    build: ./03_function_to_tool
+    env_file:
+      - path: ./03_function_to_tool/.env
+        required: false
+    volumes:
+      - ./03_function_to_tool/main.py:/app/main.py
+
+  # ④ Lesson 2.2: Intent-driven parameter extraction with a tip calculator tool
+  04_tip_calculator:
+    build: ./04_tip_calculator
+    env_file:
+      - path: ./04_tip_calculator/.env
+        required: false
+    volumes:
+      - ./04_tip_calculator/main.py:/app/main.py
+
+  # ⑤ Lesson 2.3: Autonomous multi-tool chaining (fetch sales -> analyze -> send email)
+  05_multi_tool_sales:
+    build: ./05_multi_tool_sales
+    env_file:
+      - path: ./05_multi_tool_sales/.env
+        required: false
+    volumes:
+      - ./05_multi_tool_sales/main.py:/app/main.py
+
+  # ⑥ Lesson 2.4: Domain-specific custom tool querying a mock product inventory catalog
+  06_custom_tool_inventory:
+    build: ./06_custom_tool_inventory
+    env_file:
+      - path: ./06_custom_tool_inventory/.env
+        required: false
+    volumes:
+      - ./06_custom_tool_inventory/main.py:/app/main.py
+
+  # ⑦ Lesson 2.5: Pre-built community calculator tool from strands_tools + standing system prompt
+  07_prebuilt_tools:
+    build: ./07_prebuilt_tools
+    env_file:
+      - path: ./07_prebuilt_tools/.env
+        required: false
+    volumes:
+      - ./07_prebuilt_tools/main.py:/app/main.py
+
+  # ⑧ Lesson 2.6: Chaining multiple pre-built tools (http_request, calculator, file_write)
+  08_multi_prebuilt_tools:
+    build: ./08_multi_prebuilt_tools
+    env_file:
+      - path: ./08_multi_prebuilt_tools/.env
+        required: false
+    volumes:
+      - ./08_multi_prebuilt_tools/main.py:/app/main.py
+
+  # ⑨ Lesson 2.7: Natural language AWS cloud inspection via strands_tools.use_aws
+  09_use_aws:
+    build: ./09_use_aws
+    env_file:
+      - path: ./09_use_aws/.env
+        required: false
+    volumes:
+      - ./09_use_aws/main.py:/app/main.py
+
+  # ⑩ Lesson 2.8: Class-based tools sharing a single stateful connection/resource instance
+  10_class_based_tools:
+    build: ./10_class_based_tools
+    env_file:
+      - path: ./10_class_based_tools/.env
+        required: false
+    volumes:
+      - ./10_class_based_tools/main.py:/app/main.py
+
+  # ⑪ Lesson 2.9: Parallel asynchronous tool execution with async def and invoke_async()
+  11_async_tools:
+    build: ./11_async_tools
+    env_file:
+      - path: ./11_async_tools/.env
+        required: false
+    volumes:
+      - ./11_async_tools/main.py:/app/main.py
+
+  # ⑫ Capstone Project: Multi-step travel concierge combining weather, packing, cost, and calculator tools
+  12_travel_assistant:
+    build: ./12_travel_assistant
+    env_file:
+      - path: ./12_travel_assistant/.env
+        required: false
+    volumes:
+      - ./12_travel_assistant/main.py:/app/main.py
+
+

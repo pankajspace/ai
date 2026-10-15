@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Text Summarizer &middot; AI POCs</title>
+    <meta name="description"
+        content="📝 Text Summarizer builds a LangChain LCEL chain &amp;mdash; prompt | model | parser &amp;mdash; and runs it on the text you paste to get a short, friendly summary from OpenAI." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-03-langchain-summarizer-py">03_langchain_summarizer.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">📝 Text Summarizer<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>📝 Text Summarizer</strong> builds a LangChain LCEL chain &mdash; <code>prompt | model | parser</code> &mdash; and runs it on the text you paste to get a short, friendly summary from OpenAI.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>LangChain Expression Language (LCEL) lets you snap small parts together with the <code>|</code> operator. Here the prompt template fills in the text, the chat model answers, and the output parser turns the reply message into a plain string.</p>
+                    <p>The chain is built once when the module loads; every request just calls <code>chain.invoke({&quot;data&quot;: text})</code>.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <ul>
+                        <li><strong>Prompt templates:</strong> <code>ChatPromptTemplate.from_template()</code> keeps the instruction fixed and fills <code>{data}</code> by name.</li>
+                        <li><strong>Chat model wrapper:</strong> <code>ChatOpenAI</code> is the LangChain wrapper around the OpenAI API (temperature 0.3 for steady summaries).</li>
+                        <li><strong>Output parsers:</strong> <code>StrOutputParser()</code> unwraps the AI message into text.</li>
+                        <li><strong>Pipes:</strong> <code>prompt | model | parser</code> means &quot;then&quot; &mdash; the output of each step is the input of the next.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>SummarizerCard.tsx</code> sends <code>POST /api/summarize</code> with <code>{ text }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>summarizer_service(req)</code> checks the text and calls <code>summarize(text)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">LCEL chain (<code>03_langchain_summarizer.py</code>)</span>
+                            <span class="flow-detail"><code>prompt</code> fills the template &rarr; <code>model</code> calls OpenAI &rarr; <code>parser</code> returns a string.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows <code>{ text, summary }</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["SummarizerCard.tsx<br/>POST /api/summarize"]:::entry -->|"text"| R["main.py<br/>summarizer_service()"]:::fn
+    R -->|"text"| S["03_langchain_summarizer.py<br/>summarize()"]:::fn
+    S -->|"data = text"| P["prompt<br/>ChatPromptTemplate"]:::fn
+    P -->|"filled prompt"| M[("model<br/>ChatOpenAI")]:::ext
+    M -->|"AI message"| Q["parser<br/>StrOutputParser"]:::fn
+    Q -->|"summary string"| S
+    S -->|"summary"| R
+    R -->|"JSON { text, summary }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-03-langchain-summarizer-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-03-langchain-summarizer-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-03-langchain-summarizer-py" class="topic-title is-file">03_langchain_summarizer.py<a class="headerlink" href="#source-03-langchain-summarizer-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">89 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-03-langchain-summarizer-py">
+                    <span class="file-path">server/services/03_langchain_summarizer.py</span>
+                    <p class="file-label">LangChain Text Summarizer Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;LangChain Text Summarizer Service.
+
+This service demonstrates prompt chaining using LangChain LCEL (LangChain Expression Language):
+1. Loads API credentials and model configuration from environment variables (.env).
+2. Sets up a ChatPromptTemplate with a data placeholder.
+3. Chains ChatPromptTemplate | ChatOpenAI | StrOutputParser using the LCEL pipe operator (|).
+4. Uses Pydantic models (SummarizerRequest, SummarizerResponse) for structured serialization.
+5. Invokes the chain with input text to produce a concise, friendly summary.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+from pydantic import BaseModel
+
+# ---------------------------------------------------------------------------
+# Configuration &amp; Environment Setup
+# ---------------------------------------------------------------------------
+# Load API keys and model names from .env
+load_dotenv(find_dotenv())
+
+TEXT_LANGCHAIN = (
+    &quot;Information about LangChain and its usage in building AI applications. &quot;
+    &quot;We will explore how it simplifies the integration of language models into &quot;
+    &quot;various applications. It provides a structured way to create prompts, manage &quot;
+    &quot;outputs, and chain together multiple language model calls. This allows &quot;
+    &quot;developers to build complex AI-driven workflows efficiently.&quot;
+)
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class SummarizerRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for text summarization queries.&quot;&quot;&quot;
+
+    text: str = TEXT_LANGCHAIN
+
+
+class SummarizerResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing the original text and generated summary.&quot;&quot;&quot;
+
+    text: str
+    summary: str
+
+
+# ---------------------------------------------------------------------------
+# LangChain LCEL Chain Definition
+# ---------------------------------------------------------------------------
+# ① a reusable prompt with a {data} blank
+prompt = ChatPromptTemplate.from_template(
+    &quot;Give a short, friendly summary of this long text:\n\n{data}&quot;
+)
+
+# ② the same model from Class 1, wrapped for LangChain
+#   (placeholder key avoids an import-time crash when OPENAI_API_KEY is unset)
+model = ChatOpenAI(
+    model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+    api_key=os.getenv(&quot;OPENAI_API_KEY&quot;) or &quot;missing-key&quot;,
+    base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+    temperature=0.3,
+    timeout=20.0,
+)
+
+# ③ the package-opener: hands back plain text
+#   (StrOutputParser unwraps the AIMessage into a plain string)
+parser = StrOutputParser()
+
+# ④ snap them together  (| means &quot;then&quot;)
+chain = prompt | model | parser
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def summarize(long_text: str = TEXT_LANGCHAIN) -&gt; str:
+    &quot;&quot;&quot;Summarize long text into a concise, friendly summary using LangChain.
+
+    Args:
+        long_text: Text content to summarize.
+
+    Returns:
+        Concise summary string generated by the LLM.
+    &quot;&quot;&quot;
+    # ⑤ run it; the dict fills the {data} blank by name
+    return chain.invoke({&quot;data&quot;: long_text})</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/summarize</code> (summarizer_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    SummarizerRequest,
+    SummarizerResponse,
+    summarize,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI POCs API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/summarize&quot;, response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
+    if not req.text.strip():
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        return SummarizerResponse(text=req.text, summary=summarize(req.text))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 📝 Text Summarizer &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

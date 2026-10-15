@@ -1,0 +1,146 @@
+"""Tool Schema Routing Calibration Service.
+
+Measures which part of a tool schema an LLM actually routes on:
+1. 2x2 Matrix of Conditions:
+   - Condition A: Descriptive Name + Loose Description
+   - Condition B: Descriptive Name + Tight Description
+   - Condition C: Opaque Name (`tool_alpha`, `tool_beta`) + Loose Description
+   - Condition D: Opaque Name (`tool_alpha`, `tool_beta`) + Tight Description
+2. Evaluates whether the model routes by function name keywords or deep semantic docstrings.
+"""
+
+import os
+from typing import List, Optional
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+
+class ToolSchemaCalibrationRequest(BaseModel):
+    """Input payload for Tool Schema Calibration."""
+
+    query: str = "What is the current hourly precipitation forecast for Seattle?"
+
+
+class ConditionResult(BaseModel):
+    condition_code: str
+    condition_label: str
+    selected_tool: Optional[str]
+    is_correct_routing: bool
+
+
+class ToolSchemaCalibrationResponse(BaseModel):
+    """Output payload from Tool Schema Calibration."""
+
+    target_intent: str
+    condition_results: List[ConditionResult]
+    analysis_summary: str
+
+
+def run_tool_schema_calibration(
+    query: str = "What is the current hourly precipitation forecast for Seattle?",
+) -> dict:
+    """Evaluate tool routing across 2x2 naming/description conditions."""
+    # ① Initialize OpenAI client
+    client = OpenAI(
+        api_key=os.getenv("OPENAI_API_KEY"),
+        base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+    )
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # ② Define the 2x2 calibration matrix (Descriptive vs Opaque names x Loose vs Tight docstrings)
+    conditions = [
+        {
+            "code": "A",
+            "label": "Descriptive Names x Loose Descriptions",
+            "tools": [
+                {"name": "get_current_weather", "desc": "Get weather info for a city."},
+                {"name": "get_hourly_precipitation", "desc": "Check rain forecast."},
+                {"name": "get_historical_climate", "desc": "Get climate records."},
+            ],
+            "correct_target": "get_hourly_precipitation",
+        },
+        {
+            "code": "B",
+            "label": "Descriptive Names x Tight Descriptions",
+            "tools": [
+                {"name": "get_current_weather", "desc": "Get immediate snapshot of current ambient temperature and atmospheric pressure."},
+                {"name": "get_hourly_precipitation", "desc": "Retrieve hour-by-hour expected rainfall probability, accumulation, and precipitation intensity."},
+                {"name": "get_historical_climate", "desc": "Retrieve historical multi-decade climatic averages, record highs, and seasonal norms."},
+            ],
+            "correct_target": "get_hourly_precipitation",
+        },
+        {
+            "code": "C",
+            "label": "Opaque Names x Loose Descriptions",
+            "tools": [
+                {"name": "service_fn_101", "desc": "Get weather info for a city."},
+                {"name": "service_fn_102", "desc": "Check rain forecast."},
+                {"name": "service_fn_103", "desc": "Get climate records."},
+            ],
+            "correct_target": "service_fn_102",
+        },
+        {
+            "code": "D",
+            "label": "Opaque Names x Tight Descriptions",
+            "tools": [
+                {"name": "service_fn_101", "desc": "Get immediate snapshot of current ambient temperature and atmospheric pressure."},
+                {"name": "service_fn_102", "desc": "Retrieve hour-by-hour expected rainfall probability, accumulation, and precipitation intensity."},
+                {"name": "service_fn_103", "desc": "Retrieve historical multi-decade climatic averages, record highs, and seasonal norms."},
+            ],
+            "correct_target": "service_fn_102",
+        },
+    ]
+
+    results = []
+
+    # ③ Build OpenAI tool schemas for each condition and force a tool choice
+    for c in conditions:
+        schemas = [
+            {
+                "type": "function",
+                "function": {
+                    "name": t["name"],
+                    "description": t["desc"],
+                    "parameters": {
+                        "type": "object",
+                        "properties": {"city": {"type": "string"}},
+                        "required": ["city"],
+                    },
+                },
+            }
+            for t in c["tools"]
+        ]
+
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {"role": "system", "content": "You are a weather routing coordinator. Select the single best tool for the user's request."},
+                {"role": "user", "content": query},
+            ],
+            tools=schemas,
+            tool_choice="required",
+        )
+        msg = resp.choices[0].message
+        chosen = msg.tool_calls[0].function.name if msg.tool_calls else None
+        is_correct = (chosen == c["correct_target"])
+
+        results.append({
+            "condition_code": c["code"],
+            "condition_label": c["label"],
+            "selected_tool": chosen,
+            "is_correct_routing": is_correct,
+        })
+
+    # ④ Summarize routing accuracy across the 4 schema conditions
+    correct_count = sum(1 for r in results if r["is_correct_routing"])
+    summary = f"Routed accurately in {correct_count} of 4 calibration conditions."
+
+    return {
+        "target_intent": "Hourly Precipitation Forecast",
+        "condition_results": results,
+        "analysis_summary": summary,
+    }
+

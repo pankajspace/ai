@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Async Parallel Tools &middot; AI POCs</title>
+    <meta name="description"
+        content="⚡ Async Parallel Tools makes the warehouse lookup an async Strands tool and runs the agent with invoke_async, so three 2-second lookups finish together instead of one after another." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-21-async-tools-py">21_async_tools.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">⚡ Async Parallel Tools<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>⚡ Async Parallel Tools</strong> makes the warehouse lookup an <code>async</code> Strands tool and runs the agent with <code>invoke_async</code>, so three 2-second lookups finish together instead of one after another.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>Each <code>check_warehouse_inventory</code> call waits 2 seconds to simulate a slow network. When the model asks for east, west and central in one turn, Strands runs the three async calls at the same time: about 2 seconds of waiting instead of 6.</p>
+                    <p>The service times <code>agent.invoke_async(query)</code> and returns the elapsed seconds plus the list of tool calls the agent made, so you can compare the ~2 s run against the ~6 s a sequential version would take.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <ul>
+                        <li><strong>async / await:</strong> <code>await asyncio.sleep(2)</code> waits without blocking the event loop, so other calls can run.</li>
+                        <li><strong>Concurrent tool execution:</strong> tool calls from the same model turn run in parallel.</li>
+                        <li><strong>Latency adds up:</strong> sequential I/O-bound calls cost the sum of their times; parallel ones cost about the longest.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>AsyncToolsCard.tsx</code> sends <code>POST /api/async-tools</code> with <code>{ query }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>async_tools_service(req)</code> runs <code>asyncio.run(run_async_tools_agent(query))</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Agent (<code>21_async_tools.py</code>)</span>
+                            <span class="flow-detail"><code>await agent.invoke_async(query)</code>; Bedrock asks for three warehouse lookups, which run at the same time.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the answer, the parallel time and the tool calls.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["AsyncToolsCard.tsx<br/>POST /api/async-tools"]:::entry -->|"query"| R["main.py<br/>async_tools_service()"]:::fn
+    R -->|"asyncio.run()"| S["21_async_tools.py<br/>run_async_tools_agent()"]:::fn
+    S -->|"query"| A["Strands Agent<br/>invoke_async()"]:::fn
+    A -->|"messages + tool spec"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"3 x toolUse in one turn"| A
+    A -->|"east"| E["check_warehouse_inventory()"]:::fn
+    A -->|"west"| W["check_warehouse_inventory()"]:::fn
+    A -->|"central"| C["check_warehouse_inventory()"]:::fn
+    E -->|"quantity (2 s)"| A
+    W -->|"quantity (2 s)"| A
+    C -->|"quantity (2 s)"| A
+    A -->|"toolResults"| B
+    B -->|"final answer"| A
+    A -->|"reply + messages"| S
+    S -->|"reply + elapsed time + tool_calls"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-21-async-tools-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-21-async-tools-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-21-async-tools-py" class="topic-title is-file">21_async_tools.py<a class="headerlink" href="#source-21-async-tools-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">92 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-21-async-tools-py">
+                    <span class="file-path">server/services/21_async_tools.py</span>
+                    <p class="file-label">Async Parallel Tools Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Async Parallel Tools Agent Service.
+
+Demonstrates parallel asynchronous tool execution:
+1. Problem: Sequential tool invocations cause linear latency accumulation (3 x 2s = 6s).
+2. Solution: An `async` tool lets the agent run all lookups concurrently (~2s total).
+3. Tool: `check_warehouse_inventory(product_id: str, warehouse: str)` across `east`, `west`, `central`.
+4. Measures and returns the total duration (sequential would be ~6s).
+&quot;&quot;&quot;
+
+import asyncio
+import os
+import time
+
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+
+class AsyncToolsRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Async Tools Agent.&quot;&quot;&quot;
+
+    query: str = &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;
+
+
+class AsyncToolsResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Async Tools Agent.&quot;&quot;&quot;
+
+    query: str
+    response: str
+    parallel_duration_seconds: float
+    tool_calls: list[str]
+
+
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+
+@tool
+async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict:
+    &quot;&quot;&quot;Check inventory at a specific warehouse.
+
+    Args:
+        product_id: Product ID to check
+        warehouse: Warehouse identifier (e.g., &quot;east&quot;, &quot;west&quot;, &quot;central&quot;)
+    &quot;&quot;&quot;
+    # Simulate a 2-second network I/O delay without blocking the asyncio event loop
+    await asyncio.sleep(2)
+
+    # Look up stock count for the requested warehouse and product SKU
+    data = {
+        &quot;east&quot;:    {&quot;PROD-123&quot;: 45, &quot;PROD-456&quot;: 12},
+        &quot;west&quot;:    {&quot;PROD-123&quot;: 30, &quot;PROD-456&quot;: 0},
+        &quot;central&quot;: {&quot;PROD-123&quot;: 60, &quot;PROD-456&quot;: 25},
+    }
+
+    quantity = data.get(warehouse, {}).get(product_id, 0)
+    return {&quot;warehouse&quot;: warehouse, &quot;product_id&quot;: product_id, &quot;quantity&quot;: quantity}
+
+
+async def run_async_tools_agent(
+    query: str = &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run the Async Tools Agent.&quot;&quot;&quot;
+    # ③ Initialize the Strands Agent with the async warehouse inventory tool
+    agent = Agent(
+        model=BedrockModel(model_id=model_id),
+        tools=[check_warehouse_inventory],
+    )
+
+    # ④ Record start time and invoke the agent asynchronously so tool calls run in parallel
+    start = time.time()
+    response = await agent.invoke_async(query)
+    elapsed = time.time() - start
+
+    # ⑤ Collect the tool calls
+    tool_calls = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
+    ]
+
+    return {
+        &quot;query&quot;: query,
+        &quot;response&quot;: str(response),
+        &quot;parallel_duration_seconds&quot;: round(elapsed, 1),
+        &quot;tool_calls&quot;: tool_calls,
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">36 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/async-tools</code> (async_tools_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">import asyncio
+
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    AsyncToolsRequest,
+    AsyncToolsResponse,
+    run_async_tools_agent,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI POCs API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/async-tools&quot;, response_model=AsyncToolsResponse)
+def async_tools_service(req: AsyncToolsRequest):
+    # ① Validate query and run async parallel warehouse tools agent
+    if not req.query.strip():
+        raise HTTPException(status_code=400, detail=&quot;Query cannot be empty&quot;)
+    try:
+        return AsyncToolsResponse(**asyncio.run(run_async_tools_agent(req.query)))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; ⚡ Async Parallel Tools &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -12,6 +12,10 @@
 9. [AI Reliability](study/09-ai-reliability/ai-reliability.md) : 26-09-2026
 10. [MCP](study/10-mcp-evals/mcp-evals.md) : 03-10-2026
 
+# Practice
+1. [Python](practice/01-python)
+2. [AI Basics (Docker)](practice/02-ai-basics/README.md)
+
 # Projects
 
 ## Documentation
@@ -32,7 +36,8 @@
 9. [AI Systems Lab](projects/ai-systems/README.md)
 10. [AI Reliability Lab](projects/ai-reliability/README.md)
 11. [MCP & Evals Lab](projects/mcp-evals/README.md)
-12. [Container App Template](projects/template/README.md)
+12. [AI POCs](projects/ai-pocs/README.md)
+13. [Container App Template](projects/template/README.md)
 
 ---
 

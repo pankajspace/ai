@@ -1,0 +1,495 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — FastMCP Protocol Client &middot; AI POCs</title>
+    <meta name="description"
+        content="📡 FastMCP Protocol Client talks to an MCP server with no LLM at all: start cricket_server.py over stdio, do the handshake, list its tools, and call one directly." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-29-mcp-client-py">29_mcp_client.py</a></li>
+                    <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">📡 FastMCP Protocol Client<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>📡 FastMCP Protocol Client</strong> talks to an MCP server with no LLM at all: start <code>cricket_server.py</code> over stdio, do the handshake, list its tools, and call one directly.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>The Model Context Protocol (MCP) is a standard way for an app to discover and call tools that live in a separate server process. This demo shows the three protocol steps by hand: <code>initialize</code>, <code>tools/list</code>, <code>tools/call</code>.</p>
+                    <p>The server is a separate Python process started by the client and connected through its stdin/stdout. Its data (scores, player stats) is demo data.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <ul>
+                        <li><strong>MCP server:</strong> <code>FastMCP</code> turns decorated functions into tools with JSON schemas.</li>
+                        <li><strong>stdio transport:</strong> JSON-RPC messages over the subprocess's stdin/stdout &mdash; which is why the server logs to stderr only.</li>
+                        <li><strong>Discovery:</strong> the client learns tool names and input schemas at runtime from <code>list_tools()</code>.</li>
+                        <li><strong>Results:</strong> the tool's dict comes back as JSON text in <code>result.content[0].text</code>, which the service returns as-is.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>McpClientCard.tsx</code> sends <code>POST /api/mcp-client</code> with <code>{ tool_name, tool_args }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>mcp_client_service(req)</code> runs <code>asyncio.run(run_mcp_client(...))</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">MCP client (<code>29_mcp_client.py</code>)</span>
+                            <span class="flow-detail"><code>stdio_client</code> starts <code>cricket_server.py</code>; <code>initialize</code> &rarr; <code>list_tools</code> &rarr; <code>call_tool</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">MCP server (<code>cricket_server.py</code>)</span>
+                            <span class="flow-detail">Runs <code>get_live_score</code> or <code>get_player_stats</code> and returns JSON.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the discovered tools (<code>server_tools</code>) and the raw tool <code>result</code> text.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["McpClientCard.tsx<br/>POST /api/mcp-client"]:::entry -->|"tool_name, tool_args"| R["main.py<br/>mcp_client_service()"]:::fn
+    R -->|"asyncio.run()"| C["29_mcp_client.py<br/>run_mcp_client()"]:::fn
+    C -->|"spawn over stdio"| M[("cricket_server.py<br/>FastMCP")]:::ext
+    C -->|"1. initialize"| M
+    M -->|"server info"| C
+    C -->|"2. tools/list"| M
+    M -->|"tool names + schemas"| C
+    C -->|"3. tools/call"| M
+    M -->|"JSON result"| C
+    C -->|"server_tools, result"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-29-mcp-client-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-29-mcp-client-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-29-mcp-client-py" class="topic-title is-file">29_mcp_client.py<a class="headerlink" href="#source-29-mcp-client-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">64 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-29-mcp-client-py">
+                    <span class="file-path">server/services/29_mcp_client.py</span>
+                    <p class="file-label">Direct FastMCP Client Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Direct FastMCP Client Service.
+
+Demonstrates the core Model Context Protocol (MCP) plumbing without an LLM:
+1. Starts `cricket_server.py` as a subprocess and talks to it over stdio.
+2. Performs the MCP protocol handshake (`session.initialize()`).
+3. Lists all registered tools and their JSON schemas from the server (`tools/list`).
+4. Invokes an MCP tool directly (`get_live_score` or `get_player_stats`) with structured arguments (`tools/call`).
+&quot;&quot;&quot;
+
+import sys
+from pathlib import Path
+
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from pydantic import BaseModel
+
+
+class McpClientRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Direct MCP Client.&quot;&quot;&quot;
+
+    tool_name: str = &quot;get_live_score&quot;
+    tool_args: dict = {&quot;teams&quot;: &quot;India vs West Indies&quot;}
+
+
+class McpToolDescriptor(BaseModel):
+    name: str
+    description: str
+    input_schema: dict
+
+
+class McpClientResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Direct MCP Client.&quot;&quot;&quot;
+
+    server_tools: list[McpToolDescriptor]
+    result: str
+
+
+# ① Start cricket_server.py (found next to this file) over stdio using the active Python interpreter
+server_script = str(Path(__file__).with_name(&quot;cricket_server.py&quot;))
+server = StdioServerParameters(command=sys.executable, args=[server_script])
+
+
+async def run_mcp_client(tool_name: str, tool_args: dict) -&gt; dict:
+    &quot;&quot;&quot;Execute the 3-step MCP client protocol flow (no LLM involved).&quot;&quot;&quot;
+    # ② Open an MCP stdio transport pipe to the server subprocess
+    async with stdio_client(server) as (read, write):
+        async with ClientSession(read, write) as session:
+            # ③ STEP 1: Perform the MCP protocol handshake
+            await session.initialize()
+
+            # ④ STEP 2: Discover all available tools and their JSON input schemas
+            tools = (await session.list_tools()).tools
+
+            # ⑤ STEP 3: Call one tool directly with structured arguments (no LLM involved)
+            result = await session.call_tool(tool_name, tool_args)
+
+    # ⑥ The server returns the tool&#x27;s dict as JSON text (or an error message); pass that text back as-is
+    return {
+        &quot;server_tools&quot;: [
+            {&quot;name&quot;: t.name, &quot;description&quot;: t.description or &quot;&quot;, &quot;input_schema&quot;: t.inputSchema}
+            for t in tools
+        ],
+        &quot;result&quot;: result.content[0].text if result.content else &quot;(empty response)&quot;,
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-cricket-server-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-cricket-server-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-cricket-server-py" class="topic-title is-file">cricket_server.py<a class="headerlink" href="#source-cricket-server-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">76 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-cricket-server-py">
+                    <span class="file-path">server/services/cricket_server.py</span>
+                    <p class="file-label">Cricket FastMCP Server (`cricket_server.py`).</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket FastMCP Server (`cricket_server.py`).
+
+Provides Model Context Protocol (MCP) tool endpoints for live cricket matches and player statistics:
+1. `get_live_score(teams)`: Fetches the live scorecard, target, and match situation.
+2. `get_player_stats(player_name)`: Fetches series batting statistics and highest scores.
+3. Communicates over standard input/output (`stdio`) transport so MCP clients can spawn it as a subprocess.
+
+Note: The match and player data below is mock/demo data for classroom exercises (no external API key needed).
+
+Run locally (from this folder):
+    python cricket_server.py
+&quot;&quot;&quot;
+
+import sys
+from pydantic import Field
+from mcp.server.fastmcp import FastMCP
+
+# ---------------------------------------------------------------------------
+# FastMCP Server Initialization
+# ---------------------------------------------------------------------------
+mcp = FastMCP(&quot;Cricket-Score-Server&quot;)
+
+# ---------------------------------------------------------------------------
+# Mock Data Store (Simulated Third-Party Sports API Data)
+# ---------------------------------------------------------------------------
+LIVE_MATCHES = {
+    &quot;india vs west indies&quot;: {
+        &quot;series&quot;: &quot;India vs West Indies ODI Series, Sep-Oct 2026 (DEMO DATA)&quot;,
+        &quot;match&quot;: &quot;2nd ODI&quot;,
+        &quot;status&quot;: &quot;LIVE&quot;,
+        &quot;india&quot;: &quot;287/6 (50 overs)&quot;,
+        &quot;west_indies&quot;: &quot;198/5 (38.2 overs)&quot;,
+        &quot;target&quot;: 288,
+        &quot;required&quot;: &quot;90 runs from 70 balls&quot;,
+        &quot;series_score&quot;: &quot;India lead 1-0&quot;,
+    }
+}
+
+PLAYER_STATS = {
+    &quot;shubman gill&quot;: {&quot;team&quot;: &quot;India&quot;, &quot;series_runs&quot;: 164, &quot;innings&quot;: 3, &quot;highest&quot;: 150},
+    &quot;shai hope&quot;: {&quot;team&quot;: &quot;West Indies&quot;, &quot;series_runs&quot;: 131, &quot;innings&quot;: 2, &quot;highest&quot;: 78},
+}
+
+
+# ---------------------------------------------------------------------------
+# FastMCP Tool Definitions
+# ---------------------------------------------------------------------------
+@mcp.tool(description=&quot;Get the LIVE score of a cricket match. Use this for any question about the current score, who is winning, or runs required.&quot;)
+def get_live_score(teams: str = Field(description=&quot;The two teams, e.g. &#x27;India vs West Indies&#x27;&quot;)) -&gt; dict:
+    &quot;&quot;&quot;Get the LIVE score of a cricket match.&quot;&quot;&quot;
+    # ① Log diagnostic trace to stderr (stdout is reserved strictly for MCP JSON-RPC frames)
+    print(f&quot;[server] get_live_score called with teams={teams!r}&quot;, file=sys.stderr)  # logs go to stderr, NEVER stdout
+    # ② Normalize team names and look up the live match scorecard
+    key = teams.strip().lower().replace(&quot;windies&quot;, &quot;west indies&quot;)
+    if key not in LIVE_MATCHES:
+        return {&quot;error&quot;: f&quot;No live match found for &#x27;{teams}&#x27;. Try &#x27;India vs West Indies&#x27;.&quot;}
+    return LIVE_MATCHES[key]
+
+
+@mcp.tool(description=&quot;Get a player&#x27;s batting stats for the current series. Use this for questions about a specific player&#x27;s runs.&quot;)
+def get_player_stats(player_name: str = Field(description=&quot;Full player name, e.g. &#x27;Shubman Gill&#x27;&quot;)) -&gt; dict:
+    &quot;&quot;&quot;Get a player&#x27;s batting stats for the current series.&quot;&quot;&quot;
+    # ① Log diagnostic trace to stderr
+    print(f&quot;[server] get_player_stats called with player_name={player_name!r}&quot;, file=sys.stderr)
+    # ② Normalize player name and return series batting statistics
+    key = player_name.strip().lower()
+    if key not in PLAYER_STATS:
+        return {&quot;error&quot;: f&quot;No stats found for &#x27;{player_name}&#x27;.&quot;}
+    return PLAYER_STATS[key]
+
+
+# ---------------------------------------------------------------------------
+# Entry Point (Stdio Transport)
+# ---------------------------------------------------------------------------
+if __name__ == &quot;__main__&quot;:
+    mcp.run(transport=&quot;stdio&quot;)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/mcp-client</code> (mcp_client_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">import asyncio
+
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    McpClientRequest,
+    McpClientResponse,
+    run_mcp_client,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI POCs API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/mcp-client&quot;, response_model=McpClientResponse)
+def mcp_client_service(req: McpClientRequest):
+    # ① Invoke a FastMCP tool directly over stdio, without an LLM
+    try:
+        return McpClientResponse(**asyncio.run(run_mcp_client(req.tool_name, req.tool_args)))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 📡 FastMCP Protocol Client &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

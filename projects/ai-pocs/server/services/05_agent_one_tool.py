@@ -1,0 +1,140 @@
+"""Minimal Single-Tool Agent Demonstration.
+
+This script demonstrates the foundational mechanics of an LLM Agent:
+1. LLM + External Tool + Decision Loop (ReAct / Tool-Use Pattern).
+2. The LLM does NOT execute Python code directly; instead, it returns structured
+   JSON requesting a tool call when it needs external information.
+3. The client application executes the requested function locally and feeds
+   the result back to the LLM to generate the final response.
+"""
+
+import json
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+# Load environment variables (e.g., OPENAI_API_KEY) from .env
+load_dotenv(find_dotenv())
+
+
+class AgentRequest(BaseModel):
+    message: str = "How much are the shoes?"
+
+
+class AgentResponse(BaseModel):
+    message: str
+    response: str
+
+
+# ---------------------------------------------------------------------------
+# Mock Database
+# ---------------------------------------------------------------------------
+# In a real-world system, this would be an external database, API, or service
+# containing domain data that the LLM has no inherent knowledge of.
+PRICES = {"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Define the Python Tool Function
+# ---------------------------------------------------------------------------
+def get_price(item: str) -> str:
+    """Fetch the price of a given shop item from the database.
+
+    Args:
+        item: Name of the item to look up.
+
+    Returns:
+        Formatted price string in INR, or '₹unknown' if item is not found.
+    """
+    # Log to console so tool invocations are visible during execution
+    print(f"   🔧 tool called: get_price({item!r})")
+    # Use .get() to safely handle unknown items without throwing a KeyError
+    return f"₹{PRICES.get(item.lower(), 'unknown')}"
+
+
+# ---------------------------------------------------------------------------
+# Step 2: Define Tool Schema for the Model (JSON Schema / Function Calling)
+# ---------------------------------------------------------------------------
+# The model uses this schema to know:
+# - Which tools are available ('name')
+# - When to use each tool ('description' acts as guidance for the LLM)
+# - What arguments to generate ('parameters' defines argument types and requirements)
+TOOLS = [{
+    "type": "function",
+    "function": {
+        "name": "get_price",
+        "description": "Get the price of a shop item the user asks about.",
+        "parameters": {
+            "type": "object",
+            "properties": {
+                "item": {"type": "string", "description": "The item name, e.g. 'shoes' or 'bag'"},
+            },
+            "required": ["item"],
+        },
+    },
+}]
+
+
+# ---------------------------------------------------------------------------
+# Step 3: The Agent Decision Loop (Think -> Tool Execution -> Final Response)
+# ---------------------------------------------------------------------------
+def run_agent_with_tool(question: str = "How much are the shoes?") -> str:
+    """Process a user query, invoking tools dynamically if required.
+
+    Execution Flow:
+    1. Send user message and tool definitions to the LLM.
+    2. Check if the LLM requested a tool call (msg.tool_calls).
+    3. If requested:
+       a. Append the assistant's tool-call request to message history.
+       b. Parse arguments and execute the local Python function.
+       c. Append the tool output with role='tool' and matching tool_call_id.
+       d. Send full conversation history back to the LLM for final synthesis.
+    4. If no tool requested, return the direct LLM text response.
+
+    Args:
+        question: Natural language prompt from the user.
+
+    Returns:
+        Final response text from the LLM.
+    """
+    # ① Initialize OpenAI client and conversation history with the user's prompt
+    client = OpenAI(timeout=15.0)
+    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    messages = [{"role": "user", "content": question}]
+
+    # ② Phase 1: Send user message along with available tool definitions.
+    # The model inspects the prompt and decides whether to respond directly
+    # or request a tool invocation.
+    msg = client.chat.completions.create(model=model, messages=messages, tools=TOOLS).choices[0].message
+
+    # ③ Phase 2: Inspect model response to see if tool invocation was requested
+    # (if not, return the model's direct answer immediately)
+    if not msg.tool_calls:
+        return msg.content or ""
+
+    # ④ Step 2a: Crucial! Append the assistant's tool call message to history.
+    # OpenAI requires the assistant's tool_calls message to precede tool responses.
+    messages.append(msg)
+
+    # ⑤ Step 2b: Iterate through requested tool calls, execute local function, and append result
+    for call in msg.tool_calls:
+        # Parse the JSON arguments generated by the model
+        args = json.loads(call.function.arguments)
+
+        # Invoke the corresponding Python function locally
+        # Step 2c: Append tool result to history.
+        # Role 'tool' and 'tool_call_id' link the output back to the model's call.
+        messages.append({
+            "role": "tool",
+            "tool_call_id": call.id,
+            "content": get_price(args.get("item", "")),
+        })
+
+    # ⑥ Phase 3: Second LLM call with complete history (Prompt + Tool Call + Tool Result).
+    # The model reads the tool output and crafts a natural language response.
+    msg = client.chat.completions.create(model=model, messages=messages).choices[0].message
+
+    # ⑦ Return the assistant's final text content
+    return msg.content or ""
