@@ -1,0 +1,1132 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Capstone Travel Planner &middot; AI POCs</title>
+    <meta name="description"
+        content="🏖️ Capstone Travel Planner integrates 5 specialized domain tools—get_weather_forecast, get_accommodation_cost, calculate_trip_budget, split_cost_per_person, and get_packing_recommendations—into a multi-turn travel planning agent." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-22-travel-assistant-py">22_travel_assistant.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🏖️ Capstone Travel Planner<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🏖️ Capstone Travel Planner</strong> integrates 5 specialized domain tools—<code>get_weather_forecast</code>, <code>get_accommodation_cost</code>, <code>calculate_trip_budget</code>, <code>split_cost_per_person</code>, and <code>get_packing_recommendations</code>—into a multi-turn travel planning agent. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p><strong>🏖️ Capstone Travel Planner</strong> integrates 5 specialized domain tools—<code>get_weather_forecast</code>, <code>get_accommodation_cost</code>, <code>calculate_trip_budget</code>, <code>split_cost_per_person</code>, and <code>get_packing_recommendations</code>—into a multi-turn travel planning agent.</p>
+                    <p>This capstone service combines independent lookup tools (weather, hotel rates, packing lists) with dependent financial calculations (total trip budget and per-person split) across up to 8 reasoning turns to produce a complete, budget-verified itinerary.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Multi-Domain Tool Orchestration:</strong> The agent coordinates meteorological, hospitality, financial, and packing tools from a single natural-language prompt.</li><li><strong>Budget Constraint Verification:</strong> <code>calculate_trip_budget</code> compares computed accommodation + food + activity costs against the user's stated budget and sets <code>fits_budget: bool</code>.</li></ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>TravelAssistantCard.tsx</code> sends <code>POST /api/travel-assistant</code> with destination, duration, group size, and budget.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-detail"><code>travel_assistant_service(req)</code> calls <code>run_travel_assistant_agent(q)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Multi-Turn Planning Loop (<code>22_travel_assistant.py</code>)</span>
+                            <span class="flow-detail">Across up to 8 turns, the LLM invokes weather, hotel cost, budget calculator, cost splitter, and packing tools.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Itinerary Synthesis</span>
+                            <span class="flow-detail">The LLM compiles all 5 tool outputs into a structured travel and budget plan.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Returns <code>TravelAssistantResponse</code> with the final <code>itinerary_and_plan</code> and the complete <code>tools_trace</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                                UI["TravelAssistantCard.tsx<br/>POST /api/travel-assistant { query }"]:::entry
+                                Route["main.py<br/>travel_assistant_service(req)"]:::fn
+                                Svc["22_travel_assistant.py<br/>run_travel_assistant_agent(query)"]:::fn
+                                LLM[("OpenAI API<br/>8-Turn Capstone Loop")]:::ext
+                                Tools["5 Domain Tools<br/>weather / hotel / budget / split / packing"]:::fn
+                                Ret(["TravelAssistantResponse JSON<br/>{ itinerary_and_plan, tools_trace }"]):::ret
+                            
+                                UI -->|"① POST JSON"| Route
+                                Route -->|"② run_travel_assistant_agent()"| Svc
+                                Svc -->|"③ query + 5 tool schemas"| LLM
+                                LLM -.->|"returns tool_calls"| Svc
+                                Svc -->|"④ dispatch domain tools"| Tools
+                                Tools -.->|"returns JSON observations"| Svc
+                                Svc -->|"⑤ feed observations back"| LLM
+                                LLM -.->|"returns complete travel plan"| Svc
+                                Svc -.->|"returns { itinerary_and_plan, tools_trace }"| Route
+                                Route -.->|"returns HTTP 200"| Ret
+                            
+                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-22-travel-assistant-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-22-travel-assistant-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-22-travel-assistant-py" class="topic-title is-file">22_travel_assistant.py<a class="headerlink" href="#source-22-travel-assistant-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">274 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-22-travel-assistant-py">
+                    <span class="file-path">server/services/22_travel_assistant.py</span>
+                    <p class="file-label">Capstone Travel Assistant Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Capstone Travel Assistant Agent Service.
+
+Demonstrates comprehensive multi-step autonomous planning:
+1. Custom domain tools:
+   - `get_weather_forecast(city, days)`
+   - `suggest_packing_list(city, weather, days)`
+   - `calculate_trip_cost(destination, days, travelers)`
+   - `calculator(expression)`
+2. The agentic loop automatically feeds weather forecast into packing recommendations,
+   calculates accommodation and travel costs, and evaluates against the traveler&#x27;s budget.
+3. Provides complete structured travel itinerary and budget validation.
+
+Run directly:
+    python projects/ai-pocs/server/services/22_travel_assistant.py
+&quot;&quot;&quot;
+
+import json
+import math
+import os
+import re
+from typing import Any, Dict, List
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+load_dotenv(find_dotenv())
+
+
+class TravelAssistantRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Travel Assistant Agent.&quot;&quot;&quot;
+
+    query: str = Field(
+        default=&quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;,
+        description=&quot;Natural language trip planning query with destination, duration, companions, and budget&quot;,
+    )
+
+
+class TravelAssistantResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Travel Assistant Agent.&quot;&quot;&quot;
+
+    query: str
+    response: str
+    workflow_steps: List[str]
+    itinerary_data: Dict[str, Any]
+    provider: str
+
+
+CITY_WEATHER = {
+    &quot;goa&quot;: {&quot;temp&quot;: &quot;31°C&quot;, &quot;condition&quot;: &quot;Sunny &amp; Humid&quot;, &quot;rain_chance&quot;: &quot;10%&quot;},
+    &quot;manali&quot;: {&quot;temp&quot;: &quot;12°C&quot;, &quot;condition&quot;: &quot;Cold &amp; Breezy&quot;, &quot;rain_chance&quot;: &quot;25%&quot;},
+    &quot;bangalore&quot;: {&quot;temp&quot;: &quot;24°C&quot;, &quot;condition&quot;: &quot;Pleasant &amp; Cloudy&quot;, &quot;rain_chance&quot;: &quot;40%&quot;},
+    &quot;jaipur&quot;: {&quot;temp&quot;: &quot;34°C&quot;, &quot;condition&quot;: &quot;Dry &amp; Hot&quot;, &quot;rain_chance&quot;: &quot;5%&quot;},
+}
+
+BASE_COSTS_PER_PERSON_PER_DAY = {
+    &quot;goa&quot;: 2500,
+    &quot;manali&quot;: 2000,
+    &quot;bangalore&quot;: 3000,
+    &quot;jaipur&quot;: 2200,
+}
+
+
+def get_weather_forecast(city: str, days: int = 3) -&gt; dict:
+    &quot;&quot;&quot;Retrieve weather forecast for a target destination.&quot;&quot;&quot;
+    # ① Look up destination weather forecast or fall back to mild sunny defaults
+    c = city.lower().strip()
+    w = CITY_WEATHER.get(c, {&quot;temp&quot;: &quot;26°C&quot;, &quot;condition&quot;: &quot;Mild &amp; Sunny&quot;, &quot;rain_chance&quot;: &quot;15%&quot;})
+    return {&quot;city&quot;: city.title(), &quot;days&quot;: days, **w}
+
+
+def suggest_packing_list(city: str, weather_condition: str, days: int = 3) -&gt; list:
+    &quot;&quot;&quot;Generate recommended items to pack based on weather conditions.&quot;&quot;&quot;
+    # ① Start with base travel essentials and append weather-specific gear
+    cond = weather_condition.lower()
+    items = [&quot;ID and Travel Documents&quot;, &quot;Personal Toiletries&quot;, &quot;Phone Charger &amp; Power Bank&quot;]
+    if &quot;cold&quot; in cond or &quot;breezy&quot; in cond:
+        items.extend([&quot;Thermal Jacket&quot;, &quot;Woolen Socks&quot;, &quot;Gloves&quot;, &quot;Moisturizer&quot;])
+    elif &quot;sunny&quot; in cond or &quot;hot&quot; in cond:
+        items.extend([&quot;Sunscreen (SPF 50+)&quot;, &quot;UV Sunglasses&quot;, &quot;Light Cotton Clothes&quot;, &quot;Sun Hat&quot;, &quot;Swimwear&quot;])
+    if &quot;rain&quot; in cond or &quot;cloudy&quot; in cond:
+        items.extend([&quot;Compact Umbrella&quot;, &quot;Waterproof Bag Cover&quot;])
+    return items
+
+
+def calculate_trip_cost(destination: str, days: int, num_travelers: int = 1) -&gt; dict:
+    &quot;&quot;&quot;Calculate estimated total cost in INR.&quot;&quot;&quot;
+    # ① Multiply daily per-person rate by duration and total travelers
+    dest = destination.lower().strip()
+    daily_rate = BASE_COSTS_PER_PERSON_PER_DAY.get(dest, 2500)
+    total = daily_rate * days * num_travelers
+    return {
+        &quot;destination&quot;: destination.title(),
+        &quot;days&quot;: days,
+        &quot;travelers&quot;: num_travelers,
+        &quot;daily_rate_per_person&quot;: daily_rate,
+        &quot;total_estimated_cost_inr&quot;: total,
+    }
+
+
+def run_travel_assistant_agent(
+    query: str = &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run the capstone travel assistant agent.&quot;&quot;&quot;
+    # ① Load AWS credentials and initialize workflow step and itinerary trackers
+    aws_key = os.getenv(&quot;AWS_ACCESS_KEY_ID&quot;)
+    aws_secret = os.getenv(&quot;AWS_SECRET_ACCESS_KEY&quot;)
+    bedrock_model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+    workflow_steps = []
+    itinerary_data = {}
+
+    # ② Run Strands Capstone Agent on Bedrock if AWS credentials are configured
+    if aws_key and aws_secret:
+        try:
+            from strands import Agent, tool
+            from strands.models.bedrock import BedrockModel
+
+            @tool
+            def tool_weather(city: str, days: int) -&gt; dict:
+                &quot;&quot;&quot;Retrieve weather forecast for a destination.&quot;&quot;&quot;
+                res = get_weather_forecast(city, days)
+                workflow_steps.append(f&quot;get_weather_forecast(&#x27;{city}&#x27;, {days}d) -&gt; {res[&#x27;condition&#x27;]}&quot;)
+                return res
+
+            @tool
+            def tool_packing(city: str, weather_condition: str, days: int) -&gt; list:
+                &quot;&quot;&quot;Suggest items to pack based on weather.&quot;&quot;&quot;
+                res = suggest_packing_list(city, weather_condition, days)
+                workflow_steps.append(f&quot;suggest_packing_list(...) -&gt; {len(res)} items&quot;)
+                return res
+
+            @tool
+            def tool_cost(destination: str, days: int, num_travelers: int) -&gt; dict:
+                &quot;&quot;&quot;Estimate total trip costs in INR.&quot;&quot;&quot;
+                res = calculate_trip_cost(destination, days, num_travelers)
+                workflow_steps.append(f&quot;calculate_trip_cost(...) -&gt; ₹{res[&#x27;total_estimated_cost_inr&#x27;]:,}&quot;)
+                return res
+
+            agent = Agent(
+                model=BedrockModel(model_id=bedrock_model_id),
+                tools=[tool_weather, tool_packing, tool_cost],
+                system_prompt=&quot;You are an expert travel assistant. Automatically check weather, suggest packing items, and calculate costs to verify against budget.&quot;,
+            )
+            res = agent(query)
+            return {
+                &quot;query&quot;: query,
+                &quot;response&quot;: str(res),
+                &quot;workflow_steps&quot;: workflow_steps,
+                &quot;itinerary_data&quot;: itinerary_data,
+                &quot;provider&quot;: f&quot;Strands Capstone + Bedrock ({bedrock_model_id})&quot;,
+            }
+        except Exception as exc:
+            print(f&quot;Bedrock travel assistant failed ({exc}), falling back to OpenAI&quot;)
+
+    # ③ Configure OpenAI client and register the three travel planning tool schemas
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+
+    tools_schema = [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;get_weather_forecast&quot;,
+                &quot;description&quot;: &quot;Fetch weather forecast (temp, condition, rain chance) for a destination city.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {
+                        &quot;city&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;City name (e.g. Goa, Manali, Jaipur)&quot;},
+                        &quot;days&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Trip duration in days&quot;},
+                    },
+                    &quot;required&quot;: [&quot;city&quot;],
+                },
+            },
+        },
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;suggest_packing_list&quot;,
+                &quot;description&quot;: &quot;Generate recommended packing list based on the destination&#x27;s weather forecast.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {
+                        &quot;city&quot;: {&quot;type&quot;: &quot;string&quot;},
+                        &quot;weather_condition&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Condition e.g. &#x27;Sunny&#x27;, &#x27;Cold&#x27;&quot;},
+                        &quot;days&quot;: {&quot;type&quot;: &quot;integer&quot;},
+                    },
+                    &quot;required&quot;: [&quot;city&quot;, &quot;weather_condition&quot;],
+                },
+            },
+        },
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;calculate_trip_cost&quot;,
+                &quot;description&quot;: &quot;Calculate estimated trip budget/cost in INR.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {
+                        &quot;destination&quot;: {&quot;type&quot;: &quot;string&quot;},
+                        &quot;days&quot;: {&quot;type&quot;: &quot;integer&quot;},
+                        &quot;num_travelers&quot;: {&quot;type&quot;: &quot;integer&quot;, &quot;description&quot;: &quot;Total persons traveling&quot;},
+                    },
+                    &quot;required&quot;: [&quot;destination&quot;, &quot;days&quot;, &quot;num_travelers&quot;],
+                },
+            },
+        },
+    ]
+
+    messages = [
+        {
+            &quot;role&quot;: &quot;system&quot;,
+            &quot;content&quot;: &quot;You are a comprehensive travel concierge agent. Chain weather -&gt; packing -&gt; cost estimation tools to deliver a complete travel plan.&quot;,
+        },
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: query},
+    ]
+
+    # ④ Execute the multi-step planning loop: weather forecast -&gt; packing list -&gt; cost vs budget
+    for _ in range(6):
+        resp = client.chat.completions.create(
+            model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+            messages=messages,
+            tools=tools_schema,
+            tool_choice=&quot;auto&quot;,
+        )
+        msg = resp.choices[0].message
+        messages.append(msg)
+
+        if not msg.tool_calls:
+            return {
+                &quot;query&quot;: query,
+                &quot;response&quot;: msg.content or &quot;&quot;,
+                &quot;workflow_steps&quot;: workflow_steps,
+                &quot;itinerary_data&quot;: itinerary_data,
+                &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)} (Capstone Planner)&quot;,
+            }
+
+        for tc in msg.tool_calls:
+            fname = tc.function.name
+            args = json.loads(tc.function.arguments or &quot;{}&quot;)
+            if fname == &quot;get_weather_forecast&quot;:
+                w_out = get_weather_forecast(args.get(&quot;city&quot;, &quot;Goa&quot;), args.get(&quot;days&quot;, 3))
+                itinerary_data[&quot;weather&quot;] = w_out
+                workflow_steps.append(f&quot;get_weather_forecast(&#x27;{w_out[&#x27;city&#x27;]}&#x27;) -&gt; {w_out[&#x27;condition&#x27;]}, {w_out[&#x27;temp&#x27;]}&quot;)
+                content = json.dumps(w_out)
+            elif fname == &quot;suggest_packing_list&quot;:
+                p_out = suggest_packing_list(args.get(&quot;city&quot;, &quot;Goa&quot;), args.get(&quot;weather_condition&quot;, &quot;Sunny&quot;), args.get(&quot;days&quot;, 3))
+                itinerary_data[&quot;packing&quot;] = p_out
+                workflow_steps.append(f&quot;suggest_packing_list(...) -&gt; {len(p_out)} suggested items&quot;)
+                content = json.dumps(p_out)
+            elif fname == &quot;calculate_trip_cost&quot;:
+                c_out = calculate_trip_cost(args.get(&quot;destination&quot;, &quot;Goa&quot;), args.get(&quot;days&quot;, 3), args.get(&quot;num_travelers&quot;, 3))
+                itinerary_data[&quot;cost&quot;] = c_out
+                workflow_steps.append(f&quot;calculate_trip_cost(...) -&gt; ₹{c_out[&#x27;total_estimated_cost_inr&#x27;]:,}&quot;)
+                content = json.dumps(c_out)
+            else:
+                content = f&quot;Unknown tool {fname}&quot;
+
+            messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: content})
+
+    return {
+        &quot;query&quot;: query,
+        &quot;response&quot;: messages[-1].get(&quot;content&quot;, &quot;&quot;),
+        &quot;workflow_steps&quot;: workflow_steps,
+        &quot;itinerary_data&quot;: itinerary_data,
+        &quot;provider&quot;: f&quot;OpenAI {os.getenv(&#x27;OPENAI_MODEL&#x27;, &#x27;gpt-4o-mini&#x27;)}&quot;,
+    }
+
+
+if __name__ == &quot;__main__&quot;:
+    out = run_travel_assistant_agent()
+    print(&quot;Steps:&quot;, out[&quot;workflow_steps&quot;])
+    print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">561 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI application exposing all 31 AI POCs demo endpoints with CORS and background embedding warmup.</p>
+                    <pre><code data-lang="python">import threading
+from contextlib import asynccontextmanager
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    # 01 - 10
+    AgentRequest,
+    AgentResponse,
+    ChatMessage,
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    JokeRequest,
+    JokeResponse,
+    LangchainOneToolRequest,
+    LangchainOneToolResponse,
+    MemoryChatRequest,
+    MemoryChatResponse,
+    MultiToolAgentRequest,
+    MultiToolAgentResponse,
+    RagRequest,
+    RagResponse,
+    SummarizerRequest,
+    SummarizerResponse,
+    TravelRequest,
+    TravelResponse,
+    answer_rag,
+    chat_with_memory,
+    chunk_text,
+    compute_similarity,
+    get_groq_joke,
+    get_travel_suggestion,
+    run_agent_with_tool,
+    run_langchain_one_tool,
+    run_multi_tool_agent,
+    summarize,
+    # 11 - 22: AWS Strands
+    HelloWorldAgentRequest,
+    HelloWorldAgentResponse,
+    run_hello_world_agent,
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    run_langgraph_agent,
+    FunctionToToolRequest,
+    FunctionToToolResponse,
+    run_function_to_tool_agent,
+    TipCalculatorRequest,
+    TipCalculatorResponse,
+    run_tip_calculator_agent,
+    MultiToolSalesRequest,
+    MultiToolSalesResponse,
+    run_multi_tool_sales_agent,
+    CustomInventoryRequest,
+    CustomInventoryResponse,
+    run_custom_inventory_agent,
+    PrebuiltCalculatorRequest,
+    PrebuiltCalculatorResponse,
+    run_prebuilt_calculator_agent,
+    MultiPrebuiltToolsRequest,
+    MultiPrebuiltToolsResponse,
+    run_multi_prebuilt_tools_agent,
+    UseAwsRequest,
+    UseAwsResponse,
+    run_use_aws_agent,
+    ClassBasedToolsRequest,
+    ClassBasedToolsResponse,
+    run_class_based_tools_agent,
+    AsyncToolsRequest,
+    AsyncToolsResponse,
+    run_async_tools_agent,
+    TravelAssistantRequest,
+    TravelAssistantResponse,
+    run_travel_assistant_agent,
+    # 23 - 24: AI Systems
+    PromptingStrategiesRequest,
+    PromptingStrategiesResponse,
+    run_prompting_strategies,
+    SycophancyTrapRequest,
+    SycophancyTrapResponse,
+    run_sycophancy_trap,
+    # 25 - 28: AI Reliability
+    CotVsDirectRequest,
+    CotVsDirectResponse,
+    run_cot_vs_direct_benchmark,
+    VarianceDeterminismRequest,
+    VarianceDeterminismResponse,
+    run_variance_determinism_benchmark,
+    ToolSchemaCalibrationRequest,
+    ToolSchemaCalibrationResponse,
+    run_tool_schema_calibration,
+    ToolErrorInjectionRequest,
+    ToolErrorInjectionResponse,
+    run_tool_error_injection,
+    # 29 - 31: MCP &amp; Evals
+    McpClientRequest,
+    McpClientResponse,
+    run_mcp_client,
+    McpAgentRequest,
+    McpAgentResponse,
+    run_mcp_agent,
+    McpEvalsRequest,
+    McpEvalsResponse,
+    run_mcp_evals_suite,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-warm SentenceTransformer in background
+    def warmup_embedding():
+        try:
+            compute_similarity(&quot;warmup&quot;, &quot;warmup&quot;)
+        except Exception:
+            pass
+
+    threading.Thread(target=warmup_embedding, daemon=True).start()
+    yield
+
+
+app = FastAPI(title=&quot;AI POCs API&quot;, lifespan=lifespan)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.get(&quot;/&quot;)
+def read_root():
+    return {&quot;message&quot;: &quot;AI POCs Server is running (31 Integrated Services)&quot;, &quot;status&quot;: &quot;ok&quot;}
+
+
+@app.get(&quot;/health&quot;)
+def health_check():
+    return {&quot;status&quot;: &quot;healthy&quot;, &quot;total_services&quot;: 31}
+
+
+# ==============================================================================
+# SECTION 1: AI BASICS (01 - 10)
+# ==============================================================================
+
+@app.post(&quot;/api/travel&quot;, response_model=TravelResponse)
+def travel_suggestion(req: TravelRequest):
+    # ① Validate city input and delegate to OpenAI travel suggestion service
+    city_name = req.city.strip() if req.city else &quot;Bangalore&quot;
+    if not city_name:
+        raise HTTPException(status_code=400, detail=&quot;City cannot be empty&quot;)
+    try:
+        # ② Invoke service and wrap in TravelResponse
+        suggestion = get_travel_suggestion(city_name)
+        return TravelResponse(city=city_name, suggestion=suggestion)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/joke&quot;, response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    # ① Normalize topic and call Groq joke generator service
+    topic_name = req.topic.strip() if req.topic else &quot;programming&quot;
+    try:
+        joke_text = get_groq_joke(topic_name)
+        return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/summarize&quot;, response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        summary_result = summarize(text_content)
+        return SummarizerResponse(text=text_content, summary=summary_result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/memory-chat&quot;, response_model=MemoryChatResponse)
+def memory_chat_service(req: MemoryChatRequest):
+    # ① Validate user message and pass conversation history to memory chat service
+    message_text = req.message.strip() if req.message else &quot;&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, updated_history = chat_with_memory(message_text, req.history)
+        return MemoryChatResponse(
+            message=message_text,
+            response=reply,
+            history=updated_history,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
+    message_text = req.message.strip() if req.message else &quot;How much are the shoes?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply = run_agent_with_tool(message_text)
+        return AgentResponse(message=message_text, response=reply)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langchain-one-tool&quot;, response_model=LangchainOneToolResponse)
+@app.post(&quot;/api/langchain-agent&quot;, response_model=LangchainOneToolResponse)
+def langchain_one_tool_service(req: LangchainOneToolRequest):
+    # ① Validate message and invoke LangChain single-tool agent
+    message_text = req.message.strip() if req.message else &quot;What is the weather like in New York?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_langchain_one_tool(message_text)
+        return LangchainOneToolResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-agent&quot;, response_model=MultiToolAgentResponse)
+def multi_tool_agent_service(req: MultiToolAgentRequest):
+    # ① Validate message and invoke LangChain multi-tool agent
+    message_text = req.message.strip() if req.message else &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_multi_tool_agent(message_text)
+        return MultiToolAgentResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        chunks = chunk_text(
+            text=text_content,
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+        )
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/embedding&quot;, response_model=EmbeddingResponse)
+def embedding_service(req: EmbeddingRequest):
+    # ① Validate both sentences and compute cosine similarity via SentenceTransformer
+    text1 = req.text1.strip() if req.text1 else &quot;&quot;
+    text2 = req.text2.strip() if req.text2 else &quot;&quot;
+    if not text1 or not text2:
+        raise HTTPException(status_code=400, detail=&quot;Both texts are required&quot;)
+    try:
+        res = compute_similarity(text1, text2)
+        return EmbeddingResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/rag&quot;, response_model=RagResponse)
+def rag_service(req: RagRequest):
+    # ① Validate paragraph and question before running the 4-stage RAG pipeline
+    paragraph = req.paragraph.strip() if req.paragraph else &quot;&quot;
+    question = req.question.strip() if req.question else &quot;&quot;
+    if not paragraph:
+        raise HTTPException(status_code=400, detail=&quot;Paragraph cannot be empty&quot;)
+    if not question:
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
+    try:
+        res = answer_rag(paragraph=paragraph, question=question)
+        return RagResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 2: AWS STRANDS &amp; AGENT WORKFLOWS (11 - 22)
+# ==============================================================================
+
+@app.post(&quot;/api/hello-world-agent&quot;, response_model=HelloWorldAgentResponse)
+def hello_world_agent_service(req: HelloWorldAgentRequest):
+    # ① Normalize prompt and invoke AWS Strands Hello World Agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Hello! Tell me a fun fact about AI agents.&quot;
+    try:
+        res = run_hello_world_agent(prompt_text)
+        return HelloWorldAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
+def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Please greet Alice and Bob.&quot;
+    try:
+        res = run_langgraph_agent(prompt_text)
+        return LangGraphAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/function-to-tool&quot;, response_model=FunctionToToolResponse)
+def function_to_tool_service(req: FunctionToToolRequest):
+    # ① Normalize question and invoke HTTP health-check tool agent
+    q = req.question.strip() if req.question else &quot;Is the staging server running? Check https://httpbin.org/get&quot;
+    try:
+        res = run_function_to_tool_agent(q)
+        return FunctionToToolResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tip-calculator&quot;, response_model=TipCalculatorResponse)
+def tip_calculator_service(req: TipCalculatorRequest):
+    # ① Normalize query and run tip and bill-split agent
+    q = req.query.strip() if req.query else &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
+    try:
+        res = run_tip_calculator_agent(q)
+        return TipCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-sales&quot;, response_model=MultiToolSalesResponse)
+def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Normalize task and execute chained 3-tool sales pipeline agent
+    task_text = req.task.strip() if req.task else &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;
+    try:
+        res = run_multi_tool_sales_agent(task_text)
+        return MultiToolSalesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/custom-inventory&quot;, response_model=CustomInventoryResponse)
+def custom_inventory_service(req: CustomInventoryRequest):
+    # ① Normalize question and query custom inventory tool agent
+    q = req.question.strip() if req.question else &quot;Is PROD-123 in stock?&quot;
+    try:
+        res = run_custom_inventory_agent(q)
+        return CustomInventoryResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/prebuilt-calculator&quot;, response_model=PrebuiltCalculatorResponse)
+def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
+    # ① Normalize query and invoke safe AST math calculator agent
+    q = req.query.strip() if req.query else &quot;What&#x27;s 42 raised to the power of 9?&quot;
+    try:
+        res = run_prebuilt_calculator_agent(q)
+        return PrebuiltCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-prebuilt-tools&quot;, response_model=MultiPrebuiltToolsResponse)
+def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
+    # ① Normalize task and execute multi-prebuilt tools pipeline agent
+    t = req.task.strip() if req.task else &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;
+    try:
+        res = run_multi_prebuilt_tools_agent(t)
+        return MultiPrebuiltToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/use-aws&quot;, response_model=UseAwsResponse)
+def use_aws_service(req: UseAwsRequest):
+    # ① Normalize prompt and invoke AWS cloud assistant agent
+    p = req.prompt.strip() if req.prompt else &quot;List all S3 buckets in my account&quot;
+    try:
+        res = run_use_aws_agent(p)
+        return UseAwsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/class-based-tools&quot;, response_model=ClassBasedToolsResponse)
+def class_based_tools_service(req: ClassBasedToolsRequest):
+    # ① Normalize query and run stateful class-based inventory tools agent
+    q = req.query.strip() if req.query else &quot;Update PROD-456 stock to 25 units, then confirm the new level&quot;
+    try:
+        res = run_class_based_tools_agent(q)
+        return ClassBasedToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/async-tools&quot;, response_model=AsyncToolsResponse)
+def async_tools_service(req: AsyncToolsRequest):
+    # ① Normalize query and run async parallel warehouse tools agent
+    q = req.query.strip() if req.query else &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;
+    try:
+        res = run_async_tools_agent(q)
+        return AsyncToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/travel-assistant&quot;, response_model=TravelAssistantResponse)
+def travel_assistant_service(req: TravelAssistantRequest):
+    # ① Normalize query and invoke 5-tool capstone travel planner agent
+    q = req.query.strip() if req.query else &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;
+    try:
+        res = run_travel_assistant_agent(q)
+        return TravelAssistantResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 3: AI SYSTEMS &amp; PROMPTING STRATEGIES (23 - 24)
+# ==============================================================================
+
+@app.post(&quot;/api/prompting-strategies&quot;, response_model=PromptingStrategiesResponse)
+def prompting_strategies_service(req: PromptingStrategiesRequest):
+    # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    try:
+        res = run_prompting_strategies(
+            question=req.question,
+            expected_answer=req.expected_answer or &quot;293&quot;,
+        )
+        return PromptingStrategiesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/sycophancy-trap&quot;, response_model=SycophancyTrapResponse)
+def sycophancy_trap_service(req: SycophancyTrapRequest):
+    # ① Execute multi-turn sycophancy resilience benchmark
+    try:
+        res = run_sycophancy_trap(
+            case_type=req.case_type or &quot;Math Gaslight&quot;,
+            custom_question=req.custom_question,
+            custom_pushbacks=req.custom_pushbacks,
+            correct_answer=req.correct_answer,
+            capitulation_markers=req.capitulation_markers,
+        )
+        return SycophancyTrapResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 4: AI RELIABILITY &amp; CALIBRATION (25 - 28)
+# ==============================================================================
+
+@app.post(&quot;/api/cot-vs-direct&quot;, response_model=CotVsDirectResponse)
+def cot_vs_direct_service(req: CotVsDirectRequest):
+    # ① Run Chain-of-Thought vs Direct answer benchmark
+    try:
+        res = run_cot_vs_direct_benchmark(
+            problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
+            custom_question=req.custom_question,
+            custom_correct_answers=req.custom_correct_answers,
+        )
+        return CotVsDirectResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/variance-determinism&quot;, response_model=VarianceDeterminismResponse)
+def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    try:
+        res = run_variance_determinism_benchmark(review_text=req.review_text)
+        return VarianceDeterminismResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-schema-calibration&quot;, response_model=ToolSchemaCalibrationResponse)
+def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
+    # ① Run 2x2 tool schema routing calibration benchmark
+    try:
+        res = run_tool_schema_calibration(query=req.query)
+        return ToolSchemaCalibrationResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-error-injection&quot;, response_model=ToolErrorInjectionResponse)
+def tool_error_injection_service(req: ToolErrorInjectionRequest):
+    # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
+    try:
+        res = run_tool_error_injection(question=req.question)
+        return ToolErrorInjectionResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 5: MODEL CONTEXT PROTOCOL &amp; EVALS (29 - 31)
+# ==============================================================================
+
+@app.post(&quot;/api/mcp-client&quot;, response_model=McpClientResponse)
+def mcp_client_service(req: McpClientRequest):
+    # ① Invoke FastMCP tool directly without an LLM
+    try:
+        res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
+        return McpClientResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-agent&quot;, response_model=McpAgentResponse)
+def mcp_agent_service(req: McpAgentRequest):
+    # ① Run LLM agent connected to FastMCP cricket tools
+    try:
+        res = run_mcp_agent(question=req.question)
+        return McpAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-evals&quot;, response_model=McpEvalsResponse)
+def mcp_evals_service(req: McpEvalsRequest):
+    # ① Execute MCP agent evaluation suite and return assertion metrics
+    try:
+        res = run_mcp_evals_suite(run_all=req.run_all)
+        return McpEvalsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+
+    uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 🏖️ Capstone Travel Planner &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

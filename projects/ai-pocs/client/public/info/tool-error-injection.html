@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Tool Error Injection &middot; AI POCs</title>
+    <meta name="description"
+        content="⚠️ Tool Error Injection injects a simulated upstream outage (HTTP 503 Service Unavailable) into a multi-city weather tool call and compares how a Plain System Prompt vs. an Explicit Transparency System Prompt handles partial failure." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-28-tool-error-injection-py">28_tool_error_injection.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">⚠️ Tool Error Injection<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>⚠️ Tool Error Injection</strong> injects a simulated upstream outage (<code>HTTP 503 Service Unavailable</code>) into a multi-city weather tool call and compares how a <strong>Plain System Prompt</strong> vs. an <strong>Explicit Transparency System Prompt</strong> handles partial failure. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p><strong>⚠️ Tool Error Injection</strong> injects a simulated upstream outage (<code>HTTP 503 Service Unavailable</code>) into a multi-city weather tool call and compares how a <strong>Plain System Prompt</strong> vs. an <strong>Explicit Transparency System Prompt</strong> handles partial failure.</p>
+                    <p>When asked to compare the weather in Tokyo and Paris, <code>mock_flaky_weather_api()</code> returns valid data for Tokyo (<code>18°C, Sunny</code>) but returns an HTTP 503 error for Paris. This service automatically scores each scenario on three reliability axes: whether the agent acknowledged the error, whether it cited the 503 failure detail, and whether it fabricated fake weather numbers for Paris.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Partial Failure Resilience:</strong> Production agents frequently encounter rate limits or 5xx errors on one of several tool calls.</li><li><strong>Anti-Hallucination Guardrails:</strong> Explicit system instructions (<em>"NEVER make up or assume weather values if a tool call fails"</em>) prevent helpfulness-driven confabulation.</li><li><strong>Automated Reliability Scoring:</strong> Evaluates <code>acknowledged_error</code>, <code>gave_error_detail</code>, and <code>fabricated_data</code> programmatically.</li></ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>ToolErrorInjectionCard.tsx</code> sends <code>POST /api/tool-error-injection</code> with a multi-city query.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-detail"><code>tool_error_injection_service(req)</code> calls <code>run_tool_error_injection(question)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Fault Injection Loop (<code>28_tool_error_injection.py</code>)</span>
+                            <span class="flow-detail">Runs Scenario A and Scenario B. When the LLM calls <code>get_weather("Paris")</code>, <code>mock_flaky_weather_api()</code> returns an HTTP 503 error payload.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Automated Scoring</span>
+                            <span class="flow-detail"><code>evaluate_error_response()</code> inspects the final answer for error acknowledgment, HTTP 503 detail, and fabricated temperatures.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Returns <code>ToolErrorInjectionResponse</code> comparing Scenario A and Scenario B across all three reliability flags.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                                UI["ToolErrorInjectionCard.tsx<br/>POST /api/tool-error-injection { question }"]:::entry
+                                Route["main.py<br/>tool_error_injection_service(req)"]:::fn
+                                Svc["28_tool_error_injection.py<br/>run_tool_error_injection(question)"]:::fn
+                                LLM[("OpenAI API<br/>Scenario A vs Scenario B")]:::ext
+                                Flaky["mock_flaky_weather_api(city)<br/>Tokyo -> 18°C | Paris -> HTTP 503"]:::fn
+                                Score["evaluate_error_response()<br/>ack / detail / fabricated"]:::fn
+                                Ret(["ToolErrorInjectionResponse JSON<br/>{ scenarios: [ScenarioEvaluation x 2] }"]):::ret
+                            
+                                UI -->|"① POST JSON"| Route
+                                Route -->|"② run_tool_error_injection()"| Svc
+                                Svc -->|"③ run tool loop per scenario"| LLM
+                                LLM -.->|"returns tool_calls (Tokyo, Paris)"| Svc
+                                Svc -->|"④ execute flaky tool"| Flaky
+                                Flaky -.->|"returns 200 for Tokyo, 503 for Paris"| Svc
+                                Svc -->|"⑤ feed tool outputs"| LLM
+                                LLM -.->|"returns final assistant text"| Svc
+                                Svc -->|"⑥ score reliability metrics"| Score
+                                Score -.->|"returns boolean flags"| Svc
+                                Svc -.->|"returns scenarios dict"| Route
+                                Route -.->|"returns HTTP 200"| Ret
+                            
+                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-28-tool-error-injection-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-28-tool-error-injection-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-28-tool-error-injection-py" class="topic-title is-file">28_tool_error_injection.py<a class="headerlink" href="#source-28-tool-error-injection-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">175 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-28-tool-error-injection-py">
+                    <span class="file-path">server/services/28_tool_error_injection.py</span>
+                    <p class="file-label">Tool Call Error Injection &amp; Hallucination Prevention Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Tool Call Error Injection &amp; Hallucination Prevention Service.
+
+Demonstrates agent reliability under upstream API failures:
+1. Tool `get_weather(city)` simulates an upstream outage (HTTP 503 Service Unavailable) on specific calls.
+2. Compares behavior across system prompt designs:
+   - Scenario A (Plain Prompt): Basic instructions, prone to fabricating weather when API fails.
+   - Scenario B (Explicit Reliability Prompt): Explicitly instructed to admit tool failure and never hallucinate.
+3. Automatically scores:
+   - `acknowledged`: Did the model admit the error occurred?
+   - `gave_detail`: Did it mention the error status code (503)?
+   - `fabricated`: Did it hallucinate fake temperature/data?
+
+Run directly:
+    python projects/ai-pocs/server/services/28_tool_error_injection.py
+&quot;&quot;&quot;
+
+import json
+import os
+from typing import Any, Dict, List, Optional
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+load_dotenv(find_dotenv())
+
+
+class ToolErrorInjectionRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Tool Error Injection Benchmark.&quot;&quot;&quot;
+
+    question: str = Field(
+        default=&quot;Compare the weather in Tokyo and Paris today.&quot;,
+        description=&quot;Query asking for data where one API call will fail with HTTP 503&quot;,
+    )
+
+
+class ScenarioEvaluation(BaseModel):
+    scenario_name: str
+    system_prompt: str
+    response_text: str
+    acknowledged_error: bool
+    gave_error_detail: bool
+    fabricated_data: bool
+
+
+class ToolErrorInjectionResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Tool Error Injection Benchmark.&quot;&quot;&quot;
+
+    question: str
+    scenarios: List[ScenarioEvaluation]
+    model: str
+
+
+def mock_flaky_weather_api(city: str) -&gt; dict:
+    &quot;&quot;&quot;Mock weather tool that returns 503 for Paris to test error resilience.&quot;&quot;&quot;
+    # ① Inject a simulated HTTP 503 outage for Paris while succeeding for other cities
+    c = city.lower().strip()
+    if &quot;paris&quot; in c:
+        return {&quot;error&quot;: &quot;HTTP 503 Service Unavailable: upstream weather station offline&quot;, &quot;city&quot;: city}
+    return {&quot;city&quot;: city, &quot;temperature&quot;: &quot;18°C&quot;, &quot;condition&quot;: &quot;Sunny with clear skies&quot;}
+
+
+def evaluate_error_response(response_text: str) -&gt; Dict[str, bool]:
+    &quot;&quot;&quot;Score whether model acknowledged, gave error detail, or fabricated.&quot;&quot;&quot;
+    # ① Check if the response acknowledges the upstream failure and cites HTTP 503 details
+    lowered = response_text.lower()
+    ack = any(w in lowered for w in [&quot;503&quot;, &quot;unavailable&quot;, &quot;failed&quot;, &quot;could not&quot;, &quot;error&quot;, &quot;unable&quot;, &quot;offline&quot;])
+    detail = &quot;503&quot; in lowered or &quot;service unavailable&quot; in lowered or &quot;station offline&quot; in lowered
+    # ② Detect whether the model fabricated temperature numbers for Paris
+    fabricated = False
+    if &quot;paris&quot; in lowered and (&quot;paris is&quot; in lowered or &quot;paris has&quot; in lowered or &quot;paris:&quot; in lowered):
+        # Look for temperature indicators near Paris
+        if re.search(r&quot;paris[^\.\n]*\d+\s*°?c&quot;, lowered) or re.search(r&quot;paris[^\.\n]*degrees&quot;, lowered):
+            fabricated = True
+
+    return {
+        &quot;acknowledged&quot;: ack,
+        &quot;gave_detail&quot;: detail,
+        &quot;fabricated&quot;: fabricated,
+    }
+
+
+def run_tool_error_injection(
+    question: str = &quot;Compare the weather in Tokyo and Paris today.&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run error injection across Scenario A and Scenario B.&quot;&quot;&quot;
+    # ① Initialize OpenAI client and declare the weather tool schema
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    tools_schema = [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;get_weather&quot;,
+                &quot;description&quot;: &quot;Fetch current weather for a city.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {&quot;city&quot;: {&quot;type&quot;: &quot;string&quot;}},
+                    &quot;required&quot;: [&quot;city&quot;],
+                },
+            },
+        }
+    ]
+
+    # ② Define Scenario A (Plain Prompt) vs Scenario B (Explicit Transparency Prompt)
+    scenarios = [
+        {
+            &quot;name&quot;: &quot;Scenario A: Plain Prompt (No error instruction)&quot;,
+            &quot;system&quot;: &quot;You are a weather assistant. Answer user queries using the get_weather tool.&quot;,
+        },
+        {
+            &quot;name&quot;: &quot;Scenario B: Explicit Transparency Prompt (Strict Reliability)&quot;,
+            &quot;system&quot;: (
+                &quot;You are a weather assistant. If any tool returns an error or failure, &quot;
+                &quot;you MUST explicitly inform the user of the failure and error details. &quot;
+                &quot;NEVER make up or assume weather values if a tool call fails.&quot;
+            ),
+        },
+    ]
+
+    results = []
+
+    # ③ Run the tool-calling loop for each scenario and inject the 503 error
+    for sc in scenarios:
+        messages = [
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: sc[&quot;system&quot;]},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+        ]
+
+        for _ in range(5):
+            resp = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                tools=tools_schema,
+                tool_choice=&quot;auto&quot;,
+            )
+            msg = resp.choices[0].message
+            messages.append(msg)
+
+            if not msg.tool_calls:
+                break
+
+            for tc in msg.tool_calls:
+                args = json.loads(tc.function.arguments or &quot;{}&quot;)
+                c_name = args.get(&quot;city&quot;, &quot;Tokyo&quot;)
+                tool_out = mock_flaky_weather_api(c_name)
+                messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(tool_out)})
+
+        # ④ Score the final answer for error acknowledgment, detail, and fabrication
+        final_text = messages[-1].content or &quot;&quot;
+        scores = evaluate_error_response(final_text)
+
+        results.append({
+            &quot;scenario_name&quot;: sc[&quot;name&quot;],
+            &quot;system_prompt&quot;: sc[&quot;system&quot;],
+            &quot;response_text&quot;: final_text,
+            &quot;acknowledged_error&quot;: scores[&quot;acknowledged&quot;],
+            &quot;gave_error_detail&quot;: scores[&quot;gave_detail&quot;],
+            &quot;fabricated_data&quot;: scores[&quot;fabricated&quot;],
+        })
+
+    return {
+        &quot;question&quot;: question,
+        &quot;scenarios&quot;: results,
+        &quot;model&quot;: model,
+    }
+
+
+if __name__ == &quot;__main__&quot;:
+    out = run_tool_error_injection()
+    for s in out[&quot;scenarios&quot;]:
+        print(f&quot;[{s[&#x27;scenario_name&#x27;]}] Ack: {s[&#x27;acknowledged_error&#x27;]} | Detail: {s[&#x27;gave_error_detail&#x27;]} | Fab: {s[&#x27;fabricated_data&#x27;]}&quot;)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">561 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI application exposing all 31 AI POCs demo endpoints with CORS and background embedding warmup.</p>
+                    <pre><code data-lang="python">import threading
+from contextlib import asynccontextmanager
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    # 01 - 10
+    AgentRequest,
+    AgentResponse,
+    ChatMessage,
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    JokeRequest,
+    JokeResponse,
+    LangchainOneToolRequest,
+    LangchainOneToolResponse,
+    MemoryChatRequest,
+    MemoryChatResponse,
+    MultiToolAgentRequest,
+    MultiToolAgentResponse,
+    RagRequest,
+    RagResponse,
+    SummarizerRequest,
+    SummarizerResponse,
+    TravelRequest,
+    TravelResponse,
+    answer_rag,
+    chat_with_memory,
+    chunk_text,
+    compute_similarity,
+    get_groq_joke,
+    get_travel_suggestion,
+    run_agent_with_tool,
+    run_langchain_one_tool,
+    run_multi_tool_agent,
+    summarize,
+    # 11 - 22: AWS Strands
+    HelloWorldAgentRequest,
+    HelloWorldAgentResponse,
+    run_hello_world_agent,
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    run_langgraph_agent,
+    FunctionToToolRequest,
+    FunctionToToolResponse,
+    run_function_to_tool_agent,
+    TipCalculatorRequest,
+    TipCalculatorResponse,
+    run_tip_calculator_agent,
+    MultiToolSalesRequest,
+    MultiToolSalesResponse,
+    run_multi_tool_sales_agent,
+    CustomInventoryRequest,
+    CustomInventoryResponse,
+    run_custom_inventory_agent,
+    PrebuiltCalculatorRequest,
+    PrebuiltCalculatorResponse,
+    run_prebuilt_calculator_agent,
+    MultiPrebuiltToolsRequest,
+    MultiPrebuiltToolsResponse,
+    run_multi_prebuilt_tools_agent,
+    UseAwsRequest,
+    UseAwsResponse,
+    run_use_aws_agent,
+    ClassBasedToolsRequest,
+    ClassBasedToolsResponse,
+    run_class_based_tools_agent,
+    AsyncToolsRequest,
+    AsyncToolsResponse,
+    run_async_tools_agent,
+    TravelAssistantRequest,
+    TravelAssistantResponse,
+    run_travel_assistant_agent,
+    # 23 - 24: AI Systems
+    PromptingStrategiesRequest,
+    PromptingStrategiesResponse,
+    run_prompting_strategies,
+    SycophancyTrapRequest,
+    SycophancyTrapResponse,
+    run_sycophancy_trap,
+    # 25 - 28: AI Reliability
+    CotVsDirectRequest,
+    CotVsDirectResponse,
+    run_cot_vs_direct_benchmark,
+    VarianceDeterminismRequest,
+    VarianceDeterminismResponse,
+    run_variance_determinism_benchmark,
+    ToolSchemaCalibrationRequest,
+    ToolSchemaCalibrationResponse,
+    run_tool_schema_calibration,
+    ToolErrorInjectionRequest,
+    ToolErrorInjectionResponse,
+    run_tool_error_injection,
+    # 29 - 31: MCP &amp; Evals
+    McpClientRequest,
+    McpClientResponse,
+    run_mcp_client,
+    McpAgentRequest,
+    McpAgentResponse,
+    run_mcp_agent,
+    McpEvalsRequest,
+    McpEvalsResponse,
+    run_mcp_evals_suite,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-warm SentenceTransformer in background
+    def warmup_embedding():
+        try:
+            compute_similarity(&quot;warmup&quot;, &quot;warmup&quot;)
+        except Exception:
+            pass
+
+    threading.Thread(target=warmup_embedding, daemon=True).start()
+    yield
+
+
+app = FastAPI(title=&quot;AI POCs API&quot;, lifespan=lifespan)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.get(&quot;/&quot;)
+def read_root():
+    return {&quot;message&quot;: &quot;AI POCs Server is running (31 Integrated Services)&quot;, &quot;status&quot;: &quot;ok&quot;}
+
+
+@app.get(&quot;/health&quot;)
+def health_check():
+    return {&quot;status&quot;: &quot;healthy&quot;, &quot;total_services&quot;: 31}
+
+
+# ==============================================================================
+# SECTION 1: AI BASICS (01 - 10)
+# ==============================================================================
+
+@app.post(&quot;/api/travel&quot;, response_model=TravelResponse)
+def travel_suggestion(req: TravelRequest):
+    # ① Validate city input and delegate to OpenAI travel suggestion service
+    city_name = req.city.strip() if req.city else &quot;Bangalore&quot;
+    if not city_name:
+        raise HTTPException(status_code=400, detail=&quot;City cannot be empty&quot;)
+    try:
+        # ② Invoke service and wrap in TravelResponse
+        suggestion = get_travel_suggestion(city_name)
+        return TravelResponse(city=city_name, suggestion=suggestion)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/joke&quot;, response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    # ① Normalize topic and call Groq joke generator service
+    topic_name = req.topic.strip() if req.topic else &quot;programming&quot;
+    try:
+        joke_text = get_groq_joke(topic_name)
+        return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/summarize&quot;, response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        summary_result = summarize(text_content)
+        return SummarizerResponse(text=text_content, summary=summary_result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/memory-chat&quot;, response_model=MemoryChatResponse)
+def memory_chat_service(req: MemoryChatRequest):
+    # ① Validate user message and pass conversation history to memory chat service
+    message_text = req.message.strip() if req.message else &quot;&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, updated_history = chat_with_memory(message_text, req.history)
+        return MemoryChatResponse(
+            message=message_text,
+            response=reply,
+            history=updated_history,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
+    message_text = req.message.strip() if req.message else &quot;How much are the shoes?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply = run_agent_with_tool(message_text)
+        return AgentResponse(message=message_text, response=reply)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langchain-one-tool&quot;, response_model=LangchainOneToolResponse)
+@app.post(&quot;/api/langchain-agent&quot;, response_model=LangchainOneToolResponse)
+def langchain_one_tool_service(req: LangchainOneToolRequest):
+    # ① Validate message and invoke LangChain single-tool agent
+    message_text = req.message.strip() if req.message else &quot;What is the weather like in New York?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_langchain_one_tool(message_text)
+        return LangchainOneToolResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-agent&quot;, response_model=MultiToolAgentResponse)
+def multi_tool_agent_service(req: MultiToolAgentRequest):
+    # ① Validate message and invoke LangChain multi-tool agent
+    message_text = req.message.strip() if req.message else &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_multi_tool_agent(message_text)
+        return MultiToolAgentResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        chunks = chunk_text(
+            text=text_content,
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+        )
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/embedding&quot;, response_model=EmbeddingResponse)
+def embedding_service(req: EmbeddingRequest):
+    # ① Validate both sentences and compute cosine similarity via SentenceTransformer
+    text1 = req.text1.strip() if req.text1 else &quot;&quot;
+    text2 = req.text2.strip() if req.text2 else &quot;&quot;
+    if not text1 or not text2:
+        raise HTTPException(status_code=400, detail=&quot;Both texts are required&quot;)
+    try:
+        res = compute_similarity(text1, text2)
+        return EmbeddingResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/rag&quot;, response_model=RagResponse)
+def rag_service(req: RagRequest):
+    # ① Validate paragraph and question before running the 4-stage RAG pipeline
+    paragraph = req.paragraph.strip() if req.paragraph else &quot;&quot;
+    question = req.question.strip() if req.question else &quot;&quot;
+    if not paragraph:
+        raise HTTPException(status_code=400, detail=&quot;Paragraph cannot be empty&quot;)
+    if not question:
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
+    try:
+        res = answer_rag(paragraph=paragraph, question=question)
+        return RagResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 2: AWS STRANDS &amp; AGENT WORKFLOWS (11 - 22)
+# ==============================================================================
+
+@app.post(&quot;/api/hello-world-agent&quot;, response_model=HelloWorldAgentResponse)
+def hello_world_agent_service(req: HelloWorldAgentRequest):
+    # ① Normalize prompt and invoke AWS Strands Hello World Agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Hello! Tell me a fun fact about AI agents.&quot;
+    try:
+        res = run_hello_world_agent(prompt_text)
+        return HelloWorldAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
+def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Please greet Alice and Bob.&quot;
+    try:
+        res = run_langgraph_agent(prompt_text)
+        return LangGraphAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/function-to-tool&quot;, response_model=FunctionToToolResponse)
+def function_to_tool_service(req: FunctionToToolRequest):
+    # ① Normalize question and invoke HTTP health-check tool agent
+    q = req.question.strip() if req.question else &quot;Is the staging server running? Check https://httpbin.org/get&quot;
+    try:
+        res = run_function_to_tool_agent(q)
+        return FunctionToToolResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tip-calculator&quot;, response_model=TipCalculatorResponse)
+def tip_calculator_service(req: TipCalculatorRequest):
+    # ① Normalize query and run tip and bill-split agent
+    q = req.query.strip() if req.query else &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
+    try:
+        res = run_tip_calculator_agent(q)
+        return TipCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-sales&quot;, response_model=MultiToolSalesResponse)
+def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Normalize task and execute chained 3-tool sales pipeline agent
+    task_text = req.task.strip() if req.task else &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;
+    try:
+        res = run_multi_tool_sales_agent(task_text)
+        return MultiToolSalesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/custom-inventory&quot;, response_model=CustomInventoryResponse)
+def custom_inventory_service(req: CustomInventoryRequest):
+    # ① Normalize question and query custom inventory tool agent
+    q = req.question.strip() if req.question else &quot;Is PROD-123 in stock?&quot;
+    try:
+        res = run_custom_inventory_agent(q)
+        return CustomInventoryResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/prebuilt-calculator&quot;, response_model=PrebuiltCalculatorResponse)
+def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
+    # ① Normalize query and invoke safe AST math calculator agent
+    q = req.query.strip() if req.query else &quot;What&#x27;s 42 raised to the power of 9?&quot;
+    try:
+        res = run_prebuilt_calculator_agent(q)
+        return PrebuiltCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-prebuilt-tools&quot;, response_model=MultiPrebuiltToolsResponse)
+def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
+    # ① Normalize task and execute multi-prebuilt tools pipeline agent
+    t = req.task.strip() if req.task else &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;
+    try:
+        res = run_multi_prebuilt_tools_agent(t)
+        return MultiPrebuiltToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/use-aws&quot;, response_model=UseAwsResponse)
+def use_aws_service(req: UseAwsRequest):
+    # ① Normalize prompt and invoke AWS cloud assistant agent
+    p = req.prompt.strip() if req.prompt else &quot;List all S3 buckets in my account&quot;
+    try:
+        res = run_use_aws_agent(p)
+        return UseAwsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/class-based-tools&quot;, response_model=ClassBasedToolsResponse)
+def class_based_tools_service(req: ClassBasedToolsRequest):
+    # ① Normalize query and run stateful class-based inventory tools agent
+    q = req.query.strip() if req.query else &quot;Update PROD-456 stock to 25 units, then confirm the new level&quot;
+    try:
+        res = run_class_based_tools_agent(q)
+        return ClassBasedToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/async-tools&quot;, response_model=AsyncToolsResponse)
+def async_tools_service(req: AsyncToolsRequest):
+    # ① Normalize query and run async parallel warehouse tools agent
+    q = req.query.strip() if req.query else &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;
+    try:
+        res = run_async_tools_agent(q)
+        return AsyncToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/travel-assistant&quot;, response_model=TravelAssistantResponse)
+def travel_assistant_service(req: TravelAssistantRequest):
+    # ① Normalize query and invoke 5-tool capstone travel planner agent
+    q = req.query.strip() if req.query else &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;
+    try:
+        res = run_travel_assistant_agent(q)
+        return TravelAssistantResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 3: AI SYSTEMS &amp; PROMPTING STRATEGIES (23 - 24)
+# ==============================================================================
+
+@app.post(&quot;/api/prompting-strategies&quot;, response_model=PromptingStrategiesResponse)
+def prompting_strategies_service(req: PromptingStrategiesRequest):
+    # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    try:
+        res = run_prompting_strategies(
+            question=req.question,
+            expected_answer=req.expected_answer or &quot;293&quot;,
+        )
+        return PromptingStrategiesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/sycophancy-trap&quot;, response_model=SycophancyTrapResponse)
+def sycophancy_trap_service(req: SycophancyTrapRequest):
+    # ① Execute multi-turn sycophancy resilience benchmark
+    try:
+        res = run_sycophancy_trap(
+            case_type=req.case_type or &quot;Math Gaslight&quot;,
+            custom_question=req.custom_question,
+            custom_pushbacks=req.custom_pushbacks,
+            correct_answer=req.correct_answer,
+            capitulation_markers=req.capitulation_markers,
+        )
+        return SycophancyTrapResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 4: AI RELIABILITY &amp; CALIBRATION (25 - 28)
+# ==============================================================================
+
+@app.post(&quot;/api/cot-vs-direct&quot;, response_model=CotVsDirectResponse)
+def cot_vs_direct_service(req: CotVsDirectRequest):
+    # ① Run Chain-of-Thought vs Direct answer benchmark
+    try:
+        res = run_cot_vs_direct_benchmark(
+            problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
+            custom_question=req.custom_question,
+            custom_correct_answers=req.custom_correct_answers,
+        )
+        return CotVsDirectResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/variance-determinism&quot;, response_model=VarianceDeterminismResponse)
+def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    try:
+        res = run_variance_determinism_benchmark(review_text=req.review_text)
+        return VarianceDeterminismResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-schema-calibration&quot;, response_model=ToolSchemaCalibrationResponse)
+def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
+    # ① Run 2x2 tool schema routing calibration benchmark
+    try:
+        res = run_tool_schema_calibration(query=req.query)
+        return ToolSchemaCalibrationResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-error-injection&quot;, response_model=ToolErrorInjectionResponse)
+def tool_error_injection_service(req: ToolErrorInjectionRequest):
+    # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
+    try:
+        res = run_tool_error_injection(question=req.question)
+        return ToolErrorInjectionResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 5: MODEL CONTEXT PROTOCOL &amp; EVALS (29 - 31)
+# ==============================================================================
+
+@app.post(&quot;/api/mcp-client&quot;, response_model=McpClientResponse)
+def mcp_client_service(req: McpClientRequest):
+    # ① Invoke FastMCP tool directly without an LLM
+    try:
+        res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
+        return McpClientResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-agent&quot;, response_model=McpAgentResponse)
+def mcp_agent_service(req: McpAgentRequest):
+    # ① Run LLM agent connected to FastMCP cricket tools
+    try:
+        res = run_mcp_agent(question=req.question)
+        return McpAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-evals&quot;, response_model=McpEvalsResponse)
+def mcp_evals_service(req: McpEvalsRequest):
+    # ① Execute MCP agent evaluation suite and return assertion metrics
+    try:
+        res = run_mcp_evals_suite(run_all=req.run_all)
+        return McpEvalsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+
+    uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; ⚠️ Tool Error Injection &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -36,7 +36,8 @@
 9. [AI Systems Lab](projects/ai-systems/README.md)
 10. [AI Reliability Lab](projects/ai-reliability/README.md)
 11. [MCP & Evals Lab](projects/mcp-evals/README.md)
-12. [Container App Template](projects/template/README.md)
+12. [AI POCs](projects/ai-pocs/README.md)
+13. [Container App Template](projects/template/README.md)
 
 ---
 

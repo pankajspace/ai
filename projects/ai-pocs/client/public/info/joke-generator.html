@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Joke Generator &middot; AI POCs</title>
+    <meta name="description"
+        content="😂 Joke Generator uses OpenAI-compatible SDK routing pointed at Groq&#x27;s LPU endpoint (https://api.groq.com/openai/v1) to generate a short joke with ultra-low latency." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-02-chat-groq-py">02_chat_groq.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">😂 Joke Generator<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>😂 Joke Generator</strong> uses OpenAI-compatible SDK routing pointed at Groq's LPU endpoint (<code>https://api.groq.com/openai/v1</code>) to generate a short joke with ultra-low latency. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p><strong>😂 Joke Generator</strong> uses OpenAI-compatible SDK routing pointed at Groq's LPU endpoint (<code>https://api.groq.com/openai/v1</code>) to generate a short joke with ultra-low latency.</p>
+                    <p>Because Groq implements the OpenAI Chat Completions wire specification, switching providers requires only changing <code>api_key</code>, <code>base_url</code>, and the model identifier (<code>llama-3.3-70b-versatile</code>). The application logic remains identical to an OpenAI call.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Core Concepts:</strong></p><ul><li><strong>OpenAI-Compatible API Standard:</strong> Modern inference providers (Groq, Together, vLLM, Ollama) expose the same <code>/v1/chat/completions</code> schema, avoiding vendor lock-in.</li><li><strong>Provider Portability:</strong> Overriding <code>base_url</code> in the <code>OpenAI(...)</code> constructor decouples client code from the underlying model host.</li><li><strong>LPU Inference:</strong> Groq's Language Processing Unit delivers high tokens-per-second throughput for open-weights models like Llama 3.3 70B.</li></ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>JokeGeneratorCard.tsx</code> sends <code>POST /api/joke</code> with <code>{"topic": "programming"}</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-detail"><code>joke_generator(req)</code> normalizes <code>req.topic</code> and invokes <code>get_groq_joke(topic_name)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>02_chat_groq.py</code>)</span>
+                            <span class="flow-detail"><code>get_groq_joke()</code> instantiates <code>OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Groq LPU Cloud</span>
+                            <span class="flow-detail"><code>llama-3.3-70b-versatile</code> generates a short plain-text joke on the requested topic.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">The joke text is extracted from <code>response.choices[0].message.content</code> and returned in <code>JokeResponse</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                                UI["JokeGeneratorCard.tsx<br/>POST /api/joke { topic }"]:::entry
+                                Route["main.py<br/>joke_generator(req: JokeRequest)"]:::fn
+                                Svc["02_chat_groq.py<br/>get_groq_joke(topic)"]:::fn
+                                Groq[("Groq LPU API<br/>llama-3.3-70b-versatile")]:::ext
+                                Ret(["JokeResponse JSON<br/>{ topic, joke }"]):::ret
+                            
+                                UI -->|"① POST JSON"| Route
+                                Route -->|"② normalize topic"| Svc
+                                Svc -->|"③ chat.completions.create()"| Groq
+                                Groq -.->|"returns ChatCompletion"| Svc
+                                Svc -.->|"returns joke str"| Route
+                                Route -.->|"returns HTTP 200"| Ret
+                            
+                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-02-chat-groq-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-02-chat-groq-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-02-chat-groq-py" class="topic-title is-file">02_chat_groq.py<a class="headerlink" href="#source-02-chat-groq-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">96 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-02-chat-groq-py">
+                    <span class="file-path">server/services/02_chat_groq.py</span>
+                    <p class="file-label">Groq Chat Completion Service - Joke Generator.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Groq Chat Completion Service - Joke Generator.
+
+This service demonstrates using an alternative high-speed LLM provider (Groq)
+via the OpenAI-compatible client interface:
+1. Groq hosts open-weights models (such as LLaMA 3.3 70B) with high inference speed.
+2. The standard `openai.OpenAI` client is reused by setting `base_url` to Groq&#x27;s endpoint
+   and authenticating with `GROQ_API_KEY`.
+3. Pydantic models (JokeRequest, JokeResponse) validate and serialize API payloads.
+4. Includes defensive validation to ensure API keys are configured before calling.
+
+Run directly:
+    python projects/ai-pocs/server/services/02_chat_groq.py
+&quot;&quot;&quot;
+
+import os
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel, Field
+
+# ---------------------------------------------------------------------------
+# Configuration &amp; Environment Setup
+# ---------------------------------------------------------------------------
+# Automatically locate and load the nearest .env file (e.g. at the repo or project root)
+load_dotenv(find_dotenv())
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class JokeRequest(BaseModel):
+    &quot;&quot;&quot;Input payload specifying the joke topic.&quot;&quot;&quot;
+
+    topic: str = Field(
+        default=&quot;programming&quot;,
+        description=&quot;Topic for the joke&quot;,
+    )
+
+
+class JokeResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing the topic and generated joke.&quot;&quot;&quot;
+
+    topic: str
+    joke: str
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def get_groq_joke(topic: str = &quot;programming&quot;) -&gt; str:
+    &quot;&quot;&quot;Tell a funny joke on a topic using Groq.
+
+    Args:
+        topic: Topic for the joke (defaults to &quot;programming&quot;).
+
+    Returns:
+        A humorous joke generated by the Groq model.
+
+    Raises:
+        ValueError: If GROQ_API_KEY is not defined in the environment.
+    &quot;&quot;&quot;
+    # ① Verify that the Groq API key is present in environment variables
+    api_key = os.getenv(&quot;GROQ_API_KEY&quot;)
+    if not api_key:
+        raise ValueError(&quot;GROQ_API_KEY is not configured in .env&quot;)
+
+    # ② Read endpoint and model configuration (falling back to sensible defaults)
+    base_url = os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;)
+    model = os.getenv(&quot;GROQ_MODEL&quot;, &quot;llama-3.3-70b-versatile&quot;)
+
+    # ③ Initialize the OpenAI SDK client configured for Groq&#x27;s base URL
+    client = OpenAI(
+        api_key=api_key,
+        base_url=base_url,
+        timeout=15.0,
+    )
+
+    # ④ Call the chat completions endpoint with system persona and user topic
+    response = client.chat.completions.create(
+        model=model,
+        messages=[
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a funny joke teller.&quot;},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;Tell me a joke about {topic}.&quot;},
+        ],
+        timeout=15.0,
+    )
+
+    # ⑤ Extract and return the joke text
+    return response.choices[0].message.content or &quot;&quot;
+
+
+# ---------------------------------------------------------------------------
+# Standalone CLI Verification
+# ---------------------------------------------------------------------------
+if __name__ == &quot;__main__&quot;:
+    print(&quot;--- Testing Groq Joke Generator Service ---&quot;)
+    print(get_groq_joke(&quot;programming&quot;))</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">561 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI application exposing all 31 AI POCs demo endpoints with CORS and background embedding warmup.</p>
+                    <pre><code data-lang="python">import threading
+from contextlib import asynccontextmanager
+from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    # 01 - 10
+    AgentRequest,
+    AgentResponse,
+    ChatMessage,
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    JokeRequest,
+    JokeResponse,
+    LangchainOneToolRequest,
+    LangchainOneToolResponse,
+    MemoryChatRequest,
+    MemoryChatResponse,
+    MultiToolAgentRequest,
+    MultiToolAgentResponse,
+    RagRequest,
+    RagResponse,
+    SummarizerRequest,
+    SummarizerResponse,
+    TravelRequest,
+    TravelResponse,
+    answer_rag,
+    chat_with_memory,
+    chunk_text,
+    compute_similarity,
+    get_groq_joke,
+    get_travel_suggestion,
+    run_agent_with_tool,
+    run_langchain_one_tool,
+    run_multi_tool_agent,
+    summarize,
+    # 11 - 22: AWS Strands
+    HelloWorldAgentRequest,
+    HelloWorldAgentResponse,
+    run_hello_world_agent,
+    LangGraphAgentRequest,
+    LangGraphAgentResponse,
+    run_langgraph_agent,
+    FunctionToToolRequest,
+    FunctionToToolResponse,
+    run_function_to_tool_agent,
+    TipCalculatorRequest,
+    TipCalculatorResponse,
+    run_tip_calculator_agent,
+    MultiToolSalesRequest,
+    MultiToolSalesResponse,
+    run_multi_tool_sales_agent,
+    CustomInventoryRequest,
+    CustomInventoryResponse,
+    run_custom_inventory_agent,
+    PrebuiltCalculatorRequest,
+    PrebuiltCalculatorResponse,
+    run_prebuilt_calculator_agent,
+    MultiPrebuiltToolsRequest,
+    MultiPrebuiltToolsResponse,
+    run_multi_prebuilt_tools_agent,
+    UseAwsRequest,
+    UseAwsResponse,
+    run_use_aws_agent,
+    ClassBasedToolsRequest,
+    ClassBasedToolsResponse,
+    run_class_based_tools_agent,
+    AsyncToolsRequest,
+    AsyncToolsResponse,
+    run_async_tools_agent,
+    TravelAssistantRequest,
+    TravelAssistantResponse,
+    run_travel_assistant_agent,
+    # 23 - 24: AI Systems
+    PromptingStrategiesRequest,
+    PromptingStrategiesResponse,
+    run_prompting_strategies,
+    SycophancyTrapRequest,
+    SycophancyTrapResponse,
+    run_sycophancy_trap,
+    # 25 - 28: AI Reliability
+    CotVsDirectRequest,
+    CotVsDirectResponse,
+    run_cot_vs_direct_benchmark,
+    VarianceDeterminismRequest,
+    VarianceDeterminismResponse,
+    run_variance_determinism_benchmark,
+    ToolSchemaCalibrationRequest,
+    ToolSchemaCalibrationResponse,
+    run_tool_schema_calibration,
+    ToolErrorInjectionRequest,
+    ToolErrorInjectionResponse,
+    run_tool_error_injection,
+    # 29 - 31: MCP &amp; Evals
+    McpClientRequest,
+    McpClientResponse,
+    run_mcp_client,
+    McpAgentRequest,
+    McpAgentResponse,
+    run_mcp_agent,
+    McpEvalsRequest,
+    McpEvalsResponse,
+    run_mcp_evals_suite,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Pre-warm SentenceTransformer in background
+    def warmup_embedding():
+        try:
+            compute_similarity(&quot;warmup&quot;, &quot;warmup&quot;)
+        except Exception:
+            pass
+
+    threading.Thread(target=warmup_embedding, daemon=True).start()
+    yield
+
+
+app = FastAPI(title=&quot;AI POCs API&quot;, lifespan=lifespan)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.get(&quot;/&quot;)
+def read_root():
+    return {&quot;message&quot;: &quot;AI POCs Server is running (31 Integrated Services)&quot;, &quot;status&quot;: &quot;ok&quot;}
+
+
+@app.get(&quot;/health&quot;)
+def health_check():
+    return {&quot;status&quot;: &quot;healthy&quot;, &quot;total_services&quot;: 31}
+
+
+# ==============================================================================
+# SECTION 1: AI BASICS (01 - 10)
+# ==============================================================================
+
+@app.post(&quot;/api/travel&quot;, response_model=TravelResponse)
+def travel_suggestion(req: TravelRequest):
+    # ① Validate city input and delegate to OpenAI travel suggestion service
+    city_name = req.city.strip() if req.city else &quot;Bangalore&quot;
+    if not city_name:
+        raise HTTPException(status_code=400, detail=&quot;City cannot be empty&quot;)
+    try:
+        # ② Invoke service and wrap in TravelResponse
+        suggestion = get_travel_suggestion(city_name)
+        return TravelResponse(city=city_name, suggestion=suggestion)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/joke&quot;, response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    # ① Normalize topic and call Groq joke generator service
+    topic_name = req.topic.strip() if req.topic else &quot;programming&quot;
+    try:
+        joke_text = get_groq_joke(topic_name)
+        return JokeResponse(topic=topic_name, joke=joke_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/summarize&quot;, response_model=SummarizerResponse)
+def summarizer_service(req: SummarizerRequest):
+    # ① Ensure input text is non-empty before summarizing via LangChain LCEL
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        summary_result = summarize(text_content)
+        return SummarizerResponse(text=text_content, summary=summary_result)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/memory-chat&quot;, response_model=MemoryChatResponse)
+def memory_chat_service(req: MemoryChatRequest):
+    # ① Validate user message and pass conversation history to memory chat service
+    message_text = req.message.strip() if req.message else &quot;&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, updated_history = chat_with_memory(message_text, req.history)
+        return MemoryChatResponse(
+            message=message_text,
+            response=reply,
+            history=updated_history,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
+    message_text = req.message.strip() if req.message else &quot;How much are the shoes?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply = run_agent_with_tool(message_text)
+        return AgentResponse(message=message_text, response=reply)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langchain-one-tool&quot;, response_model=LangchainOneToolResponse)
+@app.post(&quot;/api/langchain-agent&quot;, response_model=LangchainOneToolResponse)
+def langchain_one_tool_service(req: LangchainOneToolRequest):
+    # ① Validate message and invoke LangChain single-tool agent
+    message_text = req.message.strip() if req.message else &quot;What is the weather like in New York?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_langchain_one_tool(message_text)
+        return LangchainOneToolResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-agent&quot;, response_model=MultiToolAgentResponse)
+def multi_tool_agent_service(req: MultiToolAgentRequest):
+    # ① Validate message and invoke LangChain multi-tool agent
+    message_text = req.message.strip() if req.message else &quot;What&#x27;s the weather in Tokyo, and what is 12 times 12?&quot;
+    if not message_text:
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        reply, tool_called = run_multi_tool_agent(message_text)
+        return MultiToolAgentResponse(
+            message=message_text,
+            response=reply,
+            tool_called=tool_called,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
+    text_content = req.text.strip() if req.text else &quot;&quot;
+    if not text_content:
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        chunks = chunk_text(
+            text=text_content,
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+        )
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/embedding&quot;, response_model=EmbeddingResponse)
+def embedding_service(req: EmbeddingRequest):
+    # ① Validate both sentences and compute cosine similarity via SentenceTransformer
+    text1 = req.text1.strip() if req.text1 else &quot;&quot;
+    text2 = req.text2.strip() if req.text2 else &quot;&quot;
+    if not text1 or not text2:
+        raise HTTPException(status_code=400, detail=&quot;Both texts are required&quot;)
+    try:
+        res = compute_similarity(text1, text2)
+        return EmbeddingResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/rag&quot;, response_model=RagResponse)
+def rag_service(req: RagRequest):
+    # ① Validate paragraph and question before running the 4-stage RAG pipeline
+    paragraph = req.paragraph.strip() if req.paragraph else &quot;&quot;
+    question = req.question.strip() if req.question else &quot;&quot;
+    if not paragraph:
+        raise HTTPException(status_code=400, detail=&quot;Paragraph cannot be empty&quot;)
+    if not question:
+        raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
+    try:
+        res = answer_rag(paragraph=paragraph, question=question)
+        return RagResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 2: AWS STRANDS &amp; AGENT WORKFLOWS (11 - 22)
+# ==============================================================================
+
+@app.post(&quot;/api/hello-world-agent&quot;, response_model=HelloWorldAgentResponse)
+def hello_world_agent_service(req: HelloWorldAgentRequest):
+    # ① Normalize prompt and invoke AWS Strands Hello World Agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Hello! Tell me a fun fact about AI agents.&quot;
+    try:
+        res = run_hello_world_agent(prompt_text)
+        return HelloWorldAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/langgraph-agent&quot;, response_model=LangGraphAgentResponse)
+def langgraph_agent_service(req: LangGraphAgentRequest):
+    # ① Normalize prompt and invoke LangGraph ReAct greeting agent
+    prompt_text = req.prompt.strip() if req.prompt else &quot;Please greet Alice and Bob.&quot;
+    try:
+        res = run_langgraph_agent(prompt_text)
+        return LangGraphAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/function-to-tool&quot;, response_model=FunctionToToolResponse)
+def function_to_tool_service(req: FunctionToToolRequest):
+    # ① Normalize question and invoke HTTP health-check tool agent
+    q = req.question.strip() if req.question else &quot;Is the staging server running? Check https://httpbin.org/get&quot;
+    try:
+        res = run_function_to_tool_agent(q)
+        return FunctionToToolResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tip-calculator&quot;, response_model=TipCalculatorResponse)
+def tip_calculator_service(req: TipCalculatorRequest):
+    # ① Normalize query and run tip and bill-split agent
+    q = req.query.strip() if req.query else &quot;The bill is $85. What&#x27;s a 20% tip, and how much does each person pay if we&#x27;re splitting it 4 ways?&quot;
+    try:
+        res = run_tip_calculator_agent(q)
+        return TipCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-tool-sales&quot;, response_model=MultiToolSalesResponse)
+def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Normalize task and execute chained 3-tool sales pipeline agent
+    task_text = req.task.strip() if req.task else &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;
+    try:
+        res = run_multi_tool_sales_agent(task_text)
+        return MultiToolSalesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/custom-inventory&quot;, response_model=CustomInventoryResponse)
+def custom_inventory_service(req: CustomInventoryRequest):
+    # ① Normalize question and query custom inventory tool agent
+    q = req.question.strip() if req.question else &quot;Is PROD-123 in stock?&quot;
+    try:
+        res = run_custom_inventory_agent(q)
+        return CustomInventoryResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/prebuilt-calculator&quot;, response_model=PrebuiltCalculatorResponse)
+def prebuilt_calculator_service(req: PrebuiltCalculatorRequest):
+    # ① Normalize query and invoke safe AST math calculator agent
+    q = req.query.strip() if req.query else &quot;What&#x27;s 42 raised to the power of 9?&quot;
+    try:
+        res = run_prebuilt_calculator_agent(q)
+        return PrebuiltCalculatorResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/multi-prebuilt-tools&quot;, response_model=MultiPrebuiltToolsResponse)
+def multi_prebuilt_tools_service(req: MultiPrebuiltToolsRequest):
+    # ① Normalize task and execute multi-prebuilt tools pipeline agent
+    t = req.task.strip() if req.task else &quot;Fetch crypto data from https://api.coindesk.com/v1/bpi/currentprice.json, extract USD rate, and write a summary to crypto_summary.txt&quot;
+    try:
+        res = run_multi_prebuilt_tools_agent(t)
+        return MultiPrebuiltToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/use-aws&quot;, response_model=UseAwsResponse)
+def use_aws_service(req: UseAwsRequest):
+    # ① Normalize prompt and invoke AWS cloud assistant agent
+    p = req.prompt.strip() if req.prompt else &quot;List all S3 buckets in my account&quot;
+    try:
+        res = run_use_aws_agent(p)
+        return UseAwsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/class-based-tools&quot;, response_model=ClassBasedToolsResponse)
+def class_based_tools_service(req: ClassBasedToolsRequest):
+    # ① Normalize query and run stateful class-based inventory tools agent
+    q = req.query.strip() if req.query else &quot;Update PROD-456 stock to 25 units, then confirm the new level&quot;
+    try:
+        res = run_class_based_tools_agent(q)
+        return ClassBasedToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/async-tools&quot;, response_model=AsyncToolsResponse)
+def async_tools_service(req: AsyncToolsRequest):
+    # ① Normalize query and run async parallel warehouse tools agent
+    q = req.query.strip() if req.query else &quot;Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central.&quot;
+    try:
+        res = run_async_tools_agent(q)
+        return AsyncToolsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/travel-assistant&quot;, response_model=TravelAssistantResponse)
+def travel_assistant_service(req: TravelAssistantRequest):
+    # ① Normalize query and invoke 5-tool capstone travel planner agent
+    q = req.query.strip() if req.query else &quot;I&#x27;m going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?&quot;
+    try:
+        res = run_travel_assistant_agent(q)
+        return TravelAssistantResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 3: AI SYSTEMS &amp; PROMPTING STRATEGIES (23 - 24)
+# ==============================================================================
+
+@app.post(&quot;/api/prompting-strategies&quot;, response_model=PromptingStrategiesResponse)
+def prompting_strategies_service(req: PromptingStrategiesRequest):
+    # ① Execute Direct, Zero-Shot CoT, and Few-Shot CoT benchmark
+    try:
+        res = run_prompting_strategies(
+            question=req.question,
+            expected_answer=req.expected_answer or &quot;293&quot;,
+        )
+        return PromptingStrategiesResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/sycophancy-trap&quot;, response_model=SycophancyTrapResponse)
+def sycophancy_trap_service(req: SycophancyTrapRequest):
+    # ① Execute multi-turn sycophancy resilience benchmark
+    try:
+        res = run_sycophancy_trap(
+            case_type=req.case_type or &quot;Math Gaslight&quot;,
+            custom_question=req.custom_question,
+            custom_pushbacks=req.custom_pushbacks,
+            correct_answer=req.correct_answer,
+            capitulation_markers=req.capitulation_markers,
+        )
+        return SycophancyTrapResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 4: AI RELIABILITY &amp; CALIBRATION (25 - 28)
+# ==============================================================================
+
+@app.post(&quot;/api/cot-vs-direct&quot;, response_model=CotVsDirectResponse)
+def cot_vs_direct_service(req: CotVsDirectRequest):
+    # ① Run Chain-of-Thought vs Direct answer benchmark
+    try:
+        res = run_cot_vs_direct_benchmark(
+            problem_title=req.problem_title or &quot;Spatial Navigation (Grid)&quot;,
+            custom_question=req.custom_question,
+            custom_correct_answers=req.custom_correct_answers,
+        )
+        return CotVsDirectResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/variance-determinism&quot;, response_model=VarianceDeterminismResponse)
+def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    try:
+        res = run_variance_determinism_benchmark(review_text=req.review_text)
+        return VarianceDeterminismResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-schema-calibration&quot;, response_model=ToolSchemaCalibrationResponse)
+def tool_schema_calibration_service(req: ToolSchemaCalibrationRequest):
+    # ① Run 2x2 tool schema routing calibration benchmark
+    try:
+        res = run_tool_schema_calibration(query=req.query)
+        return ToolSchemaCalibrationResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/tool-error-injection&quot;, response_model=ToolErrorInjectionResponse)
+def tool_error_injection_service(req: ToolErrorInjectionRequest):
+    # ① Run HTTP 503 tool error injection and hallucination scoring benchmark
+    try:
+        res = run_tool_error_injection(question=req.question)
+        return ToolErrorInjectionResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 5: MODEL CONTEXT PROTOCOL &amp; EVALS (29 - 31)
+# ==============================================================================
+
+@app.post(&quot;/api/mcp-client&quot;, response_model=McpClientResponse)
+def mcp_client_service(req: McpClientRequest):
+    # ① Invoke FastMCP tool directly without an LLM
+    try:
+        res = run_mcp_client(tool_name=req.tool_name, tool_args=req.tool_args)
+        return McpClientResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-agent&quot;, response_model=McpAgentResponse)
+def mcp_agent_service(req: McpAgentRequest):
+    # ① Run LLM agent connected to FastMCP cricket tools
+    try:
+        res = run_mcp_agent(question=req.question)
+        return McpAgentResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post(&quot;/api/mcp-evals&quot;, response_model=McpEvalsResponse)
+def mcp_evals_service(req: McpEvalsRequest):
+    # ① Execute MCP agent evaluation suite and return assertion metrics
+    try:
+        res = run_mcp_evals_suite(run_all=req.run_all)
+        return McpEvalsResponse(**res)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+if __name__ == &quot;__main__&quot;:
+    import uvicorn
+
+    uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 😂 Joke Generator &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
