@@ -101,7 +101,7 @@
                 </div>
                 <div class="topic-content" id="content-concept">
                     <p>&quot;List all S3 buckets in my account&quot; becomes <code>use_aws(service_name=&quot;s3&quot;, operation_name=&quot;list_buckets&quot;, ...)</code>. The call runs against the real AWS account of the configured credentials and the agent summarises the result.</p>
-                    <p>Because the tool can reach the whole AWS API, the credentials should only allow read-only actions. <code>use_aws</code> asks for confirmation before mutating calls, but that confirmation is skipped when <code>BYPASS_TOOL_CONSENT=true</code> (set by the Multi-Prebuilt Tools demo in the same server).</p>
+                    <p>Because the tool can reach the whole AWS API, the credentials should only allow read-only actions. <code>use_aws</code> also asks a human to confirm mutating calls (create, delete, ...) and secret reads (e.g. <code>secretsmanager.get_secret_value</code>); the server has no terminal to answer, so those calls are refused.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -261,7 +261,7 @@ Demonstrates `use_aws` natural language cloud operations:
 1. The prebuilt `use_aws` tool from `strands_tools` exposes the whole AWS API (via boto3) to the agent.
 2. The agent translates a plain-English request into service_name + operation_name + parameters.
 3. Calls run against the real AWS account of the configured credentials, so give them a read-only IAM policy.
-   (BYPASS_TOOL_CONSENT=true, set by service 18, also skips use_aws&#x27;s confirmation for mutating calls.)
+   Mutating calls and secret reads ask for confirmation, which is refused in the server (no terminal).
 
 Run directly:
     python projects/ai-pocs/server/services/19_use_aws.py

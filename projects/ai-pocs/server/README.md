@@ -29,7 +29,7 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 17. `services/15_multi_tool_sales.py`: Autonomous sales pipeline orchestration (`get_data` -> `analyze` -> `email`).
 18. `services/16_custom_tool_inventory.py`: Domain-specific catalog stock lookup tool (`check_inventory`).
 19. `services/17_prebuilt_tools.py`: Math assistant agent using the prebuilt `strands_tools.calculator`.
-20. `services/18_multi_prebuilt_tools.py`: Multi-step pipeline with the prebuilt `http_request`, `calculator`, and `file_write` (writes real files; sets `BYPASS_TOOL_CONSENT=true`).
+20. `services/18_multi_prebuilt_tools.py`: Multi-step pipeline with the prebuilt `http_request` and `calculator`; the summary is returned to the UI (no `file_write`).
 21. `services/19_use_aws.py`: Natural language AWS assistant using the prebuilt `use_aws` tool (real API calls; use read-only credentials).
 22. `services/20_class_based_tools.py`: Class-based tools sharing state/connection pool to prevent DB connection bloat.
 23. `services/21_async_tools.py`: Async Strands tool run with `agent.invoke_async`, so warehouse lookups run in parallel.

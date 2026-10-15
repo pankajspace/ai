@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Multi-Prebuilt Tools &middot; AI POCs</title>
     <meta name="description"
-        content="🔗 Multi-Prebuilt Tools chains three prebuilt strands_tools &amp;mdash; http_request, calculator and file_write &amp;mdash; into a fetch &amp;rarr; compute &amp;rarr; save pipeline." />
+        content="🔗 Multi-Prebuilt Tools chains two prebuilt strands_tools &amp;mdash; http_request and calculator &amp;mdash; into a fetch &amp;rarr; compute &amp;rarr; summarize pipeline, and shows the summary on the card." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🔗 Multi-Prebuilt Tools<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🔗 Multi-Prebuilt Tools</strong> chains three prebuilt <code>strands_tools</code> &mdash; <code>http_request</code>, <code>calculator</code> and <code>file_write</code> &mdash; into a fetch &rarr; compute &rarr; save pipeline.</p>
+            <p class="lede"><strong>🔗 Multi-Prebuilt Tools</strong> chains two prebuilt <code>strands_tools</code> &mdash; <code>http_request</code> and <code>calculator</code> &mdash; into a fetch &rarr; compute &rarr; summarize pipeline, and shows the summary on the card.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -100,8 +100,8 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Give the agent a task like &quot;fetch stock data from this URL, average the closing prices and save the result to stock_summary.txt&quot;. It calls <code>http_request</code> to get the JSON, <code>calculator</code> for the average, and <code>file_write</code> to save the summary.</p>
-                    <p><code>file_write</code> normally asks a human to confirm before writing. Setting <code>BYPASS_TOOL_CONSENT=true</code> skips that prompt so the pipeline can run unattended &mdash; and means the agent really writes files on the server, so use it with care.</p>
+                    <p>Give the agent a task like &quot;fetch stock data from this URL, average the closing prices and show a short summary&quot;. It calls <code>http_request</code> to get the JSON, <code>calculator</code> for the average, and then writes the summary as its reply.</p>
+                    <p>The practice script also saves the summary with the prebuilt <code>file_write</code> tool (which needs <code>BYPASS_TOOL_CONSENT=true</code> to run unattended). This web demo returns the summary to the UI instead, so nothing is written on the server and no confirmation prompt is bypassed.</p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -126,8 +126,9 @@
                 <div class="topic-content" id="content-theory-concepts">
                     <ul>
                         <li><strong>Tool chaining:</strong> each tool's output becomes the next tool's input.</li>
-                        <li><strong>Tool consent:</strong> sensitive prebuilt tools ask for confirmation unless <code>BYPASS_TOOL_CONSENT</code> is set; this variable affects every tool in the process.</li>
-                        <li><strong>Written files:</strong> the card lists each <code>file_write</code> call's path and content, read from the agent's <code>toolUse</code> blocks.</li>
+                        <li><strong>Prebuilt tools:</strong> both tools come ready-made from <code>strands_tools</code>; no tool code to write.</li>
+                        <li><strong>Tool consent:</strong> <code>http_request</code> runs GET requests freely but asks for confirmation before POST / PUT / PATCH / DELETE; a server has no terminal, so those are refused.</li>
+                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
                     </ul>
                 </div>
             </section>
@@ -164,12 +165,12 @@
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">Agent (<code>18_multi_prebuilt_tools.py</code>)</span>
-                            <span class="flow-detail">Bedrock calls <code>http_request</code> &rarr; <code>calculator</code> &rarr; <code>file_write</code>.</span>
+                            <span class="flow-detail">Bedrock calls <code>http_request</code> &rarr; <code>calculator</code>, then writes the summary.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Shows the reply, the tool sequence and the files written.</span>
+                            <span class="flow-detail">Shows the summary and the tool sequence.</span>
                         </div>
                     </div>
                 </div>
@@ -207,13 +208,10 @@ flowchart TD
     B -->|"toolUse: calculator"| A
     A -->|"expression"| T1["calculator()"]:::fn
     T1 -->|"average"| A
-    B -->|"toolUse: file_write"| A
-    A -->|"path, content"| T2["file_write()"]:::fn
-    T2 -->|"file saved"| A
     A -->|"toolResult"| B
     B -->|"final text"| A
     A -->|"reply + agent.messages"| S
-    S -->|"reply + tool_sequence + written_files"| R
+    S -->|"summary + tool_sequence"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -244,7 +242,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">92 lines</span>
+                        <span class="topic-meta-chip">85 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -258,23 +256,24 @@ flowchart TD
                     <p class="file-label">Multi-Prebuilt Tools Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Multi-Prebuilt Tools Agent Service.
 
-Demonstrates chaining multiple prebuilt tools and unattended consent:
-1. Prebuilt tools from `strands_tools`: `http_request`, `calculator`, and `file_write`.
-2. Sets `BYPASS_TOOL_CONSENT=&quot;true&quot;` so sensitive tools (`file_write`) run unattended without prompts.
-3. Handles complex multi-step pipelines: Fetch external API data -&gt; Compute statistics -&gt; Save artifact.
+Demonstrates chaining multiple prebuilt tools in one pipeline:
+1. Prebuilt tools from `strands_tools`: `http_request` (fetch) and `calculator` (math).
+2. Handles multi-step pipelines: Fetch external API data -&gt; Compute statistics -&gt; Summarize.
+3. The practice script also saves the summary with the prebuilt `file_write`; this web demo
+   returns the summary to the UI instead, so nothing is written on the server.
 
 Run directly:
     python projects/ai-pocs/server/services/18_multi_prebuilt_tools.py
 &quot;&quot;&quot;
 
 import os
-from typing import Dict, List
+from typing import List
 
 from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel, Field
 from strands import Agent
 from strands.models.bedrock import BedrockModel
-from strands_tools import calculator, file_write, http_request
+from strands_tools import calculator, http_request
 
 # ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
@@ -287,9 +286,9 @@ class MultiPrebuiltToolsRequest(BaseModel):
         default=(
             &quot;Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d, &quot;
             &quot;extract the latest closing prices, calculate the average price over the period, &quot;
-            &quot;and save the results to stock_summary.txt&quot;
+            &quot;and show a short summary&quot;
         ),
-        description=&quot;Multi-step data pipeline task combining HTTP, calculation, and file writing&quot;,
+        description=&quot;Multi-step data pipeline task combining HTTP fetching and calculation&quot;,
     )
 
 
@@ -299,7 +298,6 @@ class MultiPrebuiltToolsResponse(BaseModel):
     task: str
     response: str
     tool_sequence: List[str]
-    written_files: Dict[str, str]
     provider: str
 
 
@@ -307,38 +305,32 @@ class MultiPrebuiltToolsResponse(BaseModel):
 model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
 
 
-# ③ Disable interactive tool consent prompts so file_write runs unattended
-os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = os.getenv(&quot;BYPASS_TOOL_CONSENT&quot;, &quot;true&quot;)
-
-
 def run_multi_prebuilt_tools_agent(
     task: str = MultiPrebuiltToolsRequest.model_fields[&quot;task&quot;].default,
 ) -&gt; dict:
     &quot;&quot;&quot;Run the Multi Prebuilt Tools Agent.&quot;&quot;&quot;
-    # ④ Initialize the Strands Agent with http_request, calculator, and file_write
+    # ③ Initialize the Strands Agent with the prebuilt http_request and calculator tools
     agent = Agent(
         model=BedrockModel(model_id=model_id),
-        tools=[http_request, calculator, file_write],
+        tools=[http_request, calculator],
         system_prompt=&quot;You help with data analysis tasks.&quot;,
     )
 
-    # ⑤ Execute the multi-step pipeline: fetch HTTP data -&gt; compute average -&gt; save artifact file
+    # ④ Execute the multi-step pipeline: fetch HTTP data -&gt; compute average -&gt; summarize
     response = agent(task)
 
-    # ⑥ Collect the tool calls in order, and the files the agent asked file_write to save
-    tool_uses = [
-        block[&quot;toolUse&quot;]
+    # ⑤ Collect the tool calls in the order the agent made them
+    tool_sequence = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
         for message in agent.messages
         for block in message[&quot;content&quot;]
         if &quot;toolUse&quot; in block
     ]
-    written_files = {t[&quot;input&quot;][&quot;path&quot;]: t[&quot;input&quot;][&quot;content&quot;] for t in tool_uses if t[&quot;name&quot;] == &quot;file_write&quot;}
 
     return {
         &quot;task&quot;: task,
         &quot;response&quot;: str(response),
-        &quot;tool_sequence&quot;: [f&quot;{t[&#x27;name&#x27;]}({t[&#x27;input&#x27;]})&quot; for t in tool_uses],
-        &quot;written_files&quot;: written_files,
+        &quot;tool_sequence&quot;: tool_sequence,
         &quot;provider&quot;: f&quot;Strands Multi-Tool + Bedrock ({model_id})&quot;,
     }
 
@@ -346,7 +338,6 @@ def run_multi_prebuilt_tools_agent(
 if __name__ == &quot;__main__&quot;:
     out = run_multi_prebuilt_tools_agent()
     print(&quot;Sequence:&quot;, out[&quot;tool_sequence&quot;])
-    print(&quot;Files:&quot;, list(out[&quot;written_files&quot;]))
     print(&quot;Response:&quot;, out[&quot;response&quot;])</code></pre>
                 </div>
             </section>

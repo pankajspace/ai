@@ -1,22 +1,23 @@
 """Multi-Prebuilt Tools Agent Service.
 
-Demonstrates chaining multiple prebuilt tools and unattended consent:
-1. Prebuilt tools from `strands_tools`: `http_request`, `calculator`, and `file_write`.
-2. Sets `BYPASS_TOOL_CONSENT="true"` so sensitive tools (`file_write`) run unattended without prompts.
-3. Handles complex multi-step pipelines: Fetch external API data -> Compute statistics -> Save artifact.
+Demonstrates chaining multiple prebuilt tools in one pipeline:
+1. Prebuilt tools from `strands_tools`: `http_request` (fetch) and `calculator` (math).
+2. Handles multi-step pipelines: Fetch external API data -> Compute statistics -> Summarize.
+3. The practice script also saves the summary with the prebuilt `file_write`; this web demo
+   returns the summary to the UI instead, so nothing is written on the server.
 
 Run directly:
     python projects/ai-pocs/server/services/18_multi_prebuilt_tools.py
 """
 
 import os
-from typing import Dict, List
+from typing import List
 
 from dotenv import find_dotenv, load_dotenv
 from pydantic import BaseModel, Field
 from strands import Agent
 from strands.models.bedrock import BedrockModel
-from strands_tools import calculator, file_write, http_request
+from strands_tools import calculator, http_request
 
 # ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
@@ -29,9 +30,9 @@ class MultiPrebuiltToolsRequest(BaseModel):
         default=(
             "Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d, "
             "extract the latest closing prices, calculate the average price over the period, "
-            "and save the results to stock_summary.txt"
+            "and show a short summary"
         ),
-        description="Multi-step data pipeline task combining HTTP, calculation, and file writing",
+        description="Multi-step data pipeline task combining HTTP fetching and calculation",
     )
 
 
@@ -41,7 +42,6 @@ class MultiPrebuiltToolsResponse(BaseModel):
     task: str
     response: str
     tool_sequence: List[str]
-    written_files: Dict[str, str]
     provider: str
 
 
@@ -49,38 +49,32 @@ class MultiPrebuiltToolsResponse(BaseModel):
 model_id = os.getenv("BEDROCK_MODEL_ID", "amazon.nova-lite-v1:0")
 
 
-# ③ Disable interactive tool consent prompts so file_write runs unattended
-os.environ["BYPASS_TOOL_CONSENT"] = os.getenv("BYPASS_TOOL_CONSENT", "true")
-
-
 def run_multi_prebuilt_tools_agent(
     task: str = MultiPrebuiltToolsRequest.model_fields["task"].default,
 ) -> dict:
     """Run the Multi Prebuilt Tools Agent."""
-    # ④ Initialize the Strands Agent with http_request, calculator, and file_write
+    # ③ Initialize the Strands Agent with the prebuilt http_request and calculator tools
     agent = Agent(
         model=BedrockModel(model_id=model_id),
-        tools=[http_request, calculator, file_write],
+        tools=[http_request, calculator],
         system_prompt="You help with data analysis tasks.",
     )
 
-    # ⑤ Execute the multi-step pipeline: fetch HTTP data -> compute average -> save artifact file
+    # ④ Execute the multi-step pipeline: fetch HTTP data -> compute average -> summarize
     response = agent(task)
 
-    # ⑥ Collect the tool calls in order, and the files the agent asked file_write to save
-    tool_uses = [
-        block["toolUse"]
+    # ⑤ Collect the tool calls in the order the agent made them
+    tool_sequence = [
+        f"{block['toolUse']['name']}({block['toolUse']['input']})"
         for message in agent.messages
         for block in message["content"]
         if "toolUse" in block
     ]
-    written_files = {t["input"]["path"]: t["input"]["content"] for t in tool_uses if t["name"] == "file_write"}
 
     return {
         "task": task,
         "response": str(response),
-        "tool_sequence": [f"{t['name']}({t['input']})" for t in tool_uses],
-        "written_files": written_files,
+        "tool_sequence": tool_sequence,
         "provider": f"Strands Multi-Tool + Bedrock ({model_id})",
     }
 
@@ -88,5 +82,4 @@ def run_multi_prebuilt_tools_agent(
 if __name__ == "__main__":
     out = run_multi_prebuilt_tools_agent()
     print("Sequence:", out["tool_sequence"])
-    print("Files:", list(out["written_files"]))
     print("Response:", out["response"])

@@ -4,7 +4,7 @@ Demonstrates `use_aws` natural language cloud operations:
 1. The prebuilt `use_aws` tool from `strands_tools` exposes the whole AWS API (via boto3) to the agent.
 2. The agent translates a plain-English request into service_name + operation_name + parameters.
 3. Calls run against the real AWS account of the configured credentials, so give them a read-only IAM policy.
-   (BYPASS_TOOL_CONSENT=true, set by service 18, also skips use_aws's confirmation for mutating calls.)
+   Mutating calls and secret reads ask for confirmation, which is refused in the server (no terminal).
 
 Run directly:
     python projects/ai-pocs/server/services/19_use_aws.py

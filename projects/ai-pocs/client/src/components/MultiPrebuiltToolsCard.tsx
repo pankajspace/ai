@@ -5,7 +5,6 @@ export interface MultiPrebuiltToolsResponse {
   task: string
   response: string
   tool_sequence: string[]
-  written_files: Record<string, string>
   provider: string
 }
 
@@ -14,9 +13,9 @@ export interface MultiPrebuiltToolsCardProps {
 }
 
 const PRESETS = [
-  'Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d, extract the latest closing prices, calculate the average price over the period, and save the results to stock_summary.txt',
-  'Fetch crypto data from https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=1d&range=3d, compute the average closing price, and write a summary to btc_summary.txt',
-  'Query https://httpbin.org/json, extract the slideshow author, and save it to author_info.txt',
+  'Fetch stock data from https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d, extract the latest closing prices, calculate the average price over the period, and show a short summary',
+  'Fetch crypto data from https://query1.finance.yahoo.com/v8/finance/chart/BTC-USD?interval=1d&range=3d, compute the average closing price, and show a short summary',
+  'Query https://httpbin.org/json, and tell me the slideshow title and author',
 ]
 
 export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltToolsCardProps = {}) {
@@ -59,15 +58,15 @@ export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltTool
         <a className="info-link" href="info/multi-prebuilt-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
       <p className="card-concept">
-        Chains pre-built <code>http_request</code>, <code>calculator</code>, and <code>file_write</code> tools in a single multi-step pipeline.
+        Chains pre-built <code>http_request</code> and <code>calculator</code> tools in a single multi-step pipeline.
       </p>
       <p>
-        Executes multi-step workflows chaining HTTP fetch, numerical calculation, and automated file output.
+        Executes multi-step workflows chaining HTTP fetch and numerical calculation, then shows the summary here.
       </p>
       <form onSubmit={handleSubmit} className="form-row">
         <input
           type="text"
-          placeholder="e.g. Fetch data and save summary to file…"
+          placeholder="e.g. Fetch data and summarize it…"
           value={task}
           onChange={(e) => setTask(e.target.value)}
           required
@@ -107,16 +106,6 @@ export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltTool
               <strong>Execution Trace:</strong>
               {result.tool_sequence.map((c, i) => (
                 <div key={i} style={{ fontFamily: 'monospace' }}>&bull; {c}</div>
-              ))}
-            </div>
-          )}
-          {Object.keys(result.written_files).length > 0 && (
-            <div style={{ background: 'var(--bg-elevated-2)', padding: '0.5rem', borderRadius: '4px', marginBottom: '0.5rem' }}>
-              <strong>Saved File Artifacts:</strong>
-              {Object.entries(result.written_files).map(([fname, content]) => (
-                <div key={fname} style={{ fontSize: '0.8rem', marginTop: '0.2rem' }}>
-                  <code>{fname}</code>: <em>{content}</em>
-                </div>
               ))}
             </div>
           )}
