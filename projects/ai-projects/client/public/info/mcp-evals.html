@@ -1,160 +1,265 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TechToday — FastMCP Evals Suite &middot; How It Works</title>
-  <link rel="stylesheet" href="../css/info.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — FastMCP Evals Suite &middot; AI Projects</title>
+    <meta name="description"
+        content="🧪 FastMCP Evals Suite runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both Tool Routing Accuracy (did it pick the right tool or abstain on irrelevant queries?) and Ground-Truth Keyword Verification." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
 </head>
+
 <body>
-  <header>
-    <nav class="nav container">
-      <a href="https://www.techtoday.co.in/" class="brand">
-        <span class="logo" aria-hidden="true"></span>
-        <span>TechToday</span>
-      </a>
-      <a href="../" class="nav-back-link">&larr; Back to AI Projects</a>
-    </nav>
-  </header>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Projects</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Projects</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-31-mcp-evals-py">31_mcp_evals.py</a></li>
+                    <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🧪 FastMCP Evals Suite<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-  <main>
-    <div class="hero">
-      <div class="container">
-        <h1>🧪 FastMCP Evals Suite — How It Works</h1>
-        <p class="subtitle">The concept, request flow, and source code behind this demo</p>
-      </div>
-    </div>
+            <p class="lede"><strong>🧪 FastMCP Evals Suite</strong> runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both <strong>Tool Routing Accuracy</strong> (did it pick the right tool or abstain on irrelevant queries?) and <strong>Ground-Truth Keyword Verification</strong>. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
 
-    <section>
-      <div class="container">
-        <div class="units-container">
-
-          <!-- Unit 1: How It Works -->
-          <div class="unit-card">
-            <div class="unit-header">
-              <span class="unit-num">Unit 1</span>
-              <h2 class="unit-title">How It Works</h2>
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>7 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>3 Python Files in Full</span>
+                </div>
             </div>
-            <div class="unit-topics">
-
-              <div class="topic-section open" id="concept">
-                <div class="topic-header">
-                  <span class="topic-num">1.1</span>
-                  <span class="topic-name">Concept</span>
-                  <span class="topic-meta-chip">overview</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <div class="concept-box">
-                    <strong>🧪 FastMCP Evals Suite</strong> runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both <strong>Tool Routing Accuracy</strong> (did it pick the right tool or abstain on irrelevant queries?) and <strong>Ground-Truth Keyword Verification</strong>.
-                  </div>
-                  <p>Production AI agents require automated regression suites before deploying prompt or schema changes. This evaluation runner executes 3 test cases—a live match score query (must call <code>get_live_score</code>), a player stats query (must call <code>get_player_stats</code>), and an out-of-domain general knowledge query (must call <code>None</code>)—and computes overall pass/fail accuracy and per-case latency.</p>
-                </div>
-              </div>
-
-              <div class="topic-section" id="theory-concepts">
-                <div class="topic-header">
-                  <span class="topic-num">1.2</span>
-                  <span class="topic-name">Theory &amp; Concepts</span>
-                  <span class="topic-meta-chip">fundamentals</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p><strong>Core Concepts:</strong></p><ul><li><strong>Trajectory Evaluation (Tool Routing Assertion):</strong> Verifies that <code>actual_tool == expected_tool</code>, including negative testing (<code>expected_tool=None</code>) so the agent does not over-trigger tools on general questions.</li><li><strong>Outcome Evaluation (Ground-Truth Verification):</strong> Asserts that all expected factual tokens (e.g., <code>["287", "198", "india", "west indies"]</code>) appear in the final response.</li></ul>
-                </div>
-              </div>
-
-              <div class="topic-section" id="request-flow">
-                <div class="topic-header">
-                  <span class="topic-num">1.3</span>
-                  <span class="topic-name">Request flow</span>
-                  <span class="topic-meta-chip">end-to-end</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p>What happens when you click the action button on the <strong>🧪 FastMCP Evals Suite</strong> card:</p>
-                  <div class="flow-diagram">
-                  <div class="flow-step">
-                    <strong>1. Browser</strong> — <code>McpEvalsCard.tsx</code> sends <code>POST /api/mcp-evals</code> with <code>{"run_all": true}</code>.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>2. FastAPI Route (<code>server/main.py</code>)</strong> — <code>mcp_evals_service(req)</code> calls <code>run_mcp_evals_suite(req.run_all)</code>.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>3. Test Suite Runner (<code>31_mcp_evals.py</code>)</strong> — Iterates through <code>TEST_SUITE</code> and calls <code>run_single_mcp_eval_case()</code> for each case.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>4. Trajectory & Outcome Assertions</strong> — Checks <code>actual_tool == case["expected_tool"]</code>, runs the MCP tool on <code>cricket_server.py</code> if called, and verifies all <code>expected_keywords</code> in the final answer.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step return">
-                    &#x21A9; <strong>Return</strong> — Returns <code>McpEvalsResponse</code> with <code>total_cases</code>, <code>passed_cases</code>, <code>accuracy_percentage</code>, and per-case <code>TestCaseEvalResult</code> items.
-                  </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="topic-section" id="code-flow">
-                <div class="topic-header">
-                  <span class="topic-num">1.4</span>
-                  <span class="topic-name">Code flow</span>
-                  <span class="topic-meta-chip">step-by-step</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p>Function-level call graph across the React card, FastAPI route, and Python service (steps <code>①</code>, <code>②</code>, ... match the numbered comments in Unit 2):</p>
-                  <pre class="mermaid">flowchart TD
-    UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals { run_all }"]:::entry
-    Route["main.py<br/>mcp_evals_service(req)"]:::fn
-    Svc["31_mcp_evals.py<br/>run_mcp_evals_suite(run_all)"]:::fn
-    Case["31_mcp_evals.py<br/>run_single_mcp_eval_case(case)"]:::fn
-    LLM[("Groq / OpenAI API<br/>Tool Routing + Synthesis")]:::ext
-    MCP["mcp/cricket_server.py<br/>get_live_score() / get_player_stats()"]:::fn
-    Ret(["McpEvalsResponse JSON<br/>{ passed_cases, accuracy_percentage, results }"]):::ret
-
-    UI -->|"① POST JSON"| Route
-    Route -->|"② run_mcp_evals_suite()"| Svc
-    Svc -->|"③ loop over TEST_SUITE"| Case
-    Case -->|"④ send test prompt + schemas"| LLM
-    LLM -.->|"returns tool_calls or direct answer"| Case
-    Case -->|"⑤ invoke MCP tool if called"| MCP
-    MCP -.->|"returns ground-truth dict"| Case
-    Case -.->|"returns TestCaseEvalResult"| Svc
-    Svc -.->|"returns suite summary + results"| Route
-    Route -.->|"returns HTTP 200"| Ret
-
-    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0</pre>
-                </div>
-              </div>
-
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
             </div>
-          </div>
 
-          <!-- Unit 2: Source Code -->
-          <div class="unit-card">
-            <div class="unit-header">
-              <span class="unit-num">Unit 2</span>
-              <h2 class="unit-title">Source Code</h2>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
             </div>
-            <div class="unit-topics">
 
-            <div class="topic-section" id="source-server-services-31-mcp-evals-py">
-              <div class="topic-header">
-                <span class="topic-num">2.1</span>
-                <span class="topic-name"><span class="file-path">server/services/31_mcp_evals.py</span></span>
-                <span class="topic-meta-chip">203 lines</span>
-                <span class="topic-chevron">&#9654;</span>
-              </div>
-              <div class="topic-body">
-                <p class="file-label">MCP Agent Evaluation Suite Service.</p>
-                <pre><code class="language-python">&quot;&quot;&quot;MCP Agent Evaluation Suite Service.
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p><strong>🧪 FastMCP Evals Suite</strong> runs an automated unit-test evaluation harness against the MCP cricket agent, asserting both <strong>Tool Routing Accuracy</strong> (did it pick the right tool or abstain on irrelevant queries?) and <strong>Ground-Truth Keyword Verification</strong>.</p>
+                    <p>Production AI agents require automated regression suites before deploying prompt or schema changes. This evaluation runner executes 3 test cases—a live match score query (must call <code>get_live_score</code>), a player stats query (must call <code>get_player_stats</code>), and an out-of-domain general knowledge query (must call <code>None</code>)—and computes overall pass/fail accuracy and per-case latency.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Trajectory Evaluation (Tool Routing Assertion):</strong> Verifies that <code>actual_tool == expected_tool</code>, including negative testing (<code>expected_tool=None</code>) so the agent does not over-trigger tools on general questions.</li><li><strong>Outcome Evaluation (Ground-Truth Verification):</strong> Asserts that all expected factual tokens (e.g., <code>["287", "198", "india", "west indies"]</code>) appear in the final response.</li></ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>McpEvalsCard.tsx</code> sends <code>POST /api/mcp-evals</code> with <code>{"run_all": true}</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-detail"><code>mcp_evals_service(req)</code> calls <code>run_mcp_evals_suite(req.run_all)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Test Suite Runner (<code>31_mcp_evals.py</code>)</span>
+                            <span class="flow-detail">Iterates through <code>TEST_SUITE</code> and calls <code>run_single_mcp_eval_case()</code> for each case.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Trajectory & Outcome Assertions</span>
+                            <span class="flow-detail">Checks <code>actual_tool == case["expected_tool"]</code>, runs the MCP tool on <code>cricket_server.py</code> if called, and verifies all <code>expected_keywords</code> in the final answer.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Returns <code>McpEvalsResponse</code> with <code>total_cases</code>, <code>passed_cases</code>, <code>accuracy_percentage</code>, and per-case <code>TestCaseEvalResult</code> items.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                                UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals { run_all }"]:::entry
+                                Route["main.py<br/>mcp_evals_service(req)"]:::fn
+                                Svc["31_mcp_evals.py<br/>run_mcp_evals_suite(run_all)"]:::fn
+                                Case["31_mcp_evals.py<br/>run_single_mcp_eval_case(case)"]:::fn
+                                LLM[("Groq / OpenAI API<br/>Tool Routing + Synthesis")]:::ext
+                                MCP["mcp/cricket_server.py<br/>get_live_score() / get_player_stats()"]:::fn
+                                Ret(["McpEvalsResponse JSON<br/>{ passed_cases, accuracy_percentage, results }"]):::ret
+                            
+                                UI -->|"① POST JSON"| Route
+                                Route -->|"② run_mcp_evals_suite()"| Svc
+                                Svc -->|"③ loop over TEST_SUITE"| Case
+                                Case -->|"④ send test prompt + schemas"| LLM
+                                LLM -.->|"returns tool_calls or direct answer"| Case
+                                Case -->|"⑤ invoke MCP tool if called"| MCP
+                                MCP -.->|"returns ground-truth dict"| Case
+                                Case -.->|"returns TestCaseEvalResult"| Svc
+                                Svc -.->|"returns suite summary + results"| Route
+                                Route -.->|"returns HTTP 200"| Ret
+                            
+                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-31-mcp-evals-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-31-mcp-evals-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-31-mcp-evals-py" class="topic-title is-file">31_mcp_evals.py<a class="headerlink" href="#source-31-mcp-evals-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">203 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-31-mcp-evals-py">
+                    <span class="file-path">server/services/31_mcp_evals.py</span>
+                    <p class="file-label">MCP Agent Evaluation Suite Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;MCP Agent Evaluation Suite Service.
 
 Runs unit-test style evaluation assertions against the MCP-enabled cricket agent:
 1. Tool routing assertion: verifies the LLM chooses the correct tool (`get_live_score`, `get_player_stats`, or None).
@@ -357,19 +462,32 @@ def run_mcp_evals_suite(run_all: bool = True) -&gt; dict:
 if __name__ == &quot;__main__&quot;:
     suite_out = run_mcp_evals_suite()
     print(f&quot;Suite: {suite_out[&#x27;passed_cases&#x27;]}/{suite_out[&#x27;total_cases&#x27;]} passed ({suite_out[&#x27;accuracy_percentage&#x27;]}%)&quot;)</code></pre>
-              </div>
-            </div>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-            <div class="topic-section" id="source-server-services-mcp-cricket-server-py">
-              <div class="topic-header">
-                <span class="topic-num">2.2</span>
-                <span class="topic-name"><span class="file-path">server/services/mcp/cricket_server.py</span></span>
-                <span class="topic-meta-chip">69 lines</span>
-                <span class="topic-chevron">&#9654;</span>
-              </div>
-              <div class="topic-body">
-                <p class="file-label">Cricket MCP Server.</p>
-                <pre><code class="language-python">&quot;&quot;&quot;Cricket MCP Server.
+            <section class="topic-section is-collapsed" id="sec-source-cricket-server-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-cricket-server-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-cricket-server-py" class="topic-title is-file">cricket_server.py<a class="headerlink" href="#source-cricket-server-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">69 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-cricket-server-py">
+                    <span class="file-path">server/services/mcp/cricket_server.py</span>
+                    <p class="file-label">Cricket MCP Server.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Cricket MCP Server.
 
 Provides Model Context Protocol (MCP) tool endpoints for cricket matches and player statistics:
 1. `get_live_score(teams)`: Fetches live scorecard and match situation.
@@ -438,19 +556,32 @@ try:
 except ImportError:
     if __name__ == &quot;__main__&quot;:
         print(&quot;FastMCP not installed, direct functions available.&quot;)</code></pre>
-              </div>
-            </div>
+                </div>
+            </section>
+<!-- ============================================================ 7 -->
 
-            <div class="topic-section" id="source-server-main-py">
-              <div class="topic-header">
-                <span class="topic-num">2.3</span>
-                <span class="topic-name"><span class="file-path">server/main.py</span></span>
-                <span class="topic-meta-chip">561 lines</span>
-                <span class="topic-chevron">&#9654;</span>
-              </div>
-              <div class="topic-body">
-                <p class="file-label">FastAPI application exposing all 31 AI Projects demo endpoints with CORS and background embedding warmup.</p>
-                <pre><code class="language-python">import threading
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">561 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI application exposing all 31 AI Projects demo endpoints with CORS and background embedding warmup.</p>
+                    <pre><code data-lang="python">import threading
 from contextlib import asynccontextmanager
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -1011,23 +1142,16 @@ if __name__ == &quot;__main__&quot;:
     import uvicorn
 
     uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
-              </div>
-            </div>
+                </div>
+            </section>
 
-            </div>
-          </div>
+        </article>
+    </main>
+    <footer class="study-footer">AI Projects &mdash; 🧪 FastMCP Evals Suite &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">&copy; 2026 TechToday &middot; Built with FastAPI, React &amp; Vite</div>
-  </footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script src="../js/info.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
 </body>
+
 </html>

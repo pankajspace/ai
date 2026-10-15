@@ -1,173 +1,278 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>TechToday — Sales Pipeline Agent &middot; How It Works</title>
-  <link rel="stylesheet" href="../css/info.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" />
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Sales Pipeline Agent &middot; AI Projects</title>
+    <meta name="description"
+        content="📈 Sales Pipeline Agent orchestrates a 3-stage enterprise workflow—fetch_sales_data(quarter) → calculate_metrics(revenues) → send_email(recipient, subject, body)—driven autonomously by an LLM." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
 </head>
+
 <body>
-  <header>
-    <nav class="nav container">
-      <a href="https://www.techtoday.co.in/" class="brand">
-        <span class="logo" aria-hidden="true"></span>
-        <span>TechToday</span>
-      </a>
-      <a href="../" class="nav-back-link">&larr; Back to AI Projects</a>
-    </nav>
-  </header>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Projects</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Projects</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-15-multi-tool-sales-py">15_multi_tool_sales.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">📈 Sales Pipeline Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
 
-  <main>
-    <div class="hero">
-      <div class="container">
-        <h1>📈 Sales Pipeline Agent — How It Works</h1>
-        <p class="subtitle">The concept, request flow, and source code behind this demo</p>
-      </div>
-    </div>
+            <p class="lede"><strong>📈 Sales Pipeline Agent</strong> orchestrates a 3-stage enterprise workflow—<code>fetch_sales_data(quarter)</code> → <code>calculate_metrics(revenues)</code> → <code>send_email(recipient, subject, body)</code>—driven autonomously by an LLM. Open a topic below to explore the concept, the end-to-end request path, and the function-level call graph, then read the complete Python source code file by file.</p>
 
-    <section>
-      <div class="container">
-        <div class="units-container">
-
-          <!-- Unit 1: How It Works -->
-          <div class="unit-card">
-            <div class="unit-header">
-              <span class="unit-num">Unit 1</span>
-              <h2 class="unit-title">How It Works</h2>
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
             </div>
-            <div class="unit-topics">
-
-              <div class="topic-section open" id="concept">
-                <div class="topic-header">
-                  <span class="topic-num">1.1</span>
-                  <span class="topic-name">Concept</span>
-                  <span class="topic-meta-chip">overview</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <div class="concept-box">
-                    <strong>📈 Sales Pipeline Agent</strong> orchestrates a 3-stage enterprise workflow—<code>fetch_sales_data(quarter)</code> → <code>calculate_metrics(revenues)</code> → <code>send_email(recipient, subject, body)</code>—driven autonomously by an LLM.
-                  </div>
-                  <p>Given a high-level goal like <em>"Pull last quarter's sales data and email a summary to the team"</em>, the agent discovers that it must first fetch the raw quarterly records, pass the extracted revenue numbers into the KPI calculator, and finally compose and dispatch an email containing those computed metrics.</p>
-                </div>
-              </div>
-
-              <div class="topic-section" id="theory-concepts">
-                <div class="topic-header">
-                  <span class="topic-num">1.2</span>
-                  <span class="topic-name">Theory &amp; Concepts</span>
-                  <span class="topic-meta-chip">fundamentals</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p><strong>Core Concepts:</strong></p><ul><li><strong>Autonomous Workflow Planning:</strong> Rather than hardcoding a pipeline in Python, the LLM plans the 3-step execution order from tool schemas alone.</li><li><strong>Data Transformation Across Tools:</strong> The agent extracts the numerical <code>revenue</code> values from <code>fetch_sales_data</code>'s JSON output to construct the <code>revenues: List[float]</code> argument for <code>calculate_metrics</code>.</li></ul>
-                </div>
-              </div>
-
-              <div class="topic-section" id="request-flow">
-                <div class="topic-header">
-                  <span class="topic-num">1.3</span>
-                  <span class="topic-name">Request flow</span>
-                  <span class="topic-meta-chip">end-to-end</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p>What happens when you click the action button on the <strong>📈 Sales Pipeline Agent</strong> card:</p>
-                  <div class="flow-diagram">
-                  <div class="flow-step">
-                    <strong>1. Browser</strong> — <code>MultiToolSalesCard.tsx</code> sends <code>POST /api/multi-tool-sales</code> with a natural-language task.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>2. FastAPI Route (<code>server/main.py</code>)</strong> — <code>multi_tool_sales_service(req)</code> calls <code>run_multi_tool_sales_agent(task_text)</code>.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>3. Step 1 — Fetch Data (<code>15_multi_tool_sales.py</code>)</strong> — Agent calls <code>fetch_sales_data("Q4")</code> to retrieve monthly revenue and unit counts.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>4. Step 2 — Compute KPIs</strong> — Agent passes <code>[42000, 51500, 63200]</code> to <code>calculate_metrics(revenues)</code>.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step">
-                    <strong>5. Step 3 — Send Email</strong> — Agent calls <code>send_email(recipient, subject, body)</code> with the formatted KPI report.
-                  </div>
-                  <div class="flow-arrow">&#x2193;</div>
-                  <div class="flow-step return">
-                    &#x21A9; <strong>Return</strong> — Returns <code>MultiToolSalesResponse</code> with the final confirmation and the full <code>pipeline_steps</code> trace.
-                  </div>
-                  </div>
-                </div>
-              </div>
-
-              <div class="topic-section" id="code-flow">
-                <div class="topic-header">
-                  <span class="topic-num">1.4</span>
-                  <span class="topic-name">Code flow</span>
-                  <span class="topic-meta-chip">step-by-step</span>
-                  <span class="topic-chevron">&#9654;</span>
-                </div>
-                <div class="topic-body">
-                  <p>Function-level call graph across the React card, FastAPI route, and Python service (steps <code>①</code>, <code>②</code>, ... match the numbered comments in Unit 2):</p>
-                  <pre class="mermaid">flowchart TD
-    UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales { task }"]:::entry
-    Route["main.py<br/>multi_tool_sales_service(req)"]:::fn
-    Svc["15_multi_tool_sales.py<br/>run_multi_tool_sales_agent(task)"]:::fn
-    LLM[("OpenAI API<br/>6-Turn Agent Loop")]:::ext
-    T1["fetch_sales_data(quarter)"]:::fn
-    T2["calculate_metrics(revenues)"]:::fn
-    T3["send_email(recipient, subject, body)"]:::fn
-    Ret(["MultiToolSalesResponse JSON<br/>{ answer, pipeline_steps }"]):::ret
-
-    UI -->|"① POST JSON"| Route
-    Route -->|"② run_multi_tool_sales_agent()"| Svc
-    Svc -->|"③ task + 3 tool schemas"| LLM
-    LLM -.->|"returns call #1: fetch_sales_data"| Svc
-    Svc -->|"④ fetch Q4 records"| T1
-    T1 -.->|"returns monthly sales"| Svc
-    Svc -->|"⑤ feed sales records"| LLM
-    LLM -.->|"returns call #2: calculate_metrics"| Svc
-    Svc -->|"⑥ compute total/avg/peak"| T2
-    T2 -.->|"returns KPI dict"| Svc
-    Svc -->|"⑦ feed KPIs"| LLM
-    LLM -.->|"returns call #3: send_email"| Svc
-    Svc -->|"⑧ dispatch email"| T3
-    T3 -.->|"returns sent confirmation"| Svc
-    Svc -->|"⑨ final synthesis"| LLM
-    LLM -.->|"returns executive summary"| Svc
-    Svc -.->|"returns { answer, pipeline_steps }"| Route
-    Route -.->|"returns HTTP 200"| Ret
-
-    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
-    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
-    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
-    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0</pre>
-                </div>
-              </div>
-
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
             </div>
-          </div>
 
-          <!-- Unit 2: Source Code -->
-          <div class="unit-card">
-            <div class="unit-header">
-              <span class="unit-num">Unit 2</span>
-              <h2 class="unit-title">Source Code</h2>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
             </div>
-            <div class="unit-topics">
 
-            <div class="topic-section" id="source-server-services-15-multi-tool-sales-py">
-              <div class="topic-header">
-                <span class="topic-num">2.1</span>
-                <span class="topic-name"><span class="file-path">server/services/15_multi_tool_sales.py</span></span>
-                <span class="topic-meta-chip">234 lines</span>
-                <span class="topic-chevron">&#9654;</span>
-              </div>
-              <div class="topic-body">
-                <p class="file-label">Multi-Tool Sales Pipeline Agent Service.</p>
-                <pre><code class="language-python">&quot;&quot;&quot;Multi-Tool Sales Pipeline Agent Service.
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p><strong>📈 Sales Pipeline Agent</strong> orchestrates a 3-stage enterprise workflow—<code>fetch_sales_data(quarter)</code> → <code>calculate_metrics(revenues)</code> → <code>send_email(recipient, subject, body)</code>—driven autonomously by an LLM.</p>
+                    <p>Given a high-level goal like <em>"Pull last quarter's sales data and email a summary to the team"</em>, the agent discovers that it must first fetch the raw quarterly records, pass the extracted revenue numbers into the KPI calculator, and finally compose and dispatch an email containing those computed metrics.</p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>Core Concepts:</strong></p><ul><li><strong>Autonomous Workflow Planning:</strong> Rather than hardcoding a pipeline in Python, the LLM plans the 3-step execution order from tool schemas alone.</li><li><strong>Data Transformation Across Tools:</strong> The agent extracts the numerical <code>revenue</code> values from <code>fetch_sales_data</code>'s JSON output to construct the <code>revenues: List[float]</code> argument for <code>calculate_metrics</code>.</li></ul>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>MultiToolSalesCard.tsx</code> sends <code>POST /api/multi-tool-sales</code> with a natural-language task.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI Route (<code>server/main.py</code>)</span>
+                            <span class="flow-detail"><code>multi_tool_sales_service(req)</code> calls <code>run_multi_tool_sales_agent(task_text)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Step 1 — Fetch Data (<code>15_multi_tool_sales.py</code>)</span>
+                            <span class="flow-detail">Agent calls <code>fetch_sales_data("Q4")</code> to retrieve monthly revenue and unit counts.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Step 2 — Compute KPIs</span>
+                            <span class="flow-detail">Agent passes <code>[42000, 51500, 63200]</code> to <code>calculate_metrics(revenues)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Step 3 — Send Email</span>
+                            <span class="flow-detail">Agent calls <code>send_email(recipient, subject, body)</code> with the formatted KPI report.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Returns <code>MultiToolSalesResponse</code> with the final confirmation and the full <code>pipeline_steps</code> trace.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+                            flowchart TD
+                                UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales { task }"]:::entry
+                                Route["main.py<br/>multi_tool_sales_service(req)"]:::fn
+                                Svc["15_multi_tool_sales.py<br/>run_multi_tool_sales_agent(task)"]:::fn
+                                LLM[("OpenAI API<br/>6-Turn Agent Loop")]:::ext
+                                T1["fetch_sales_data(quarter)"]:::fn
+                                T2["calculate_metrics(revenues)"]:::fn
+                                T3["send_email(recipient, subject, body)"]:::fn
+                                Ret(["MultiToolSalesResponse JSON<br/>{ answer, pipeline_steps }"]):::ret
+                            
+                                UI -->|"① POST JSON"| Route
+                                Route -->|"② run_multi_tool_sales_agent()"| Svc
+                                Svc -->|"③ task + 3 tool schemas"| LLM
+                                LLM -.->|"returns call #1: fetch_sales_data"| Svc
+                                Svc -->|"④ fetch Q4 records"| T1
+                                T1 -.->|"returns monthly sales"| Svc
+                                Svc -->|"⑤ feed sales records"| LLM
+                                LLM -.->|"returns call #2: calculate_metrics"| Svc
+                                Svc -->|"⑥ compute total/avg/peak"| T2
+                                T2 -.->|"returns KPI dict"| Svc
+                                Svc -->|"⑦ feed KPIs"| LLM
+                                LLM -.->|"returns call #3: send_email"| Svc
+                                Svc -->|"⑧ dispatch email"| T3
+                                T3 -.->|"returns sent confirmation"| Svc
+                                Svc -->|"⑨ final synthesis"| LLM
+                                LLM -.->|"returns executive summary"| Svc
+                                Svc -.->|"returns { answer, pipeline_steps }"| Route
+                                Route -.->|"returns HTTP 200"| Ret
+                            
+                                classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+                                classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+                                classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                                classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the shared FastAPI routes.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-15-multi-tool-sales-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-15-multi-tool-sales-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-15-multi-tool-sales-py" class="topic-title is-file">15_multi_tool_sales.py<a class="headerlink" href="#source-15-multi-tool-sales-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">234 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-15-multi-tool-sales-py">
+                    <span class="file-path">server/services/15_multi_tool_sales.py</span>
+                    <p class="file-label">Multi-Tool Sales Pipeline Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Multi-Tool Sales Pipeline Agent Service.
 
 Demonstrates autonomous multi-tool planning and chained orchestration:
 1. Three tools provided without explicit execution order:
@@ -401,19 +506,32 @@ if __name__ == &quot;__main__&quot;:
     res = run_multi_tool_sales_agent()
     print(&quot;Sequence:&quot;, res[&quot;tool_sequence&quot;])
     print(&quot;Response:&quot;, res[&quot;response&quot;])</code></pre>
-              </div>
-            </div>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
 
-            <div class="topic-section" id="source-server-main-py">
-              <div class="topic-header">
-                <span class="topic-num">2.2</span>
-                <span class="topic-name"><span class="file-path">server/main.py</span></span>
-                <span class="topic-meta-chip">561 lines</span>
-                <span class="topic-chevron">&#9654;</span>
-              </div>
-              <div class="topic-body">
-                <p class="file-label">FastAPI application exposing all 31 AI Projects demo endpoints with CORS and background embedding warmup.</p>
-                <pre><code class="language-python">import threading
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">561 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI application exposing all 31 AI Projects demo endpoints with CORS and background embedding warmup.</p>
+                    <pre><code data-lang="python">import threading
 from contextlib import asynccontextmanager
 from dotenv import find_dotenv, load_dotenv
 from fastapi import FastAPI, HTTPException
@@ -974,23 +1092,16 @@ if __name__ == &quot;__main__&quot;:
     import uvicorn
 
     uvicorn.run(&quot;main:app&quot;, host=&quot;0.0.0.0&quot;, port=8000, reload=True)</code></pre>
-              </div>
-            </div>
+                </div>
+            </section>
 
-            </div>
-          </div>
+        </article>
+    </main>
+    <footer class="study-footer">AI Projects &mdash; 📈 Sales Pipeline Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
-        </div>
-      </div>
-    </section>
-  </main>
-
-  <footer>
-    <div class="container">&copy; 2026 TechToday &middot; Built with FastAPI, React &amp; Vite</div>
-  </footer>
-
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
-  <script src="../js/info.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
 </body>
+
 </html>
