@@ -74,7 +74,7 @@ export function RagCard({ apiBase = API_BASE }: RagCardProps = {}) {
       setResult(data)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setError('Request timed out after 25 seconds. Please verify OpenAI API key and server connection.')
+        setError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setError(err instanceof Error ? err.message : 'Failed to query RAG service')
       }
@@ -87,9 +87,11 @@ export function RagCard({ apiBase = API_BASE }: RagCardProps = {}) {
     <div className="card card-half">
       <h2>
         <span className="card-title">📚 Paragraph RAG</span>
-        <span className="badge badge-healthy">LangChain + RAG</span>
         <a className="info-link" href="info/rag.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Splits source text with <code>RecursiveCharacterTextSplitter</code>, ranks top matching chunks, and grounds the model on retrieved context.
+      </p>
       <p>
         Ask questions about any paragraph using Retrieval-Augmented Generation (chunking &rarr; semantic retrieval &rarr; grounded answer).
       </p>

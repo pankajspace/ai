@@ -55,9 +55,11 @@ export function MultiPrebuiltToolsCard({ apiBase = API_BASE }: MultiPrebuiltTool
     <div className="card card-half">
       <h2>
         <span className="card-title">🔗 Multi-Prebuilt Tools</span>
-        <span className="badge badge-healthy">HTTP · Math · File</span>
         <a className="info-link" href="info/multi-prebuilt-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Chains pre-built <code>http_request</code>, <code>calculator</code>, and <code>file_write</code> tools in a single multi-step pipeline.
+      </p>
       <p>
         Executes multi-step workflows chaining HTTP fetch, numerical calculation, and automated file output.
       </p>

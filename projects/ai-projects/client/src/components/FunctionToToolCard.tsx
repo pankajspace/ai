@@ -55,9 +55,11 @@ export function FunctionToToolCard({ apiBase = API_BASE }: FunctionToToolCardPro
     <div className="card card-half">
       <h2>
         <span className="card-title">🔌 Function to Tool</span>
-        <span className="badge badge-healthy">@tool Decorator</span>
         <a className="info-link" href="info/function-to-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Introspects Python type annotations and docstrings via the <code>@tool</code> decorator to build the tool JSON schema for <code>check_server_status</code>.
+      </p>
       <p>
         Exposes a Python function with docstrings and type hints as an agent tool to check live HTTP server health.
       </p>

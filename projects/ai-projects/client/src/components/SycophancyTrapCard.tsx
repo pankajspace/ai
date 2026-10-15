@@ -80,9 +80,11 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
     <div className="card card-half">
       <h2>
         <span className="card-title">🪤 The Sycophancy Trap</span>
-        <span className="badge badge-healthy">Multi-Turn Pressure</span>
         <a className="info-link" href="info/sycophancy-trap.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Tracks multi-turn factual retention from cold baseline (Round 0) through contradiction, authority appeal, and compliance pressure.
+      </p>
       <p>
         Simulates 4 escalating rounds of user gaslighting and authority pushback to evaluate whether the LLM holds its ground.
       </p>

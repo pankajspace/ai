@@ -62,9 +62,11 @@ export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
     <div className="card card-half">
       <h2>
         <span className="card-title">☁️ AWS Cloud Assistant</span>
-        <span className="badge badge-healthy">Strands · use_aws</span>
         <a className="info-link" href="info/use-aws.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Maps natural-language intents to read-only <code>use_aws</code> service, operation, and parameter calls with safety guardrails.
+      </p>
       <p>
         Executes read-only AWS operations (S3, STS, DynamoDB) from plain English commands.
       </p>

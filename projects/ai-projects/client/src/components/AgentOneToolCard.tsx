@@ -54,7 +54,7 @@ export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps =
       setAgentResponse(data.response)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setAgentError('Request timed out after 25 seconds. Please verify server connection and OpenAI API key.')
+        setAgentError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setAgentError(err instanceof Error ? err.message : 'Failed to query agent')
       }
@@ -67,9 +67,11 @@ export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps =
     <div className="card card-half">
       <h2>
         <span className="card-title">🤖 Single-Tool Agent</span>
-        <span className="badge badge-healthy">GPT-4o mini</span>
         <a className="info-link" href="info/agent-one-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Manual tool-calling loop that inspects <code>tool_calls</code>, runs local Python lookups, and feeds results back to the model.
+      </p>
       <p>
         Autonomous agent with local tool calling (<code>get_price</code>) to answer store queries.
       </p>

@@ -61,9 +61,11 @@ export function VarianceDeterminismCard({ apiBase = API_BASE }: VarianceDetermin
     <div className="card card-half">
       <h2>
         <span className="card-title">📐 Structured Output Determinism</span>
-        <span className="badge badge-healthy">Schema vs Prompt</span>
         <a className="info-link" href="info/variance-determinism.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Compares unconstrained text, prompt-requested JSON, and API-enforced <code>json_object</code> schemas with strict <code>json.loads()</code> validation.
+      </p>
       <p>
         Evaluates how API schema enforcement turns unpredictable LLM output into reliable machine-parseable data.
       </p>

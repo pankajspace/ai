@@ -62,9 +62,11 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
     <div className="card card-half">
       <h2>
         <span className="card-title">🏛️ Class-Based Tools</span>
-        <span className="badge badge-healthy">Shared Resource</span>
         <a className="info-link" href="info/class-based-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Binds stateful <code>InventoryService</code> methods (<code>check_stock</code>, <code>update_stock</code>) to a shared instance across tool calls.
+      </p>
       <p>
         Groups tools inside a class instance sharing single database connections to prevent connection pool exhaustion.
       </p>

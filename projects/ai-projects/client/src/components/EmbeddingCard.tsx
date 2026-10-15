@@ -80,9 +80,11 @@ export function EmbeddingCard({ apiBase = API_BASE }: EmbeddingCardProps = {}) {
     <div className="card card-half">
       <h2>
         <span className="card-title">🔢 Sentence Embedding</span>
-        <span className="badge badge-healthy">all-MiniLM-L6-v2</span>
         <a className="info-link" href="info/embedding.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Maps text into 384-dimensional vectors with <code>all-MiniLM-L6-v2</code> and scores semantic closeness via normalized dot product.
+      </p>
       <p>
         Encode sentences into dense vector embeddings and calculate their cosine similarity score (0 to 1).
       </p>

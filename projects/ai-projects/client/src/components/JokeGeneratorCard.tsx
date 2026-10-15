@@ -40,7 +40,7 @@ export function JokeGeneratorCard({ apiBase = API_BASE }: JokeGeneratorCardProps
       setJoke(data.joke)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setJokeError('Request timed out after 20 seconds. Please verify Groq API key and network connection.')
+        setJokeError('Request timed out after 20 seconds. Please verify server connection and API credentials.')
       } else {
         setJokeError(err instanceof Error ? err.message : 'Failed to fetch joke')
       }
@@ -53,9 +53,11 @@ export function JokeGeneratorCard({ apiBase = API_BASE }: JokeGeneratorCardProps
     <div className="card card-half">
       <h2>
         <span className="card-title">😂 Joke Generator</span>
-        <span className="badge badge-healthy">Groq</span>
         <a className="info-link" href="info/joke-generator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        OpenAI-compatible client routing via a custom <code>base_url</code> to an external high-speed inference endpoint.
+      </p>
       <p>
         Ask Groq for a funny joke on any topic.
       </p>

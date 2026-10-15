@@ -77,9 +77,11 @@ export function ChunkingCard({ apiBase = API_BASE }: ChunkingCardProps = {}) {
     <div className="card card-half">
       <h2>
         <span className="card-title">🧩 Document Chunking</span>
-        <span className="badge badge-healthy">LangChain Splitter</span>
         <a className="info-link" href="info/chunking.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Sliding-window segmentation with configurable <code>chunk_size</code> and <code>chunk_overlap</code> to preserve boundary context.
+      </p>
       <p>
         Split long documents into smaller, overlapping passages using <code>RecursiveCharacterTextSplitter</code> for embedding and vector indexing.
       </p>

@@ -54,7 +54,7 @@ export function MultiToolAgentCard({
       setToolCalled(Boolean(data.tool_called))
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setAgentError('Request timed out after 25 seconds. Please verify server connection and Groq API key.')
+        setAgentError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setAgentError(err instanceof Error ? err.message : 'Failed to query multi-tool agent')
       }
@@ -67,9 +67,11 @@ export function MultiToolAgentCard({
     <div className={`card ${className}`}>
       <h2>
         <span className="card-title">🛠️ Multi-Tool Agent</span>
-        <span className="badge badge-healthy">LangChain • Groq</span>
         <a className="info-link" href="info/multi-tool-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Multi-tool ReAct loop that selects and chains multiple tool calls in a single turn before synthesizing the final answer.
+      </p>
       <p>
         LangChain agent with multiple tools (<code>get_weather</code>, <code>add</code>, <code>multiply</code>, <code>get_population</code>).
       </p>

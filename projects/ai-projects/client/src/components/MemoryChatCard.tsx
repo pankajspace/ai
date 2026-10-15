@@ -59,7 +59,7 @@ export function MemoryChatCard({ apiBase = API_BASE }: MemoryChatCardProps = {})
       setMessage('')
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setChatError('Request timed out after 25 seconds. Please verify server connection and OpenAI API key.')
+        setChatError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setChatError(err instanceof Error ? err.message : 'Failed to send message to chat model')
       }
@@ -77,9 +77,11 @@ export function MemoryChatCard({ apiBase = API_BASE }: MemoryChatCardProps = {})
     <div className="card card-half">
       <h2>
         <span className="card-title">🧠 Conversational Memory</span>
-        <span className="badge badge-healthy">LangChain • GPT-4o mini</span>
         <a className="info-link" href="info/memory-chat.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Injects prior user and assistant turns into the prompt context via <code>MessagesPlaceholder</code>.
+      </p>
       <p>
         Multi-turn chat using LangChain LCEL with dynamic message history retention.
       </p>

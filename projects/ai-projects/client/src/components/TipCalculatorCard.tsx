@@ -63,9 +63,11 @@ export function TipCalculatorCard({ apiBase = API_BASE }: TipCalculatorCardProps
     <div className="card card-half">
       <h2>
         <span className="card-title">💵 Tip & Split Agent</span>
-        <span className="badge badge-healthy">Natural Intent</span>
         <a className="info-link" href="info/tip-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Extracts structured numeric arguments (<code>bill_amount</code>, <code>tip_percent</code>, <code>split_ways</code>) from freeform text to call <code>calculate_tip</code>.
+      </p>
       <p>
         Interprets natural language bill and tip queries without regex, invoking the tip calculator tool directly.
       </p>

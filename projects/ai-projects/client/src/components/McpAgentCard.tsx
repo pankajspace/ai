@@ -65,9 +65,11 @@ export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
     <div className="card card-half">
       <h2>
         <span className="card-title">🏏 FastMCP Cricket Agent</span>
-        <span className="badge badge-healthy">MCP + LLM</span>
         <a className="info-link" href="info/mcp-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Translates FastMCP tool descriptors into function-calling schemas so the model routes between <code>get_live_score</code> and <code>get_player_stats</code>.
+      </p>
       <p>
         The LLM decides which FastMCP tool to call and extracts arguments, formulating verified cricket answers.
       </p>

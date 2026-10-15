@@ -49,7 +49,7 @@ export function LangchainOneToolCard({ apiBase = API_BASE }: LangchainOneToolCar
       setToolCalled(Boolean(data.tool_called))
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setAgentError('Request timed out after 25 seconds. Please verify server connection and Groq API key.')
+        setAgentError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setAgentError(err instanceof Error ? err.message : 'Failed to query LangChain agent')
       }
@@ -62,9 +62,11 @@ export function LangchainOneToolCard({ apiBase = API_BASE }: LangchainOneToolCar
     <div className="card card-half">
       <h2>
         <span className="card-title">🌦️ LangChain Agent</span>
-        <span className="badge badge-healthy">LangChain • Groq</span>
         <a className="info-link" href="info/langchain-one-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Uses LangChain <code>create_agent</code> to inspect tool signatures and decide when to invoke a tool versus reply directly.
+      </p>
       <p>
         LangChain agent with a single tool (<code>get_weather</code>) to check current city forecasts.
       </p>

@@ -86,9 +86,11 @@ export function CotVsDirectCard({ apiBase = API_BASE }: CotVsDirectCardProps = {
     <div className="card card-half">
       <h2>
         <span className="card-title">🧩 CoT vs Direct Benchmark</span>
-        <span className="badge badge-healthy">Reliability Lever</span>
         <a className="info-link" href="info/cot-vs-direct.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Evaluates single-sentence direct answers against explicit step-by-step reasoning traces across state-tracking logic tasks.
+      </p>
       <p>
         Side-by-side comparison proving that step-by-step reasoning acts as a structural reliability lever on logic problems.
       </p>

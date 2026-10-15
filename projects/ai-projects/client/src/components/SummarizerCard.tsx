@@ -56,7 +56,7 @@ export function SummarizerCard({ apiBase = API_BASE }: SummarizerCardProps = {})
       setSummary(data.summary)
     } catch (err: unknown) {
       if (err instanceof DOMException && err.name === 'TimeoutError') {
-        setSummarizeError('Request timed out after 25 seconds. Please verify OpenAI API key and server connection.')
+        setSummarizeError('Request timed out after 25 seconds. Please verify server connection and API credentials.')
       } else {
         setSummarizeError(err instanceof Error ? err.message : 'Failed to generate summary')
       }
@@ -69,9 +69,11 @@ export function SummarizerCard({ apiBase = API_BASE }: SummarizerCardProps = {})
     <div className="card card-half">
       <h2>
         <span className="card-title">📝 Text Summarizer</span>
-        <span className="badge badge-healthy">LangChain LCEL</span>
         <a className="info-link" href="info/summarizer.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Pipes <code>ChatPromptTemplate | ChatOpenAI | StrOutputParser</code> into a declarative LCEL chain.
+      </p>
       <p>
         Summarize long text into a concise, friendly overview using LangChain Expression Language (LCEL).
       </p>

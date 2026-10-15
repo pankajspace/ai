@@ -62,9 +62,11 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
     <div className="card card-half">
       <h2>
         <span className="card-title">📈 Sales Pipeline Agent</span>
-        <span className="badge badge-healthy">Multi-Tool Planning</span>
         <a className="info-link" href="info/multi-tool-sales.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        Resolves data dependencies across unordered tools by feeding each step&apos;s output into the next tool call&apos;s arguments.
+      </p>
       <p>
         Autonomous planning across 3 unordered tools: <code>get_sales_data</code> &rarr; <code>analyze_sales</code> &rarr; <code>send_email</code>.
       </p>

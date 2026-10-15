@@ -55,9 +55,11 @@ export function LangGraphAgentCard({ apiBase = API_BASE }: LangGraphAgentCardPro
     <div className="card card-half">
       <h2>
         <span className="card-title">🔄 LangGraph ReAct Agent</span>
-        <span className="badge badge-healthy">LangGraph · Tool ReAct</span>
         <a className="info-link" href="info/langgraph-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
       </h2>
+      <p className="card-concept">
+        StateGraph ReAct cycle routing between the model node and <code>ToolNode</code> until all tool calls complete.
+      </p>
       <p>
         Observes the model choosing to act rather than reply, executing the <code>greet</code> tool across entities.
       </p>

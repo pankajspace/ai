@@ -25,18 +25,18 @@ A unified, modular full-stack application hosting 31 production-grade AI service
 
 ### Domain 2: AWS Strands & Agent Workflows (Services 11 - 22)
 
-11. `11_hello_world_agent` (`info/hello-world-agent.html`): Minimal Strands agent running on Amazon Bedrock Nova Lite (with Gemini/OpenAI fallback).
-12. `12_hello_world_langgraph` (`info/langgraph-agent.html`): LangGraph ReAct tool loop demonstrating multi-entity tool calls (`say_hello`).
-13. `13_function_to_tool` (`info/function-to-tool.html`): Turning standard Python HTTP health-check functions into tools (`ping_url`).
-14. `14_tip_calculator` (`info/tip-calculator.html`): Sequential multi-turn dining bill and tip calculation agent.
-15. `15_multi_tool_sales` (`info/multi-tool-sales.html`): Autonomous sales operations planner executing `fetch_sales_data` -> `calculate_metrics` -> `send_email`.
+11. `11_hello_world_agent` (`info/hello-world-agent.html`): Minimal Strands `Agent` loop processing a natural-language prompt in a single turn.
+12. `12_hello_world_langgraph` (`info/langgraph-agent.html`): LangGraph ReAct tool loop demonstrating multi-entity tool calls (`greet`).
+13. `13_function_to_tool` (`info/function-to-tool.html`): Turning standard Python HTTP health-check functions into tools (`check_server_status`).
+14. `14_tip_calculator` (`info/tip-calculator.html`): Natural-language dining bill and tip calculation agent (`calculate_tip`).
+15. `15_multi_tool_sales` (`info/multi-tool-sales.html`): Autonomous sales operations planner executing `get_sales_data` -> `analyze_sales` -> `send_email`.
 16. `16_custom_tool_inventory` (`info/custom-inventory.html`): Explicit `TOOL_SPEC` store inventory lookup tool (`check_inventory`).
-17. `17_prebuilt_tools` (`info/prebuilt-calculator.html`): Math assistant agent using safe AST mathematical expression evaluation.
+17. `17_prebuilt_tools` (`info/prebuilt-calculator.html`): Math assistant agent using safe AST mathematical expression evaluation (`calculator`).
 18. `18_multi_prebuilt_tools` (`info/multi-prebuilt-tools.html`): Chained data pipeline combining `http_request`, `calculator`, and virtual `file_write`.
 19. `19_use_aws` (`info/use-aws.html`): Natural language cloud resource manager executing read-only AWS operations (`use_aws`).
-20. `20_class_based_tools` (`info/class-based-tools.html`): Class-based tools (`WarehouseInventoryClient`) sharing instance state across turns.
+20. `20_class_based_tools` (`info/class-based-tools.html`): Class-based tools (`InventoryService`: `check_stock`, `update_stock`) sharing instance state across turns.
 21. `21_async_tools` (`info/async-tools.html`): Parallel async tool execution across warehouses using `asyncio.gather`.
-22. `22_travel_assistant` (`info/travel-assistant.html`): Capstone 5-tool agent chaining weather forecasts, hotel rates, trip budget calculation, cost splitting, and packing lists.
+22. `22_travel_assistant` (`info/travel-assistant.html`): Capstone multi-tool planner chaining `get_weather_forecast`, `suggest_packing_list`, `calculate_trip_cost`, and `calculator`.
 
 ### Domain 3: AI Systems & Prompting (Services 23 - 24)
 
