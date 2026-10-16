@@ -9,10 +9,10 @@ suitable for vector embeddings and retrieval (RAG):
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 08_chunking.py
+    python 01_chunking.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 08_chunking
+    docker compose run --rm 01_chunking
 """
 
 from langchain_text_splitters import RecursiveCharacterTextSplitter

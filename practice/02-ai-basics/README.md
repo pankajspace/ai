@@ -35,14 +35,9 @@ docker build -t practice-02-ai-basics .
 docker run --rm --env-file .env practice-02-ai-basics python 01_chat_openai.py
 ```
 
-Notes:
-
-1. `08_chunking.py` and `09_embedding.py` require no external API keys.
-2. The shared image includes CPU-only PyTorch and pre-downloads the `all-MiniLM-L6-v2` embedding model at build time (for `09_embedding.py` and `10_rag.py`), so runs start quickly.
-
 ## 4. Run locally (without Docker)
 
-Use **Python 3.12**. PyTorch (used by 09 and 10) does not support the newest Python releases yet.
+Use **Python 3.12**.
 
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -71,7 +66,4 @@ In `06_langchain_one_tool.py` and `07_langchain_multi_tools.py` you can also swi
 4. `04_langchain_memory_chat.py`: Stateful chat maintaining conversation history across turns.
 5. `05_agent_one_tool.py`: Minimal agent implementation using raw OpenAI tool calling loop without any framework.
 6. `06_langchain_one_tool.py`: LangChain agent using a single tool, with swappable model providers (Groq, OpenAI, Gemini).
-7. `07_langchain_multi_tools.py`: LangChain agent coordinating multiple tools (weather, currency, search) with an observable tool trace.
-8. `08_chunking.py`: Text chunking using `RecursiveCharacterTextSplitter` with customizable chunk sizes and overlaps.
-9. `09_embedding.py`: Local sentence embeddings and cosine similarity using Sentence Transformers without external APIs.
-10. `10_rag.py`: End-to-end Retrieval-Augmented Generation (RAG) pipeline combining chunking, embeddings, similarity search, and an LLM.
+7. `07_langchain_multi_tools.py`: LangChain agent coordinating multiple tools (weather, math, population) with an observable tool trace.

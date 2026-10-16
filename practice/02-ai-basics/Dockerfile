@@ -9,15 +9,8 @@ ENV PYTHONUNBUFFERED=1 \
 WORKDIR /app
 
 # 4. Install dependencies first - Docker caches this layer until requirements.txt changes
-#    4a. CPU-only PyTorch (skips ~2 GB of unused NVIDIA CUDA packages)
-#    4b. Everything else; sentence-transformers reuses the torch from 4a
 COPY requirements.txt .
-RUN pip install --no-cache-dir torch==2.14.1 --index-url https://download.pytorch.org/whl/cpu && \
-    pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
-# 5. Download the embedding model at build time, so each run starts instantly
-RUN python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('all-MiniLM-L6-v2')"
-
-# 6. Copy the practice scripts
+# 5. Copy the practice scripts
 COPY *.py .
-

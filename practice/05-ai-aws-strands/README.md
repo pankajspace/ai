@@ -23,13 +23,13 @@ Environment variables used:
 
 ## 2. Run with Docker Compose (easiest)
 
-From the `practice/03-ai-aws-strands` folder, you can run any script with one command:
+From the `practice/05-ai-aws-strands` folder, you can run any script with one command:
 
 ```bash
 docker compose run --rm 01_hello_world_agent
 ```
 
-1. All services share the same Docker image (`practice-03-ai-aws-strands`) built from the common `Dockerfile` and `requirements.txt`.
+1. All services share the same Docker image (`practice-05-ai-aws-strands`) built from the common `Dockerfile` and `requirements.txt`.
 2. It automatically picks up the shared `.env` file.
 3. It mounts the script (`01_hello_world_agent.py`, etc.) so changes to your code take effect immediately without rebuilding.
 4. If you update `requirements.txt`, pass `--build` to rebuild:
@@ -39,11 +39,11 @@ docker compose run --rm 01_hello_world_agent
 
 ## 3. Run with Docker directly (alternative)
 
-From the `practice/03-ai-aws-strands` folder:
+From the `practice/05-ai-aws-strands` folder:
 
 ```bash
-docker build -t practice-03-ai-aws-strands .
-docker run --rm --env-file .env practice-03-ai-aws-strands python 01_hello_world_agent.py
+docker build -t practice-05-ai-aws-strands .
+docker run --rm --env-file .env practice-05-ai-aws-strands python 01_hello_world_agent.py
 ```
 
 ## 4. Run locally (without Docker)

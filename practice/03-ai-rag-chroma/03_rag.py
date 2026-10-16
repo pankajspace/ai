@@ -1,6 +1,6 @@
 """Paragraph RAG (Retrieval-Augmented Generation) Pipeline.
 
-This script combines chunking (08), embeddings (09), and an LLM into a complete RAG workflow:
+This script combines chunking (01), embeddings (02), and an LLM into a complete RAG workflow:
 1. Splits the source paragraph into overlapping text chunks using `RecursiveCharacterTextSplitter`.
 2. Embeds all chunks with `HuggingFaceEmbeddings("all-MiniLM-L6-v2")` and indexes them in Chroma.
 3. Retrieves the top-k most relevant chunks for the user's question via vector similarity search.
@@ -8,10 +8,10 @@ This script combines chunking (08), embeddings (09), and an LLM into a complete 
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 10_rag.py
+    python 03_rag.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 10_rag
+    docker compose run --rm 03_rag
 """
 
 import os

@@ -14,7 +14,7 @@ cp .env.example .env    # configure OPENAI_API_KEY
 
 ## 2. Run with Docker Compose (Recommended)
 
-From the `practice/05-ai-reliability` folder:
+From the `practice/06-ai-reliability` folder:
 
 ```bash
 # 1. CoT vs Direct comparison
@@ -31,7 +31,7 @@ docker compose run --rm 04_tool_error_injection
 ```
 
 Key features:
-1. All services share the same Docker image (`practice-05-ai-reliability`) built from the common `Dockerfile` and `requirements.txt`.
+1. All services share the same Docker image (`practice-06-ai-reliability`) built from the common `Dockerfile` and `requirements.txt`.
 2. Automatically loads the shared `.env` file.
 3. Mounts each `.py` script directly into the container so your code changes take effect immediately without rebuilding the image.
 4. To rebuild after dependency updates, pass `--build`:
@@ -41,11 +41,11 @@ Key features:
 
 ## 3. Run with Docker directly
 
-From the `practice/05-ai-reliability` folder:
+From the `practice/06-ai-reliability` folder:
 
 ```bash
-docker build -t practice-05-ai-reliability .
-docker run --rm --env-file .env practice-05-ai-reliability python 01_cot_vs_direct.py
+docker build -t practice-06-ai-reliability .
+docker run --rm --env-file .env practice-06-ai-reliability python 01_cot_vs_direct.py
 ```
 
 ## 4. Run locally (without Docker)

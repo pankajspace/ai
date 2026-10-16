@@ -9,10 +9,10 @@ This script demonstrates how text embeddings capture semantic meaning:
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 09_embedding.py
+    python 02_embedding.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 09_embedding
+    docker compose run --rm 02_embedding
 """
 
 from numpy import dot

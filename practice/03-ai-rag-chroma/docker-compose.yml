@@ -1,0 +1,47 @@
+# ---------------------------------------------------------------------------
+# AI RAG & Chroma Practice Suite - Docker Compose Configuration
+# ---------------------------------------------------------------------------
+# Run any single exercise from this folder (`practice/03-ai-rag-chroma/`):
+#   docker compose run --rm 01_chunking
+#   docker compose run --rm 02_embedding
+#   docker compose run --rm 03_rag
+#
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script into
+# `/app/` so code edits take effect immediately without rebuilding.
+# ---------------------------------------------------------------------------
+
+services:
+  # ① Document Chunking with RecursiveCharacterTextSplitter (No API Key Needed)
+  01_chunking:
+    build: .
+    image: practice-03-ai-rag-chroma
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./01_chunking.py:/app/01_chunking.py
+    entrypoint: ["python", "01_chunking.py"]
+
+  # ② Local Sentence Embeddings & Cosine Similarity (No API Key Needed)
+  02_embedding:
+    build: .
+    image: practice-03-ai-rag-chroma
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./02_embedding.py:/app/02_embedding.py
+    entrypoint: ["python", "02_embedding.py"]
+
+  # ③ Complete Paragraph RAG Pipeline (Chunk -> Chroma Vector Store -> LLM Answer)
+  03_rag:
+    build: .
+    image: practice-03-ai-rag-chroma
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./03_rag.py:/app/03_rag.py
+    entrypoint: ["python", "03_rag.py"]
+

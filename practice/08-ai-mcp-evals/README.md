@@ -14,7 +14,7 @@ Note: `01_mcp_client.py` runs locally against the bundled FastMCP server (`crick
 
 ## 2. Run with Docker Compose (Recommended)
 
-From the `practice/06-ai-mcp-evals` folder:
+From the `practice/08-ai-mcp-evals` folder:
 
 ```bash
 # 1. Test direct MCP plumbing
@@ -28,7 +28,7 @@ docker compose run --rm 03_mcp_evals
 ```
 
 Key features:
-1. All services share the same Docker image (`practice-06-ai-mcp-evals`) built from the common `Dockerfile` and `requirements.txt`.
+1. All services share the same Docker image (`practice-08-ai-mcp-evals`) built from the common `Dockerfile` and `requirements.txt`.
 2. Automatically loads the shared `.env` file.
 3. Mounts each `.py` script and `cricket_server.py` directly so modifications take effect immediately without rebuilding the image.
 4. Rebuild the image with `--build` after changing dependencies:
@@ -38,11 +38,11 @@ Key features:
 
 ## 3. Run with Docker directly
 
-From the `practice/06-ai-mcp-evals` folder:
+From the `practice/08-ai-mcp-evals` folder:
 
 ```bash
-docker build -t practice-06-ai-mcp-evals .
-docker run --rm --env-file .env practice-06-ai-mcp-evals python 01_mcp_client.py
+docker build -t practice-08-ai-mcp-evals .
+docker run --rm --env-file .env practice-08-ai-mcp-evals python 01_mcp_client.py
 ```
 
 ## 4. Run locally (without Docker)

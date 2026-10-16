@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------
 # Run any single exercise from this folder (`practice/02-ai-basics/`):
 #   docker compose run --rm 01_chat_openai
-#   docker compose run --rm 10_rag
+#   docker compose run --rm 07_langchain_multi_tools
 #
 # All services share a single Docker image built from the common `Dockerfile`
 # and `requirements.txt`, load `./.env`, and mount their `.py` script into
@@ -87,36 +87,3 @@ services:
     volumes:
       - ./07_langchain_multi_tools.py:/app/07_langchain_multi_tools.py
     entrypoint: ["python", "07_langchain_multi_tools.py"]
-
-  # ⑧ Document Chunking with RecursiveCharacterTextSplitter (No API Key Needed)
-  08_chunking:
-    build: .
-    image: practice-02-ai-basics
-    env_file:
-      - path: ./.env
-        required: false
-    volumes:
-      - ./08_chunking.py:/app/08_chunking.py
-    entrypoint: ["python", "08_chunking.py"]
-
-  # ⑨ Local Sentence Embeddings & Cosine Similarity (No API Key Needed)
-  09_embedding:
-    build: .
-    image: practice-02-ai-basics
-    env_file:
-      - path: ./.env
-        required: false
-    volumes:
-      - ./09_embedding.py:/app/09_embedding.py
-    entrypoint: ["python", "09_embedding.py"]
-
-  # ⑩ Complete Paragraph RAG Pipeline (Chunk -> Chroma Vector Store -> LLM Answer)
-  10_rag:
-    build: .
-    image: practice-02-ai-basics
-    env_file:
-      - path: ./.env
-        required: false
-    volumes:
-      - ./10_rag.py:/app/10_rag.py
-    entrypoint: ["python", "10_rag.py"]

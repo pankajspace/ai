@@ -1,0 +1,76 @@
+# ---------------------------------------------------------------------------
+# AI Redis, Model Training & ChromaDB Practice Suite - Docker Compose
+# ---------------------------------------------------------------------------
+# Run any single exercise from this folder (`practice/04-ai-redis-training-chromadb/`):
+#   docker compose run --rm 01_quickbite_eta
+#   docker compose run --rm 02_scalergpt_rag_chromadb
+#   docker compose run --rm 03_deskbuddy_agent_redis
+#
+# All practice services share a single Docker image (`practice-04-ai-redis-training-chromadb`)
+# built from the common `Dockerfile` and `requirements.txt`, load `./.env`, and mount
+# their `.py` script into `/app/` so code edits take effect immediately.
+# ---------------------------------------------------------------------------
+
+services:
+  # ① QuickBite ETA: Synthetic delivery data generation + RandomForest training & inference (No API Key Needed)
+  01_quickbite_eta:
+    build: .
+    image: practice-04-ai-redis-training-chromadb
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./01_quickbite_eta.py:/app/01_quickbite_eta.py
+    entrypoint: ["python", "01_quickbite_eta.py"]
+
+  # ② ScalerGPT: Markdown document ingestion + RAG chatbot backed by ChromaDB container
+  02_scalergpt_rag_chromadb:
+    build: .
+    image: practice-04-ai-redis-training-chromadb
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+    depends_on:
+      - chroma
+    volumes:
+      - ./02_scalergpt_rag_chromadb.py:/app/02_scalergpt_rag_chromadb.py
+      - ./docs:/app/docs
+    entrypoint: ["python", "02_scalergpt_rag_chromadb.py"]
+
+  # ③ DeskBuddy: Multi-turn tool-calling agent (`calculator`, `get_datetime`) with Redis session memory
+  03_deskbuddy_agent_redis:
+    build: .
+    image: practice-04-ai-redis-training-chromadb
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - redis
+    volumes:
+      - ./03_deskbuddy_agent_redis.py:/app/03_deskbuddy_agent_redis.py
+    entrypoint: ["python", "03_deskbuddy_agent_redis.py"]
+
+  # Supporting ChromaDB Vector Database Container (used by 02_scalergpt_rag_chromadb)
+  chroma:
+    image: chromadb/chroma:0.6.3
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+  # Supporting Redis Session Memory Container (used by 03_deskbuddy_agent_redis)
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - agent_memory:/data
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  agent_memory:
+
