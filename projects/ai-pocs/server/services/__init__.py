@@ -18,54 +18,54 @@ def _load_service(folder: str, filename: str, alias: str):
     return mod
 
 
-# Practice 02: AI Basics & LangChain (02-ai-basics)
-chat_openai = _load_service("02-ai-basics", "01_chat_openai.py", "chat_openai")
-chat_groq = _load_service("02-ai-basics", "02_chat_groq.py", "chat_groq")
-langchain_summarizer = _load_service("02-ai-basics", "03_langchain_summarizer.py", "langchain_summarizer")
-langchain_memory_chat = _load_service("02-ai-basics", "04_langchain_memory_chat.py", "langchain_memory_chat")
-agent_one_tool = _load_service("02-ai-basics", "05_agent_one_tool.py", "agent_one_tool")
-langchain_one_tool = _load_service("02-ai-basics", "06_langchain_one_tool.py", "langchain_one_tool")
-langchain_multi_tools = _load_service("02-ai-basics", "07_langchain_multi_tools.py", "langchain_multi_tools")
+# Domain 01: AI Basics & LangChain (01-ai-basics)
+chat_openai = _load_service("01-ai-basics", "01_chat_openai.py", "chat_openai")
+chat_groq = _load_service("01-ai-basics", "02_chat_groq.py", "chat_groq")
+langchain_summarizer = _load_service("01-ai-basics", "03_langchain_summarizer.py", "langchain_summarizer")
+langchain_memory_chat = _load_service("01-ai-basics", "04_langchain_memory_chat.py", "langchain_memory_chat")
+agent_one_tool = _load_service("01-ai-basics", "05_agent_one_tool.py", "agent_one_tool")
+langchain_one_tool = _load_service("01-ai-basics", "06_langchain_one_tool.py", "langchain_one_tool")
+langchain_multi_tools = _load_service("01-ai-basics", "07_langchain_multi_tools.py", "langchain_multi_tools")
 
-# Practice 03: AI RAG & Chroma (03-ai-rag-chroma)
-chunking = _load_service("03-ai-rag-chroma", "01_chunking.py", "chunking")
-embedding = _load_service("03-ai-rag-chroma", "02_embedding.py", "embedding")
-rag = _load_service("03-ai-rag-chroma", "03_rag.py", "rag")
+# Domain 02: AI RAG & Chroma (02-ai-rag-chroma)
+chunking = _load_service("02-ai-rag-chroma", "01_chunking.py", "chunking")
+embedding = _load_service("02-ai-rag-chroma", "02_embedding.py", "embedding")
+rag = _load_service("02-ai-rag-chroma", "03_rag.py", "rag")
 
-# Practice 04: AI Model Training, ChromaDB & Redis (04-ai-model-training-chromadb)
-model_training = _load_service("04-ai-model-training-chromadb", "01_model_training.py", "model_training")
-chromadb_rag = _load_service("04-ai-model-training-chromadb", "02_chromadb.py", "chromadb_rag")
-redis_agent = _load_service("04-ai-model-training-chromadb", "03_redis.py", "redis_agent")
+# Domain 03: AI Model Training, ChromaDB & Redis (03-ai-model-training-chromadb)
+model_training = _load_service("03-ai-model-training-chromadb", "01_model_training.py", "model_training")
+chromadb_rag = _load_service("03-ai-model-training-chromadb", "02_chromadb.py", "chromadb_rag")
+redis_agent = _load_service("03-ai-model-training-chromadb", "03_redis.py", "redis_agent")
 
-# Practice 05: AWS Strands & Agent Workflows (05-ai-aws-strands)
-hello_world_agent = _load_service("05-ai-aws-strands", "01_hello_world_agent.py", "hello_world_agent")
-hello_world_langgraph = _load_service("05-ai-aws-strands", "02_hello_world_langgraph.py", "hello_world_langgraph")
-function_to_tool = _load_service("05-ai-aws-strands", "03_function_to_tool.py", "function_to_tool")
-tip_calculator = _load_service("05-ai-aws-strands", "04_tip_calculator.py", "tip_calculator")
-multi_tool_sales = _load_service("05-ai-aws-strands", "05_multi_tool_sales.py", "multi_tool_sales")
-custom_tool_inventory = _load_service("05-ai-aws-strands", "06_custom_tool_inventory.py", "custom_tool_inventory")
-prebuilt_tools = _load_service("05-ai-aws-strands", "07_prebuilt_tools.py", "prebuilt_tools")
-multi_prebuilt_tools = _load_service("05-ai-aws-strands", "08_multi_prebuilt_tools.py", "multi_prebuilt_tools")
-use_aws = _load_service("05-ai-aws-strands", "09_use_aws.py", "use_aws")
-class_based_tools = _load_service("05-ai-aws-strands", "10_class_based_tools.py", "class_based_tools")
-async_tools = _load_service("05-ai-aws-strands", "11_async_tools.py", "async_tools")
-travel_assistant = _load_service("05-ai-aws-strands", "12_travel_assistant.py", "travel_assistant")
+# Domain 04: AWS Strands & Agent Workflows (04-ai-aws-strands)
+hello_world_agent = _load_service("04-ai-aws-strands", "01_hello_world_agent.py", "hello_world_agent")
+hello_world_langgraph = _load_service("04-ai-aws-strands", "02_hello_world_langgraph.py", "hello_world_langgraph")
+function_to_tool = _load_service("04-ai-aws-strands", "03_function_to_tool.py", "function_to_tool")
+tip_calculator = _load_service("04-ai-aws-strands", "04_tip_calculator.py", "tip_calculator")
+multi_tool_sales = _load_service("04-ai-aws-strands", "05_multi_tool_sales.py", "multi_tool_sales")
+custom_tool_inventory = _load_service("04-ai-aws-strands", "06_custom_tool_inventory.py", "custom_tool_inventory")
+prebuilt_tools = _load_service("04-ai-aws-strands", "07_prebuilt_tools.py", "prebuilt_tools")
+multi_prebuilt_tools = _load_service("04-ai-aws-strands", "08_multi_prebuilt_tools.py", "multi_prebuilt_tools")
+use_aws = _load_service("04-ai-aws-strands", "09_use_aws.py", "use_aws")
+class_based_tools = _load_service("04-ai-aws-strands", "10_class_based_tools.py", "class_based_tools")
+async_tools = _load_service("04-ai-aws-strands", "11_async_tools.py", "async_tools")
+travel_assistant = _load_service("04-ai-aws-strands", "12_travel_assistant.py", "travel_assistant")
 
-# Practice 06: AI Systems & Prompting Strategies (06-ai-systems)
-prompting_strategies = _load_service("06-ai-systems", "01_prompting_strategies.py", "prompting_strategies")
-sycophancy_trap = _load_service("06-ai-systems", "02_sycophancy_trap.py", "sycophancy_trap")
-refund_bench = _load_service("06-ai-systems", "03_refund_bench.py", "refund_bench")
+# Domain 05: AI Systems & Prompting Strategies (05-ai-systems)
+prompting_strategies = _load_service("05-ai-systems", "01_prompting_strategies.py", "prompting_strategies")
+sycophancy_trap = _load_service("05-ai-systems", "02_sycophancy_trap.py", "sycophancy_trap")
+refund_bench = _load_service("05-ai-systems", "03_refund_bench.py", "refund_bench")
 
-# Practice 07: AI Reliability & Calibration (07-ai-reliability)
-cot_vs_direct = _load_service("07-ai-reliability", "01_cot_vs_direct.py", "cot_vs_direct")
-variance_determinism = _load_service("07-ai-reliability", "02_variance_determinism.py", "variance_determinism")
-tool_schema_calibration = _load_service("07-ai-reliability", "03_tool_schema_calibration.py", "tool_schema_calibration")
-tool_error_injection = _load_service("07-ai-reliability", "04_tool_error_injection.py", "tool_error_injection")
+# Domain 06: AI Reliability & Calibration (06-ai-reliability)
+cot_vs_direct = _load_service("06-ai-reliability", "01_cot_vs_direct.py", "cot_vs_direct")
+variance_determinism = _load_service("06-ai-reliability", "02_variance_determinism.py", "variance_determinism")
+tool_schema_calibration = _load_service("06-ai-reliability", "03_tool_schema_calibration.py", "tool_schema_calibration")
+tool_error_injection = _load_service("06-ai-reliability", "04_tool_error_injection.py", "tool_error_injection")
 
-# Practice 08: MCP & Evals (08-ai-mcp-evals)
-mcp_client = _load_service("08-ai-mcp-evals", "01_mcp_client.py", "mcp_client")
-mcp_agent = _load_service("08-ai-mcp-evals", "02_mcp_agent.py", "mcp_agent")
-mcp_evals = _load_service("08-ai-mcp-evals", "03_mcp_evals.py", "mcp_evals")
+# Domain 07: MCP & Evals (07-ai-mcp-evals)
+mcp_client = _load_service("07-ai-mcp-evals", "01_mcp_client.py", "mcp_client")
+mcp_agent = _load_service("07-ai-mcp-evals", "02_mcp_agent.py", "mcp_agent")
+mcp_evals = _load_service("07-ai-mcp-evals", "03_mcp_evals.py", "mcp_evals")
 
 service_registry = {
     "chat_openai": chat_openai,
@@ -106,7 +106,7 @@ service_registry = {
 }
 
 # Re-export service models and handlers
-# 02-ai-basics (01 - 07)
+# 01-ai-basics (01 - 07)
 TravelRequest = chat_openai.TravelRequest
 TravelResponse = chat_openai.TravelResponse
 get_travel_suggestion = chat_openai.get_travel_suggestion
@@ -136,7 +136,7 @@ MultiToolAgentRequest = langchain_multi_tools.MultiToolAgentRequest
 MultiToolAgentResponse = langchain_multi_tools.MultiToolAgentResponse
 run_multi_tool_agent = langchain_multi_tools.run_multi_tool_agent
 
-# 03-ai-rag-chroma (01 - 03)
+# 02-ai-rag-chroma (01 - 03)
 ChunkingRequest = chunking.ChunkingRequest
 ChunkingResponse = chunking.ChunkingResponse
 chunk_text = chunking.chunk_text
@@ -149,7 +149,7 @@ RagRequest = rag.RagRequest
 RagResponse = rag.RagResponse
 answer_rag = rag.answer_rag
 
-# 04-ai-model-training-chromadb (01 - 03)
+# 03-ai-model-training-chromadb (01 - 03)
 ModelTrainingRequest = model_training.ModelTrainingRequest
 ModelTrainingResponse = model_training.ModelTrainingResponse
 predict_delivery_eta = model_training.predict_delivery_eta
@@ -164,7 +164,7 @@ RedisAgentToolCall = redis_agent.RedisAgentToolCall
 RedisAgentResponse = redis_agent.RedisAgentResponse
 run_redis_agent = redis_agent.run_redis_agent
 
-# 05-ai-aws-strands (01 - 12)
+# 04-ai-aws-strands (01 - 12)
 HelloWorldAgentRequest = hello_world_agent.HelloWorldAgentRequest
 HelloWorldAgentResponse = hello_world_agent.HelloWorldAgentResponse
 run_hello_world_agent = hello_world_agent.run_hello_world_agent
@@ -213,7 +213,7 @@ TravelAssistantRequest = travel_assistant.TravelAssistantRequest
 TravelAssistantResponse = travel_assistant.TravelAssistantResponse
 run_travel_assistant_agent = travel_assistant.run_travel_assistant_agent
 
-# 06-ai-systems (01 - 03)
+# 05-ai-systems (01 - 03)
 PromptingStrategiesRequest = prompting_strategies.PromptingStrategiesRequest
 PromptingStrategiesResponse = prompting_strategies.PromptingStrategiesResponse
 run_prompting_strategies = prompting_strategies.run_prompting_strategies
@@ -229,7 +229,7 @@ JudgedGrievance = refund_bench.JudgedGrievance
 run_refund_bench = refund_bench.run_refund_bench
 adjudicate_dispute = refund_bench.adjudicate_dispute
 
-# 07-ai-reliability (01 - 04)
+# 06-ai-reliability (01 - 04)
 CotVsDirectRequest = cot_vs_direct.CotVsDirectRequest
 CotVsDirectResponse = cot_vs_direct.CotVsDirectResponse
 run_cot_vs_direct_benchmark = cot_vs_direct.run_cot_vs_direct_benchmark
@@ -246,7 +246,7 @@ ToolErrorInjectionRequest = tool_error_injection.ToolErrorInjectionRequest
 ToolErrorInjectionResponse = tool_error_injection.ToolErrorInjectionResponse
 run_tool_error_injection = tool_error_injection.run_tool_error_injection
 
-# 08-ai-mcp-evals (01 - 03)
+# 07-ai-mcp-evals (01 - 03)
 McpClientRequest = mcp_client.McpClientRequest
 McpClientResponse = mcp_client.McpClientResponse
 run_mcp_client = mcp_client.run_mcp_client
@@ -259,7 +259,7 @@ McpEvalsResponse = mcp_evals.McpEvalsResponse
 run_mcp_evals_suite = mcp_evals.run_mcp_evals_suite
 
 __all__ = [
-    # 02-ai-basics
+    # 01-ai-basics
     "TravelRequest", "TravelResponse", "get_travel_suggestion",
     "JokeRequest", "JokeResponse", "get_groq_joke",
     "SummarizerRequest", "SummarizerResponse", "summarize",
@@ -267,15 +267,15 @@ __all__ = [
     "AgentRequest", "AgentResponse", "run_agent_with_tool",
     "LangchainOneToolRequest", "LangchainOneToolResponse", "run_langchain_one_tool",
     "MultiToolAgentRequest", "MultiToolAgentResponse", "run_multi_tool_agent",
-    # 03-ai-rag-chroma
+    # 02-ai-rag-chroma
     "ChunkingRequest", "ChunkingResponse", "chunk_text",
     "EmbeddingRequest", "EmbeddingResponse", "compute_similarity",
     "RagRequest", "RagResponse", "answer_rag",
-    # 04-ai-model-training-chromadb
+    # 03-ai-model-training-chromadb
     "ModelTrainingRequest", "ModelTrainingResponse", "predict_delivery_eta",
     "ChromaDbRequest", "ChromaDbSource", "ChromaDbResponse", "ask_chromadb_notes",
     "RedisAgentRequest", "RedisAgentToolCall", "RedisAgentResponse", "run_redis_agent",
-    # 05-ai-aws-strands
+    # 04-ai-aws-strands
     "HelloWorldAgentRequest", "HelloWorldAgentResponse", "run_hello_world_agent",
     "LangGraphAgentRequest", "LangGraphAgentResponse", "run_langgraph_agent",
     "FunctionToToolRequest", "FunctionToToolResponse", "run_function_to_tool_agent",
@@ -288,17 +288,17 @@ __all__ = [
     "ClassBasedToolsRequest", "ClassBasedToolsResponse", "run_class_based_tools_agent",
     "AsyncToolsRequest", "AsyncToolsResponse", "run_async_tools_agent",
     "TravelAssistantRequest", "TravelAssistantResponse", "run_travel_assistant_agent",
-    # 06-ai-systems
+    # 05-ai-systems
     "PromptingStrategiesRequest", "PromptingStrategiesResponse", "run_prompting_strategies",
     "SycophancyTrapRequest", "SycophancyTrapResponse", "run_sycophancy_trap",
     "RefundBenchRequest", "RefundBenchResponse", "GrievanceRuling", "JudgedGrievance",
     "run_refund_bench", "adjudicate_dispute",
-    # 07-ai-reliability
+    # 06-ai-reliability
     "CotVsDirectRequest", "CotVsDirectResponse", "run_cot_vs_direct_benchmark",
     "VarianceDeterminismRequest", "VarianceDeterminismResponse", "run_variance_determinism_benchmark",
     "ToolSchemaCalibrationRequest", "ToolSchemaCalibrationResponse", "run_tool_schema_calibration",
     "ToolErrorInjectionRequest", "ToolErrorInjectionResponse", "run_tool_error_injection",
-    # 08-ai-mcp-evals
+    # 07-ai-mcp-evals
     "McpClientRequest", "McpClientResponse", "run_mcp_client",
     "McpAgentRequest", "McpAgentResponse", "run_mcp_agent",
     "McpEvalsResponse", "run_mcp_evals_suite",

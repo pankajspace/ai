@@ -148,7 +148,7 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>ChromaDbCard.tsx</code> sends <code>POST /api/chromadb</code> with <code>{ question, n_results }</code>.</span>
+                            <span class="flow-detail"><code>ChromaDbCard.tsx</code> sends <code>POST /api/chromadb</code> with <code>{ question }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -190,7 +190,7 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["ChromaDbCard.tsx<br/>POST /api/chromadb"]:::entry -->|"question, n_results"| R["main.py<br/>chromadb_service()"]:::fn
+    UI["ChromaDbCard.tsx<br/>POST /api/chromadb"]:::entry -->|"question"| R["main.py<br/>chromadb_service()"]:::fn
     R --> S["02_chromadb.py<br/>ask_chromadb_notes()"]:::fn
     S --> I["_ensure_indexed()<br/>docs/*.md -> ChromaDB"]:::ext
     S -->|"query_embeddings"| I
@@ -224,7 +224,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">04-ai-model-training-chromadb</span>
+                        <span class="topic-meta-chip">148 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -234,22 +234,157 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-02-chromadb-py">
-                    <span class="file-path">server/services/04-ai-model-training-chromadb/02_chromadb.py</span>
+                    <span class="file-path">server/services/03-ai-model-training-chromadb/02_chromadb.py</span>
                     <p class="file-label">ChromaDB Study Notes RAG Service.</p>
-                    <pre><code data-lang="python">def ask_chromadb_notes(question: str, n_results: int = 3) -&gt; dict:
-    collection = _ensure_indexed()
-    total_chunks = collection.count()
-    client = _get_openai_client()
+                    <pre><code data-lang="python">&quot;&quot;&quot;ScalerGPT — Document Ingestion &amp; RAG over Markdown Notes with ChromaDB.
 
-    q_embedding = _embed_texts(client, [question])[0]
-    results = collection.query(
-        query_embeddings=[q_embedding],
-        n_results=min(n_results, max(1, total_chunks)),
+This service demonstrates a complete Retrieval-Augmented Generation (RAG) workflow over markdown notes:
+1. Connects to ChromaDB (`chromadb.HttpClient` when `CHROMA_HOST` is configured, or an in-memory
+   `chromadb.EphemeralClient` inside the FastAPI server).
+2. Reads `.md` and `.txt` notes from `docs/`, splits them into paragraph chunks, embeds them with OpenAI&#x27;s
+   `text-embedding-3-small`, and upserts them into the `&quot;notes&quot;` Chroma collection.
+3. Executes the 3-stage RAG pipeline (Retrieve -&gt; Augment -&gt; Generate): queries top-3 relevant chunks from
+   ChromaDB, injects them into a grounded system prompt, and generates a factual answer with `gpt-4o-mini`.
+&quot;&quot;&quot;
+
+import os
+from pathlib import Path
+
+import chromadb
+from chromadb.utils import embedding_functions
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+DOCS_DIR = Path(__file__).with_name(&quot;docs&quot;)
+_chroma_client = None
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class ChromaDbRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for ScalerGPT ChromaDB RAG query.&quot;&quot;&quot;
+
+    question: str = &quot;Why should I copy requirements.txt before the rest of my code?&quot;
+
+
+class ChromaDbSource(BaseModel):
+    &quot;&quot;&quot;A retrieved document chunk with its source filename.&quot;&quot;&quot;
+
+    source: str
+    content: str
+
+
+class ChromaDbResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing grounded answer, indexed chunk count, and retrieved sources.&quot;&quot;&quot;
+
+    question: str
+    answer: str
+    docs_indexed: int
+    sources: list[ChromaDbSource]
+
+
+# ---------------------------------------------------------------------------
+# ChromaDB Connection &amp; Markdown Note Ingestion
+# ---------------------------------------------------------------------------
+def _get_collection():
+    &quot;&quot;&quot;Return the &#x27;notes&#x27; Chroma collection, ingesting markdown files from docs/ if empty.&quot;&quot;&quot;
+    global _chroma_client
+    api_key = os.getenv(&quot;OPENAI_API_KEY&quot;, &quot;&quot;).strip()
+    if not api_key:
+        raise RuntimeError(&quot;OPENAI_API_KEY is not configured in environment.&quot;)
+
+    # ① Connect to Chroma server if CHROMA_HOST is set; otherwise use in-memory EphemeralClient
+    if _chroma_client is None:
+        chroma_host = os.getenv(&quot;CHROMA_HOST&quot;, &quot;&quot;).strip()
+        chroma_port = int(os.getenv(&quot;CHROMA_PORT&quot;, &quot;8000&quot;))
+        if chroma_host:
+            _chroma_client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
+        else:
+            _chroma_client = chromadb.EphemeralClient()
+
+    # ② Configure OpenAI text-embedding-3-small for the collection
+    openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+        api_key=api_key,
+        model_name=&quot;text-embedding-3-small&quot;,
     )
-    docs = results[&quot;documents&quot;][0]
-    metas = results[&quot;metadatas&quot;][0]
-    ids = results[&quot;ids&quot;][0]
-    ...</code></pre>
+    collection = _chroma_client.get_or_create_collection(
+        name=&quot;notes&quot;,
+        embedding_function=openai_ef,
+    )
+
+    # ③ Ingest markdown/text notes from docs/ on first query
+    if collection.count() == 0:
+        files = sorted(list(DOCS_DIR.glob(&quot;*.txt&quot;)) + list(DOCS_DIR.glob(&quot;*.md&quot;)))
+        ids, documents, metadatas = [], [], []
+        for path in files:
+            text = path.read_text(encoding=&quot;utf-8&quot;).strip()
+            chunks = [c.strip() for c in text.split(&quot;\n\n&quot;) if len(c.strip()) &gt; 40]
+            for i, chunk in enumerate(chunks):
+                ids.append(f&quot;{path.name}::{i}&quot;)
+                documents.append(chunk)
+                metadatas.append({&quot;source&quot;: path.name})
+        if documents:
+            collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+
+    return collection
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic (Retrieve -&gt; Augment -&gt; Generate)
+# ---------------------------------------------------------------------------
+def ask_chromadb_notes(question: str) -&gt; dict:
+    &quot;&quot;&quot;Query indexed markdown notes in ChromaDB and synthesize a grounded answer.&quot;&quot;&quot;
+    collection = _get_collection()
+
+    # ④ RETRIEVE: Find the top-3 most relevant chunks from ChromaDB
+    hits = collection.query(query_texts=[question], n_results=3)
+    retrieved_docs = (hits.get(&quot;documents&quot;) or [[]])[0]
+    retrieved_metas = (hits.get(&quot;metadatas&quot;) or [[]])[0]
+    context = &quot;\n\n---\n\n&quot;.join(retrieved_docs)
+
+    # ⑤ AUGMENT: Build the strictly grounded ScalerGPT system prompt
+    system_prompt = (
+        &quot;You are ScalerGPT, a helpful teaching assistant. &quot;
+        &quot;Answer the user&#x27;s question using ONLY the context below. &quot;
+        &quot;If the context does not contain the answer, say you don&#x27;t know.\n\n&quot;
+        f&quot;CONTEXT:\n{context}&quot;
+    )
+
+    # ⑥ GENERATE: Synthesize the final answer with OpenAI
+    llm = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+        timeout=20.0,
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    resp = llm.chat.completions.create(
+        model=model,
+        messages=[
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: system_prompt},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+        ],
+    )
+
+    sources = [
+        {
+            &quot;source&quot;: (meta.get(&quot;source&quot;, &quot;notes&quot;) if isinstance(meta, dict) else &quot;notes&quot;),
+            &quot;content&quot;: doc,
+        }
+        for doc, meta in zip(retrieved_docs, retrieved_metas)
+    ]
+
+    return {
+        &quot;question&quot;: question,
+        &quot;answer&quot;: (resp.choices[0].message.content or &quot;&quot;).strip(),
+        &quot;docs_indexed&quot;: collection.count(),
+        &quot;sources&quot;: sources,
+    }
+
+</code></pre>
                 </div>
             </section>
 
@@ -276,10 +411,11 @@ flowchart TD
                     <p class="file-label">FastAPI route handler for <code>POST /api/chromadb</code>.</p>
                     <pre><code data-lang="python">@app.post(&quot;/api/chromadb&quot;, response_model=ChromaDbResponse)
 def chromadb_service(req: ChromaDbRequest):
+    &quot;&quot;&quot;Answer a question over markdown notes indexed in ChromaDB.&quot;&quot;&quot;
     if not req.question.strip():
         raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
     try:
-        return ChromaDbResponse(**ask_chromadb_notes(req.question, req.n_results))
+        return ChromaDbResponse(**ask_chromadb_notes(req.question))
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

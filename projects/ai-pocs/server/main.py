@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 from rate_limiter import check_rate_limit
 
 from services import (
-    # 02-ai-basics (01 - 07)
+    # 01-ai-basics (01 - 07)
     AgentRequest,
     AgentResponse,
     ChatMessage,
@@ -31,7 +31,7 @@ from services import (
     run_langchain_one_tool,
     run_multi_tool_agent,
     summarize,
-    # 03-ai-rag-chroma (01 - 03)
+    # 02-ai-rag-chroma (01 - 03)
     ChunkingRequest,
     ChunkingResponse,
     EmbeddingRequest,
@@ -41,7 +41,7 @@ from services import (
     answer_rag,
     chunk_text,
     compute_similarity,
-    # 04-ai-model-training-chromadb (01 - 03)
+    # 03-ai-model-training-chromadb (01 - 03)
     ModelTrainingRequest,
     ModelTrainingResponse,
     predict_delivery_eta,
@@ -51,7 +51,7 @@ from services import (
     RedisAgentRequest,
     RedisAgentResponse,
     run_redis_agent,
-    # 05-ai-aws-strands (01 - 12)
+    # 04-ai-aws-strands (01 - 12)
     HelloWorldAgentRequest,
     HelloWorldAgentResponse,
     run_hello_world_agent,
@@ -88,7 +88,7 @@ from services import (
     TravelAssistantRequest,
     TravelAssistantResponse,
     run_travel_assistant_agent,
-    # 06-ai-systems (01 - 03)
+    # 05-ai-systems (01 - 03)
     PromptingStrategiesRequest,
     PromptingStrategiesResponse,
     run_prompting_strategies,
@@ -98,7 +98,7 @@ from services import (
     RefundBenchRequest,
     RefundBenchResponse,
     run_refund_bench,
-    # 07-ai-reliability (01 - 04)
+    # 06-ai-reliability (01 - 04)
     CotVsDirectRequest,
     CotVsDirectResponse,
     run_cot_vs_direct_benchmark,
@@ -111,7 +111,7 @@ from services import (
     ToolErrorInjectionRequest,
     ToolErrorInjectionResponse,
     run_tool_error_injection,
-    # 08-ai-mcp-evals (01 - 03)
+    # 07-ai-mcp-evals (01 - 03)
     McpClientRequest,
     McpClientResponse,
     run_mcp_client,
@@ -172,7 +172,7 @@ def health_check():
 
 
 # ==============================================================================
-# SECTION 1: AI BASICS (02-ai-basics: 01 - 07)
+# SECTION 1: AI BASICS (01-ai-basics: 01 - 07)
 # ==============================================================================
 
 @app.post("/api/travel", response_model=TravelResponse)
@@ -257,7 +257,7 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
 
 
 # ==============================================================================
-# SECTION 2: AI RAG & CHROMA (03-ai-rag-chroma: 01 - 03)
+# SECTION 2: AI RAG & CHROMA (02-ai-rag-chroma: 01 - 03)
 # ==============================================================================
 
 @app.post("/api/chunk", response_model=ChunkingResponse)
@@ -300,7 +300,7 @@ def rag_service(req: RagRequest):
 
 
 # ==============================================================================
-# SECTION 3: AI MODEL TRAINING, CHROMADB & REDIS (04-ai-model-training-chromadb: 01 - 03)
+# SECTION 3: AI MODEL TRAINING, CHROMADB & REDIS (03-ai-model-training-chromadb: 01 - 03)
 # ==============================================================================
 
 @app.post("/api/model-training", response_model=ModelTrainingResponse)
@@ -335,7 +335,7 @@ def chromadb_service(req: ChromaDbRequest):
 @app.post("/api/redis", response_model=RedisAgentResponse)
 def redis_agent_service(req: RedisAgentRequest):
     # ① Validate session_id and message and run DeskBuddy tool-calling agent with Redis memory
-    if not req.session_id.strip() or not req.message.strip():
+    if not req.session_id.strip() or (not req.reset_session and not req.message.strip()):
         raise HTTPException(status_code=400, detail="Session ID and message are required")
     try:
         return RedisAgentResponse(
@@ -346,7 +346,7 @@ def redis_agent_service(req: RedisAgentRequest):
 
 
 # ==============================================================================
-# SECTION 4: AWS STRANDS & AGENT WORKFLOWS (05-ai-aws-strands: 01 - 12)
+# SECTION 4: AWS STRANDS & AGENT WORKFLOWS (04-ai-aws-strands: 01 - 12)
 # ==============================================================================
 
 @app.post("/api/hello-world-agent", response_model=HelloWorldAgentResponse)
@@ -482,7 +482,7 @@ def travel_assistant_service(req: TravelAssistantRequest):
 
 
 # ==============================================================================
-# SECTION 5: 06-AI-SYSTEMS (26 - 28)
+# SECTION 5: 05-AI-SYSTEMS (26 - 28)
 # ==============================================================================
 
 @app.post("/api/prompting-strategies", response_model=PromptingStrategiesResponse)
@@ -521,7 +521,7 @@ def refund_bench_service(req: RefundBenchRequest):
 
 
 # ==============================================================================
-# SECTION 6: 07-AI-RELIABILITY (29 - 32)
+# SECTION 6: 06-AI-RELIABILITY (29 - 32)
 # ==============================================================================
 
 @app.post("/api/cot-vs-direct", response_model=CotVsDirectResponse)
@@ -567,7 +567,7 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 
 
 # ==============================================================================
-# SECTION 7: 08-AI-MCP-EVALS (33 - 35)
+# SECTION 7: 07-AI-MCP-EVALS (33 - 35)
 # ==============================================================================
 
 @app.post("/api/mcp-client", response_model=McpClientResponse)

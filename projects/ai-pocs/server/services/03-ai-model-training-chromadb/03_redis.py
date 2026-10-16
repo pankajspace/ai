@@ -157,6 +157,16 @@ def run_redis_agent(
     # ① Optionally clear session history if requested
     if reset_session:
         _clear_history(session_id)
+        if not message.strip():
+            _, backend = _load_history(session_id)
+            return {
+                "session_id": session_id,
+                "message": "",
+                "answer": f"Session '{session_id}' memory cleared.",
+                "tool_calls": [],
+                "stored_messages_count": 0,
+                "storage_backend": backend,
+            }
 
     # ② Load this session's conversation history and append the new user message
     history, backend = _load_history(session_id)

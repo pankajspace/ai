@@ -1,4 +1,4 @@
-// Section 1: 02-ai-basics (01 - 07)
+// Section 1: 01-ai-basics (01 - 07)
 export { TravelGuideCard, default as TravelGuideTile } from './TravelGuideCard'
 export type { TravelGuideCardProps, TravelResponse } from './TravelGuideCard'
 
@@ -20,7 +20,7 @@ export type { LangchainOneToolCardProps, LangchainOneToolResponse } from './Lang
 export { MultiToolAgentCard, default as MultiToolAgentTile } from './MultiToolAgentCard'
 export type { MultiToolAgentCardProps, MultiToolAgentResponse } from './MultiToolAgentCard'
 
-// Section 2: 03-ai-rag-chroma (08 - 10)
+// Section 2: 02-ai-rag-chroma (08 - 10)
 export { ChunkingCard, default as ChunkingTile } from './ChunkingCard'
 export type { ChunkingCardProps, ChunkingResponse } from './ChunkingCard'
 
@@ -30,7 +30,7 @@ export type { EmbeddingCardProps, EmbeddingResponse } from './EmbeddingCard'
 export { RagCard, default as RagTile } from './RagCard'
 export type { RagCardProps, RagResponse } from './RagCard'
 
-// Section 3: 04-ai-model-training-chromadb (11 - 13)
+// Section 3: 03-ai-model-training-chromadb (11 - 13)
 export { ModelTrainingCard, default as ModelTrainingTile } from './ModelTrainingCard'
 export type { ModelTrainingCardProps, ModelTrainingResponse } from './ModelTrainingCard'
 
@@ -40,7 +40,7 @@ export type { ChromaDbCardProps, ChromaDbResponse, ChromaDbSource } from './Chro
 export { RedisAgentCard, default as RedisAgentTile } from './RedisAgentCard'
 export type { RedisAgentCardProps, RedisAgentResponse, RedisAgentToolCall } from './RedisAgentCard'
 
-// Section 4: 05-ai-aws-strands (14 - 25)
+// Section 4: 04-ai-aws-strands (14 - 25)
 export { HelloWorldAgentCard } from './HelloWorldAgentCard'
 export type { HelloWorldAgentCardProps, HelloWorldAgentResponse } from './HelloWorldAgentCard'
 
@@ -77,7 +77,7 @@ export type { AsyncToolsCardProps, AsyncToolsResponse } from './AsyncToolsCard'
 export { TravelAssistantCard } from './TravelAssistantCard'
 export type { TravelAssistantCardProps, TravelAssistantResponse } from './TravelAssistantCard'
 
-// Section 5: 06-ai-systems (26 - 28)
+// Section 5: 05-ai-systems (26 - 28)
 export { PromptingStrategiesCard } from './PromptingStrategiesCard'
 export type { PromptingStrategiesCardProps, PromptingStrategiesResponse } from './PromptingStrategiesCard'
 
@@ -87,7 +87,7 @@ export type { SycophancyTrapCardProps, SycophancyTrapResponse } from './Sycophan
 export { RefundBenchCard, default as RefundBenchTile } from './RefundBenchCard'
 export type { RefundBenchCardProps, RefundBenchResponse, JudgedGrievance, GrievanceRuling } from './RefundBenchCard'
 
-// Section 6: 07-ai-reliability (29 - 32)
+// Section 6: 06-ai-reliability (29 - 32)
 export { CotVsDirectCard } from './CotVsDirectCard'
 export type { CotVsDirectCardProps, CotVsDirectResponse } from './CotVsDirectCard'
 
@@ -100,7 +100,7 @@ export type { ToolSchemaCalibrationCardProps, ToolSchemaCalibrationResponse } fr
 export { ToolErrorInjectionCard } from './ToolErrorInjectionCard'
 export type { ToolErrorInjectionCardProps, ToolErrorInjectionResponse } from './ToolErrorInjectionCard'
 
-// Section 7: 08-ai-mcp-evals (33 - 35)
+// Section 7: 07-ai-mcp-evals (33 - 35)
 export { McpClientCard } from './McpClientCard'
 export type { McpClientCardProps, McpClientResponse } from './McpClientCard'
 

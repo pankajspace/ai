@@ -97,7 +97,7 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Before deploying an ML model behind a FastAPI microservice, the training job produces a serialized model artifact (<code>eta_model.joblib</code>). At inference time, the service loads that artifact once and predicts delivery ETA from four numeric features: distance, items count, peak hour indicator, and traffic level.</p>
+                    <p>Before deploying an ML model behind a FastAPI microservice, the training job produces a serialized model artifact (<code>eta_model.joblib</code>). At inference time, the service loads that artifact once and predicts delivery ETA from four features: distance (km), kitchen prep time (min), rider availability, and weather (rain vs clear).</p>
                 </div>
             </section>
 
@@ -122,7 +122,7 @@
                     <ul>
                         <li><strong>Train vs. Serve separation:</strong> Training runs once and writes <code>eta_model.joblib</code>; inference loads the saved artifact for fast predictions.</li>
                         <li><strong>RandomForestRegressor:</strong> An ensemble of 120 decision trees that predicts a continuous target (ETA in minutes) and exposes feature importances.</li>
-                        <li><strong>Mean Absolute Error (MAE):</strong> Measures the average absolute difference in minutes between predicted and actual delivery times on the held-out 20% test split.</li>
+                        <li><strong>Deterministic Feature Formula + Noise:</strong> Synthesizes 500 delivery orders with realistic rider-shortage and rain penalties before fitting the ensemble.</li>
                     </ul>
                 </div>
             </section>
@@ -163,7 +163,7 @@
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail">Displays predicted ETA in minutes, test MAE, and feature importances.</span>
+                            <span class="flow-detail">Displays predicted ETA in minutes and order summary.</span>
                         </div>
                     </div>
                 </div>
@@ -190,12 +190,12 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["ModelTrainingCard.tsx<br/>POST /api/model-training"]:::entry -->|"distance_km, items_count, is_peak_hour, traffic_level"| R["main.py<br/>model_training_service()"]:::fn
+    UI["ModelTrainingCard.tsx<br/>POST /api/model-training"]:::entry -->|"distance_km, prep_time_min, rider_available, is_raining"| R["main.py<br/>model_training_service()"]:::fn
     R --> S["01_model_training.py<br/>predict_delivery_eta()"]:::fn
-    S --> M[" _ensure_trained_model()<br/>RandomForestRegressor + joblib"]:::ext
-    M -->|"model, mae, importances"| S
-    S -->|"DataFrame row"| P["model.predict()"]:::fn
-    P -->|"predicted_eta_minutes"| R
+    S --> M["_load_or_train_model()<br/>RandomForestRegressor + joblib"]:::ext
+    M -->|"model"| S
+    S -->|"feature vector"| P["model.predict()"]:::fn
+    P -->|"eta_minutes"| R
     R -->|"JSON"| UI
     classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
     classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
@@ -223,7 +223,7 @@ flowchart TD
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">04-ai-model-training-chromadb</span>
+                        <span class="topic-meta-chip">112 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -233,42 +233,121 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-01-model-training-py">
-                    <span class="file-path">server/services/04-ai-model-training-chromadb/01_model_training.py</span>
+                    <span class="file-path">server/services/03-ai-model-training-chromadb/01_model_training.py</span>
                     <p class="file-label">Delivery ETA Model Training &amp; Inference Service.</p>
-                    <pre><code data-lang="python">from pathlib import Path
-import random
+                    <pre><code data-lang="python">&quot;&quot;&quot;QuickBite ETA — ML Model Training &amp; ETA Prediction Service.
+
+This service demonstrates training, serializing, and serving predictions with a scikit-learn model:
+1. Generates 5,000 rows of synthetic food-delivery data (`distance_km`, `prep_time_min`, `rider_available`, `is_raining`).
+2. Trains a `RandomForestRegressor` to predict delivery arrival time (`eta_min`) and caches `eta_model.pkl` via `joblib`.
+3. Loads the persisted model artifact, validates delivery order inputs with Pydantic (`ModelTrainingRequest`), and returns ETA in minutes.
+&quot;&quot;&quot;
+
+import os
+from pathlib import Path
+
 import joblib
+import numpy as np
 import pandas as pd
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from sklearn.ensemble import RandomForestRegressor
-from sklearn.metrics import mean_absolute_error
-from sklearn.model_selection import train_test_split
 
-FEATURES = [&quot;distance_km&quot;, &quot;items_count&quot;, &quot;is_peak_hour&quot;, &quot;traffic_level&quot;]
+MODEL_PATH = Path(os.getenv(&quot;MODEL_PATH&quot;, &quot;/tmp/eta_model.pkl&quot;))
+_cached_model = None
 
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class ModelTrainingRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for QuickBite ETA model prediction.&quot;&quot;&quot;
+
+    distance_km: float = 4.5
+    prep_time_min: float = 15.0
+    rider_available: int = 1
+    is_raining: int = 1
+
+
+class ModelTrainingResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing order features, predicted ETA, and status message.&quot;&quot;&quot;
+
+    distance_km: float
+    prep_time_min: float
+    rider_available: int
+    is_raining: int
+    eta_minutes: float
+    message: str
+
+
+# ---------------------------------------------------------------------------
+# Model Training &amp; Persistence
+# ---------------------------------------------------------------------------
+def get_or_train_model() -&gt; RandomForestRegressor:
+    &quot;&quot;&quot;Load the trained RandomForestRegressor from disk, or train and save it on first use.&quot;&quot;&quot;
+    global _cached_model
+    if _cached_model is not None:
+        return _cached_model
+
+    # ① Train and persist eta_model.pkl if it does not exist yet
+    if not MODEL_PATH.exists():
+        np.random.seed(42)
+        n = 5000
+
+        df = pd.DataFrame({
+            &quot;distance_km&quot;: np.random.uniform(0.5, 12, n),
+            &quot;prep_time_min&quot;: np.random.uniform(5, 30, n),
+            &quot;rider_available&quot;: np.random.randint(0, 2, n),
+            &quot;is_raining&quot;: np.random.randint(0, 2, n),
+        })
+
+        # ② Ground-truth formula: base + distance*3 + prep*0.7 + rain penalty + rider penalty + noise
+        df[&quot;eta_min&quot;] = (
+            8
+            + df.distance_km * 3
+            + df.prep_time_min * 0.7
+            + df.is_raining * 9
+            + (1 - df.rider_available) * 6
+            + np.random.normal(0, 2, n)
+        )
+
+        # ③ Fit RandomForestRegressor and save artifact with joblib
+        X, y = df.drop(columns=[&quot;eta_min&quot;]), df[&quot;eta_min&quot;]
+        model = RandomForestRegressor(n_estimators=60, random_state=42).fit(X, y)
+        joblib.dump(model, MODEL_PATH)
+
+    # ④ Load the persisted model artifact from disk
+    _cached_model = joblib.load(MODEL_PATH)
+    return _cached_model
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
 def predict_delivery_eta(
-    distance_km: float,
-    items_count: int,
-    is_peak_hour: int,
-    traffic_level: int,
+    distance_km: float = 4.5,
+    prep_time_min: float = 15.0,
+    rider_available: int = 1,
+    is_raining: int = 1,
 ) -&gt; dict:
-    model, mae, importances = _ensure_trained_model()
-    sample = pd.DataFrame([{
-        &quot;distance_km&quot;: distance_km,
-        &quot;items_count&quot;: items_count,
-        &quot;is_peak_hour&quot;: is_peak_hour,
-        &quot;traffic_level&quot;: traffic_level,
-    }])
-    pred = float(model.predict(sample)[0])
+    &quot;&quot;&quot;Predict delivery ETA in minutes using the trained RandomForestRegressor.&quot;&quot;&quot;
+    # ⑤ Load (or train) the model and run inference on the single-row order DataFrame
+    model = get_or_train_model()
+    order_row = {
+        &quot;distance_km&quot;: float(distance_km),
+        &quot;prep_time_min&quot;: float(prep_time_min),
+        &quot;rider_available&quot;: 1 if int(rider_available) else 0,
+        &quot;is_raining&quot;: 1 if int(is_raining) else 0,
+    }
+    X = pd.DataFrame([order_row])
+    eta = round(float(model.predict(X)[0]), 1)
+
     return {
-        &quot;distance_km&quot;: distance_km,
-        &quot;items_count&quot;: items_count,
-        &quot;is_peak_hour&quot;: is_peak_hour,
-        &quot;traffic_level&quot;: traffic_level,
-        &quot;predicted_eta_minutes&quot;: round(pred, 1),
-        &quot;test_mae_minutes&quot;: mae,
-        &quot;feature_importances&quot;: importances,
-    }</code></pre>
+        **order_row,
+        &quot;eta_minutes&quot;: eta,
+        &quot;message&quot;: f&quot;Your food arrives in {eta} min 🍔&quot;,
+    }
+
+</code></pre>
                 </div>
             </section>
 
@@ -295,13 +374,14 @@ def predict_delivery_eta(
                     <p class="file-label">FastAPI route handler for <code>POST /api/model-training</code>.</p>
                     <pre><code data-lang="python">@app.post(&quot;/api/model-training&quot;, response_model=ModelTrainingResponse)
 def model_training_service(req: ModelTrainingRequest):
+    &quot;&quot;&quot;Train/load the RandomForest delivery ETA model and predict ETA in minutes.&quot;&quot;&quot;
     try:
         return ModelTrainingResponse(
             **predict_delivery_eta(
-                req.distance_km,
-                req.items_count,
-                req.is_peak_hour,
-                req.traffic_level,
+                distance_km=req.distance_km,
+                prep_time_min=req.prep_time_min,
+                rider_available=req.rider_available,
+                is_raining=req.is_raining,
             )
         )
     except Exception as exc:

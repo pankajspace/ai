@@ -1,6 +1,6 @@
 # AI POCs Server (FastAPI)
 
-FastAPI backend service hosting 35 modular AI services organized into 7 sequential domain folders matching `practice/` (`02-ai-basics` through `08-ai-mcp-evals`).
+FastAPI backend service hosting 35 modular AI services organized into 7 sequential domain folders (`01-ai-basics` through `07-ai-mcp-evals`).
 
 ## Overview
 
@@ -12,42 +12,42 @@ FastAPI backend service hosting 35 modular AI services organized into 7 sequenti
 
 1. `main.py`: FastAPI app with CORS middleware, rate-limiting middleware, health check, and 35 route endpoints.
 2. `services/__init__.py`: Package entrypoint dynamically loading all 35 numbered services from the 7 domain subfolders and exporting schemas.
-3. `services/02-ai-basics/01_chat_openai.py`: OpenAI travel guide chat completion service.
-4. `services/02-ai-basics/02_chat_groq.py`: Groq joke generator chat completion service.
-5. `services/02-ai-basics/03_langchain_summarizer.py`: LangChain LCEL text summarizer service.
-6. `services/02-ai-basics/04_langchain_memory_chat.py`: LangChain conversational memory chat service.
-7. `services/02-ai-basics/05_agent_one_tool.py`: Autonomous agent with local tool calling (`get_price`).
-8. `services/02-ai-basics/06_langchain_one_tool.py`: LangChain single-tool agent (`get_weather`).
-9. `services/02-ai-basics/07_langchain_multi_tools.py`: LangChain multi-tool agent (`get_weather`, arithmetic, population).
-10. `services/03-ai-rag-chroma/01_chunking.py`: Document chunking service using `RecursiveCharacterTextSplitter`.
-11. `services/03-ai-rag-chroma/02_embedding.py`: Sentence similarity computation via `all-MiniLM-L6-v2` embeddings.
-12. `services/03-ai-rag-chroma/03_rag.py`: Paragraph retrieval-augmented generation service.
-13. `services/04-ai-model-training-chromadb/01_model_training.py`: scikit-learn `RandomForestRegressor` delivery ETA model training and inference (`joblib`).
-14. `services/04-ai-model-training-chromadb/02_chromadb.py`: Multi-file markdown notes (`docs/*.md`) chunking, OpenAI embedding, and ChromaDB Q&A.
-15. `services/04-ai-model-training-chromadb/03_redis.py`: Redis-backed (with in-memory fallback) stateful multi-turn customer support agent with 3 order/refund tools.
-16. `services/05-ai-aws-strands/01_hello_world_agent.py`: Minimal Strands agent on Amazon Bedrock Nova Lite.
-17. `services/05-ai-aws-strands/02_hello_world_langgraph.py`: LangGraph ReAct agent loop on Bedrock Converse with a greeting tool.
-18. `services/05-ai-aws-strands/03_function_to_tool.py`: Converting Python functions to agent tools via `@tool`, type hints, and docstrings.
-19. `services/05-ai-aws-strands/04_tip_calculator.py`: Natural language intent-driven bill and tip calculator agent.
-20. `services/05-ai-aws-strands/05_multi_tool_sales.py`: Autonomous sales pipeline orchestration (`get_data` -> `analyze` -> `email`).
-21. `services/05-ai-aws-strands/06_custom_tool_inventory.py`: Domain-specific catalog stock lookup tool (`check_inventory`).
-22. `services/05-ai-aws-strands/07_prebuilt_tools.py`: Math assistant agent using the prebuilt `strands_tools.calculator`.
-23. `services/05-ai-aws-strands/08_multi_prebuilt_tools.py`: Multi-step pipeline with the prebuilt `http_request` and `calculator`.
-24. `services/05-ai-aws-strands/09_use_aws.py`: Natural language AWS assistant using the prebuilt `use_aws` tool.
-25. `services/05-ai-aws-strands/10_class_based_tools.py`: Class-based tools sharing state/connection pool.
-26. `services/05-ai-aws-strands/11_async_tools.py`: Async Strands tool run with `agent.invoke_async` for parallel warehouse lookups.
-27. `services/05-ai-aws-strands/12_travel_assistant.py`: Capstone travel agent combining weather forecasts, packing lists, and cost estimation.
-28. `services/06-ai-systems/01_prompting_strategies.py`: Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning.
-29. `services/06-ai-systems/02_sycophancy_trap.py`: 4-round escalating pushback evaluator testing model sycophancy and integrity.
-30. `services/06-ai-systems/03_refund_bench.py`: 4-stage multi-judge food dispute adjudication pipeline with code-driven pricing.
-31. `services/07-ai-reliability/01_cot_vs_direct.py`: Side-by-side reliability benchmark measuring CoT reasoning gains on logic puzzles.
-32. `services/07-ai-reliability/02_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
-33. `services/07-ai-reliability/03_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
-34. `services/07-ai-reliability/04_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
-35. `services/08-ai-mcp-evals/01_mcp_client.py`: MCP client over stdio without an LLM (handshake, tool discovery, direct tool call).
-36. `services/08-ai-mcp-evals/02_mcp_agent.py`: Groq agent that discovers and calls the MCP server's tools over stdio.
-37. `services/08-ai-mcp-evals/03_mcp_evals.py`: 5-case eval suite running the MCP agent and asserting tool routing and facts.
-38. `services/08-ai-mcp-evals/cricket_server.py`: FastMCP stdio server (demo live scores and player stats) started as a subprocess by `08-ai-mcp-evals` services.
+3. `services/01-ai-basics/01_chat_openai.py`: OpenAI travel guide chat completion service.
+4. `services/01-ai-basics/02_chat_groq.py`: Groq joke generator chat completion service.
+5. `services/01-ai-basics/03_langchain_summarizer.py`: LangChain LCEL text summarizer service.
+6. `services/01-ai-basics/04_langchain_memory_chat.py`: LangChain conversational memory chat service.
+7. `services/01-ai-basics/05_agent_one_tool.py`: Autonomous agent with local tool calling (`get_price`).
+8. `services/01-ai-basics/06_langchain_one_tool.py`: LangChain single-tool agent (`get_weather`).
+9. `services/01-ai-basics/07_langchain_multi_tools.py`: LangChain multi-tool agent (`get_weather`, arithmetic, population).
+10. `services/02-ai-rag-chroma/01_chunking.py`: Document chunking service using `RecursiveCharacterTextSplitter`.
+11. `services/02-ai-rag-chroma/02_embedding.py`: Sentence similarity computation via `all-MiniLM-L6-v2` embeddings.
+12. `services/02-ai-rag-chroma/03_rag.py`: Paragraph retrieval-augmented generation service.
+13. `services/03-ai-model-training-chromadb/01_model_training.py`: scikit-learn `RandomForestRegressor` delivery ETA model training and inference (`joblib`).
+14. `services/03-ai-model-training-chromadb/02_chromadb.py`: Multi-file markdown notes (`docs/*.md`) chunking, OpenAI embedding, and ChromaDB Q&A.
+15. `services/03-ai-model-training-chromadb/03_redis.py`: Redis-backed (with in-memory fallback) stateful multi-turn agent with `calculator` and `get_datetime` tools.
+16. `services/04-ai-aws-strands/01_hello_world_agent.py`: Minimal Strands agent on Amazon Bedrock Nova Lite.
+17. `services/04-ai-aws-strands/02_hello_world_langgraph.py`: LangGraph ReAct agent loop on Bedrock Converse with a greeting tool.
+18. `services/04-ai-aws-strands/03_function_to_tool.py`: Converting Python functions to agent tools via `@tool`, type hints, and docstrings.
+19. `services/04-ai-aws-strands/04_tip_calculator.py`: Natural language intent-driven bill and tip calculator agent.
+20. `services/04-ai-aws-strands/05_multi_tool_sales.py`: Autonomous sales pipeline orchestration (`get_data` -> `analyze` -> `email`).
+21. `services/04-ai-aws-strands/06_custom_tool_inventory.py`: Domain-specific catalog stock lookup tool (`check_inventory`).
+22. `services/04-ai-aws-strands/07_prebuilt_tools.py`: Math assistant agent using the prebuilt `strands_tools.calculator`.
+23. `services/04-ai-aws-strands/08_multi_prebuilt_tools.py`: Multi-step pipeline with the prebuilt `http_request` and `calculator`.
+24. `services/04-ai-aws-strands/09_use_aws.py`: Natural language AWS assistant using the prebuilt `use_aws` tool.
+25. `services/04-ai-aws-strands/10_class_based_tools.py`: Class-based tools sharing state/connection pool.
+26. `services/04-ai-aws-strands/11_async_tools.py`: Async Strands tool run with `agent.invoke_async` for parallel warehouse lookups.
+27. `services/04-ai-aws-strands/12_travel_assistant.py`: Capstone travel agent combining weather forecasts, packing lists, and cost estimation.
+28. `services/05-ai-systems/01_prompting_strategies.py`: Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning.
+29. `services/05-ai-systems/02_sycophancy_trap.py`: 4-round escalating pushback evaluator testing model sycophancy and integrity.
+30. `services/05-ai-systems/03_refund_bench.py`: 4-stage multi-judge food dispute adjudication pipeline with code-driven pricing.
+31. `services/06-ai-reliability/01_cot_vs_direct.py`: Side-by-side reliability benchmark measuring CoT reasoning gains on logic puzzles.
+32. `services/06-ai-reliability/02_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
+33. `services/06-ai-reliability/03_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
+34. `services/06-ai-reliability/04_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
+35. `services/07-ai-mcp-evals/01_mcp_client.py`: MCP client over stdio without an LLM (handshake, tool discovery, direct tool call).
+36. `services/07-ai-mcp-evals/02_mcp_agent.py`: Groq agent that discovers and calls the MCP server's tools over stdio.
+37. `services/07-ai-mcp-evals/03_mcp_evals.py`: 5-case eval suite running the MCP agent and asserting tool routing and facts.
+38. `services/07-ai-mcp-evals/cricket_server.py`: FastMCP stdio server (demo live scores and player stats) started as a subprocess by `07-ai-mcp-evals` services.
 39. `requirements.txt`: Python package dependencies.
 40. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
 41. `.env.example`: Configuration variables for port, host, and API keys.

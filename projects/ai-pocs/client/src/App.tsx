@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 
-// Section 1: 02-ai-basics (01 - 07)
+// Section 1: 01-ai-basics (01 - 07)
 import { TravelGuideCard } from './components/TravelGuideCard'
 import { JokeGeneratorCard } from './components/JokeGeneratorCard'
 import { SummarizerCard } from './components/SummarizerCard'
@@ -10,17 +10,17 @@ import { AgentOneToolCard } from './components/AgentOneToolCard'
 import { LangchainOneToolCard } from './components/LangchainOneToolCard'
 import { MultiToolAgentCard } from './components/MultiToolAgentCard'
 
-// Section 2: 03-ai-rag-chroma (08 - 10)
+// Section 2: 02-ai-rag-chroma (08 - 10)
 import { ChunkingCard } from './components/ChunkingCard'
 import { EmbeddingCard } from './components/EmbeddingCard'
 import { RagCard } from './components/RagCard'
 
-// Section 3: 04-ai-model-training-chromadb (11 - 13)
+// Section 3: 03-ai-model-training-chromadb (11 - 13)
 import { ModelTrainingCard } from './components/ModelTrainingCard'
 import { ChromaDbCard } from './components/ChromaDbCard'
 import { RedisAgentCard } from './components/RedisAgentCard'
 
-// Section 4: 05-ai-aws-strands (14 - 25)
+// Section 4: 04-ai-aws-strands (14 - 25)
 import { HelloWorldAgentCard } from './components/HelloWorldAgentCard'
 import { LangGraphAgentCard } from './components/LangGraphAgentCard'
 import { FunctionToToolCard } from './components/FunctionToToolCard'
@@ -34,18 +34,18 @@ import { ClassBasedToolsCard } from './components/ClassBasedToolsCard'
 import { AsyncToolsCard } from './components/AsyncToolsCard'
 import { TravelAssistantCard } from './components/TravelAssistantCard'
 
-// Section 5: 06-ai-systems (26 - 28)
+// Section 5: 05-ai-systems (26 - 28)
 import { PromptingStrategiesCard } from './components/PromptingStrategiesCard'
 import { SycophancyTrapCard } from './components/SycophancyTrapCard'
 import { RefundBenchCard } from './components/RefundBenchCard'
 
-// Section 6: 07-ai-reliability (29 - 32)
+// Section 6: 06-ai-reliability (29 - 32)
 import { CotVsDirectCard } from './components/CotVsDirectCard'
 import { VarianceDeterminismCard } from './components/VarianceDeterminismCard'
 import { ToolSchemaCalibrationCard } from './components/ToolSchemaCalibrationCard'
 import { ToolErrorInjectionCard } from './components/ToolErrorInjectionCard'
 
-// Section 7: 08-ai-mcp-evals (33 - 35)
+// Section 7: 07-ai-mcp-evals (33 - 35)
 import { McpClientCard } from './components/McpClientCard'
 import { McpAgentCard } from './components/McpAgentCard'
 import { McpEvalsCard } from './components/McpEvalsCard'
@@ -282,10 +282,10 @@ function App() {
               </div>
             </div>
 
-            {/* SECTION 1: 02-AI-BASICS (01 - 07) */}
+            {/* SECTION 1: 01-AI-BASICS (01 - 07) */}
             <SectionAccordion
               id="basics"
-              title="02-ai-basics • AI Basics & LangChain"
+              title="AI Basics & LangChain"
               count={7}
               startCount={0}
               isExpanded={expanded.basics}
@@ -300,10 +300,10 @@ function App() {
               <MultiToolAgentCard />
             </SectionAccordion>
 
-            {/* SECTION 2: 03-AI-RAG-CHROMA (08 - 10) */}
+            {/* SECTION 2: 02-AI-RAG-CHROMA (08 - 10) */}
             <SectionAccordion
               id="rag_chroma"
-              title="03-ai-rag-chroma • Chunking, Embeddings & RAG"
+              title="Chunking, Embeddings & RAG"
               count={3}
               startCount={7}
               isExpanded={expanded.rag_chroma}
@@ -314,10 +314,10 @@ function App() {
               <RagCard />
             </SectionAccordion>
 
-            {/* SECTION 3: 04-AI-MODEL-TRAINING-CHROMADB (11 - 13) */}
+            {/* SECTION 3: 03-AI-MODEL-TRAINING-CHROMADB (11 - 13) */}
             <SectionAccordion
               id="model_training_chromadb"
-              title="04-ai-model-training-chromadb • ML Training, ChromaDB & Redis Memory"
+              title="ML Training, ChromaDB & Redis Memory"
               count={3}
               startCount={10}
               isExpanded={expanded.model_training_chromadb}
@@ -328,10 +328,10 @@ function App() {
               <RedisAgentCard />
             </SectionAccordion>
 
-            {/* SECTION 4: 05-AI-AWS-STRANDS (14 - 25) */}
+            {/* SECTION 4: 04-AI-AWS-STRANDS (14 - 25) */}
             <SectionAccordion
               id="strands"
-              title="05-ai-aws-strands • AWS Strands & Agent Workflows"
+              title="AWS Strands & Agent Workflows"
               count={12}
               startCount={13}
               isExpanded={expanded.strands}
@@ -351,10 +351,10 @@ function App() {
               <TravelAssistantCard />
             </SectionAccordion>
 
-            {/* SECTION 5: 06-AI-SYSTEMS (26 - 28) */}
+            {/* SECTION 5: 05-AI-SYSTEMS (26 - 28) */}
             <SectionAccordion
               id="systems"
-              title="06-ai-systems • AI Systems & Multi-Turn Pressure"
+              title="AI Systems & Multi-Turn Pressure"
               count={3}
               startCount={25}
               isExpanded={expanded.systems}
@@ -365,10 +365,10 @@ function App() {
               <RefundBenchCard />
             </SectionAccordion>
 
-            {/* SECTION 6: 07-AI-RELIABILITY (29 - 32) */}
+            {/* SECTION 6: 06-AI-RELIABILITY (29 - 32) */}
             <SectionAccordion
               id="reliability"
-              title="07-ai-reliability • AI Reliability & Error Injection"
+              title="AI Reliability & Error Injection"
               count={4}
               startCount={28}
               isExpanded={expanded.reliability}
@@ -380,10 +380,10 @@ function App() {
               <ToolErrorInjectionCard />
             </SectionAccordion>
 
-            {/* SECTION 7: 08-AI-MCP-EVALS (33 - 35) */}
+            {/* SECTION 7: 07-AI-MCP-EVALS (33 - 35) */}
             <SectionAccordion
               id="mcp"
-              title="08-ai-mcp-evals • FastMCP Protocol & Automated Evals"
+              title="FastMCP Protocol & Automated Evals"
               count={3}
               startCount={32}
               isExpanded={expanded.mcp}
