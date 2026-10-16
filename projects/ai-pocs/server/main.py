@@ -1,8 +1,11 @@
 import asyncio
 
 from dotenv import find_dotenv, load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from rate_limiter import check_rate_limit
 
 from services import (
     # 01 - 10
@@ -112,6 +115,30 @@ from services import (
 load_dotenv(find_dotenv())
 
 app = FastAPI(title="AI POCs API")
+
+# Rate limiting middleware enforcing 30 requests per hour on POST API endpoints
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    # ① Apply rate limit to all mutating/action API requests (POST)
+    if request.method == "POST":
+        # ② Check rate limit against sliding window SQLite store
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After and CORS headers
+            return JSONResponse(
+                status_code=429,
+                content={"detail": msg, "error": msg},
+                headers={
+                    "Retry-After": str(retry_after),
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Methods": "*",
+                },
+            )
+    return await call_next(request)
+
 
 # Enable CORS for frontend requests
 app.add_middleware(

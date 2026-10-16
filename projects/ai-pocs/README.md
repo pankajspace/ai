@@ -11,6 +11,7 @@ Each interactive card in the React dashboard features a green `ⓘ` icon in its 
 1. **Multi-Container Orchestration**: Docker Compose orchestrates an isolated FastAPI backend (`ai-pocs-server` on port `8000`) and a React + Vite single-page application (`ai-pocs-client` on container port `5173`, mapped locally to `8091` and `5173`, and on EC2 to `5010`).
 2. **Service Modularity**: Each service in `server/services/` is self-contained with Pydantic schemas, typed handlers, and circled numeral step comments (`# ①`, `# ②`, ...). Each service keeps only the code its practice topic teaches (one provider, no fallbacks, no UI-only post-processing or CLI test block), mirroring the matching `practice/` script; responses carry just the POC result, plus a `tool_calls` list where tool calling is the lesson. Every route returns `400` for empty text input and `500` with the error detail if the service fails.
 3. **Path-Prefix & Reverse Proxy Routing**: In production behind Nginx at `https://app.techtoday.click/ai-pocs/`, `VITE_BASE_PATH=/ai-pocs/` and `VITE_SERVER_URL=/ai-pocs` serve all frontend assets and explainer pages under `/ai-pocs/`, while Vite proxies `/ai-pocs/api/*` and `/ai-pocs/health` over the internal Docker Compose network to `http://server:8000`. The client image runs `npm run build` at image build time and serves the minified bundle with `vite preview`; local `docker compose` overrides this with the `npm run dev` hot-reload server. Never run the dev server in production — it ships the unbundled ~3 MB development build of React and makes the landing page take 15–20 s to load.
+4. **Rate Limiting & Abuse Prevention**: A sliding-window rate limiter (`server/rate_limiter.py`) enforces a strict 30 requests per hour limit per client IP across all 32 POST API endpoints, backed by SQLite in WAL mode (`/tmp/ai_rate_limit.db`) with automatic retry-after guidance and HTTP 429 response.
 
 ```text
 Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-client (vite preview :5173)
@@ -152,7 +153,8 @@ projects/ai-pocs/
 └── server/
     ├── Dockerfile              # Python 3.12-slim + uv + CPU PyTorch + FastAPI Uvicorn
     ├── requirements.txt        # FastAPI, OpenAI, LangChain, LangGraph, Strands, SentenceTransformers, MCP
-    ├── main.py                 # FastAPI app, CORS, healthcheck, and 32 POST routes
+    ├── rate_limiter.py         # IP-based sliding window rate limiter (30 req/hr)
+    ├── main.py                 # FastAPI app, CORS, rate-limit middleware, healthcheck, and 32 POST routes
     └── services/
         ├── __init__.py         # Dynamic service loader and schema exports
         ├── 01_chat_openai.py .. 32_mcp_evals.py  # 32 modular AI service implementations
