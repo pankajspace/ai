@@ -6,13 +6,20 @@ Runs unit-test style evaluation assertions against the MCP-enabled cricket agent
 3. Suite scoring: aggregates pass/fail counts and overall accuracy percentage across all test cases.
 """
 
-import importlib
+import importlib.util
+import sys
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
 
-# ① Reuse the MCP agent loop from 31_mcp_agent.py (importlib, because the file name starts with a digit)
-mcp_agent = importlib.import_module(".31_mcp_agent", package=__package__)
+# ① Reuse the MCP agent loop from 02_mcp_agent.py in this folder
+if "services.mcp_agent" in sys.modules:
+    mcp_agent = sys.modules["services.mcp_agent"]
+else:
+    _spec = importlib.util.spec_from_file_location("mcp_agent", Path(__file__).with_name("02_mcp_agent.py"))
+    mcp_agent = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(mcp_agent)
 
 
 class TestCaseEvalResult(BaseModel):
