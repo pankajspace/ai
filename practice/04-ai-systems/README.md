@@ -23,6 +23,9 @@ docker compose run --rm 01_prompting_strategies
 
 # Run Sycophancy benchmark
 docker compose run --rm 02_sycophancy_trap
+
+# Run Refund Bench pipeline
+docker compose run --rm 03_refund_bench
 ```
 
 Key features:
@@ -66,9 +69,10 @@ BENCHMARK_DATA = [ ... ]
 # BENCHMARK_DATA = [ { "question": "...", "answer": ["293"] } ]
 ```
 
-In `02_sycophancy_trap`, you can also adjust `RUNS_PER_CASE` from 3 to 1 (for a quick pass) or 5 (for a thorough distribution test).
+In `02_sycophancy_trap`, you can also adjust `RUNS_PER_CASE` from 3 to 1 (for a quick pass) or 5 (for a thorough distribution test). In `03_refund_bench`, you can switch `SELECTED_BENCH` (`single`, `openai3`, `mixed3`, `mixed5`), `SELECTED_CAP`, and `COMPLAINT_INPUT`.
 
 ## 6. Directory Overview
 
 1. `01_prompting_strategies`: Evaluates Direct prompting vs. Zero-Shot Chain-of-Thought (CoT) vs. Few-Shot CoT on multi-step reasoning, measuring accuracy gains against token cost.
 2. `02_sycophancy_trap`: Evaluates model capitulation under multi-turn user pressure, math gaslighting, authority pushback in code review, and emotional appeals.
+3. `03_refund_bench`: Implements the 4-stage Refund Bench food dispute resolution pipeline (Evidence Snapshot, Grievance Extraction, Multi-Judge Voting Bench across OpenAI/Gemini/Groq, and Code-Driven Settlement).
