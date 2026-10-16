@@ -7,10 +7,10 @@ This script demonstrates training, serializing, and serving predictions with a s
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 01_quickbite_eta.py
+    python 01_model_training.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 01_quickbite_eta
+    docker compose run --rm 01_model_training
 """
 
 import os

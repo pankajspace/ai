@@ -10,10 +10,10 @@ This script demonstrates a complete Retrieval-Augmented Generation (RAG) workflo
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 02_scalergpt_rag_chromadb.py
+    python 02_chromadb.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 02_scalergpt_rag_chromadb
+    docker compose run --rm 02_chromadb
 """
 
 import os

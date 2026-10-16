@@ -10,10 +10,10 @@ This script demonstrates an autonomous tool-calling agent backed by persistent R
 
 Run locally (from this folder):
     pip install -r requirements.txt
-    python 03_deskbuddy_agent_redis.py
+    python 03_redis.py
 
 Run with Docker Compose (from this folder):
-    docker compose run --rm 03_deskbuddy_agent_redis
+    docker compose run --rm 03_redis
 """
 
 import datetime

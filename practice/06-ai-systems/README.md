@@ -14,7 +14,7 @@ cp .env.example .env    # configure OPENAI_API_KEY (and optional GEMINI_API_KEY 
 
 ## 2. Run with Docker Compose (Recommended)
 
-From the `practice/07-ai-systems` folder:
+From the `practice/06-ai-systems` folder:
 
 ```bash
 # Run Strategy benchmark
@@ -28,7 +28,7 @@ docker compose run --rm 03_refund_bench
 ```
 
 Key features:
-1. All services share the same Docker image (`practice-07-ai-systems`) built from the common `Dockerfile` and `requirements.txt`.
+1. All services share the same Docker image (`practice-06-ai-systems`) built from the common `Dockerfile` and `requirements.txt`.
 2. Automatically reads the shared `.env` file.
 3. Mounts each `.py` script directly so code edits take effect immediately without rebuilding the image.
 4. To rebuild after dependency changes, pass `--build`:
@@ -38,11 +38,11 @@ Key features:
 
 ## 3. Run with Docker directly
 
-From the `practice/07-ai-systems` folder:
+From the `practice/06-ai-systems` folder:
 
 ```bash
-docker build -t practice-07-ai-systems .
-docker run --rm --env-file .env practice-07-ai-systems python 01_prompting_strategies.py
+docker build -t practice-06-ai-systems .
+docker run --rm --env-file .env practice-06-ai-systems python 01_prompting_strategies.py
 ```
 
 ## 4. Run locally (without Docker)
