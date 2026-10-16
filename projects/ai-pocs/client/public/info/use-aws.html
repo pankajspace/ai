@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>&quot;List all S3 buckets in my account&quot; becomes <code>use_aws(service_name=&quot;s3&quot;, operation_name=&quot;list_buckets&quot;, ...)</code>. The call runs against the real AWS account of the configured credentials and the agent summarises the result.</p>
-                    <p>Because the tool can reach the whole AWS API, the credentials should only allow read-only actions. <code>use_aws</code> also asks a human to confirm mutating calls (create, delete, ...) and secret reads (e.g. <code>secretsmanager.get_secret_value</code>); the server has no terminal to answer, so those calls are refused.</p>
+                    <p>
+                        <strong>Natural Language AWS Agent (<code>use_aws</code>)</strong> equips a Strands agent with
+                        the prebuilt <code>use_aws</code> tool from <code>strands_tools</code>, which acts as a universal
+                        bridge between natural-language requests and the <strong>AWS SDK for Python
+                        (<code>boto3</code>)</strong>.
+                    </p>
+                    <p>
+                        When you ask <em>"List all S3 buckets in my account"</em> or <em>"Describe my EC2 instances in
+                        us-east-1"</em>, the agent translates your plain-English question into a structured
+                        <code>use_aws</code> invocation specifying <code>service_name</code> (e.g., <code>"s3"</code>),
+                        <code>operation_name</code> (e.g., <code>"list_buckets"</code>), <code>parameters</code>,
+                        <code>region</code>, and a human-readable <code>label</code>. The tool executes the real
+                        <code>boto3</code> API call against the configured AWS account and returns the response for the
+                        agent to summarize.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +137,31 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Natural language to API calls:</strong> the model fills <code>service_name</code>, <code>operation_name</code>, <code>parameters</code> and <code>region</code>.</li>
-                        <li><strong>Least privilege:</strong> the IAM policy is the real safety boundary for an agent with cloud access.</li>
-                        <li><strong>Operations list:</strong> after the run, the service reads <code>agent.messages</code> and lists every <code>use_aws</code> call with its arguments (service, operation, parameters), read from the <code>toolUse</code> blocks.</li>
-                    </ul>
+                    <p><strong>1. One Meta-Tool vs. Thousands of Individual API Tools</strong></p>
+                    <p>
+                        AWS has over 200 services and tens of thousands of API actions. Registering a separate
+                        <code>@tool</code> function for every AWS operation would blow past any LLM's context window.
+                        Instead, <code>use_aws</code> is a single parameterized <strong>meta-tool</strong>: the model
+                        relies on its pretraining knowledge of <code>boto3</code> client names and snake_case operation
+                        names to fill in <code>service_name</code>, <code>operation_name</code>, and
+                        <code>parameters</code> dynamically.
+                    </p>
+                    <p><strong>2. IAM Least Privilege Is the True Security Boundary</strong></p>
+                    <p>
+                        Prompt instructions like <em>"Please do not delete anything"</em> are soft guardrails that can
+                        be bypassed by prompt injection or model mistakes. When giving an agent cloud access, the hard
+                        security boundary is the <strong>AWS IAM Policy</strong> attached to the credentials or instance
+                        role &mdash; always scope agent credentials to read-only permissions
+                        (<code>ReadOnlyAccess</code> or specific <code>List*</code> / <code>Describe*</code> actions).
+                    </p>
+                    <p><strong>3. Built-In Consent Refusal for Mutating &amp; Sensitive Calls</strong></p>
+                    <p>
+                        As a second layer of defense, <code>use_aws</code> inspects the operation name before calling
+                        <code>boto3</code>. Mutating operations (such as <code>create_*</code>, <code>delete_*</code>,
+                        <code>terminate_*</code>, <code>put_*</code>) and sensitive secret reads (such as
+                        <code>secretsmanager.get_secret_value</code>) trigger an interactive confirmation prompt, which
+                        automatically fails closed when running inside a non-interactive web server process.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

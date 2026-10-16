@@ -100,8 +100,18 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Agents become useful when they can reach your own systems. The model knows nothing about PROD-123; the tool looks it up and returns a plain sentence the model can repeat.</p>
-                    <p>In a real project the dictionary inside the tool would be a database query or an internal API call; the agent code would not change.</p>
+                    <p>
+                        <strong>Custom Inventory Tool Agent</strong> shows how to bridge an LLM's general language
+                        understanding with <strong>proprietary enterprise data</strong> (such as SKU catalogs, stock
+                        levels, and warehouse locations) that no public model could ever know from pretraining.
+                    </p>
+                    <p>
+                        The service defines <code>@tool def check_inventory(product_id: str) -> str</code> backed by an
+                        internal SKU dictionary (<code>PROD-123</code> Wireless Mouse, <code>PROD-456</code> USB-C
+                        Cable, <code>PROD-789</code> Laptop Stand). When you ask about one or more product IDs, the
+                        Bedrock agent extracts each SKU, invokes <code>check_inventory()</code>, and turns the returned
+                        stock status into a clear customer-ready answer.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +134,34 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Custom tools:</strong> any function you can write can become a tool.</li>
-                        <li><strong>Args section in the docstring:</strong> describes each parameter (e.g. &quot;The product ID to check (e.g., PROD-123)&quot;) so the model passes the right value.</li>
-                        <li><strong>Human-readable results:</strong> returning a sentence keeps the model's final answer accurate.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. Bridging the Knowledge Cutoff &amp; Private Data Gap</strong></p>
+                    <p>
+                        Foundation models are trained on public internet text up to a fixed cutoff date; they have zero
+                        visibility into your company's internal SKUs (<code>PROD-123</code>) or live stock counts.
+                        Exposing a read-only lookup function via <code>@tool</code> gives the model on-demand access to
+                        authoritative internal state without fine-tuning or stuffing the entire catalog into the prompt.
+                    </p>
+                    <p><strong>2. Google-Style <code>Args:</code> Docstrings for Parameter Guidance</strong></p>
+                    <p>
+                        Strands parses the <code>Args:</code> block inside the function's docstring:
+                        <code>product_id: The product ID to check (e.g., "PROD-123")</code>. Including a concrete format
+                        example (<code>"PROD-123"</code>) inside the parameter description teaches the model to normalize
+                        user inputs (such as <em>"product 123"</em> or <em>"PROD-123"</em>) into the exact string pattern
+                        the backend expects.
+                    </p>
+                    <p><strong>3. Graceful Handling of Unknown Identifiers</strong></p>
+                    <p>
+                        When a user asks about a non-existent SKU like <code>PROD-999</code>, the tool does not raise a
+                        Python <code>KeyError</code>. Instead, it returns a clear domain message:
+                        <code>"Product PROD-999 not found in inventory"</code>. Returning structured, human-readable
+                        not-found messages lets the LLM inform the user politely rather than crashing or hallucinating.
+                    </p>
+                    <p><strong>4. Drop-In Backend Replacement</strong></p>
+                    <p>
+                        Because the agent only interacts with the function signature and return string of
+                        <code>check_inventory(product_id)</code>, swapping the in-memory dictionary for a PostgreSQL
+                        <code>SELECT</code> query or a Shopify REST API call requires zero changes to the agent setup.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

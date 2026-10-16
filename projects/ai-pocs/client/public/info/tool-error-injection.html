@@ -100,8 +100,22 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Asked to &quot;compare the weather in Tokyo and Paris&quot;, the agent gets real data for Tokyo and an error for Paris. A good answer says Paris data is unavailable; a bad one invents a temperature.</p>
-                    <p>Two system prompts are compared: <strong>Scenario A</strong> says nothing about errors; <strong>Scenario B</strong> tells the model to report tool failures and never invent values. Each final answer is scored for acknowledgement, error detail and fabrication.</p>
+                    <p>
+                        <strong>Tool Call Error Injection &amp; Hallucination Prevention</strong> uses chaos engineering
+                        (fault injection) to test how an AI agent behaves when an upstream dependency fails mid-turn.
+                        When asked to <em>"Compare the weather in Tokyo and Paris today"</em>, the agent calls
+                        <code>get_weather</code> twice: the first call (Tokyo) succeeds with
+                        <code>{"status": 200, "temp_c": 22, "condition": "Clear sky"}</code>, while the second call
+                        (Paris) deterministically fails with an injected outage:
+                        <code>{"status": 503, "error": "SERVICE_UNAVAILABLE: Weather station offline..."}</code>.
+                    </p>
+                    <p>
+                        The service runs this exact failure scenario twice under two different system prompts:
+                        <strong>Scenario A (Plain Prompt)</strong>, which simply says <em>"You are a helpful weather
+                        assistant"</em>, and <strong>Scenario B (Explicit Reliability Prompt)</strong>, which explicitly
+                        instructs the model to report tool errors with their status code and never guess or fabricate
+                        missing data. Both responses are then graded across three automated reliability metrics.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +138,43 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The Three Automated Reliability Metrics (<code>evaluate_response</code>)</strong></p>
+                    <p>
+                        When a tool fails on one of two requested cities, the final answer is scored on three distinct
+                        dimensions:
+                    </p>
                     <ul>
-                        <li><strong>Fault injection:</strong> deliberately break a dependency to see how the system behaves.</li>
-                        <li><strong>Hallucination under failure:</strong> models tend to fill gaps unless told not to.</li>
-                        <li><strong>Prompted transparency:</strong> an explicit instruction changes behaviour more than you might expect.</li>
+                        <li><code>acknowledged_error</code>: Did the model admit that fetching data for the second city
+                            failed (matching words like <code>unavailable</code>, <code>error</code>,
+                            <code>offline</code>, <code>unable</code>)?</li>
+                        <li><code>gave_error_detail</code>: Did it surface actionable diagnostic detail from the tool
+                            payload (specifically <code>503</code> or <code>service_unavailable</code>)?</li>
+                        <li><code>fabricated_data</code>: Did it hallucinate a fake temperature (e.g.,
+                            <code>18°C</code>) for the failed city inside a sentence that does not mention the error?</li>
                     </ul>
+                    <p><strong>2. Why Partial Failures Are More Dangerous Than Total Outages</strong></p>
+                    <p>
+                        If an API key is invalid and the entire HTTP request throws an exception, your backend catches
+                        it immediately. Partial tool failures are insidious: Tokyo succeeds (<code>22°C</code>), Paris
+                        returns a JSON error dict inside a <code>role="tool"</code> message, and the LLM's completion
+                        bias nudges it to produce a neat, symmetrical comparison table &mdash; tempting it to guess a
+                        plausible temperature for Paris unless explicitly forbidden by the system prompt.
+                    </p>
+                    <p><strong>3. Per-Scenario Fault Isolation</strong></p>
+                    <p>
+                        Inside <code>run_scenario()</code>, a fresh <code>call_count = 0</code> counter is initialized
+                        for each scenario run so that <code>call_count == 1</code> succeeds and
+                        <code>call_count &gt;= 2</code> returns the HTTP 503 payload identically in both Scenario A and
+                        Scenario B. If the counter were a module global, Scenario A would consume call #1 and #2, and
+                        Scenario B would see failures on every call.
+                    </p>
+                    <p><strong>4. Clause-Level Fabrication Detection</strong></p>
+                    <p>
+                        A correct response like <em>"Tokyo is 22°C, while Paris weather is unavailable (503)"</em>
+                        contains both <code>22°C</code> and <code>Paris</code>. The grader splits the response on
+                        sentence/clause boundaries first so a valid Tokyo temperature in clause 1 is never falsely
+                        flagged as a fabricated Paris temperature in clause 2.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

@@ -100,8 +100,31 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>&quot;Goa for 3 days with 2 friends, budget 20000 rupees&quot; makes the agent check the weather, pass the temperatures and conditions into the packing tool, estimate the cost for 3 travellers, and compare it with the budget.</p>
-                    <p>The system prompt asks for weather first, then packing, then cost, and to always say whether the trip fits the budget &mdash; guidance, not hard-coded steps.</p>
+                    <p>
+                        <strong>Capstone Travel Assistant Agent</strong> brings together every concept from the AWS
+                        Strands module into a single cohesive workflow: <strong>custom domain tools</strong>,
+                        <strong>default parameter values</strong>, <strong>prebuilt <code>strands_tools</code></strong>,
+                        <strong>cross-tool data dependencies</strong>, and <strong>system-prompt workflow
+                        guidance</strong>.
+                    </p>
+                    <p>
+                        Given a natural-language trip brief like <em>"I'm going to Goa for 3 days with 2 friends. My
+                        budget is 20000 rupees. What should I pack, and does it fit my budget?"</em>, the agent
+                        coordinates four tools in sequence:
+                    </p>
+                    <ol>
+                        <li><code>get_weather_forecast(city="Goa", days=3)</code> &mdash; retrieves daytime high
+                            (<code>32°C</code>), night low (<code>26°C</code>), and conditions (<code>"humid, occasional
+                            showers"</code>).</li>
+                        <li><code>suggest_packing_list(high_c=32, low_c=26, days=3, conditions=...)</code> &mdash;
+                            feeds the forecast outputs into rule-based packing logic (adding cotton clothing, sunscreen,
+                            umbrella, and quick-dry footwear).</li>
+                        <li><code>estimate_trip_cost(city="Goa", days=3, travellers=3)</code> &mdash; computes stay,
+                            food, and local transport in INR (inferring <code>travellers=3</code> from <em>"with 2
+                            friends"</em>).</li>
+                        <li><code>calculator</code> &mdash; checks the itemized total against the ₹20,000 budget so the
+                            final itinerary gives an exact verdict.</li>
+                    </ol>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +147,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Data flowing between tools:</strong> the forecast's <code>high_c</code>, <code>low_c</code> and <code>conditions</code> become the packing tool's arguments.</li>
-                        <li><strong>Mixing custom and prebuilt tools:</strong> both are passed in the same <code>tools=[...]</code> list.</li>
-                        <li><strong>System prompt as a plan:</strong> a short instruction shapes the order and the final check.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. Soft Workflow Steering via System Prompt</strong></p>
+                    <p>
+                        Rather than hardcoding a rigid Python pipeline that always calls all three functions in fixed
+                        code, the system prompt provides a high-level policy: <em>"When asked about a trip: check the
+                        weather first, then suggest what to pack based on that weather, then estimate the cost. Always
+                        say whether the trip fits the user's budget."</em> This keeps the agent flexible enough to
+                        handle partial questions (e.g., <em>"Just check the weather in Manali for 4 days"</em>) while
+                        following a structured plan for full trip requests.
+                    </p>
+                    <p><strong>2. Semantic Reasoning Over Pragmatic Phrasing ("with 2 friends" &rarr; 3 travellers)</strong></p>
+                    <p>
+                        Notice the subtle natural-language reasoning required: the user says <em>"I'm going to Goa...
+                        with 2 friends"</em>. A naive keyword extractor would see the digit <code>2</code> and pass
+                        <code>travellers=2</code>. The LLM understands that the speaker plus two friends equals
+                        <strong>3 people</strong> and passes <code>travellers=3</code> to
+                        <code>estimate_trip_cost()</code>.
+                    </p>
+                    <p><strong>3. Combining Rule Engines with LLMs</strong></p>
+                    <p>
+                        <code>suggest_packing_list()</code> uses deterministic Python thresholds (<code>high_c &gt;=
+                        30</code>, <code>low_c &lt;= 15</code>, <code>"rain" in conditions</code>) to build a guaranteed
+                        baseline checklist, and the LLM weaves that structured list into a tailored, readable travel
+                        brief.
+                    </p>
+                    <p><strong>4. Full Workflow Traceability (<code>workflow_steps</code>)</strong></p>
+                    <p>
+                        Every <code>toolUse</code> block in <code>agent.messages</code> is captured in order and
+                        returned in <code>workflow_steps</code>, letting you inspect the exact multi-turn call chain and
+                        parameter values passed between tools.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

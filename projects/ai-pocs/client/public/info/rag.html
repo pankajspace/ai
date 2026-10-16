@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Retrieval-Augmented Generation keeps the model honest by giving it the relevant facts in the prompt. The paragraph is split into chunks, each chunk is embedded locally, and a similarity search picks the top 3 chunks for the question.</p>
-                    <p>The prompt tells the model to use ONLY that context and to say &quot;I couldn't find that in the provided paragraph&quot; otherwise. The retrieved chunks are returned as sources so you can check the answer.</p>
+                    <p>
+                        <strong>Paragraph RAG (Retrieval-Augmented Generation)</strong> combines the previous two demos
+                        (Chunking + Embeddings) with an LLM to answer questions strictly from a user-supplied source
+                        text (by default, the <em>TechToday Return Policy</em>). Instead of hoping the LLM knows your
+                        company's private rules, RAG retrieves the exact relevant snippets and injects them into the
+                        prompt before generation.
+                    </p>
+                    <p>
+                        On each request, <code>answer_rag()</code> runs the complete 5-stage pipeline end-to-end:
+                        splits the paragraph into 200-character overlapping chunks, embeds them locally with
+                        <code>all-MiniLM-L6-v2</code> into an ephemeral <strong>Chroma</strong> vector store, retrieves
+                        the top <code>k &le; 3</code> chunks closest to the user's question, deletes the temporary
+                        collection, and calls <code>gpt-4o-mini</code> at <code>temperature=0</code> with a strict
+                        grounding prompt.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +137,43 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Chunk &rarr; embed &rarr; store &rarr; retrieve &rarr; generate:</strong> the five RAG steps.</li>
-                        <li><strong>Vector store:</strong> Chroma keeps chunk vectors and finds the nearest ones to the question vector.</li>
-                        <li><strong>Grounded prompt:</strong> the instruction &quot;answer using ONLY the context&quot; reduces made-up answers.</li>
-                        <li><strong>One request, one store:</strong> the in-memory collection is deleted after retrieval so the next request starts empty.</li>
-                    </ul>
+                    <p><strong>1. The Five-Stage RAG Architecture</strong></p>
+                    <ol>
+                        <li><strong>Chunk:</strong> <code>RecursiveCharacterTextSplitter(chunk_size=200,
+                            chunk_overlap=40)</code> breaks the source text into focused passages.</li>
+                        <li><strong>Embed &amp; Index:</strong> <code>Chroma.from_texts(chunks, embedder)</code> converts
+                            each chunk into a 384-d vector using local <code>HuggingFaceEmbeddings</code> and indexes
+                            them in memory.</li>
+                        <li><strong>Retrieve:</strong> <code>db.similarity_search(question, k=min(3, len(chunks)))</code>
+                            embeds the user's question with the <em>same</em> model and finds the top-<em>k</em> nearest
+                            chunk vectors.</li>
+                        <li><strong>Augment:</strong> The retrieved chunks are joined and slotted into the
+                            <code>{context}</code> placeholder of <code>ChatPromptTemplate</code> alongside
+                            <code>{question}</code>.</li>
+                        <li><strong>Generate:</strong> <code>ChatOpenAI(temperature=0)</code> synthesizes a concise,
+                            fact-based answer and the API returns both <code>answer</code> and <code>sources</code>.</li>
+                    </ol>
+                    <p><strong>2. Preventing Hallucinations via Negative Prompt Constraints</strong></p>
+                    <p>
+                        Without explicit instructions, an LLM asked a question not covered by the retrieved chunks will
+                        cheerfully fall back on its pretraining memory and guess. The prompt enforces a strict closed-world
+                        contract: <em>"Answer the question using ONLY the context below. If the context doesn't contain
+                        the answer, say 'I couldn't find that in the provided paragraph.'"</em>
+                    </p>
+                    <p><strong>3. Returning Provenance (<code>sources</code>) for Verifiability</strong></p>
+                    <p>
+                        By returning <code>sources: relevant_chunks</code> alongside the generated answer, the UI lets
+                        the user verify which exact sentences from the policy backed the model's claim &mdash; making
+                        retrieval failures (wrong chunks retrieved) easy to distinguish from generation failures (right
+                        chunks retrieved, wrong answer synthesized).
+                    </p>
+                    <p><strong>4. Ephemeral Collection Cleanup (<code>db.delete_collection()</code>)</strong></p>
+                    <p>
+                        In an interactive demo where every visitor can paste a custom paragraph, keeping chunks in a
+                        shared default Chroma collection would cause later queries to retrieve leftover chunks from
+                        earlier requests. Calling <code>db.delete_collection()</code> immediately after retrieval
+                        guarantees complete request isolation.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

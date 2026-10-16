@@ -101,8 +101,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>This is the MCP client from the previous demo with an LLM in the loop. The agent never hard-codes tool schemas &mdash; whatever the server lists is what the model can use, so adding a tool to the server needs no change in the agent.</p>
-                    <p>The loop runs up to 5 turns: send messages + tools to Groq; if the reply has tool calls, run each on the MCP server and append the output; otherwise the reply is the final answer. Each tool call is recorded in a <code>trace</code> list (tool, args, result) that the evals demo also reuses. <code>call_llm()</code> retries when the model tries to call a tool that does not exist.</p>
+                    <p>
+                        <strong>MCP-Enabled LLM Agent</strong> takes the exact same <code>cricket_server.py</code> child
+                        process from the previous demo and places an LLM (Groq's <code>openai/gpt-oss-20b</code>) in the
+                        decision loop. Instead of hardcoding tool schemas in the agent file, the agent discovers
+                        whatever tools the MCP server exposes at runtime, translates their schemas into OpenAI format,
+                        and lets the model decide which tool(s) to call to answer natural-language cricket questions.
+                    </p>
+                    <p>
+                        Because live match scores (<em>"India 287/6 vs. West Indies 198/5"</em>) and series batting stats
+                        (<em>"Shubman Gill: 164 runs"</em>) do not exist in the model's pretraining weights, the agent
+                        must route your question to <code>get_live_score</code> or <code>get_player_stats</code> over
+                        MCP, read the server's JSON reply, and synthesize a grounded answer &mdash; while recording every
+                        <code>{tool, args, result}</code> step in a structured <code>trace</code> list.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -125,11 +137,40 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Bridge:</strong> <code>to_openai_format()</code> maps MCP <code>inputSchema</code> to OpenAI <code>parameters</code>.</li>
-                        <li><strong>Tool loop:</strong> assistant <code>tool_calls</code> message, then one <code>tool</code> message per call, linked by id.</li>
-                        <li><strong>Grounding:</strong> live scores come from the server, not from the model's memory.</li>
-                    </ul>
+                    <p><strong>1. Zero Hardcoded Tool Schemas (Runtime Discovery + Schema Bridge)</strong></p>
+                    <p>
+                        Notice that <code>02_mcp_agent.py</code> never mentions <code>get_live_score</code> or
+                        <code>get_player_stats</code> anywhere in its code! At the start of each request, it calls
+                        <code>await session.list_tools()</code> and passes the returned MCP tool objects through a
+                        10-line adapter function, <code>to_openai_format()</code>, which maps each MCP tool's
+                        <code>name</code>, <code>description</code>, and <code>inputSchema</code> into OpenAI's
+                        <code>{"type": "function", "function": {..., "parameters": t.inputSchema}}</code> format. If you
+                        add a third tool to <code>cricket_server.py</code>, the agent can use it immediately without
+                        touching <code>02_mcp_agent.py</code>.
+                    </p>
+                    <p><strong>2. Security Isolation Between Agent Host and MCP Server</strong></p>
+                    <p>
+                        The LLM never connects directly to the MCP server, and the MCP server subprocess never receives
+                        your <code>GROQ_API_KEY</code>. The agent process acts as the secure broker: it talks to Groq
+                        over HTTPS using its API key, receives a JSON <code>tool_calls</code> prescription, executes
+                        <code>await session.call_tool(...)</code> over the local <code>stdio</code> pipe, and feeds the
+                        result back to Groq.
+                    </p>
+                    <p><strong>3. Handling Model-Specific Quirks (<code>call_llm</code> Retry Logic)</strong></p>
+                    <p>
+                        OpenAI's open-weight <code>gpt-oss</code> models were trained with a built-in
+                        <code>browser.search</code> tool in their pretraining environment and occasionally attempt to
+                        call it even when it is not in the offered <code>tools</code> list, causing Groq to return a
+                        <code>400 tool_use_failed</code> error. The helper <code>call_llm()</code> catches that specific
+                        error and retries up to 3 times before falling back gracefully.
+                    </p>
+                    <p><strong>4. Structured Execution Traces for Downstream Evals</strong></p>
+                    <p>
+                        Every time the agent invokes an MCP tool, it appends
+                        <code>{"tool": call.function.name, "args": args, "result": text}</code> to <code>trace</code>.
+                        This trace powers both the UI visualization and the automated test assertions in the next demo
+                        (<strong>MCP Evals</strong>).
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Give the agent a task like &quot;fetch stock data from this URL, average the closing prices and show a short summary&quot;. It calls <code>http_request</code> to get the JSON, <code>calculator</code> for the average, and then writes the summary as its reply.</p>
-                    <p>The practice script also saves the summary with the prebuilt <code>file_write</code> tool (which needs <code>BYPASS_TOOL_CONSENT=true</code> to run unattended). This web demo returns the summary to the UI instead, so nothing is written on the server and no confirmation prompt is bypassed.</p>
+                    <p>
+                        <strong>Multi-Prebuilt Tools Agent</strong> demonstrates how an agent can chain multiple
+                        off-the-shelf tools from <code>strands_tools</code> &mdash; specifically
+                        <code>http_request</code> and <code>calculator</code> &mdash; to execute an end-to-end live data
+                        analysis pipeline without writing a single line of custom tool code.
+                    </p>
+                    <p>
+                        When prompted to fetch 5-day stock chart data from Yahoo Finance's JSON API, extract the closing
+                        prices, compute their average, and summarize the trend, the Bedrock agent autonomously calls
+                        <code>http_request(method="GET", url=...)</code> first, parses the nested JSON payload returned
+                        by the server, passes the extracted closing price array into <code>calculator</code> to compute
+                        the exact mean, and writes a clear summary report.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +135,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Tool chaining:</strong> each tool's output becomes the next tool's input.</li>
-                        <li><strong>Prebuilt tools:</strong> both tools come ready-made from <code>strands_tools</code>; no tool code to write.</li>
-                        <li><strong>Tool consent:</strong> <code>http_request</code> runs GET requests freely but asks for confirmation before POST / PUT / PATCH / DELETE; a server has no terminal, so those are refused.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. Cross-Domain Tool Chaining (Network I/O &rarr; Computation)</strong></p>
+                    <p>
+                        Real-world data workflows rarely stop after a single tool call. Here, two prebuilt tools with
+                        completely different responsibilities cooperate through the agent's conversation context:
+                    </p>
+                    <ol>
+                        <li><strong>Data Acquisition (<code>http_request</code>):</strong> Fetches live external JSON
+                            over HTTPS and places the response body into a <code>toolResult</code> block.</li>
+                        <li><strong>LLM Parsing &amp; Extraction:</strong> On the next reasoning turn, the LLM reads the
+                            raw JSON structure, locates the closing price array, and constructs a mathematical
+                            expression.</li>
+                        <li><strong>Exact Computation (<code>calculator</code>):</strong> Computes the exact average so
+                            the final summary never suffers from LLM floating-point rounding errors.</li>
+                    </ol>
+                    <p><strong>2. Human-in-the-Loop Tool Consent for Mutating Operations</strong></p>
+                    <p>
+                        <code>strands_tools</code> enforces built-in safety boundaries: while <code>http_request</code>
+                        allows read-only <code>GET</code> requests automatically, it prompts for human confirmation on
+                        state-changing HTTP verbs (<code>POST</code>, <code>PUT</code>, <code>PATCH</code>,
+                        <code>DELETE</code>), and tools like <code>file_write</code> require interactive consent unless
+                        <code>BYPASS_TOOL_CONSENT=true</code> is set. In a headless web server with no interactive
+                        terminal, omitting <code>file_write</code> and sticking to read-only <code>GET</code> calls
+                        keeps the server safe from arbitrary file writes or external mutations.
+                    </p>
+                    <p><strong>3. Observability Through <code>tool_sequence</code></strong></p>
+                    <p>
+                        By scanning <code>agent.messages</code> for <code>"toolUse"</code> blocks after the run, the
+                        service returns the ordered list of tool calls (<code>http_request(...)</code> followed by
+                        <code>calculator(...)</code>) so you can verify the exact execution trace.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

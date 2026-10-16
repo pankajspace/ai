@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Many providers (Groq, Gemini, local servers) speak the OpenAI Chat Completions format. You switch provider by changing <code>base_url</code>, <code>api_key</code> and the model name; the rest of the code is identical to the Travel Guide.</p>
-                    <p>The service creates the client with <code>GROQ_API_KEY</code> and Groq's <code>base_url</code>, then asks the model to tell a joke about your topic.</p>
+                    <p>
+                        <strong>Joke Generator</strong> demonstrates one of the most practical architectural patterns in
+                        modern AI engineering: <strong>provider portability via OpenAI-compatible APIs</strong>. Instead
+                        of installing a proprietary SDK for every model host, this demo reuses the exact same
+                        <code>openai.OpenAI</code> client from the Travel Guide demo but points its
+                        <code>base_url</code> at <strong>Groq's</strong> high-speed inference cloud
+                        (<code>https://api.groq.com/openai/v1</code>).
+                    </p>
+                    <p>
+                        By swapping only three configuration values &mdash; <code>api_key</code>
+                        (<code>GROQ_API_KEY</code>), <code>base_url</code> (<code>GROQ_BASE_URL</code>), and
+                        <code>model</code> (<code>llama-3.3-70b-versatile</code>) &mdash; the service routes requests to
+                        an open-weights LLaMA 3.3 70B model running on Groq's LPU (Language Processing Unit) hardware,
+                        generating topical jokes with sub-second latency.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +137,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>OpenAI-compatible APIs:</strong> one client library, many providers, selected with <code>base_url</code>.</li>
-                        <li><strong>Configuration from .env:</strong> <code>GROQ_API_KEY</code>, <code>GROQ_BASE_URL</code> and <code>GROQ_MODEL</code> keep secrets and model choices out of the code.</li>
-                        <li><strong>Timeouts:</strong> a 15-second client timeout stops a slow API call from hanging the request.</li>
-                    </ul>
+                    <p><strong>1. The OpenAI Chat Completions Standard as a Universal Contract</strong></p>
+                    <p>
+                        The OpenAI <code>/v1/chat/completions</code> JSON request/response specification has become the
+                        <em>de facto</em> industry wire protocol. Providers such as Groq, Google Gemini, Together AI,
+                        Fireworks, OpenRouter, Ollama, and vLLM all expose OpenAI-compatible endpoints. Writing against
+                        this single client interface prevents vendor lock-in and lets teams benchmark or fail over
+                        between cloud providers without rewriting application logic.
+                    </p>
+                    <p><strong>2. Open-Weights Models on Specialized Inference Hardware</strong></p>
+                    <p>
+                        While proprietary models (like GPT-4o) are tied to a single vendor, open-weights models (such as
+                        Meta's <code>llama-3.3-70b-versatile</code> or OpenAI's <code>gpt-oss</code> series) can be
+                        hosted by multiple competing inference providers. Groq runs these models on deterministic SRAM
+                        LPU chips, delivering hundreds of tokens per second &mdash; ideal for interactive user-facing
+                        features.
+                    </p>
+                    <p><strong>3. Decoupling Code from Provider Credentials</strong></p>
+                    <p>
+                        Notice that the message construction (<code>system</code> persona + <code>user</code> topic),
+                        the <code>client.chat.completions.create()</code> call, and the response extraction
+                        (<code>response.choices[0].message.content</code>) are line-for-line identical to the OpenAI
+                        Travel Guide service. Only the client initialization parameters change, loaded cleanly from
+                        <code>.env</code>.
+                    </p>
+                    <p><strong>4. Boundary Validation with Pydantic</strong></p>
+                    <p>
+                        The service defines <code>JokeRequest</code> and <code>JokeResponse</code> Pydantic schemas so
+                        FastAPI automatically validates incoming JSON payloads, supplies sensible defaults
+                        (<code>topic="programming"</code>), and documents the exact response contract in OpenAPI/Swagger.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

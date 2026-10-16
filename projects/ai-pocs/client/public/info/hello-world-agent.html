@@ -100,8 +100,18 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>A Strands <code>Agent</code> is a model plus an agentic loop. With no tools, the loop is a single model call, so this demo is the &quot;hello world&quot; that every later Strands demo builds on.</p>
-                    <p><code>BedrockModel(model_id=...)</code> uses your AWS credentials (from <code>.env</code> or the instance role) to call Bedrock. A new <code>Agent</code> is created for each request so one visitor's conversation never leaks into another's.</p>
+                    <p>
+                        <strong>Hello World Strands Agent</strong> is the entry point to the <strong>AWS Strands Agents
+                        SDK</strong> series. It demonstrates the minimal code needed to instantiate an autonomous agent
+                        backed by <strong>Amazon Bedrock</strong> (defaulting to <code>amazon.nova-lite-v1:0</code> via
+                        <code>BEDROCK_MODEL_ID</code>) and run a natural-language prompt through its agentic loop.
+                    </p>
+                    <p>
+                        With no tools attached, <code>agent(prompt)</code> executes a single model turn and returns an
+                        <code>AgentResult</code> object. Crucially, the service creates a fresh <code>Agent(model=...)</code>
+                        instance inside the request handler rather than at module import time, ensuring that concurrent
+                        web users never share or leak conversation state.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +134,35 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Model vs. Agent in AWS Strands</strong></p>
+                    <p>
+                        A raw model client (like <code>boto3.client("bedrock-runtime")</code>) performs a single
+                        stateless text generation call. A Strands <code>Agent</code> wraps a <code>BedrockModel</code>
+                        with three higher-level capabilities that every subsequent demo in this module builds upon:
+                    </p>
                     <ul>
-                        <li><strong>Model vs agent:</strong> the model generates text; the agent wraps it with a loop, tools and conversation history.</li>
-                        <li><strong>Bedrock:</strong> AWS's managed model service; the model is picked with <code>BEDROCK_MODEL_ID</code> / <code>BEDROCK_NOVA_LITE</code>.</li>
-                        <li><strong>Calling an agent:</strong> <code>agent(prompt)</code> runs the loop and returns an <code>AgentResult</code>; <code>str(result)</code> is the reply text.</li>
+                        <li><strong>Conversation State (<code>agent.messages</code>):</strong> Automatically tracks
+                            user, assistant, tool-use, and tool-result blocks across turns.</li>
+                        <li><strong>Tool Registry (<code>tools=[...]</code>):</strong> Inspects decorated Python
+                            functions and exposes their schemas to Bedrock's Converse API.</li>
+                        <li><strong>Autonomous Execution Loop:</strong> Repeatedly cycles through model inference and
+                            local tool execution until the model produces a final answer.</li>
                     </ul>
+                    <p><strong>2. Amazon Bedrock Converse API Integration</strong></p>
+                    <p>
+                        <code>BedrockModel(model_id=model_id)</code> authenticates using the standard AWS credential
+                        chain (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>,
+                        <code>AWS_DEFAULT_REGION</code> from <code>.env</code>, or an EC2/ECS IAM role) and communicates
+                        through Bedrock's unified Converse API, allowing you to swap between Amazon Nova Lite, Nova Pro,
+                        or Anthropic Claude models by changing only <code>BEDROCK_MODEL_ID</code>.
+                    </p>
+                    <p><strong>3. Request-Scoped Agent Instantiation (Multi-Tenant Safety)</strong></p>
+                    <p>
+                        Because a Strands <code>Agent</code> appends every prompt and reply to its internal
+                        <code>agent.messages</code> list, a global module-level <code>Agent</code> in a web server would
+                        mix User A's questions into User B's context. Instantiating <code>Agent(...)</code> per request
+                        guarantees clean isolation.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

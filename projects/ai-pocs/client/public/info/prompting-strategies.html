@@ -100,8 +100,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>The pens question (buy 7, return 2, buy 4 more, pay with 500) is easy to get wrong in one jump. <strong>Direct</strong> forbids working, <strong>Zero-Shot CoT</strong> adds &quot;think step by step&quot;, and <strong>Few-Shot CoT</strong> shows two worked examples first.</p>
-                    <p>Each reply's final <code>Answer:</code> line is extracted and checked against the expected answer (293), and the token counts show what the extra reasoning costs.</p>
+                    <p>
+                        <strong>Prompting Strategies Benchmark</strong> runs a controlled head-to-head experiment
+                        comparing three foundational prompting techniques &mdash; <strong>Direct Prompting</strong>,
+                        <strong>Zero-Shot Chain-of-Thought (CoT)</strong>, and <strong>Few-Shot Chain-of-Thought</strong>
+                        &mdash; on the exact same multi-step arithmetic word problem (buying 7 pens at ₹15, returning 2
+                        for a ₹12 refund each, buying 4 more at ₹18, and paying with a ₹500 note, where the ground-truth
+                        change is <code>293</code>).
+                    </p>
+                    <p>
+                        All three strategies run against OpenAI at <code>temperature=0</code>. For each strategy, the
+                        service extracts the final <code>Answer: &lt;value&gt;</code> line using a regex parser, grades
+                        it against <code>expected_answer="293"</code>, and records both <code>prompt_tokens</code> and
+                        <code>completion_tokens</code> so you can see the exact accuracy vs. token-cost trade-off.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +136,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Chain-of-Thought:</strong> writing the steps out often fixes multi-step arithmetic and logic.</li>
-                        <li><strong>Few-shot examples:</strong> showing the format teaches the model how to reason and how to end its answer.</li>
-                        <li><strong>Trade-off:</strong> more reasoning = more completion tokens and more time.</li>
-                        <li><strong>Answer extraction:</strong> a fixed <code>Answer: &lt;value&gt;</code> format makes automatic scoring possible.</li>
-                    </ul>
+                    <p><strong>1. Why Autoregressive Models Need a Scratchpad for Multi-Step Math</strong></p>
+                    <p>
+                        An LLM generates text one token at a time, performing a fixed amount of computation (one forward
+                        pass through its transformer layers) per emitted token. Under <strong>Direct Prompting</strong>
+                        (<em>"Return ONLY the final answer... Do NOT include any reasoning"</em>), the model is forced
+                        to compute <code>(7 &times; 15) - (2 &times; 12) + (4 &times; 18)</code> and subtract from
+                        <code>500</code> inside a single token jump &mdash; where intermediate state errors frequently
+                        occur.
+                    </p>
+                    <p><strong>2. Zero-Shot Chain-of-Thought ("Think step-by-step")</strong></p>
+                    <p>
+                        Adding the instruction <em>"Think step-by-step before giving the final answer"</em> (Kojima et
+                        al., 2022) turns the output stream itself into an external working memory scratchpad. Because
+                        each subsequent token attends to all previously written intermediate totals, a 4-step problem is
+                        decomposed into 4 simple 1-step calculations.
+                    </p>
+                    <p><strong>3. Few-Shot Chain-of-Thought (In-Context Exemplars)</strong></p>
+                    <p>
+                        <strong>Few-Shot CoT</strong> (Wei et al., 2022) prepends two worked question-reasoning-answer
+                        examples before the target question. Beyond encouraging step-by-step reasoning, in-context
+                        exemplars calibrate <em>how</em> the model structures its equations and guarantee that it ends
+                        with the exact machine-parseable line <code>Answer: 293</code>.
+                    </p>
+                    <p><strong>4. The Token Economics of Reasoning</strong></p>
+                    <p>
+                        Reasoning is not free: Direct uses ~5 completion tokens, Zero-Shot CoT uses ~80–150 completion
+                        tokens (higher output latency and cost), and Few-Shot CoT increases <code>prompt_tokens</code> on
+                        every call. Tracking <code>prompt_tokens</code>, <code>completion_tokens</code>, and
+                        <code>total_tokens</code> per strategy quantifies the exact price of higher accuracy.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

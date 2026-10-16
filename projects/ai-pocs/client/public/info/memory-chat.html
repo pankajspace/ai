@@ -100,8 +100,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>LLMs do not remember earlier requests. To make a chat feel continuous, the browser keeps the list of past messages and sends it with each new message; the prompt template places that history between the system message and the new question.</p>
-                    <p>After the model answers, the service returns the history with the new question and answer appended, ready for the next turn. &quot;Clear Memory&quot; simply empties that list.</p>
+                    <p>
+                        <strong>Memory Chat</strong> shows how conversational AI applications create the illusion of
+                        persistent memory on top of completely stateless LLM APIs. Because the model forgets everything
+                        the moment an HTTP response finishes, the application must capture every turn and replay the
+                        prior transcript on each new request.
+                    </p>
+                    <p>
+                        This demo uses a <strong>stateless client-held memory architecture</strong>: the React browser
+                        card maintains the array of past <code>{role, content}</code> messages and sends it alongside
+                        each new question. On the server, LangChain's <code>MessagesPlaceholder("history")</code> slots
+                        those historical messages directly between the fixed <code>system</code> persona and the latest
+                        <code>human</code> question, then returns the updated history list with the new user and
+                        assistant turn appended.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +136,47 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The Illusion of Memory in Stateless LLMs</strong></p>
+                    <p>
+                        LLMs do not have per-user session state inside their neural weights. When an assistant
+                        "remembers" that you said your name is Alice three turns ago, it is only because your earlier
+                        message <code>("user", "My name is Alice")</code> was re-transmitted inside the
+                        <code>messages</code> array of the current API call.
+                    </p>
+                    <p><strong>2. Dynamic Prompt Assembly with <code>MessagesPlaceholder</code></strong></p>
+                    <p>
+                        A multi-turn prompt has both fixed and variable parts.
+                        <code>ChatPromptTemplate.from_messages()</code> combines them cleanly:
+                    </p>
                     <ul>
-                        <li><strong>Stateless models:</strong> each API call only sees what you send in that call.</li>
-                        <li><strong>MessagesPlaceholder:</strong> a slot in the prompt that is filled with a list of <code>(role, content)</code> messages.</li>
-                        <li><strong>Client-held state:</strong> the server stores nothing &mdash; the history travels in the request and response.</li>
-                        <li><strong>Cost of memory:</strong> longer history means more tokens on every call.</li>
+                        <li><strong>Fixed Head:</strong> <code>("system", "You are a friendly assistant...")</code>
+                            always sits at index 0 so the model never loses its core instructions.</li>
+                        <li><strong>Variable Middle:</strong> <code>MessagesPlaceholder("history")</code> expands a
+                            Python list of <em>N</em> past <code>(role, content)</code> tuples into <em>N</em> distinct
+                            chat messages in chronological order.</li>
+                        <li><strong>Current Tail:</strong> <code>("human", "{question}")</code> appends the user's new
+                            input at the very end.</li>
                     </ul>
+                    <p><strong>3. Client-Held vs. Server-Held Session State</strong></p>
+                    <p>
+                        There are two ways to store chat history in web apps:
+                    </p>
+                    <ul>
+                        <li><strong>Client-Held (this demo):</strong> The browser stores the transcript in React state
+                            and sends it with every POST request. The backend requires zero database infrastructure and
+                            scales horizontally without sticky sessions, and "Clear Memory" simply resets the browser
+                            array.</li>
+                        <li><strong>Server-Held (see the DeskBuddy Redis demo):</strong> The browser sends only a
+                            <code>session_id</code>, and the server loads/saves messages in Redis or Postgres. This
+                            reduces payload size and prevents clients from tampering with past messages.</li>
+                    </ul>
+                    <p><strong>4. The Quadratic Cost of Growing Context</strong></p>
+                    <p>
+                        Because the entire history is re-sent and re-tokenized on every turn, token usage grows linearly
+                        with each message (and cumulative cost across an <em>N</em>-turn chat grows quadratically,
+                        <code>O(N<sup>2</sup>)</code>). Production systems cap history using a sliding window, token
+                        budget trimmer, or periodic conversation summarization.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

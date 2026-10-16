@@ -97,7 +97,22 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Unlike single-paragraph RAG, this service indexes a multi-file markdown knowledge base (<code>docker-basics.md</code>, <code>compose-and-volumes.md</code>, <code>rag-notes.md</code>) into a ChromaDB collection with source file and chunk metadata, then queries the top-K nearest chunks to answer user questions with source attribution.</p>
+                    <p>
+                        <strong>ScalerGPT (ChromaDB Document RAG)</strong> upgrades the single-paragraph RAG demo into a
+                        persistent, multi-document knowledge base over a folder of Markdown engineering notes
+                        (<code>docs/docker-basics.md</code>, <code>docs/compose-and-volumes.md</code>, and
+                        <code>docs/rag-notes.md</code>).
+                    </p>
+                    <p>
+                        Instead of rebuilding and deleting a vector store on every request, <code>_get_collection()</code>
+                        maintains a named <code>"notes"</code> collection in <strong>ChromaDB</strong> using OpenAI's
+                        <code>text-embedding-3-small</code> embedding function. On the first query, it reads all
+                        <code>.md</code> and <code>.txt</code> files from disk, splits them into paragraphs, attaches
+                        <code>{"source": filename}</code> metadata to each chunk, and performs an idempotent
+                        <code>collection.upsert()</code>. Subsequent questions immediately query the indexed collection,
+                        retrieve the top 3 chunks with their source filenames, and synthesize a grounded answer with
+                        <code>gpt-4o-mini</code>.
+                    </p>
                 </div>
             </section>
 
@@ -119,11 +134,38 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Idempotent Upsert:</strong> Chunks are keyed by <code>{filename}-chunk-{i}</code> and upserted into ChromaDB so repeated queries reuse the indexed collection.</li>
-                        <li><strong>Metadata Attribution:</strong> Every vector stores <code>source</code> and <code>chunk_index</code> metadata so answers cite the exact markdown file.</li>
-                        <li><strong>Hybrid Chroma Client:</strong> Connects to a remote Chroma container when <code>CHROMA_HOST</code> is set, or transparently uses an in-process <code>chromadb.EphemeralClient()</code>.</li>
-                    </ul>
+                    <p><strong>1. Hybrid Chroma Client Architecture (Container vs. Ephemeral)</strong></p>
+                    <p>
+                        In multi-container Docker deployments (where <code>CHROMA_HOST</code> is set), the service
+                        connects over HTTP via <code>chromadb.HttpClient(host=chroma_host, port=chroma_port)</code> to a
+                        dedicated ChromaDB container. When running standalone without a separate vector DB container, it
+                        transparently falls back to <code>chromadb.EphemeralClient()</code> in-process &mdash; allowing
+                        the exact same RAG code to run in both environments.
+                    </p>
+                    <p><strong>2. Idempotent Ingestion with Deterministic Chunk IDs</strong></p>
+                    <p>
+                        Calling <code>collection.add()</code> repeatedly with random UUIDs duplicates documents and
+                        pollutes top-<em>k</em> search results with identical chunks. ScalerGPT assigns each paragraph a
+                        deterministic composite key &mdash; <code>f"{path.name}::{i}"</code> (e.g.,
+                        <code>docker-basics.md::0</code>) &mdash; and calls <code>collection.upsert()</code>, which
+                        inserts new chunks or updates existing ones in place, and skips disk ingestion altogether once
+                        <code>collection.count() &gt; 0</code>.
+                    </p>
+                    <p><strong>3. Source Attribution via Vector Metadata</strong></p>
+                    <p>
+                        Every vector stored in ChromaDB carries a parallel metadata dictionary:
+                        <code>metadatas.append({"source": path.name})</code>. When <code>collection.query()</code>
+                        returns the top-3 nearest chunks, it returns both <code>hits["documents"]</code> and
+                        <code>hits["metadatas"]</code>, allowing the UI to display which exact Markdown file each
+                        retrieved passage came from.
+                    </p>
+                    <p><strong>4. Filtering Noise During Paragraph Splitting</strong></p>
+                    <p>
+                        Markdown files often contain short headings or blank lines that make poor standalone vectors.
+                        The comprehension <code>[c.strip() for c in text.split("\n\n") if len(c.strip()) &gt; 40]</code>
+                        discards tiny fragments under 40 characters so every indexed vector carries substantive
+                        explanatory content.
+                    </p>
                 </div>
             </section>
 
@@ -192,7 +234,7 @@
 flowchart TD
     UI["ChromaDbCard.tsx<br/>POST /api/chromadb"]:::entry -->|"question"| R["main.py<br/>chromadb_service()"]:::fn
     R --> S["02_chromadb.py<br/>ask_chromadb_notes()"]:::fn
-    S --> I["_ensure_indexed()<br/>docs/*.md -> ChromaDB"]:::ext
+    S --> I["_get_collection()<br/>docs/*.md -> ChromaDB"]:::ext
     S -->|"query_embeddings"| I
     I -->|"top-k chunks + metadata"| S
     S -->|"context + question"| O[("OpenAI Chat Completions")]:::ext

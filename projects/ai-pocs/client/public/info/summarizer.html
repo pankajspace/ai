@@ -100,8 +100,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>LangChain Expression Language (LCEL) lets you snap small parts together with the <code>|</code> operator. Here the prompt template fills in the text, the chat model answers, and the output parser turns the reply message into a plain string.</p>
-                    <p>The chain is built once when the module loads; every request just calls <code>chain.invoke({&quot;data&quot;: text})</code>.</p>
+                    <p>
+                        <strong>Text Summarizer</strong> introduces <strong>LangChain</strong> and its declarative
+                        composition syntax, <strong>LCEL (LangChain Expression Language)</strong>. Rather than manually
+                        formatting prompt strings, calling the raw SDK, and unwrapping nested response objects in
+                        imperative code, this service links three modular runnables into a pipeline using the Unix-style
+                        pipe operator (<code>chain = prompt | model | parser</code>).
+                    </p>
+                    <p>
+                        When you submit a long passage of text, the chain injects it into a
+                        <code>ChatPromptTemplate</code> placeholder (<code>{data}</code>), sends the rendered prompt to
+                        <code>ChatOpenAI</code> at a low temperature (<code>0.3</code>) so the summary stays faithful to
+                        the source text, and passes the resulting <code>AIMessage</code> through
+                        <code>StrOutputParser()</code> to return a clean Python string.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +136,41 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Prompt templates:</strong> <code>ChatPromptTemplate.from_template()</code> keeps the instruction fixed and fills <code>{data}</code> by name.</li>
-                        <li><strong>Chat model wrapper:</strong> <code>ChatOpenAI</code> is the LangChain wrapper around the OpenAI API (temperature 0.3 for steady summaries).</li>
-                        <li><strong>Output parsers:</strong> <code>StrOutputParser()</code> unwraps the AI message into text.</li>
-                        <li><strong>Pipes:</strong> <code>prompt | model | parser</code> means &quot;then&quot; &mdash; the output of each step is the input of the next.</li>
-                    </ul>
+                    <p><strong>1. Composable Pipelines with LCEL (<code>|</code>)</strong></p>
+                    <p>
+                        In LangChain, every component &mdash; prompts, models, output parsers, retrievers &mdash;
+                        implements the unified <code>Runnable</code> interface (<code>.invoke()</code>,
+                        <code>.batch()</code>, <code>.stream()</code>, <code>.ainvoke()</code>). Overloading Python's
+                        bitwise OR operator (<code>|</code>) chains runnables into a <code>RunnableSequence</code> where
+                        the output of step <em>N</em> automatically becomes the input to step <em>N + 1</em>:
+                    </p>
+                    <ol>
+                        <li><code>ChatPromptTemplate</code>: accepts <code>{"data": long_text}</code> and outputs a
+                            formatted <code>PromptValue</code>.</li>
+                        <li><code>ChatOpenAI</code>: accepts the <code>PromptValue</code>, calls the LLM API, and outputs
+                            an <code>AIMessage(content=..., response_metadata=...)</code>.</li>
+                        <li><code>StrOutputParser</code>: extracts <code>ai_message.content</code> as a plain
+                            <code>str</code> ready for the caller.</li>
+                    </ol>
+                    <p><strong>2. Separation of Prompt Template and Runtime Data</strong></p>
+                    <p>
+                        Using <code>ChatPromptTemplate.from_template("...{data}")</code> instead of Python
+                        <code>f-strings</code> keeps prompt templates reusable, inspectable, and safe from accidental
+                        brace-escaping bugs when user text itself contains curly braces (such as JSON snippets or code).
+                    </p>
+                    <p><strong>3. Controlling Factual Faithfulness with Temperature</strong></p>
+                    <p>
+                        Summarization is a <strong>convergent</strong> task: we want the model to compress facts already
+                        present in the input, not invent creative embellishments. Setting <code>temperature=0.3</code>
+                        sharpens the token probability distribution so the model strongly favors high-probability,
+                        faithful phrasings over speculative tokens.
+                    </p>
+                    <p><strong>4. Import-Safe Client Initialization</strong></p>
+                    <p>
+                        Passing <code>api_key=os.getenv("OPENAI_API_KEY") or "missing-key"</code> allows the module to
+                        be imported by FastAPI at server startup even in environments where a specific provider key is
+                        not yet configured, deferring authentication errors until the endpoint is actually called.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

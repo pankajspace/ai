@@ -100,8 +100,24 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Code that consumes LLM output needs a reliable format. <strong>Strategy A</strong> just asks for the fields and usually returns prose. <strong>Strategy B</strong> asks for JSON in the prompt; it often works but may wrap it in markdown fences. <strong>Strategy C</strong> sets <code>response_format={&quot;type&quot;: &quot;json_object&quot;}</code> so the API guarantees valid JSON.</p>
-                    <p>One small helper, <code>check_json()</code>, tries <code>json.loads</code> on each output and records the parsed data or the parse error.</p>
+                    <p>
+                        <strong>Structured Output Variance &amp; Determinism</strong> shows how to turn a stochastic
+                        text generator into a deterministic software component whose output can be safely parsed by
+                        downstream code. Given a free-text product review, the service asks the LLM to extract three
+                        fields (<code>sentiment</code>, <code>rating</code>, and <code>pros_and_cons</code>) under three
+                        progressively stricter strategies at <code>temperature=0.7</code>:
+                    </p>
+                    <ul>
+                        <li><strong>Strategy A (Unconstrained Freeform):</strong> Asks for the three fields in plain
+                            English with no format constraint &mdash; producing conversational prose or bullet points
+                            that immediately crash a downstream <code>json.loads()</code> parser.</li>
+                        <li><strong>Strategy B (Prompt-Constrained JSON):</strong> Instructs the model in the prompt to
+                            <em>"Respond in JSON format with keys..."</em> &mdash; often works, but frequently wraps the
+                            JSON in <code>```json ... ```</code> markdown fences or adds conversational preamble.</li>
+                        <li><strong>Strategy C (API Schema-Enforced JSON Mode):</strong> Sets
+                            <code>response_format={"type": "json_object"}</code> in the API request so the inference
+                            engine constrains token sampling at the logit level, guaranteeing valid, parseable JSON.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +140,37 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Variance:</strong> the same prompt can produce differently shaped answers.</li>
-                        <li><strong>Prompt constraints vs API constraints:</strong> instructions are requests; JSON mode is enforced by the API.</li>
-                        <li><strong>Defensive parsing:</strong> strip fences and catch <code>JSONDecodeError</code> when you cannot enforce the format.</li>
-                    </ul>
+                    <p><strong>1. A Semantically Correct Answer Can Still Crash Your Pipeline</strong></p>
+                    <p>
+                        To a human reader, <em>"Sentiment: Positive (4/5). Pros: great camera, sleek design. Cons: weak
+                        battery."</em> is a great summary. To a backend microservice that calls
+                        <code>json.loads(raw_output)</code> to insert rows into PostgreSQL, it is an unhandled
+                        <code>JSONDecodeError: Expecting value: line 1 column 1</code>. Software pipelines require
+                        <strong>syntactic determinism</strong>, not just semantic understanding.
+                    </p>
+                    <p><strong>2. Prompt Persuasion (Strategy B) vs. Constrained Decoding (Strategy C)</strong></p>
+                    <p>
+                        Asking for JSON in the prompt (Strategy B) merely nudges token probabilities; at
+                        <code>temperature=0.7</code>, the model may still emit markdown code fences
+                        (<code>```json</code>) or trailing commentary, requiring defensive regex stripping
+                        (<code>re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_b)</code>). Passing
+                        <code>response_format={"type": "json_object"}</code> (or a strict JSON Schema) in Strategy C
+                        masks out invalid tokens during decoding so the model is mathematically prevented from emitting
+                        non-JSON syntax.
+                    </p>
+                    <p><strong>3. Why Temperature Is Kept at <code>0.7</code> Across All Three Strategies</strong></p>
+                    <p>
+                        Holding <code>temperature=0.7</code> constant proves that Strategy C's reliability comes from
+                        <strong>structural API enforcement</strong> rather than greedy decoding. Even when the model has
+                        sampling freedom over word choice, its output structure remains 100% valid JSON.
+                    </p>
+                    <p><strong>4. Inspecting Parser Failures with <code>check_json()</code></strong></p>
+                    <p>
+                        The helper <code>check_json(strategy_name, raw_output, text_to_parse)</code> runs
+                        <code>json.loads()</code> inside a <code>try/except json.JSONDecodeError</code> block and
+                        captures both <code>parsed_data</code> on success and the exact parser exception message
+                        (<code>parse_error</code>) on failure for side-by-side inspection.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

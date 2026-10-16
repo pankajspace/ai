@@ -100,8 +100,28 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>The model never runs Python. When it needs a price it replies with a <em>tool call</em> (a function name plus JSON arguments). Our code runs <code>get_price()</code> against a small price list and sends the result back as a <code>tool</code> message.</p>
-                    <p>If the question does not need a price (&quot;Hi! What can you help with?&quot;), the model answers directly and no tool runs.</p>
+                    <p>
+                        <strong>Single-Tool Agent</strong> strips away all frameworks to reveal the exact mechanics of
+                        how an LLM calls a Python function using raw <strong>OpenAI Function Calling</strong>. On its
+                        own, an LLM has no idea what items your store sells or what they cost in rupees &mdash; that
+                        data lives in a private backend dictionary (<code>PRICES</code>).
+                    </p>
+                    <p>
+                        When you ask <em>"How much are the shoes?"</em>, the service executes a two-call
+                        <strong>Think &rarr; Act &rarr; Observe &rarr; Answer</strong> loop:
+                    </p>
+                    <ol>
+                        <li><strong>First LLM Call (Decision):</strong> Sends your question plus the JSON Schema menu
+                            card (<code>TOOLS</code>) describing <code>get_price(item)</code>. Instead of guessing a
+                            price, the model replies with a structured <code>tool_calls</code> request:
+                            <code>get_price(item="shoes")</code>.</li>
+                        <li><strong>Local Tool Execution:</strong> Python parses the JSON arguments, runs
+                            <code>get_price("shoes")</code> against <code>PRICES</code> to get <code>"₹799"</code>, and
+                            appends a <code>role="tool"</code> message linked by <code>tool_call_id</code>.</li>
+                        <li><strong>Second LLM Call (Synthesis):</strong> Sends the full conversation (user question +
+                            assistant tool request + tool result) back to the model, which writes the final natural
+                            language reply.</li>
+                    </ol>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +144,41 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Crucial Mental Model: The LLM Never Executes Code</strong></p>
+                    <p>
+                        A common misconception is that the cloud LLM reaches into your server to run
+                        <code>get_price()</code>. In reality, the LLM only generates text &mdash; when a tool is needed,
+                        it outputs a structured JSON object (<code>msg.tool_calls</code>) saying <em>"I would like you
+                        to call function X with arguments Y"</em>. Your Python process is the gatekeeper that actually
+                        executes the function and decides what to return.
+                    </p>
+                    <p><strong>2. Anatomy of an OpenAI Tool Schema</strong></p>
+                    <p>
+                        The <code>TOOLS</code> list provides a JSON Schema contract for each function:
+                    </p>
                     <ul>
-                        <li><strong>Tool schema:</strong> the JSON description (name, description, parameters) tells the model what the tool does and how to call it.</li>
-                        <li><strong>Two calls:</strong> call 1 decides (answer or tool call); call 2 writes the answer using the tool output.</li>
-                        <li><strong>Message order matters:</strong> the assistant's <code>tool_calls</code> message must come before the matching <code>tool</code> results (linked by <code>tool_call_id</code>).</li>
-                        <li><strong>Grounding:</strong> the price comes from your data, not from the model's guess.</li>
+                        <li><code>name</code>: The exact identifier (<code>"get_price"</code>) the model will emit in
+                            <code>call.function.name</code>.</li>
+                        <li><code>description</code>: The natural-language rule telling the model <em>when</em> this
+                            tool is appropriate (<code>"Get the price of a shop item the user asks about."</code>).</li>
+                        <li><code>parameters</code>: A JSON Schema object specifying each argument's name, type
+                            (<code>"string"</code>), description, and <code>required</code> list.</li>
                     </ul>
+                    <p><strong>3. Strict Message Ordering and <code>tool_call_id</code></strong></p>
+                    <p>
+                        The Chat Completions API enforces a strict state-machine invariant on <code>messages</code>:
+                        every message with <code>role="tool"</code> must immediately follow an <code>assistant</code>
+                        message that contains a matching <code>tool_calls[i].id</code>. If you forget
+                        <code>messages.append(msg)</code> before appending the <code>role="tool"</code> result, the API
+                        rejects the second call with a <code>400 Bad Request</code> error.
+                    </p>
+                    <p><strong>4. Conditional Routing (Tool vs. Direct Reply)</strong></p>
+                    <p>
+                        When you ask a general question like <em>"Hello, who are you?"</em>, the model sees that
+                        <code>get_price</code> is irrelevant, leaves <code>msg.tool_calls</code> empty, and populates
+                        <code>msg.content</code> directly &mdash; completing in a single API call without touching the
+                        tool.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

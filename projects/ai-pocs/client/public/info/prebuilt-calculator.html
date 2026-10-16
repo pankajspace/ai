@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Strands ships a library of ready-made tools. Importing <code>calculator</code> and passing it in <code>tools=[calculator]</code> gives the agent exact maths (powers, roots, equations, derivatives) that a model would otherwise guess.</p>
-                    <p>The <code>system_prompt</code> (&quot;You are a helpful math assistant.&quot;) is sent with every call and sets the agent's role.</p>
+                    <p>
+                        <strong>Prebuilt Calculator Agent</strong> introduces the <strong><code>strands_tools</code></strong>
+                        ecosystem &mdash; a library of battle-tested, off-the-shelf tools maintained alongside the AWS
+                        Strands SDK. By simply writing <code>from strands_tools import calculator</code> and passing
+                        <code>tools=[calculator]</code> to <code>Agent()</code>, the agent gains a full symbolic and
+                        numerical mathematics engine powered by <strong>SymPy</strong> without writing a single line of
+                        custom tool code.
+                    </p>
+                    <p>
+                        Paired with a focused <code>system_prompt="You are a helpful math assistant."</code>, the agent
+                        recognizes mathematical expressions, delegates evaluation to the prebuilt
+                        <code>calculator</code> tool, and explains the exact result.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +135,33 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why LLMs Struggle with Multi-Digit Math</strong></p>
+                    <p>
+                        Transformer language models tokenize numbers into subword chunks and predict the next token via
+                        matrix multiplications and softmax probabilities &mdash; they do not run an arithmetic logic unit
+                        (ALU). While an LLM can memorize <code>12 &times; 12 = 144</code>, asking it for
+                        <code>42<sup>9</sup></code> or the derivative of <code>sin(x<sup>2</sup>) &middot; e<sup>x</sup></code>
+                        by pure token prediction frequently produces plausible-looking wrong digits.
+                    </p>
+                    <p><strong>2. Symbolic &amp; Numerical Capabilities of <code>strands_tools.calculator</code></strong></p>
+                    <p>
+                        Unlike a basic four-function <code>eval()</code> wrapper, the prebuilt <code>calculator</code>
+                        tool supports multiple modes via SymPy:
+                    </p>
                     <ul>
-                        <li><strong>Prebuilt tools:</strong> reuse tested tools instead of writing your own.</li>
-                        <li><strong>System prompt:</strong> a standing instruction for the whole conversation.</li>
-                        <li><strong>Exact vs approximate:</strong> 42<sup>9</sup> is easy for a calculator and error-prone for a language model.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
+                        <li><strong>Evaluate:</strong> Exact arithmetic, powers, roots, and trigonometry.</li>
+                        <li><strong>Solve:</strong> Algebraic equations and systems of equations.</li>
+                        <li><strong>Calculus:</strong> Symbolic differentiation (<code>derive</code>) and integration
+                            (<code>integrate</code>).</li>
+                        <li><strong>Matrix Operations:</strong> Determinants, inverses, and eigenvalues.</li>
                     </ul>
+                    <p><strong>3. Standing Instructions via <code>system_prompt</code></strong></p>
+                    <p>
+                        Passing <code>system_prompt="You are a helpful math assistant."</code> when constructing the
+                        <code>Agent</code> attaches a persistent system instruction to every Bedrock Converse call in
+                        the loop, priming the model to reach for its mathematical toolset and format explanations
+                        clearly.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->

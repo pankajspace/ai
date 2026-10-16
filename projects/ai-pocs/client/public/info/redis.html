@@ -42,7 +42,7 @@
             <h1 id="how-it-works">⚡ Redis Support Agent Memory<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>⚡ Redis Support Agent Memory</strong> stores multi-turn conversation history per <code>session_id</code> with TTL expiry and runs an OpenAI tool-calling support agent with order lookup, refund policy, and refund estimation tools.</p>
+            <p class="lede"><strong>⚡ Redis Support Agent Memory</strong> stores multi-turn conversation history per <code>session_id</code> in Redis (with an automatic in-memory fallback) and runs the DeskBuddy OpenAI tool-calling agent with <code>calculator</code> and <code>get_datetime</code> tools.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -97,7 +97,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Production support agents must remember customer details (order IDs, names, prior questions) across turns while invoking tools for live order status and refund calculations. By keying conversation lists under <code>support:session:{session_id}</code> with a 1-hour TTL, the agent stays stateless at the process layer while preserving user sessions.</p>
+                    <p>
+                        <strong>DeskBuddy (Redis Session-Memory Agent)</strong> combines multi-turn conversational memory
+                        with autonomous tool calling (<code>calculator</code> and <code>get_datetime</code>), backed by
+                        <strong>Redis</strong> as an external session store.
+                    </p>
+                    <p>
+                        Unlike client-held memory (where the browser must re-upload the entire chat transcript on every
+                        request), DeskBuddy requires the client to send only a lightweight <code>session_id</code> (such
+                        as <code>"demo"</code>) and the latest <code>message</code>. The backend loads that session's
+                        conversation list from Redis under <code>history:{session_id}</code> (or falls back to an
+                        in-memory dictionary if Redis is not running), runs a bounded 5-lap tool-calling loop with
+                        <code>gpt-4o-mini</code>, persists the updated history back to the store, and returns the final
+                        answer alongside a full trace of invoked tools and the total stored message count.
+                    </p>
                 </div>
             </section>
 
@@ -119,11 +132,38 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Session-Keyed Redis Lists:</strong> Uses <code>RPUSH</code>, <code>LRANGE</code>, <code>DEL</code>, and <code>EXPIRE</code> per <code>session_id</code>.</li>
-                        <li><strong>Function-Calling Loop:</strong> Iterates up to 4 rounds when the model emits <code>tool_calls</code> (<code>calculator</code>, <code>get_datetime</code>).</li>
-                        <li><strong>Graceful Fallback:</strong> Uses Redis when <code>REDIS_HOST</code> is reachable, or falls back to an in-memory session store so demos work zero-config.</li>
-                    </ul>
+                    <p><strong>1. Stateless Application Tier + Stateful Redis Tier</strong></p>
+                    <p>
+                        In production, FastAPI/Flask servers run multiple worker processes or containers behind a load
+                        balancer. Storing chat history in a Python global variable breaks as soon as Request 1 hits
+                        Worker A and Request 2 hits Worker B. Externalizing session lists into Redis under
+                        <code>history:{session_id}</code> using <code>LRANGE</code>, <code>DELETE</code>, and
+                        <code>RPUSH</code> lets any worker serve any user turn seamlessly.
+                    </p>
+                    <p><strong>2. Graceful Degradation with Zero-Config Fallback</strong></p>
+                    <p>
+                        <code>_get_redis()</code> probes the Redis socket once with a fast 1.5-second connection timeout
+                        (<code>client.ping()</code>). If a Redis server is reachable, all session operations use Redis
+                        lists; if not, <code>_load_history</code> and <code>_save_history</code> transparently fall back
+                        to <code>_fallback_memory</code> and report <code>storage_backend="in-memory (redis
+                        fallback)"</code> in the response so the demo works out of the box.
+                    </p>
+                    <p><strong>3. Bounded Multi-Turn Tool Loop (Safety Fuse)</strong></p>
+                    <p>
+                        A query like <em>"What is 23*47, and what time is it right now?"</em> requires calling both
+                        <code>calculator</code> and <code>get_datetime</code> before answering. The loop
+                        <code>for _ in range(5):</code> calls the model, appends any assistant <code>tool_calls</code>
+                        plus each tool's <code>role="tool"</code> JSON output to <code>history</code>, and repeats until
+                        <code>not msg.tool_calls</code> &mdash; with the 5-iteration cap preventing runaway infinite
+                        loops.
+                    </p>
+                    <p><strong>4. Sandboxed Expression Evaluation &amp; Error Isolation</strong></p>
+                    <p>
+                        Inside <code>call_tool()</code>, the calculator evaluates arithmetic expressions with
+                        <code>eval(expr, {"__builtins__": {}})</code> (stripping Python built-ins) and wraps tool
+                        execution in a <code>try/except</code> block that returns <code>{"error": ...}</code> as a normal
+                        dict rather than crashing the request if the model passes malformed syntax.
+                    </p>
                 </div>
             </section>
 
@@ -192,7 +232,7 @@
 flowchart TD
     UI["RedisAgentCard.tsx<br/>POST /api/redis"]:::entry -->|"session_id, message"| R["main.py<br/>redis_agent_service()"]:::fn
     R --> S["03_redis.py<br/>run_redis_agent()"]:::fn
-    S -->|"load_history / save_message"| M[("Redis / Session Store")]:::ext
+    S -->|"_load_history / _save_history"| M[("Redis / Session Store")]:::ext
     S -->|"messages + TOOLS"| O[("OpenAI Chat Completions")]:::ext
     O -->|"tool_calls"| T["calculator / get_datetime"]:::fn
     T -->|"tool output"| S

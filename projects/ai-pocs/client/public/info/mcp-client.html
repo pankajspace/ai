@@ -101,8 +101,27 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>The Model Context Protocol (MCP) is a standard way for an app to discover and call tools that live in a separate server process. This demo shows the three protocol steps by hand: <code>initialize</code>, <code>tools/list</code>, <code>tools/call</code>.</p>
-                    <p>The server is a separate Python process started by the client and connected through its stdin/stdout. Its data (scores, player stats) is demo data.</p>
+                    <p>
+                        <strong>Direct FastMCP Client (Protocol Plumbing)</strong> demystifies the <strong>Model Context
+                        Protocol (MCP)</strong> by exercising it with <strong>zero LLM involvement</strong>. Before
+                        putting an AI model in the driver's seat, this demo shows that MCP is a clean, deterministic
+                        client-server RPC protocol for discovering and invoking tools across process boundaries.
+                    </p>
+                    <p>
+                        When you run the demo, <code>01_mcp_client.py</code> spawns <code>cricket_server.py</code> as a
+                        child Python process connected via standard input/output (<code>stdio_client</code>) and walks
+                        through the three core MCP lifecycle calls in order:
+                    </p>
+                    <ol>
+                        <li><strong>Handshake (<code>await session.initialize()</code>):</strong> Client and server
+                            exchange protocol versions and capability metadata.</li>
+                        <li><strong>Tool Discovery (<code>await session.list_tools()</code>):</strong> The client asks
+                            the server what tools it offers and receives the auto-generated menu cards
+                            (<code>get_live_score</code> and <code>get_player_stats</code>).</li>
+                        <li><strong>Direct Invocation (<code>await session.call_tool(...)</code>):</strong> The client
+                            calls both tools directly with your inputs (e.g., <code>"India vs West Indies"</code> and
+                            <code>"Shubman Gill"</code>) and returns the parsed JSON payloads.</li>
+                    </ol>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -125,12 +144,38 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>MCP server:</strong> <code>FastMCP</code> turns decorated functions into tools with JSON schemas.</li>
-                        <li><strong>stdio transport:</strong> JSON-RPC messages over the subprocess's stdin/stdout &mdash; which is why the server logs to stderr only.</li>
-                        <li><strong>Discovery:</strong> the client learns tool names and input schemas at runtime from <code>list_tools()</code>.</li>
-                        <li><strong>Results:</strong> the tool's dict comes back as JSON text in <code>result.content[0].text</code>, which the service returns as-is.</li>
-                    </ul>
+                    <p><strong>1. The <em>M + N</em> Standardization Problem That MCP Solves</strong></p>
+                    <p>
+                        Without a standard protocol, connecting <em>M</em> AI applications (IDEs, chat UIs, custom agents) to
+                        <em>N</em> tool sources (databases, GitHub, Slack, sports APIs) requires <em>M &times; N</em> custom
+                        integrations. With MCP, each tool source is wrapped once as an <strong>MCP Server</strong> and
+                        each application implements an <strong>MCP Client</strong> once &mdash; reducing the ecosystem
+                        integration cost from <em>M &times; N</em> to <em>M + N</em>.
+                    </p>
+                    <p><strong>2. FastMCP Schema Generation on the Server</strong></p>
+                    <p>
+                        Look at <code>cricket_server.py</code>: there is no hand-written JSON Schema anywhere. By
+                        decorating functions with <code>@mcp.tool(description=...)</code> and annotating parameters with
+                        <code>Field(description=...)</code>, <code>FastMCP("Cricket-Score-Server")</code> automatically
+                        synthesizes the MCP tool name, description, and JSON Schema <code>inputSchema</code> exposed by
+                        <code>tools/list</code>.
+                    </p>
+                    <p><strong>3. The Golden Rule of <code>stdio</code> Transport: Never Print Logs to <code>stdout</code></strong></p>
+                    <p>
+                        When an MCP server runs over <code>transport="stdio"</code>, the parent client and child server
+                        exchange newline-delimited <strong>JSON-RPC 2.0</strong> messages over the child process's
+                        <code>stdin</code> and <code>stdout</code> pipes. If <code>cricket_server.py</code> called a
+                        normal <code>print("debug...")</code> to <code>stdout</code>, it would corrupt the JSON-RPC
+                        stream! That is why every diagnostic log in <code>cricket_server.py</code> explicitly writes to
+                        <code>file=sys.stderr</code>.
+                    </p>
+                    <p><strong>4. Unwrapping MCP Tool Results</strong></p>
+                    <p>
+                        An MCP <code>call_tool()</code> response returns a list of typed content blocks
+                        (<code>TextContent</code>, <code>ImageContent</code>, etc.). The helper <code>_parse()</code>
+                        reads <code>res.content[0].text</code> and parses the JSON string back into a Python dictionary
+                        for the API response.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
