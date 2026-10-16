@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-23-prompting-strategies-py">23_prompting_strategies.py</a></li>
+                    <li><a href="#source-23-prompting-strategies-py">01_prompting_strategies.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>The pens question (buy 7, return 2, buy 4 more, pay with 500) is easy to get wrong in one jump. <strong>Direct</strong> forbids working, <strong>Zero-Shot CoT</strong> adds &quot;think step by step&quot;, and <strong>Few-Shot CoT</strong> shows two worked examples first.</p>
-                    <p>Each reply's final <code>Answer:</code> line is extracted and checked against the expected answer (293), and the token counts show what the extra reasoning costs.</p>
+                    <p>
+                        <strong>Prompting Strategies Benchmark</strong> runs a controlled head-to-head experiment
+                        comparing three foundational prompting techniques &mdash; <strong>Direct Prompting</strong>,
+                        <strong>Zero-Shot Chain-of-Thought (CoT)</strong>, and <strong>Few-Shot Chain-of-Thought</strong>
+                        &mdash; on the exact same multi-step arithmetic word problem (buying 7 pens at ₹15, returning 2
+                        for a ₹12 refund each, buying 4 more at ₹18, and paying with a ₹500 note, where the ground-truth
+                        change is <code>293</code>).
+                    </p>
+                    <p>
+                        All three strategies run against OpenAI at <code>temperature=0</code>. For each strategy, the
+                        service extracts the final <code>Answer: &lt;value&gt;</code> line using a regex parser, grades
+                        it against <code>expected_answer="293"</code>, and records both <code>prompt_tokens</code> and
+                        <code>completion_tokens</code> so you can see the exact accuracy vs. token-cost trade-off.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +136,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Chain-of-Thought:</strong> writing the steps out often fixes multi-step arithmetic and logic.</li>
-                        <li><strong>Few-shot examples:</strong> showing the format teaches the model how to reason and how to end its answer.</li>
-                        <li><strong>Trade-off:</strong> more reasoning = more completion tokens and more time.</li>
-                        <li><strong>Answer extraction:</strong> a fixed <code>Answer: &lt;value&gt;</code> format makes automatic scoring possible.</li>
-                    </ul>
+                    <p><strong>1. Why Autoregressive Models Need a Scratchpad for Multi-Step Math</strong></p>
+                    <p>
+                        An LLM generates text one token at a time, performing a fixed amount of computation (one forward
+                        pass through its transformer layers) per emitted token. Under <strong>Direct Prompting</strong>
+                        (<em>"Return ONLY the final answer... Do NOT include any reasoning"</em>), the model is forced
+                        to compute <code>(7 &times; 15) - (2 &times; 12) + (4 &times; 18)</code> and subtract from
+                        <code>500</code> inside a single token jump &mdash; where intermediate state errors frequently
+                        occur.
+                    </p>
+                    <p><strong>2. Zero-Shot Chain-of-Thought ("Think step-by-step")</strong></p>
+                    <p>
+                        Adding the instruction <em>"Think step-by-step before giving the final answer"</em> (Kojima et
+                        al., 2022) turns the output stream itself into an external working memory scratchpad. Because
+                        each subsequent token attends to all previously written intermediate totals, a 4-step problem is
+                        decomposed into 4 simple 1-step calculations.
+                    </p>
+                    <p><strong>3. Few-Shot Chain-of-Thought (In-Context Exemplars)</strong></p>
+                    <p>
+                        <strong>Few-Shot CoT</strong> (Wei et al., 2022) prepends two worked question-reasoning-answer
+                        examples before the target question. Beyond encouraging step-by-step reasoning, in-context
+                        exemplars calibrate <em>how</em> the model structures its equations and guarantee that it ends
+                        with the exact machine-parseable line <code>Answer: 293</code>.
+                    </p>
+                    <p><strong>4. The Token Economics of Reasoning</strong></p>
+                    <p>
+                        Reasoning is not free: Direct uses ~5 completion tokens, Zero-Shot CoT uses ~80–150 completion
+                        tokens (higher output latency and cost), and Few-Shot CoT increases <code>prompt_tokens</code> on
+                        every call. Tracking <code>prompt_tokens</code>, <code>completion_tokens</code>, and
+                        <code>total_tokens</code> per strategy quantifies the exact price of higher accuracy.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -155,7 +191,7 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question, expected_answer }</code>.</span>
+                            <span class="flow-detail"><code>PromptingStrategiesCard.tsx</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question, expected_answer, model, temperature }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -164,8 +200,8 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Service (<code>23_prompting_strategies.py</code>)</span>
-                            <span class="flow-detail">Builds 3 prompts and calls OpenAI once per strategy, timing each call and reading <code>usage</code>.</span>
+                            <span class="flow-title">Service (<code>01_prompting_strategies.py</code>)</span>
+                            <span class="flow-detail">Resolves the selected model/provider, builds 3 prompts, and calls the LLM once per strategy at the chosen temperature, timing each call and reading <code>usage</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -203,9 +239,9 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry -->|"question, expected_answer"| R["main.py<br/>prompting_strategies_service()"]:::fn
-    R -->|"question, expected"| S["23_prompting_strategies.py<br/>run_prompting_strategies()"]:::fn
-    S -->|"Direct prompt"| O[("OpenAI API")]:::ext
+    UI["PromptingStrategiesCard.tsx<br/>POST /api/prompting-strategies"]:::entry -->|"question, expected_answer, model, temperature"| R["main.py<br/>prompting_strategies_service()"]:::fn
+    R -->|"question, expected, model, temperature"| S["01_prompting_strategies.py<br/>run_prompting_strategies()"]:::fn
+    S -->|"Direct prompt"| O[("LLM API")]:::ext
     S -->|"Zero-Shot CoT prompt"| O
     S -->|"Few-Shot CoT prompt"| O
     O -->|"3 replies + token usage"| S
@@ -238,11 +274,11 @@ flowchart TD
                     aria-controls="content-source-23-prompting-strategies-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-23-prompting-strategies-py" class="topic-title is-file">23_prompting_strategies.py<a class="headerlink" href="#source-23-prompting-strategies-py"
+                        <h2 id="source-23-prompting-strategies-py" class="topic-title is-file">01_prompting_strategies.py<a class="headerlink" href="#source-23-prompting-strategies-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">144 lines</span>
+                        <span class="topic-meta-chip">182 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -252,7 +288,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-23-prompting-strategies-py">
-                    <span class="file-path">server/services/23_prompting_strategies.py</span>
+                    <span class="file-path">server/services/05-ai-systems/01_prompting_strategies.py</span>
                     <p class="file-label">Prompting Strategies Benchmark Service (Direct vs Zero-Shot CoT vs Few-Shot CoT).</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Prompting Strategies Benchmark Service (Direct vs Zero-Shot CoT vs Few-Shot CoT).
 
@@ -280,6 +316,8 @@ class PromptingStrategiesRequest(BaseModel):
 
     question: str = &quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;
     expected_answer: str = &quot;293&quot;
+    model: str = &quot;gpt-4o-mini&quot;
+    temperature: float = 0.7
 
 
 class StrategyResult(BaseModel):
@@ -297,6 +335,8 @@ class PromptingStrategiesResponse(BaseModel):
     &quot;&quot;&quot;Output payload from Prompting Strategies Benchmark.&quot;&quot;&quot;
 
     expected_answer: str
+    model: str = &quot;gpt-4o-mini&quot;
+    temperature: float = 0.7
     strategies: List[StrategyResult]
 
 
@@ -317,6 +357,35 @@ Thought:
 3. In 4 hours, they make 36 * 4 = 144 widgets.
 Answer: 144
 &quot;&quot;&quot;
+
+
+def _resolve_client_and_model(model_choice: str) -&gt; tuple[OpenAI, str]:
+    &quot;&quot;&quot;Resolve the OpenAI-compatible client and model identifier for the chosen model.&quot;&quot;&quot;
+    choice = (model_choice or &quot;&quot;).strip().lower()
+    if &quot;gemini&quot; in choice and os.getenv(&quot;GEMINI_API_KEY&quot;):
+        return (
+            OpenAI(
+                api_key=os.getenv(&quot;GEMINI_API_KEY&quot;),
+                base_url=os.getenv(&quot;GEMINI_BASE_URL&quot;, &quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;),
+            ),
+            os.getenv(&quot;GEMINI_MODEL&quot;, &quot;gemini-3.8-flash&quot;),
+        )
+    if (&quot;groq&quot; in choice or &quot;oss&quot; in choice or &quot;llama&quot; in choice) and os.getenv(&quot;GROQ_API_KEY&quot;):
+        return (
+            OpenAI(
+                api_key=os.getenv(&quot;GROQ_API_KEY&quot;),
+                base_url=os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;),
+            ),
+            os.getenv(&quot;GROQ_MODEL&quot;, &quot;openai/gpt-oss-20b&quot;),
+        )
+    resolved_model = model_choice.strip() if choice in (&quot;gpt-4o&quot;, &quot;gpt-4o-mini&quot;) else os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    return (
+        OpenAI(
+            api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+            base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+        ),
+        resolved_model,
+    )
 
 
 def extract_final_answer(response_text: str) -&gt; str:
@@ -348,14 +417,13 @@ def evaluate_accuracy(extracted: str, expected: str) -&gt; bool:
 def run_prompting_strategies(
     question: str = &quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;,
     expected_answer: str = &quot;293&quot;,
+    model: str = &quot;gpt-4o-mini&quot;,
+    temperature: float = 0.7,
 ) -&gt; dict:
     &quot;&quot;&quot;Execute all three prompting strategies and compare metrics.&quot;&quot;&quot;
-    # ① Initialize the OpenAI client and model configuration
-    client = OpenAI(
-        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
-        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
-    )
-    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    # ① Initialize the LLM client and resolve model and temperature configuration
+    client, resolved_model = _resolve_client_and_model(model)
+    clamped_temp = max(0.0, min(2.0, float(temperature)))
 
     # ② Construct Direct, Zero-Shot CoT, and Few-Shot CoT prompts
     prompts = {
@@ -370,14 +438,14 @@ def run_prompting_strategies(
     for name, p_text in prompts.items():
         start_t = time.perf_counter()
         resp = client.chat.completions.create(
-            model=model,
+            model=resolved_model,
             messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: p_text}],
-            temperature=0.3,
+            temperature=clamped_temp,
         )
         dur = time.perf_counter() - start_t
         text = resp.choices[0].message.content or &quot;&quot;
-        p_tok = resp.usage.prompt_tokens
-        c_tok = resp.usage.completion_tokens
+        p_tok = resp.usage.prompt_tokens if resp.usage else 0
+        c_tok = resp.usage.completion_tokens if resp.usage else 0
 
         # ④ Extract the final answer and score accuracy against ground truth
         extracted = extract_final_answer(text)
@@ -397,7 +465,12 @@ def run_prompting_strategies(
         )
 
     # ⑤ Return comparative benchmark metrics across all three strategies
-    return {&quot;expected_answer&quot;: expected_answer, &quot;strategies&quot;: results}</code></pre>
+    return {
+        &quot;expected_answer&quot;: expected_answer,
+        &quot;model&quot;: resolved_model,
+        &quot;temperature&quot;: clamped_temp,
+        &quot;strategies&quot;: results,
+    }</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
@@ -411,7 +484,7 @@ def run_prompting_strategies(
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-meta-chip">36 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -454,7 +527,9 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail=&quot;Question cannot be empty&quot;)
     try:
-        return PromptingStrategiesResponse(**run_prompting_strategies(req.question, req.expected_answer))
+        return PromptingStrategiesResponse(
+            **run_prompting_strategies(req.question, req.expected_answer, req.model, req.temperature)
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))</code></pre>
                 </div>

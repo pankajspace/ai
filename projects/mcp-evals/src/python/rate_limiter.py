@@ -30,13 +30,24 @@ def get_db():
 
 
 def get_client_ip(req):
-    forwarded = req.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
-    return req.headers.get("X-Real-IP") or req.remote_addr or "unknown"
+    """Extract client IP address from request (supporting Flask, Starlette/FastAPI, or string)."""
+    if isinstance(req, str):
+        return req
+    headers = getattr(req, "headers", None)
+    if headers:
+        forwarded = headers.get("x-forwarded-for") or headers.get("X-Forwarded-For")
+        if forwarded:
+            return forwarded.split(",")[0].strip()
+        real_ip = headers.get("x-real-ip") or headers.get("X-Real-IP")
+        if real_ip:
+            return real_ip.strip()
+    client = getattr(req, "client", None)
+    if client and getattr(client, "host", None):
+        return client.host
+    return getattr(req, "remote_addr", "unknown") or "unknown"
 
 
-def check_rate_limit(req, max_requests=10, window_seconds=3600):
+def check_rate_limit(req, max_requests=30, window_seconds=3600):
     """Check if the requesting IP has exceeded max_requests in the sliding window.
 
     Returns:
@@ -60,7 +71,7 @@ def check_rate_limit(req, max_requests=10, window_seconds=3600):
             remaining_seconds = int(window_seconds - (now - oldest))
             remaining_minutes = max(1, (remaining_seconds + 59) // 60)
             msg = (
-                f"Rate limit exceeded (10 requests per hour). "
+                f"Rate limit exceeded (30 requests per hour). "
                 f"Please try again in {remaining_minutes} minute{'s' if remaining_minutes != 1 else ''}."
             )
             return True, msg, remaining_seconds

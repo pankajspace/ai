@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>With more than one tool, the model has to choose. The docstrings are what it reads to decide: &quot;Multiply two numbers together&quot; vs &quot;Get the current weather for a given city&quot;.</p>
-                    <p>A question like &quot;What's the weather in Tokyo, and what is 12 times 12?&quot; makes the agent call two different tools before answering; &quot;Who wrote Romeo and Juliet?&quot; needs none.</p>
+                    <p>
+                        <strong>Multi-Tool Agent</strong> scales the LangChain agent up from one tool to a toolkit of
+                        four distinct capabilities: <code>get_weather(city)</code>, <code>add(a, b)</code>,
+                        <code>multiply(a, b)</code>, and <code>get_population(city)</code>. With multiple tools on the
+                        table, the LLM must act as a <strong>semantic router and planner</strong> &mdash; deciding not
+                        just <em>whether</em> to use a tool, but <em>which</em> combination of tools satisfies a
+                        compound user request.
+                    </p>
+                    <p>
+                        When asked a multi-part question such as <em>"What's the weather in Tokyo, and what is 12 times
+                        12?"</em>, the agent dispatches both <code>get_weather(city="Tokyo")</code> and
+                        <code>multiply(a=12, b=12)</code>, collects both tool outputs, and synthesizes a single coherent
+                        answer. Conversely, if asked <em>"Who wrote Romeo and Juliet?"</em>, it recognizes that none of
+                        the four tools apply and answers directly.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +137,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Tool selection:</strong> the model compares the question with every tool description.</li>
-                        <li><strong>Multiple calls per turn:</strong> the agent can request several tools and combine their results.</li>
-                        <li><strong>Focused tools:</strong> small single-purpose tools are easier for the model to pick correctly.</li>
-                    </ul>
+                    <p><strong>1. Semantic Tool Selection Across a Toolkit</strong></p>
+                    <p>
+                        When multiple tools are registered in <code>tools=[get_weather, add, multiply,
+                        get_population]</code>, every LLM request includes the JSON Schema definitions for all four
+                        functions. The model compares the user's intent against each tool's name, parameter types, and
+                        docstring to pick the right match without any hardcoded <code>if/elif</code> routing logic in
+                        Python.
+                    </p>
+                    <p><strong>2. Parallel Multi-Tool Calls in a Single Turn</strong></p>
+                    <p>
+                        Modern tool-calling models can emit <strong>multiple</strong> items in a single
+                        <code>tool_calls</code> array when sub-questions are independent (for example, looking up Tokyo's
+                        weather and multiplying two numbers at the same time). LangChain executes all requested tools,
+                        appends a <code>ToolMessage</code> for each one, and feeds the combined observations back to the
+                        model in the next step.
+                    </p>
+                    <p><strong>3. Atomic, Single-Purpose Tool Design</strong></p>
+                    <p>
+                        Notice that <code>add(a, b)</code> and <code>multiply(a, b)</code> are separate, narrowly typed
+                        functions rather than one vague <code>do_stuff(query: str)</code> function. Narrow, well-named
+                        tools with unambiguous parameter signatures dramatically reduce argument-extraction errors and
+                        can be composed freely by the agent.
+                    </p>
+                    <p><strong>4. Guarding Against Lazy Tool Summaries in the System Prompt</strong></p>
+                    <p>
+                        Smaller or faster models sometimes see a tool output in the conversation history and reply
+                        vaguely (e.g., <em>"I have fetched the weather and calculation for you above"</em>), forgetting
+                        that the end user cannot see raw <code>ToolMessage</code> blocks. The system prompt explicitly
+                        instructs: <em>"Always state the final result clearly and completely in your answer."</em>
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -250,7 +288,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-07-langchain-multi-tools-py">
-                    <span class="file-path">server/services/07_langchain_multi_tools.py</span>
+                    <span class="file-path">server/services/01-ai-basics/07_langchain_multi_tools.py</span>
                     <p class="file-label"></p>
                     <pre><code data-lang="python">&quot;&quot;&quot;
 Langchain Version V1 - Agents (multiple tools + visible tool calls)

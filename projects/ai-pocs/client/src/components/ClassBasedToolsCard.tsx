@@ -110,7 +110,7 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${query === p ? 'active' : ''}`}
               onClick={() => setQuery(p)}
             >
               {p.slice(0, 30)}…
@@ -131,7 +131,17 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
       {result && (
         <div className="result visible">
           {result.tool_calls.map((c, i) => (
-            <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <div
+              key={i}
+              className="tool-call-item"
+              style={{
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
+            >
               🔧 {c}
             </div>
           ))}

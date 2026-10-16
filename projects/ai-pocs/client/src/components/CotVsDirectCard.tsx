@@ -100,7 +100,7 @@ export function CotVsDirectCard({ apiBase = API_BASE }: CotVsDirectCardProps = {
             <button
               type="button"
               key={p.title}
-              className="preset-chip"
+              className={`preset-chip ${problemTitle === p.title ? 'active' : ''}`}
               onClick={() => {
                 setProblemTitle(p.title)
                 setQuestion(p.question)

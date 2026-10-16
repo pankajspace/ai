@@ -77,7 +77,7 @@ export function LangGraphAgentCard({ apiBase = API_BASE }: LangGraphAgentCardPro
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${prompt === p ? 'active' : ''}`}
               onClick={() => setPrompt(p)}
             >
               {p}
@@ -101,12 +101,22 @@ export function LangGraphAgentCard({ apiBase = API_BASE }: LangGraphAgentCardPro
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Tool Loop:</strong>
               {result.tool_calls.map((c, i) => (
-                <div key={i} style={{ fontFamily: 'monospace' }}>&bull; {c}</div>
+                <div
+                  key={i}
+                  className="tool-call-item"
+                  style={{
+                    fontFamily: 'monospace',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  &bull; {c}
+                </div>
               ))}
             </div>
           )}
           <strong>Agent Final Synthesis:</strong>
-          <div>{result.response}</div>
+          <div style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{result.response}</div>
         </div>
       )}
     </div>

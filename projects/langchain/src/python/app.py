@@ -48,12 +48,12 @@ bp = Blueprint("main", __name__)
 
 @bp.before_request
 def enforce_rate_limit():
-    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    """Enforce strict 30 requests per hour limit on all POST endpoints."""
     # ① only rate-limit write requests so static pages stay fast
     if request.method == "POST":
         # ② ask the shared limiter whether this client has exceeded the window
         blocked, msg, retry_after = check_rate_limit(
-            request, max_requests=10, window_seconds=3600
+            request, max_requests=30, window_seconds=3600
         )
         # ③ return a 429 response with retry guidance when the client is blocked
         if blocked:

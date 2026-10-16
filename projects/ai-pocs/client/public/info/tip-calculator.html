@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-14-tip-calculator-py">14_tip_calculator.py</a></li>
+                    <li><a href="#source-14-tip-calculator-py">04_tip_calculator.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>The point is <em>intent over keywords</em>: &quot;The bill is $85, 20% tip, split 4 ways&quot; and &quot;Bill is $120, we want to tip 18%, split between 3 people&quot; both end up as the same structured tool call, whatever the wording.</p>
-                    <p>The tool does the maths exactly (no model arithmetic), and the card shows the <code>calculate_tip(...)</code> call the agent made, read from the <code>toolUse</code> blocks in <code>agent.messages</code>, so you can see the numbers it extracted.</p>
+                    <p>
+                        <strong>Tip Calculator Agent</strong> illustrates two core principles of reliable tool design:
+                        <strong>semantic parameter extraction from free-form language</strong> and <strong>offloading
+                        exact arithmetic to deterministic code</strong>.
+                    </p>
+                    <p>
+                        Whether a user writes <em>"The bill is $85, 20% tip, split 4 ways"</em>, <em>"Dinner was 120
+                        dollars for 3 of us with an 18 percent tip"</em>, or simply <em>"Tip on $50"</em>, the Bedrock
+                        agent maps those varied phrasings into a single typed call to
+                        <code>calculate_tip(bill_amount: float, tip_percent: float = 15.0, num_people: int = 1)</code>.
+                        Python performs the exact floating-point math and returns a structured dictionary of rounded
+                        dollar amounts that the agent summarizes in natural prose.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +135,34 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Parameter extraction:</strong> the model fills typed arguments (<code>float</code>, <code>int</code>) from free text.</li>
-                        <li><strong>Default arguments:</strong> <code>num_people: int = 1</code> becomes an optional tool parameter.</li>
-                        <li><strong>Tools for exact work:</strong> let code do the arithmetic; let the model do the language.</li>
-                        <li><strong>Reading tool calls:</strong> every tool request is a <code>toolUse</code> block (name + input) in <code>agent.messages</code>.</li>
-                    </ul>
+                    <p><strong>1. Intent and Entity Extraction Without Regex</strong></p>
+                    <p>
+                        Before LLMs, parsing a sentence like <em>"We split an $85.50 tab four ways after adding twenty
+                        percent"</em> required brittle regular expressions and number-word parsers. With tool calling,
+                        the LLM acts as a universal semantic parser that extracts entities, converts them to typed
+                        numbers (<code>bill_amount=85.5</code>, <code>tip_percent=20.0</code>,
+                        <code>num_people=4</code>), and invokes the tool.
+                    </p>
+                    <p><strong>2. Optional Parameters via Python Default Values</strong></p>
+                    <p>
+                        When Strands introspects <code>def calculate_tip(bill_amount: float, tip_percent: float = 15.0,
+                        num_people: int = 1)</code>, only <code>bill_amount</code> is marked as <code>required</code> in
+                        the generated JSON Schema. If the user says <em>"What's the tip on a $64 bill?"</em> without
+                        specifying a percentage or party size, the tool safely falls back to a 15% tip for 1 person.
+                    </p>
+                    <p><strong>3. Division of Labor: Language vs. Arithmetic</strong></p>
+                    <p>
+                        LLMs predict tokens probabilistically and regularly make rounding or division mistakes on
+                        non-trivial numbers (e.g., <code>$137.45 &times; 1.18 / 7</code>). Offloading the calculation to
+                        Python guarantees cent-level accuracy (<code>round(total / num_people, 2)</code>) while keeping
+                        the user interface conversational.
+                    </p>
+                    <p><strong>4. Structured Dict Return Values</strong></p>
+                    <p>
+                        Returning a self-describing dictionary (<code>{"bill": ..., "tip_percent": ..., "tip_amount":
+                        ..., "total": ..., "per_person": ...}</code>) gives the model labelled fields to read on the
+                        observation step, preventing it from confusing the total bill with the per-person share.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -164,7 +197,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent (<code>14_tip_calculator.py</code>)</span>
+                            <span class="flow-title">Agent (<code>04_tip_calculator.py</code>)</span>
                             <span class="flow-detail">Bedrock extracts the numbers and calls <code>calculate_tip</code>; Strands runs it.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -204,7 +237,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["TipCalculatorCard.tsx<br/>POST /api/tip-calculator"]:::entry -->|"query"| R["main.py<br/>tip_calculator_service()"]:::fn
-    R -->|"query"| S["14_tip_calculator.py<br/>run_tip_calculator_agent()"]:::fn
+    R -->|"query"| S["04_tip_calculator.py<br/>run_tip_calculator_agent()"]:::fn
     S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
     A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
     B -->|"toolUse: calculate_tip"| A
@@ -240,7 +273,7 @@ flowchart TD
                     aria-controls="content-source-14-tip-calculator-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-14-tip-calculator-py" class="topic-title is-file">14_tip_calculator.py<a class="headerlink" href="#source-14-tip-calculator-py"
+                        <h2 id="source-14-tip-calculator-py" class="topic-title is-file">04_tip_calculator.py<a class="headerlink" href="#source-14-tip-calculator-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -254,7 +287,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-14-tip-calculator-py">
-                    <span class="file-path">server/services/14_tip_calculator.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/04_tip_calculator.py</span>
                     <p class="file-label">Tip Calculator Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Tip Calculator Agent Service.
 

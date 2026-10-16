@@ -102,7 +102,7 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${task === p ? 'active' : ''}`}
               onClick={() => setTask(p)}
             >
               {p.slice(0, 30)}…
@@ -126,12 +126,22 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
             <div style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
               <strong>Execution Plan:</strong>
               {result.tool_calls.map((step, i) => (
-                <div key={i} style={{ fontFamily: 'monospace' }}>&bull; {step}</div>
+                <div
+                  key={i}
+                  className="tool-call-item"
+                  style={{
+                    fontFamily: 'monospace',
+                    overflowWrap: 'anywhere',
+                    wordBreak: 'break-word',
+                  }}
+                >
+                  &bull; {step}
+                </div>
               ))}
             </div>
           )}
           <strong>Dispatch Outcome:</strong>
-          <div>{result.response}</div>
+          <div style={{ overflowWrap: 'anywhere', wordBreak: 'break-word' }}>{result.response}</div>
         </div>
       )}
     </div>

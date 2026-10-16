@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-08-chunking-py">08_chunking.py</a></li>
+                    <li><a href="#source-08-chunking-py">01_chunking.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Long documents are too big to search or send to a model at once, so they are cut into chunks. The recursive splitter tries to cut at paragraph breaks first, then line breaks, then spaces, so sentences stay together where possible.</p>
-                    <p><code>chunk_size</code> is the maximum characters per chunk and <code>chunk_overlap</code> is how many characters neighbouring chunks share, so an idea that crosses a boundary is not lost.</p>
+                    <p>
+                        <strong>Document Chunking</strong> is the foundational preprocessing stage of every
+                        Retrieval-Augmented Generation (RAG) system. Before a long document, manual, or book can be
+                        indexed in a vector database, it must be broken into smaller, self-contained passages called
+                        <strong>chunks</strong> so that embedding models can represent each idea accurately and only the
+                        relevant passages are sent to the LLM.
+                    </p>
+                    <p>
+                        This demo uses LangChain's <code>RecursiveCharacterTextSplitter</code> with configurable
+                        <code>chunk_size</code> (default <code>250</code> characters) and <code>chunk_overlap</code>
+                        (default <code>40</code> characters). Rather than slicing text blindly every <em>N</em>
+                        characters &mdash; which cuts words and sentences in half &mdash; the recursive splitter walks a
+                        hierarchy of natural boundaries (paragraphs &rarr; lines &rarr; words &rarr; characters) and
+                        carries a sliding window of shared text across adjacent chunks.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +137,40 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why Chunking Is Necessary for RAG</strong></p>
+                    <p>
+                        Embedding an entire 50-page document into a single vector averages hundreds of distinct topics
+                        into one blurry point in vector space, making retrieval imprecise. Conversely, feeding whole
+                        documents into an LLM prompt wastes tokens, increases latency, and triggers the <em>"lost in the
+                        middle"</em> phenomenon where models overlook facts buried inside huge contexts.
+                    </p>
+                    <p><strong>2. How <code>RecursiveCharacterTextSplitter</code> Preserves Meaning</strong></p>
+                    <p>
+                        The splitter attempts to divide text using an ordered list of separators:
+                        <code>["\n\n", "\n", " ", ""]</code>:
+                    </p>
+                    <ol>
+                        <li>First, it splits on double newlines (<code>"\n\n"</code>) to keep whole paragraphs intact.</li>
+                        <li>If a paragraph still exceeds <code>chunk_size</code>, it recursively splits that paragraph
+                            on single newlines (<code>"\n"</code>).</li>
+                        <li>If a line is still too long, it splits on spaces (<code>" "</code>) so words stay whole,
+                            falling back to individual characters only as a last resort.</li>
+                    </ol>
+                    <p><strong>3. The Chunk Size Trade-Off (Precision vs. Context)</strong></p>
                     <ul>
-                        <li><strong>Chunk size:</strong> small chunks are precise but lose context; big chunks keep context but are less focused.</li>
-                        <li><strong>Overlap:</strong> shared characters act as glue between neighbours.</li>
-                        <li><strong>Recursive separators:</strong> <code>\n\n</code> &rarr; <code>\n</code> &rarr; space &rarr; character.</li>
+                        <li><strong>Too Small (e.g., &lt;100 chars):</strong> Chunks become isolated sentence fragments
+                            missing their subject or antecedents (e.g., <em>"It expires after 30 days"</em> without
+                            saying what <em>"It"</em> is).</li>
+                        <li><strong>Too Large (e.g., &gt;2,000 chars):</strong> Multiple unrelated topics get merged into
+                            one chunk, diluting the embedding vector and adding noise to the LLM prompt.</li>
                     </ul>
+                    <p><strong>4. Context Continuity via <code>chunk_overlap</code></strong></p>
+                    <p>
+                        When an important thought straddles the boundary between Chunk <em>i</em> and Chunk
+                        <em>i + 1</em>, a hard cut would split the premise from its conclusion. Setting
+                        <code>chunk_overlap=40</code> repeats the trailing ~40 characters of Chunk <em>i</em> at the
+                        start of Chunk <em>i + 1</em>, acting as semantic glue across split boundaries.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +205,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Service (<code>08_chunking.py</code>)</span>
+                            <span class="flow-title">Service (<code>01_chunking.py</code>)</span>
                             <span class="flow-detail">Builds the splitter and calls <code>split_text(text)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +240,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["ChunkingCard.tsx<br/>POST /api/chunk"]:::entry -->|"text, size, overlap"| R["main.py<br/>chunking_service()"]:::fn
-    R -->|"text, size, overlap"| S["08_chunking.py<br/>chunk_text()"]:::fn
+    R -->|"text, size, overlap"| S["01_chunking.py<br/>chunk_text()"]:::fn
     S -->|"text"| T["RecursiveCharacterTextSplitter<br/>split_text()"]:::fn
     T -->|"list of chunks"| S
     S -->|"chunks"| R
@@ -228,7 +270,7 @@ flowchart TD
                     aria-controls="content-source-08-chunking-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-08-chunking-py" class="topic-title is-file">08_chunking.py<a class="headerlink" href="#source-08-chunking-py"
+                        <h2 id="source-08-chunking-py" class="topic-title is-file">01_chunking.py<a class="headerlink" href="#source-08-chunking-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -242,7 +284,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-08-chunking-py">
-                    <span class="file-path">server/services/08_chunking.py</span>
+                    <span class="file-path">server/services/02-ai-rag-chroma/01_chunking.py</span>
                     <p class="file-label">Text Chunking Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Text Chunking Service.
 

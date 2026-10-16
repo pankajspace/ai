@@ -108,7 +108,7 @@ export function AgentOneToolCard({ apiBase = API_BASE }: AgentOneToolCardProps =
             <button
               type="button"
               key={preset}
-              className="preset-chip"
+              className={`preset-chip ${message === preset ? 'active' : ''}`}
               onClick={() => setMessage(preset)}
             >
               {preset}

@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-15-multi-tool-sales-py">15_multi_tool_sales.py</a></li>
+                    <li><a href="#source-15-multi-tool-sales-py">05_multi_tool_sales.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Nothing in the code says &quot;fetch, then analyse, then email&quot;. The agent works it out from the task and the tool signatures: <code>analyze_sales</code> needs <code>revenue</code> and <code>deals</code>, which only <code>get_sales_data</code> can provide, so it is called first.</p>
-                    <p>The tools are mocks (the same sales numbers for every quarter, and a fake email send) so the demo focuses on the planning, not on real systems.</p>
+                    <p>
+                        <strong>Multi-Tool Sales Pipeline Agent</strong> demonstrates <strong>autonomous multi-step
+                        planning and data dependency chaining</strong> across three specialized tools:
+                        <code>get_sales_data(quarter)</code>, <code>analyze_sales(revenue, deals)</code>, and
+                        <code>send_email(to, subject, body)</code>.
+                    </p>
+                    <p>
+                        When given a high-level goal like <em>"Get Q1 sales data, analyze it, and email the summary to
+                        boss@company.com"</em>, no Python code specifies the execution order. Instead, the agent inspects
+                        the tool signatures, deduces that <code>analyze_sales</code> requires <code>revenue</code> and
+                        <code>deals</code> numbers that only <code>get_sales_data</code> can provide, and chains all
+                        three tools across sequential turns until the email is dispatched.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +135,33 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Autonomous planning:</strong> the model chains tools by feeding one tool's output into the next tool's arguments.</li>
-                        <li><strong>Rule of thumb:</strong> build focused, single-purpose tools &mdash; one mega-tool is harder to reason about and impossible to reuse.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. Implicit Dependency Resolution via Tool Signatures</strong></p>
+                    <p>
+                        How does the agent know which tool to call first? Look at the input parameters:
+                    </p>
+                    <ol>
+                        <li><code>get_sales_data(quarter: str)</code> only needs <code>"Q1"</code>, which is already
+                            present in the user's prompt &mdash; so the agent calls it on Turn 1.</li>
+                        <li><code>analyze_sales(revenue: float, deals: int)</code> needs numerical metrics that were
+                            unknown until <code>get_sales_data</code> returned <code>{"revenue": 125000, "deals":
+                            42}</code> &mdash; so the agent calls it on Turn 2 using Turn 1's output.</li>
+                        <li><code>send_email(to: str, subject: str, body: str)</code> needs the analysis summary text
+                            from Turn 2 &mdash; so the agent calls it on Turn 3.</li>
+                    </ol>
+                    <p><strong>2. Single-Responsibility Principle for Agent Tools</strong></p>
+                    <p>
+                        A common anti-pattern is building a monolithic tool like
+                        <code>fetch_analyze_and_email_sales(quarter, recipient)</code>. While that works for one rigid
+                        workflow, it cannot answer <em>"Just compare Q1 and Q2 sales"</em> without sending an unwanted
+                        email. Keeping <code>get_sales_data</code>, <code>analyze_sales</code>, and
+                        <code>send_email</code> atomic lets the agent recombine them for any ad-hoc query.
+                    </p>
+                    <p><strong>3. Mocking External Side Effects During Development</strong></p>
+                    <p>
+                        By returning deterministic mock data in <code>get_sales_data</code> and simulating SMTP delivery
+                        in <code>send_email</code>, you can test and verify the agent's multi-step planning sequence
+                        (via <code>tool_sequence</code> in the response) safely before wiring real CRM or email APIs.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +196,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent (<code>15_multi_tool_sales.py</code>)</span>
+                            <span class="flow-title">Agent (<code>05_multi_tool_sales.py</code>)</span>
                             <span class="flow-detail">Bedrock calls <code>get_sales_data</code> &rarr; <code>analyze_sales</code> &rarr; <code>send_email</code>, one result feeding the next.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +231,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales"]:::entry -->|"task"| R["main.py<br/>multi_tool_sales_service()"]:::fn
-    R -->|"task"| S["15_multi_tool_sales.py<br/>run_multi_tool_sales_agent()"]:::fn
+    R -->|"task"| S["05_multi_tool_sales.py<br/>run_multi_tool_sales_agent()"]:::fn
     S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
     A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
     B -->|"toolUse: get_sales_data"| A
@@ -240,7 +273,7 @@ flowchart TD
                     aria-controls="content-source-15-multi-tool-sales-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-15-multi-tool-sales-py" class="topic-title is-file">15_multi_tool_sales.py<a class="headerlink" href="#source-15-multi-tool-sales-py"
+                        <h2 id="source-15-multi-tool-sales-py" class="topic-title is-file">05_multi_tool_sales.py<a class="headerlink" href="#source-15-multi-tool-sales-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -254,7 +287,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-15-multi-tool-sales-py">
-                    <span class="file-path">server/services/15_multi_tool_sales.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/05_multi_tool_sales.py</span>
                     <p class="file-label">Multi-Tool Sales Pipeline Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Multi-Tool Sales Pipeline Agent Service.
 

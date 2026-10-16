@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import './App.css'
 
-// Section 1: AI Basics (01 - 10)
+// Section 1: 01-ai-basics (01 - 07)
 import { TravelGuideCard } from './components/TravelGuideCard'
 import { JokeGeneratorCard } from './components/JokeGeneratorCard'
 import { SummarizerCard } from './components/SummarizerCard'
@@ -9,11 +9,18 @@ import { MemoryChatCard } from './components/MemoryChatCard'
 import { AgentOneToolCard } from './components/AgentOneToolCard'
 import { LangchainOneToolCard } from './components/LangchainOneToolCard'
 import { MultiToolAgentCard } from './components/MultiToolAgentCard'
+
+// Section 2: 02-ai-rag-chroma (08 - 10)
 import { ChunkingCard } from './components/ChunkingCard'
 import { EmbeddingCard } from './components/EmbeddingCard'
 import { RagCard } from './components/RagCard'
 
-// Section 2: AWS Strands & Agent Workflows (11 - 22)
+// Section 3: 03-ai-model-training-chromadb (11 - 13)
+import { ModelTrainingCard } from './components/ModelTrainingCard'
+import { ChromaDbCard } from './components/ChromaDbCard'
+import { RedisAgentCard } from './components/RedisAgentCard'
+
+// Section 4: 04-ai-aws-strands (14 - 25)
 import { HelloWorldAgentCard } from './components/HelloWorldAgentCard'
 import { LangGraphAgentCard } from './components/LangGraphAgentCard'
 import { FunctionToToolCard } from './components/FunctionToToolCard'
@@ -27,24 +34,40 @@ import { ClassBasedToolsCard } from './components/ClassBasedToolsCard'
 import { AsyncToolsCard } from './components/AsyncToolsCard'
 import { TravelAssistantCard } from './components/TravelAssistantCard'
 
-// Section 3: AI Systems & Prompting (23 - 24)
+// Section 5: 05-ai-systems (26 - 28)
 import { PromptingStrategiesCard } from './components/PromptingStrategiesCard'
 import { SycophancyTrapCard } from './components/SycophancyTrapCard'
+import { RefundBenchCard } from './components/RefundBenchCard'
 
-// Section 4: AI Reliability & Calibration (25 - 28)
+// Section 6: 06-ai-reliability (29 - 32)
 import { CotVsDirectCard } from './components/CotVsDirectCard'
 import { VarianceDeterminismCard } from './components/VarianceDeterminismCard'
 import { ToolSchemaCalibrationCard } from './components/ToolSchemaCalibrationCard'
 import { ToolErrorInjectionCard } from './components/ToolErrorInjectionCard'
 
-// Section 5: FastMCP & Evals (29 - 31)
+// Section 7: 07-ai-mcp-evals (33 - 35)
 import { McpClientCard } from './components/McpClientCard'
 import { McpAgentCard } from './components/McpAgentCard'
 import { McpEvalsCard } from './components/McpEvalsCard'
 
-type SectionKey = 'basics' | 'strands' | 'systems' | 'reliability' | 'mcp'
+type SectionKey =
+  | 'basics'
+  | 'rag_chroma'
+  | 'model_training_chromadb'
+  | 'strands'
+  | 'systems'
+  | 'reliability'
+  | 'mcp'
 
-const ALL_SECTION_KEYS: SectionKey[] = ['basics', 'strands', 'systems', 'reliability', 'mcp']
+const ALL_SECTION_KEYS: SectionKey[] = [
+  'basics',
+  'rag_chroma',
+  'model_training_chromadb',
+  'strands',
+  'systems',
+  'reliability',
+  'mcp',
+]
 const STORAGE_KEY = 'ai_pocs_expanded_sections'
 
 function getInitialExpanded(): Record<SectionKey, boolean> {
@@ -197,7 +220,7 @@ function App() {
           <div className="container">
             <h1>AI POCs</h1>
             <p className="subtitle">
-              Comprehensive Suite of 31 AI Services &bull; FastAPI + React Multi-Container Architecture
+              Comprehensive Suite of 35 AI Services &bull; FastAPI + React Multi-Container Architecture
             </p>
           </div>
         </section>
@@ -207,9 +230,9 @@ function App() {
             {/* Accordion Toolbar: Expand All / Collapse All */}
             <div className="accordion-toolbar">
               <div className="accordion-toolbar-info">
-                <span>5 Domains</span>
+                <span>7 Domains</span>
                 <span className="toolbar-dot">&bull;</span>
-                <span>31 Interactive Services</span>
+                <span>35 Interactive Services</span>
               </div>
               <div className="accordion-toolbar-actions">
                 <button
@@ -259,11 +282,11 @@ function App() {
               </div>
             </div>
 
-            {/* SECTION 1: AI BASICS (01 - 10) */}
+            {/* SECTION 1: 01-AI-BASICS (01 - 07) */}
             <SectionAccordion
               id="basics"
-              title="Part 1 • AI Basics & LangChain"
-              count={10}
+              title="AI Basics & LangChain"
+              count={7}
               startCount={0}
               isExpanded={expanded.basics}
               onToggle={() => toggleSection('basics')}
@@ -275,17 +298,42 @@ function App() {
               <AgentOneToolCard />
               <LangchainOneToolCard />
               <MultiToolAgentCard />
+            </SectionAccordion>
+
+            {/* SECTION 2: 02-AI-RAG-CHROMA (08 - 10) */}
+            <SectionAccordion
+              id="rag_chroma"
+              title="Chunking, Embeddings & RAG"
+              count={3}
+              startCount={7}
+              isExpanded={expanded.rag_chroma}
+              onToggle={() => toggleSection('rag_chroma')}
+            >
               <ChunkingCard />
               <EmbeddingCard />
               <RagCard />
             </SectionAccordion>
 
-            {/* SECTION 2: AWS STRANDS & AGENT WORKFLOWS (11 - 22) */}
+            {/* SECTION 3: 03-AI-MODEL-TRAINING-CHROMADB (11 - 13) */}
+            <SectionAccordion
+              id="model_training_chromadb"
+              title="ML Training, ChromaDB & Redis Memory"
+              count={3}
+              startCount={10}
+              isExpanded={expanded.model_training_chromadb}
+              onToggle={() => toggleSection('model_training_chromadb')}
+            >
+              <ModelTrainingCard />
+              <ChromaDbCard />
+              <RedisAgentCard />
+            </SectionAccordion>
+
+            {/* SECTION 4: 04-AI-AWS-STRANDS (14 - 25) */}
             <SectionAccordion
               id="strands"
-              title="Part 2 • AWS Strands & Agent Workflows"
+              title="AWS Strands & Agent Workflows"
               count={12}
-              startCount={10}
+              startCount={13}
               isExpanded={expanded.strands}
               onToggle={() => toggleSection('strands')}
             >
@@ -303,25 +351,26 @@ function App() {
               <TravelAssistantCard />
             </SectionAccordion>
 
-            {/* SECTION 3: AI SYSTEMS & PROMPTING STRATEGIES (23 - 24) */}
+            {/* SECTION 5: 05-AI-SYSTEMS (26 - 28) */}
             <SectionAccordion
               id="systems"
-              title="Part 3 • AI Systems & Multi-Turn Pressure"
-              count={2}
-              startCount={22}
+              title="AI Systems & Multi-Turn Pressure"
+              count={3}
+              startCount={25}
               isExpanded={expanded.systems}
               onToggle={() => toggleSection('systems')}
             >
               <PromptingStrategiesCard />
               <SycophancyTrapCard />
+              <RefundBenchCard />
             </SectionAccordion>
 
-            {/* SECTION 4: AI RELIABILITY & CALIBRATION (25 - 28) */}
+            {/* SECTION 6: 06-AI-RELIABILITY (29 - 32) */}
             <SectionAccordion
               id="reliability"
-              title="Part 4 • AI Reliability & Error Injection"
+              title="AI Reliability & Error Injection"
               count={4}
-              startCount={24}
+              startCount={28}
               isExpanded={expanded.reliability}
               onToggle={() => toggleSection('reliability')}
             >
@@ -331,12 +380,12 @@ function App() {
               <ToolErrorInjectionCard />
             </SectionAccordion>
 
-            {/* SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (29 - 31) */}
+            {/* SECTION 7: 07-AI-MCP-EVALS (33 - 35) */}
             <SectionAccordion
               id="mcp"
-              title="Part 5 • FastMCP Protocol & Automated Evals"
+              title="FastMCP Protocol & Automated Evals"
               count={3}
-              startCount={28}
+              startCount={32}
               isExpanded={expanded.mcp}
               onToggle={() => toggleSection('mcp')}
             >
@@ -350,7 +399,7 @@ function App() {
 
       <footer>
         <div className="container">
-          <p>&copy; TechToday &bull; 31 Integrated AI Services</p>
+          <p>&copy; TechToday &bull; 35 Integrated AI Services</p>
         </div>
       </footer>
     </>

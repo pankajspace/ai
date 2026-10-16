@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-25-cot-vs-direct-py">25_cot_vs_direct.py</a></li>
+                    <li><a href="#source-26-cot-vs-direct-py">01_cot_vs_direct.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,31 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Puzzles that need tracking state (moves on a grid, family relations, meeting times) are where a one-shot answer most often fails. The Chain-of-Thought prompt lets the model write intermediate steps before the final line.</p>
-                    <p>Pick a preset puzzle; both answers are scored against its accepted answers. Latency is shown too, because reasoning costs time.</p>
+                    <p>
+                        <strong>Chain-of-Thought vs. Direct Reliability Benchmark</strong> demonstrates why step-by-step
+                        reasoning is a core <strong>reliability engineering lever</strong> rather than a stylistic
+                        preference. The service benchmarks five categories of state-tracking logic puzzles where
+                        single-shot intuition regularly fails:
+                    </p>
+                    <ul>
+                        <li><strong>Spatial Navigation (Grid):</strong> Tracking compass headings and <code>(x, y)</code> coordinates
+                            across 5 turn-and-walk instructions.</li>
+                        <li><strong>Relational Logic (Family Tree):</strong> Resolving chained kinship relations with a
+                            gender constraint.</li>
+                        <li><strong>Temporal Scheduling:</strong> Finding the earliest overlapping 30-minute meeting slot
+                            across three people's busy calendars and time-window rules.</li>
+                        <li><strong>Inventory State Tracking:</strong> Computing net warehouse units after sequential
+                            shipments, percentages, returns, and restocks.</li>
+                        <li><strong>Constraint Satisfaction (Truth-Tellers):</strong> Deductions over three labeled boxes
+                            where exactly one label is true.</li>
+                    </ul>
+                    <p>
+                        For the selected problem, the service calls the model twice &mdash; once with a
+                        <strong>Direct</strong> system prompt (<em>"Answer in one short sentence. Do not show
+                        working."</em>) and once with a <strong>CoT</strong> system prompt (<em>"Think step by step,
+                        then state your final answer on the last line."</em>) &mdash; scoring only the final line against
+                        <code>accepted_answers</code> and recording the wall-clock latency of each call.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +147,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Direct prompting:</strong> &quot;Answer in one short sentence. Do not show working.&quot;</li>
-                        <li><strong>Chain-of-Thought:</strong> &quot;Think step by step, then state your final answer.&quot;</li>
-                        <li><strong>Accepted answers:</strong> several phrasings of the right answer are allowed when scoring.</li>
-                    </ul>
+                    <p><strong>1. Why State-Tracking Problems Break Direct Prompting</strong></p>
+                    <p>
+                        Every puzzle in <code>PROBLEMS</code> has sequential state transitions: step <em>k</em> depends on the
+                        exact intermediate state after step <em>k &minus; 1</em> (e.g., which direction you are facing after three
+                        turns on a grid). When forbidden from writing intermediate tokens, a non-reasoning model must
+                        compress all state transitions into a single forward pass before emitting the very first word of
+                        its answer.
+                    </p>
+                    <p><strong>2. Externalizing Intermediate State in the Context Window</strong></p>
+                    <p>
+                        Under the CoT prompt, the model writes out each intermediate state transition explicitly (e.g.,
+                        <em>"Start at (0,0) facing North &rarr; walk 3 to (0,3) &rarr; turn right to face East..."</em>).
+                        Once written, those tokens become part of the attention context for the next step, turning an
+                        error-prone multi-hop deduction into a series of trivial single-hop lookups.
+                    </p>
+                    <p><strong>3. Final-Line-Only Scoring (Avoiding False Positives)</strong></p>
+                    <p>
+                        Why does <code>extract_final_line()</code> strip markdown formatting and inspect only the last
+                        non-empty line of the model's output? During a reasoning trace, a model often mentions candidate
+                        options it is ruling out (e.g., <em>"Box A cannot contain gold, and Box B is false, so..."</em>).
+                        If the grader searched the entire response text for <code>"box b"</code>, it would award a false
+                        pass to a trace that mentioned Box B mid-thought and concluded with Box C!
+                    </p>
+                    <p><strong>4. The Latency-Reliability Trade-Off</strong></p>
+                    <p>
+                        Because inference latency scales linearly with the number of generated output tokens, CoT takes
+                        noticeably longer than Direct answering (tracked via <code>latency_seconds</code>). Reliability
+                        engineering means paying the CoT token/latency budget on tasks that require multi-step state
+                        tracking while keeping Direct prompts for simple classification or lookup tasks.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +211,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Service (<code>25_cot_vs_direct.py</code>)</span>
+                            <span class="flow-title">Service (<code>01_cot_vs_direct.py</code>)</span>
                             <span class="flow-detail">Two OpenAI calls (direct, then CoT), each timed and checked with <code>evaluate_cot_accuracy()</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +246,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["CotVsDirectCard.tsx<br/>POST /api/cot-vs-direct"]:::entry -->|"problem_title"| R["main.py<br/>cot_vs_direct_service()"]:::fn
-    R -->|"problem_title"| S["25_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
+    R -->|"problem_title"| S["01_cot_vs_direct.py<br/>run_cot_vs_direct_benchmark()"]:::fn
     S -->|"direct prompt"| O[("OpenAI API")]:::ext
     S -->|"step-by-step prompt"| O
     O -->|"two replies"| S
@@ -226,12 +274,12 @@ flowchart TD
 
 <!-- ============================================================ 5 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-25-cot-vs-direct-py">
+            <section class="topic-section is-collapsed" id="sec-source-26-cot-vs-direct-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-25-cot-vs-direct-py">
+                    aria-controls="content-source-26-cot-vs-direct-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-25-cot-vs-direct-py" class="topic-title is-file">25_cot_vs_direct.py<a class="headerlink" href="#source-25-cot-vs-direct-py"
+                        <h2 id="source-26-cot-vs-direct-py" class="topic-title is-file">01_cot_vs_direct.py<a class="headerlink" href="#source-26-cot-vs-direct-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -244,8 +292,8 @@ flowchart TD
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-25-cot-vs-direct-py">
-                    <span class="file-path">server/services/25_cot_vs_direct.py</span>
+                <div class="topic-content" id="content-source-26-cot-vs-direct-py">
+                    <span class="file-path">server/services/06-ai-reliability/01_cot_vs_direct.py</span>
                     <p class="file-label">Chain-of-Thought vs Direct Answer Reliability Benchmark Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Chain-of-Thought vs Direct Answer Reliability Benchmark Service.
 

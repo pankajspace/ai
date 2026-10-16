@@ -33,8 +33,8 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-31-mcp-evals-py">31_mcp_evals.py</a></li>
-                    <li><a href="#source-30-mcp-agent-py">30_mcp_agent.py</a></li>
+                    <li><a href="#source-32-mcp-evals-py">03_mcp_evals.py</a></li>
+                    <li><a href="#source-31-mcp-agent-py">02_mcp_agent.py</a></li>
                     <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
@@ -102,8 +102,26 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Every case runs the real agent from <code>30_mcp_agent.py</code> and applies two assertions: <strong>tool routing</strong> (did it call the expected tool, or no tool for &quot;What is 2 + 2?&quot;) and <strong>ground truth</strong> (does the answer contain e.g. &quot;287&quot; or &quot;164&quot;).</p>
-                    <p>Re-running the suite after changing a prompt, model or tool description shows quickly whether the agent got better or worse.</p>
+                    <p>
+                        <strong>MCP Agent Evaluation Suite</strong> treats the MCP Cricket Agent from the previous demo
+                        as a software system under test. Instead of eyeballing one or two prompts manually after editing
+                        a system prompt, model, or tool docstring, <code>run_mcp_evals_suite()</code> runs a repeatable
+                        <strong>5-case golden evaluation suite</strong> (<code>TEST_CASES</code>) against the real
+                        <code>run_mcp_agent()</code> pipeline and computes an overall pass rate.
+                    </p>
+                    <p>
+                        Every test case applies two independent deterministic assertions:
+                    </p>
+                    <ol>
+                        <li><strong>Tool Routing Assertion (<code>tool_routing_passed</code>):</strong> Did the agent
+                            call the expected MCP tool during its execution trace (e.g., <code>get_live_score</code> for
+                            match questions, <code>get_player_stats</code> for player questions, and <code>None</code>
+                            for <em>"What is 2 + 2?"</em>)?</li>
+                        <li><strong>Ground-Truth Answer Assertion (<code>answer_verified</code>):</strong> Does the
+                            agent's final natural-language answer contain every required factual token in
+                            <code>must_contain</code> (e.g., <code>"287"</code>, <code>"90"</code>, <code>"164"</code>,
+                            <code>"78"</code>, <code>"4"</code>)?</li>
+                    </ol>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -126,12 +144,42 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why Exact String Equality (<code>assert answer == expected</code>) Fails for LLMs</strong></p>
+                    <p>
+                        In traditional unit testing, <code>assert add(2, 2) == 4</code> checks for an exact value. With
+                        an LLM, <em>"India scored 287/6 in 50 overs"</em> and <em>"India posted 287 for 6"</em> are both
+                        100% correct yet fail a naive <code>==</code> check. Effective AI evals test <strong>behavioral
+                        invariants</strong> (which tool was called) and <strong>factual containment</strong> (whether
+                        the ground-truth numbers appear in the response).
+                    </p>
+                    <p><strong>2. Dual-Layer Grading: Trajectory Evaluation + Outcome Evaluation</strong></p>
+                    <p>
+                        Grading only the final text isn't enough, and grading only the tool call isn't enough:
+                    </p>
                     <ul>
-                        <li><strong>Evals:</strong> automated checks for LLM behaviour, run like a test suite.</li>
-                        <li><strong>Routing assertion:</strong> checks the agent's decisions, not just its words.</li>
-                        <li><strong>Ground-truth assertion:</strong> required facts must appear in the final answer.</li>
-                        <li><strong>Negative case:</strong> a question that needs no tool catches over-eager tool use.</li>
+                        <li><strong>Trajectory Check (<code>tool_ok</code>):</strong> Inspects
+                            <code>tools_used = [step["tool"] for step in result["trace"]]</code>. This catches an agent
+                            that called the wrong tool or wasted latency calling tools when none were needed.</li>
+                        <li><strong>Outcome Check (<code>answer_ok</code>):</strong> Verifies
+                            <code>all(word.lower() in answer.lower() for word in case["must_contain"])</code>. This
+                            catches an agent that called the right tool but misread or omitted the returned number in
+                            its final reply.</li>
                     </ul>
+                    <p><strong>3. The Importance of Negative Control Cases (Over-Triggering Check)</strong></p>
+                    <p>
+                        Look at Test Case 5: <code>{"q": "What is 2 + 2?", "tool": None, "must_contain": ["4"]}</code>.
+                        When an agent is given cricket tools, a poorly tuned prompt might try to call
+                        <code>get_live_score</code> on every single question. Setting <code>expected_tool=None</code>
+                        and asserting <code>tools_used == []</code> verifies that the agent abstains from calling tools
+                        on general-knowledge questions.
+                    </p>
+                    <p><strong>4. Regression Testing Across Prompt and Model Changes</strong></p>
+                    <p>
+                        By aggregating <code>passed_cases</code>, <code>total_cases</code>, and
+                        <code>accuracy_percentage</code> into a single JSON scorecard, engineers can immediately see if
+                        swapping models or editing tool descriptions in <code>cricket_server.py</code> causes a routing
+                        or grounding regression.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -166,8 +214,8 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Suite (<code>31_mcp_evals.py</code>)</span>
-                            <span class="flow-detail">For each of the 5 <code>TEST_CASES</code>, the loop calls <code>run_mcp_agent()</code> from <code>30_mcp_agent.py</code>, reads <code>tools_used</code> from its <code>trace</code> and applies both assertions.</span>
+                            <span class="flow-title">Suite (<code>03_mcp_evals.py</code>)</span>
+                            <span class="flow-detail">For each of the 5 <code>TEST_CASES</code>, the loop calls <code>run_mcp_agent()</code> from <code>02_mcp_agent.py</code>, reads <code>tools_used</code> from its <code>trace</code> and applies both assertions.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -201,8 +249,8 @@
                         <div class="mermaid">
 flowchart TD
     UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals"]:::entry --> R["main.py<br/>mcp_evals_service()"]:::fn
-    R -->|"asyncio.run()"| E["31_mcp_evals.py<br/>run_mcp_evals_suite()"]:::fn
-    E -->|"each test case: question"| A["30_mcp_agent.py<br/>run_mcp_agent()"]:::fn
+    R -->|"asyncio.run()"| E["03_mcp_evals.py<br/>run_mcp_evals_suite()"]:::fn
+    E -->|"each test case: question"| A["02_mcp_agent.py<br/>run_mcp_agent()"]:::fn
     A -->|"tools/list, tools/call"| M[("cricket_server.py<br/>FastMCP")]:::ext
     A -->|"messages + tools"| G[("Groq API")]:::ext
     G -->|"tool calls / answer"| A
@@ -231,16 +279,16 @@ flowchart TD
 
 <!-- ============================================================ 5 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-31-mcp-evals-py">
+            <section class="topic-section is-collapsed" id="sec-source-32-mcp-evals-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-31-mcp-evals-py">
+                    aria-controls="content-source-32-mcp-evals-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-31-mcp-evals-py" class="topic-title is-file">31_mcp_evals.py<a class="headerlink" href="#source-31-mcp-evals-py"
+                        <h2 id="source-32-mcp-evals-py" class="topic-title is-file">03_mcp_evals.py<a class="headerlink" href="#source-32-mcp-evals-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">80 lines</span>
+                        <span class="topic-meta-chip">87 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -249,24 +297,31 @@ flowchart TD
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-31-mcp-evals-py">
-                    <span class="file-path">server/services/31_mcp_evals.py</span>
+                <div class="topic-content" id="content-source-32-mcp-evals-py">
+                    <span class="file-path">server/services/07-ai-mcp-evals/03_mcp_evals.py</span>
                     <p class="file-label">MCP Agent Evaluation Suite Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP Agent Evaluation Suite Service.
 
-Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 30):
+Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 31):
 1. Tool routing assertion: verifies the LLM chooses the expected MCP tool (`get_live_score`, `get_player_stats`, or none).
 2. Ground-truth verification: checks whether required factual tokens appear in the agent&#x27;s final answer.
 3. Suite scoring: aggregates pass/fail counts and overall accuracy percentage across all test cases.
 &quot;&quot;&quot;
 
-import importlib
+import importlib.util
+import sys
+from pathlib import Path
 from typing import Optional
 
 from pydantic import BaseModel
 
-# ① Reuse the MCP agent loop from 30_mcp_agent.py (importlib, because the file name starts with a digit)
-mcp_agent = importlib.import_module(&quot;.30_mcp_agent&quot;, package=__package__)
+# ① Reuse the MCP agent loop from 02_mcp_agent.py in this folder
+if &quot;services.mcp_agent&quot; in sys.modules:
+    mcp_agent = sys.modules[&quot;services.mcp_agent&quot;]
+else:
+    _spec = importlib.util.spec_from_file_location(&quot;mcp_agent&quot;, Path(__file__).with_name(&quot;02_mcp_agent.py&quot;))
+    mcp_agent = importlib.util.module_from_spec(_spec)
+    _spec.loader.exec_module(mcp_agent)
 
 
 class TestCaseEvalResult(BaseModel):
@@ -331,17 +386,18 @@ async def run_mcp_evals_suite() -&gt; dict:
         &quot;passed_cases&quot;: passed,
         &quot;accuracy_percentage&quot;: 100 * passed // len(TEST_CASES),
         &quot;results&quot;: results,
-    }</code></pre>
+    }
+</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 6 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-30-mcp-agent-py">
+            <section class="topic-section is-collapsed" id="sec-source-31-mcp-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-30-mcp-agent-py">
+                    aria-controls="content-source-31-mcp-agent-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="source-30-mcp-agent-py" class="topic-title is-file">30_mcp_agent.py<a class="headerlink" href="#source-30-mcp-agent-py"
+                        <h2 id="source-31-mcp-agent-py" class="topic-title is-file">02_mcp_agent.py<a class="headerlink" href="#source-31-mcp-agent-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -354,8 +410,8 @@ async def run_mcp_evals_suite() -&gt; dict:
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-30-mcp-agent-py">
-                    <span class="file-path">server/services/30_mcp_agent.py</span>
+                <div class="topic-content" id="content-source-31-mcp-agent-py">
+                    <span class="file-path">server/services/07-ai-mcp-evals/02_mcp_agent.py</span>
                     <p class="file-label">MCP-Enabled LLM Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP-Enabled LLM Agent Service.
 
@@ -510,7 +566,7 @@ async def run_mcp_agent(question: str) -&gt; dict:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-cricket-server-py">
-                    <span class="file-path">server/services/cricket_server.py</span>
+                    <span class="file-path">server/services/07-ai-mcp-evals/cricket_server.py</span>
                     <p class="file-label">Cricket FastMCP Server (`cricket_server.py`).</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Cricket FastMCP Server (`cricket_server.py`).
 

@@ -14,6 +14,8 @@ export interface StrategyResult {
 
 export interface PromptingStrategiesResponse {
   expected_answer: string
+  model?: string
+  temperature?: number
   strategies: StrategyResult[]
 }
 
@@ -36,9 +38,20 @@ const PRESETS = [
   },
 ]
 
+const MODEL_PRESETS = [
+  { id: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+  { id: 'gpt-4o', label: 'gpt-4o' },
+  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash' },
+  { id: 'openai/gpt-oss-20b', label: 'gpt-oss-20b (Groq)' },
+]
+
+const TEMPERATURE_PRESETS = [0, 0.3, 0.7, 1.2]
+
 export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrategiesCardProps = {}) {
   const [question, setQuestion] = useState<string>(PRESETS[0].q)
   const [expectedAnswer, setExpectedAnswer] = useState<string>(PRESETS[0].ans)
+  const [model, setModel] = useState<string>(MODEL_PRESETS[0].id)
+  const [temperature, setTemperature] = useState<number>(0.7)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [result, setResult] = useState<PromptingStrategiesResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -53,7 +66,12 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
       const res = await fetch(`${apiBase}/api/prompting-strategies`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ question: question.trim(), expected_answer: expectedAnswer.trim() }),
+        body: JSON.stringify({
+          question: question.trim(),
+          expected_answer: expectedAnswer.trim(),
+          model,
+          temperature,
+        }),
         signal: AbortSignal.timeout(30000),
       })
 
@@ -104,13 +122,41 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
             <button
               type="button"
               key={idx}
-              className="preset-chip"
+              className={`preset-chip ${question === p.q && expectedAnswer === p.ans ? 'active' : ''}`}
               onClick={() => {
                 setQuestion(p.q)
                 setExpectedAnswer(p.ans)
               }}
             >
               Case {idx + 1} ({p.ans})
+            </button>
+          ))}
+        </div>
+
+        <div className="preset-row">
+          <span className="preset-label">Model:</span>
+          {MODEL_PRESETS.map((m) => (
+            <button
+              type="button"
+              key={m.id}
+              className={`preset-chip ${model === m.id ? 'active' : ''}`}
+              onClick={() => setModel(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="preset-row">
+          <span className="preset-label">Temperature:</span>
+          {TEMPERATURE_PRESETS.map((t) => (
+            <button
+              type="button"
+              key={t}
+              className={`preset-chip ${temperature === t ? 'active' : ''}`}
+              onClick={() => setTemperature(t)}
+            >
+              {t}
             </button>
           ))}
         </div>
@@ -128,7 +174,7 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
       {result && (
         <div className="result visible">
           <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.4rem' }}>
-            Target Answer: <strong>{result.expected_answer}</strong>
+            Target Answer: <strong>{result.expected_answer}</strong> &bull; Model: <code>{result.model ?? model}</code> &bull; Temp: <code>{result.temperature ?? temperature}</code>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
             {result.strategies.map((s) => (
@@ -155,3 +201,4 @@ export function PromptingStrategiesCard({ apiBase = API_BASE }: PromptingStrateg
 }
 
 export default PromptingStrategiesCard
+

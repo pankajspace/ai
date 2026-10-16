@@ -439,7 +439,7 @@ Example (`/etc/nginx/conf.d/app-locations/shipment-exception-desk.conf`), writte
 
 ```nginx
 location /shipment-exception-desk/ {
-    limit_req          zone=ai_inputs burst=9 nodelay;
+    limit_req          zone=ai_inputs burst=29 nodelay;
     limit_req_status   429;
     proxy_pass         http://localhost:5006;
     proxy_set_header   Host $host;
@@ -457,7 +457,7 @@ Key Architectural Properties of this Pattern:
    - `X-Real-IP $remote_addr`: Transmits the true client public IPv4 address to Flask.
    - `X-Forwarded-For $proxy_add_x_forwarded_for`: Appends client and intermediary proxy hops. The application-tier rate limiter (Section 4.7) reads this header to identify the real client.
    - `X-Forwarded-Proto $scheme`: Tells Flask whether the incoming request was `http` or `https` (preventing redirect loops).
-3. **Edge Rate Limiting:** `limit_req zone=ai_inputs burst=9 nodelay;` throttles POST submissions before they ever reach a container (Section 4.6).
+3. **Edge Rate Limiting:** `limit_req zone=ai_inputs burst=29 nodelay;` throttles POST submissions before they ever reach a container (Section 4.6).
 4. **Optional Streaming Tuning:** Projects that stream LLM tokens (Server-Sent Events) can add `proxy_buffering off;` and a longer `proxy_read_timeout` to their location block so tokens reach the browser in real time. These directives are not part of the default generated block.
 
 ### 4.5. SSL/TLS Certificate Lifecycle (Let's Encrypt & Certbot)
@@ -476,24 +476,24 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
    - Memory Zone: A 10 MB shared memory zone (`zone=ai_inputs:10m`) tracks approximately 160,000 active IPv4 addresses simultaneously.
    - Rate Definition: Sets `rate=1r/m` (1 request per minute) as the continuous replenishment rate.
 2. **Location-Level Enforcement (`/etc/nginx/conf.d/app-locations/*.conf`):**
-   - Burst Allowance: `limit_req zone=ai_inputs burst=9 nodelay;` permits an immediate burst of up to 10 requests upfront (1 base + 9 burst), catering to interactive user experimentation.
+   - Burst Allowance: `limit_req zone=ai_inputs burst=29 nodelay;` permits an immediate burst of up to 30 requests upfront (1 base + 29 burst), catering to interactive user experimentation.
    - Instant Rejection: Requests exceeding the burst capacity are immediately rejected with `limit_req_status 429;` (`HTTP 429 Too Many Requests`) without queuing or wasting EC2 worker threads.
    - Replenishment: After the initial burst, the user's quota replenishes at 1 request per minute (up to 60 requests per hour).
 3. **JSON Error Response Handling (`/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf`):**
    - Direct JSON Error Routing: Configures `error_page 429 = @rate_limit_error;` inside the SSL server block to redirect throttled requests to internal named location `@rate_limit_error`.
-   - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}` instead of default Nginx HTML error pages.
+   - Explicit Content-Type: Delivers `Content-Type: application/json` returning `{"error": "Rate limit exceeded (30 requests per hour). Please wait an hour and try again."}` instead of default Nginx HTML error pages.
    - Frontend Interception: Frontend `main.js` files explicitly check `!res.ok`, ensuring any 429 or server errors are rendered in user-friendly banners rather than crashing with `SyntaxError: Unexpected token '<'`.
 
 ### 4.7. Application-Tier Rate Limiting (`src/python/rate_limiter.py`)
 
 The Nginx zone in Section 4.6 is a token-bucket refilling at 1 request per minute, so it cannot express a hard hourly cap, and it is bypassed entirely when an app is reached outside the proxy (local development, or a container port opened for debugging). Every project therefore ships a second, authoritative quota inside the Flask process.
 
-1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`basic`, `langchain`, `rag`, `docker`, `aws-strands`, `interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=10, window_seconds=3600)`.
-2. **Sliding Window Quota:** A strict sliding window of **10 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
+1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`basic`, `langchain`, `rag`, `docker`, `aws-strands`, `interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
+2. **Sliding Window Quota:** A strict sliding window of **30 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
 3. **Storage:** SQLite at `/tmp/ai_rate_limit.db` in WAL mode, with an `(ip, timestamp)` index. No Redis or external dependency is required, and the quota survives worker threads within a container. The counter resets when the container is recreated, which is acceptable for an abuse guard.
 4. **Client Identification:** `get_client_ip()` prefers the first entry of `X-Forwarded-For`, falls back to `X-Real-IP`, then `request.remote_addr` — matching the headers Nginx sets in Section 4.4.
 5. **Enforcement Hook:** Each app registers a Blueprint `@bp.before_request` handler, `enforce_rate_limit()`, that runs `check_rate_limit` on `POST` requests only. `GET` requests (pages, CSS, JS) are never throttled.
-6. **Response Contract:** A blocked request returns HTTP `429` with a `Retry-After` header (seconds until the oldest logged request leaves the window) and a JSON body `{"error": "Rate limit exceeded (10 requests per hour). Please try again in N minutes."}` — the same shape as the Nginx 429 body, so the frontend handles both identically.
+6. **Response Contract:** A blocked request returns HTTP `429` with a `Retry-After` header (seconds until the oldest logged request leaves the window) and a JSON body `{"error": "Rate limit exceeded (30 requests per hour). Please try again in N minutes."}` — the same shape as the Nginx 429 body, so the frontend handles both identically.
 
 ---
 
@@ -590,7 +590,7 @@ bp = Blueprint("main", __name__)
 def enforce_rate_limit():
     if request.method == "POST":
         blocked, msg, retry_after = check_rate_limit(
-            request, max_requests=10, window_seconds=3600
+            request, max_requests=30, window_seconds=3600
         )
         if blocked:
             resp = jsonify({"error": msg})
@@ -940,7 +940,7 @@ Self-Provisioning Execution Steps:
 All single-service container applications (`basic`, `langchain`, `rag`, `aws-strands`, `interviewiq`, and `shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
 
 1. **Per-Project Isolation (`~/apps/<project>/`):** Each project owns its own `docker-compose.yml`, mapped to its assigned loopback port (`5000`–`5006`), running with isolated secrets (`~/secrets/<project>.env`).
-2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=9 nodelay;`).
+2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=29 nodelay;`).
 3. **Multi-Service Exception (`docker`):** The `docker` project continues to utilize its multi-service profile orchestration on EC2 while also taking advantage of the automated Nginx location routing and rate limiting.
 
 ### 7.5. Branch Deployment Strategy (Any Branch Deploys)

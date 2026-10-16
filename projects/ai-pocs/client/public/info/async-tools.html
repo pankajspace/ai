@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-21-async-tools-py">21_async_tools.py</a></li>
+                    <li><a href="#source-21-async-tools-py">11_async_tools.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,21 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Each <code>check_warehouse_inventory</code> call waits 2 seconds to simulate a slow network. When the model asks for east, west and central in one turn, Strands runs the three async calls at the same time: about 2 seconds of waiting instead of 6.</p>
-                    <p>The service times <code>agent.invoke_async(query)</code> and returns the elapsed seconds plus the list of tool calls the agent made, so you can compare the ~2 s run against the ~6 s a sequential version would take.</p>
+                    <p>
+                        <strong>Async Tools (Parallel Warehouse Check)</strong> tackles the #1 UX bottleneck in
+                        production agent systems: <strong>sequential I/O latency</strong>. If an agent needs to check
+                        stock across three regional warehouses (<code>east</code>, <code>west</code>, and
+                        <code>central</code>) and each network call takes 2 seconds, running them one after another
+                        blocks the user for <code>3 &times; 2 s = 6 s</code> on tool I/O alone.
+                    </p>
+                    <p>
+                        By declaring the tool as a Python coroutine &mdash;
+                        <code>@tool async def check_warehouse_inventory(product_id: str, warehouse: str)</code> using
+                        non-blocking <code>await asyncio.sleep(2)</code> &mdash; and invoking the Strands agent with
+                        <code>await agent.invoke_async(query)</code>, all three warehouse lookups execute
+                        <strong>concurrently</strong> on Python's asyncio event loop, completing the entire tool fan-out
+                        in ~2 seconds instead of ~6 seconds.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +137,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Single-Turn Multi-Tool Fan-Out</strong></p>
+                    <p>
+                        When asked <em>"Can we ship 100 units of PROD-123? Check all warehouses: east, west, and
+                        central"</em>, the Bedrock model recognizes that the three lookups do not depend on one another.
+                        Instead of emitting one tool call and waiting, it emits all three <code>toolUse</code> blocks in
+                        a single assistant turn:
+                    </p>
                     <ul>
-                        <li><strong>async / await:</strong> <code>await asyncio.sleep(2)</code> waits without blocking the event loop, so other calls can run.</li>
-                        <li><strong>Concurrent tool execution:</strong> tool calls from the same model turn run in parallel.</li>
-                        <li><strong>Latency adds up:</strong> sequential I/O-bound calls cost the sum of their times; parallel ones cost about the longest.</li>
+                        <li><code>check_warehouse_inventory(product_id="PROD-123", warehouse="east")</code> &rarr; 45</li>
+                        <li><code>check_warehouse_inventory(product_id="PROD-123", warehouse="west")</code> &rarr; 30</li>
+                        <li><code>check_warehouse_inventory(product_id="PROD-123", warehouse="central")</code> &rarr; 60</li>
                     </ul>
+                    <p><strong>2. Blocking <code>time.sleep</code> vs. Non-Blocking <code>asyncio.sleep</code></strong></p>
+                    <p>
+                        A synchronous <code>time.sleep(2)</code> (or blocking <code>requests.get</code>) freezes the OS
+                        thread, forcing calls to run serially. Declaring <code>async def</code> and using
+                        <code>await asyncio.sleep(2)</code> (or an async HTTP/DB driver like <code>httpx.AsyncClient</code>
+                        / <code>asyncpg</code>) yields control back to the event loop while waiting for network I/O, so
+                        all three 2-second waits overlap in wall-clock time:
+                        <code>T<sub>total</sub> &approx; max(t<sub>1</sub>, t<sub>2</sub>, t<sub>3</sub>) = 2 s</code>
+                        rather than <code>t<sub>1</sub> + t<sub>2</sub> + t<sub>3</sub> = 6 s</code>.
+                    </p>
+                    <p><strong>3. End-to-End Async FastAPI Integration</strong></p>
+                    <p>
+                        Because FastAPI natively runs <code>async def</code> route handlers on its Uvicorn asyncio event
+                        loop, awaiting <code>run_async_tools_agent()</code> (which awaits
+                        <code>agent.invoke_async(query)</code>) keeps the entire request non-blocking from HTTP ingress
+                        to tool execution, and returns <code>parallel_duration_seconds</code> so you can verify the
+                        speedup empirically.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +201,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent (<code>21_async_tools.py</code>)</span>
+                            <span class="flow-title">Agent (<code>11_async_tools.py</code>)</span>
                             <span class="flow-detail"><code>await agent.invoke_async(query)</code>; Bedrock asks for three warehouse lookups, which run at the same time.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +236,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["AsyncToolsCard.tsx<br/>POST /api/async-tools"]:::entry -->|"query"| R["main.py<br/>async_tools_service()"]:::fn
-    R -->|"asyncio.run()"| S["21_async_tools.py<br/>run_async_tools_agent()"]:::fn
+    R -->|"asyncio.run()"| S["11_async_tools.py<br/>run_async_tools_agent()"]:::fn
     S -->|"query"| A["Strands Agent<br/>invoke_async()"]:::fn
     A -->|"messages + tool spec"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
     B -->|"3 x toolUse in one turn"| A
@@ -238,7 +276,7 @@ flowchart TD
                     aria-controls="content-source-21-async-tools-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-21-async-tools-py" class="topic-title is-file">21_async_tools.py<a class="headerlink" href="#source-21-async-tools-py"
+                        <h2 id="source-21-async-tools-py" class="topic-title is-file">11_async_tools.py<a class="headerlink" href="#source-21-async-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -252,7 +290,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-21-async-tools-py">
-                    <span class="file-path">server/services/21_async_tools.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/11_async_tools.py</span>
                     <p class="file-label">Async Parallel Tools Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Async Parallel Tools Agent Service.
 

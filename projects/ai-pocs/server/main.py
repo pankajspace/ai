@@ -1,18 +1,17 @@
 import asyncio
 
 from dotenv import find_dotenv, load_dotenv
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+
+from rate_limiter import check_rate_limit
 
 from services import (
-    # 01 - 10
+    # 01-ai-basics (01 - 07)
     AgentRequest,
     AgentResponse,
     ChatMessage,
-    ChunkingRequest,
-    ChunkingResponse,
-    EmbeddingRequest,
-    EmbeddingResponse,
     JokeRequest,
     JokeResponse,
     LangchainOneToolRequest,
@@ -21,23 +20,38 @@ from services import (
     MemoryChatResponse,
     MultiToolAgentRequest,
     MultiToolAgentResponse,
-    RagRequest,
-    RagResponse,
     SummarizerRequest,
     SummarizerResponse,
     TravelRequest,
     TravelResponse,
-    answer_rag,
     chat_with_memory,
-    chunk_text,
-    compute_similarity,
     get_groq_joke,
     get_travel_suggestion,
     run_agent_with_tool,
     run_langchain_one_tool,
     run_multi_tool_agent,
     summarize,
-    # 11 - 22: AWS Strands
+    # 02-ai-rag-chroma (01 - 03)
+    ChunkingRequest,
+    ChunkingResponse,
+    EmbeddingRequest,
+    EmbeddingResponse,
+    RagRequest,
+    RagResponse,
+    answer_rag,
+    chunk_text,
+    compute_similarity,
+    # 03-ai-model-training-chromadb (01 - 03)
+    ModelTrainingRequest,
+    ModelTrainingResponse,
+    predict_delivery_eta,
+    ChromaDbRequest,
+    ChromaDbResponse,
+    ask_chromadb_notes,
+    RedisAgentRequest,
+    RedisAgentResponse,
+    run_redis_agent,
+    # 04-ai-aws-strands (01 - 12)
     HelloWorldAgentRequest,
     HelloWorldAgentResponse,
     run_hello_world_agent,
@@ -74,14 +88,17 @@ from services import (
     TravelAssistantRequest,
     TravelAssistantResponse,
     run_travel_assistant_agent,
-    # 23 - 24: AI Systems
+    # 05-ai-systems (01 - 03)
     PromptingStrategiesRequest,
     PromptingStrategiesResponse,
     run_prompting_strategies,
     SycophancyTrapRequest,
     SycophancyTrapResponse,
     run_sycophancy_trap,
-    # 25 - 28: AI Reliability
+    RefundBenchRequest,
+    RefundBenchResponse,
+    run_refund_bench,
+    # 06-ai-reliability (01 - 04)
     CotVsDirectRequest,
     CotVsDirectResponse,
     run_cot_vs_direct_benchmark,
@@ -94,7 +111,7 @@ from services import (
     ToolErrorInjectionRequest,
     ToolErrorInjectionResponse,
     run_tool_error_injection,
-    # 29 - 31: MCP & Evals
+    # 07-ai-mcp-evals (01 - 03)
     McpClientRequest,
     McpClientResponse,
     run_mcp_client,
@@ -110,6 +127,30 @@ load_dotenv(find_dotenv())
 
 app = FastAPI(title="AI POCs API")
 
+# Rate limiting middleware enforcing 30 requests per hour on POST API endpoints
+@app.middleware("http")
+async def rate_limit_middleware(request: Request, call_next):
+    # ① Apply rate limit to all mutating/action API requests (POST)
+    if request.method == "POST":
+        # ② Check rate limit against sliding window SQLite store
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After and CORS headers
+            return JSONResponse(
+                status_code=429,
+                content={"detail": msg, "error": msg},
+                headers={
+                    "Retry-After": str(retry_after),
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Headers": "*",
+                    "Access-Control-Allow-Methods": "*",
+                },
+            )
+    return await call_next(request)
+
+
 # Enable CORS for frontend requests
 app.add_middleware(
     CORSMiddleware,
@@ -122,16 +163,16 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "AI POCs Server is running (31 Integrated Services)", "status": "ok"}
+    return {"message": "AI POCs Server is running (35 Integrated Services)", "status": "ok"}
 
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "total_services": 31}
+    return {"status": "healthy", "total_services": 35}
 
 
 # ==============================================================================
-# SECTION 1: AI BASICS (01 - 10)
+# SECTION 1: AI BASICS (01-ai-basics: 01 - 07)
 # ==============================================================================
 
 @app.post("/api/travel", response_model=TravelResponse)
@@ -215,6 +256,10 @@ def multi_tool_agent_service(req: MultiToolAgentRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+# ==============================================================================
+# SECTION 2: AI RAG & CHROMA (02-ai-rag-chroma: 01 - 03)
+# ==============================================================================
+
 @app.post("/api/chunk", response_model=ChunkingResponse)
 def chunking_service(req: ChunkingRequest):
     # ① Validate text and split into overlapping chunks
@@ -255,7 +300,53 @@ def rag_service(req: RagRequest):
 
 
 # ==============================================================================
-# SECTION 2: AWS STRANDS & AGENT WORKFLOWS (11 - 22)
+# SECTION 3: AI MODEL TRAINING, CHROMADB & REDIS (03-ai-model-training-chromadb: 01 - 03)
+# ==============================================================================
+
+@app.post("/api/model-training", response_model=ModelTrainingResponse)
+def model_training_service(req: ModelTrainingRequest):
+    # ① Validate order inputs and predict delivery ETA via trained RandomForestRegressor
+    if req.distance_km <= 0 or req.prep_time_min <= 0:
+        raise HTTPException(status_code=400, detail="Distance and prep time must be positive")
+    try:
+        return ModelTrainingResponse(
+            **predict_delivery_eta(
+                req.distance_km,
+                req.prep_time_min,
+                req.rider_available,
+                req.is_raining,
+            )
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/chromadb", response_model=ChromaDbResponse)
+def chromadb_service(req: ChromaDbRequest):
+    # ① Validate question, ingest markdown notes into ChromaDB if needed, and run RAG
+    if not req.question.strip():
+        raise HTTPException(status_code=400, detail="Question cannot be empty")
+    try:
+        return ChromaDbResponse(**ask_chromadb_notes(req.question))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/redis", response_model=RedisAgentResponse)
+def redis_agent_service(req: RedisAgentRequest):
+    # ① Validate session_id and message and run DeskBuddy tool-calling agent with Redis memory
+    if not req.session_id.strip() or (not req.reset_session and not req.message.strip()):
+        raise HTTPException(status_code=400, detail="Session ID and message are required")
+    try:
+        return RedisAgentResponse(
+            **run_redis_agent(req.session_id, req.message, req.reset_session)
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+# ==============================================================================
+# SECTION 4: AWS STRANDS & AGENT WORKFLOWS (04-ai-aws-strands: 01 - 12)
 # ==============================================================================
 
 @app.post("/api/hello-world-agent", response_model=HelloWorldAgentResponse)
@@ -391,7 +482,7 @@ def travel_assistant_service(req: TravelAssistantRequest):
 
 
 # ==============================================================================
-# SECTION 3: AI SYSTEMS & PROMPTING STRATEGIES (23 - 24)
+# SECTION 5: 05-AI-SYSTEMS (26 - 28)
 # ==============================================================================
 
 @app.post("/api/prompting-strategies", response_model=PromptingStrategiesResponse)
@@ -400,7 +491,9 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        return PromptingStrategiesResponse(**run_prompting_strategies(req.question, req.expected_answer))
+        return PromptingStrategiesResponse(
+            **run_prompting_strategies(req.question, req.expected_answer, req.model, req.temperature)
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -409,13 +502,26 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
 def sycophancy_trap_service(req: SycophancyTrapRequest):
     # ① Execute multi-turn sycophancy resilience benchmark
     try:
-        return SycophancyTrapResponse(**run_sycophancy_trap(req.case_type))
+        return SycophancyTrapResponse(
+            **run_sycophancy_trap(req.case_type, req.model, req.temperature)
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
+@app.post("/api/refund-bench", response_model=RefundBenchResponse)
+def refund_bench_service(req: RefundBenchRequest):
+    # ① Execute 4-stage multi-judge food dispute adjudication pipeline
+    try:
+        return RefundBenchResponse(
+            **run_refund_bench(req.complaint_text, req.bench, req.cap)
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
 
 # ==============================================================================
-# SECTION 4: AI RELIABILITY & CALIBRATION (25 - 28)
+# SECTION 6: 06-AI-RELIABILITY (29 - 32)
 # ==============================================================================
 
 @app.post("/api/cot-vs-direct", response_model=CotVsDirectResponse)
@@ -461,7 +567,7 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 
 
 # ==============================================================================
-# SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (29 - 31)
+# SECTION 7: 07-AI-MCP-EVALS (33 - 35)
 # ==============================================================================
 
 @app.post("/api/mcp-client", response_model=McpClientResponse)

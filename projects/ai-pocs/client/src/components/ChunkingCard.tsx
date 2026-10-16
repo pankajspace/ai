@@ -101,7 +101,7 @@ export function ChunkingCard({ apiBase = API_BASE }: ChunkingCardProps = {}) {
             <button
               type="button"
               key={preset.label}
-              className="preset-chip"
+              className={`preset-chip ${text === preset.text ? 'active' : ''}`}
               onClick={() => setText(preset.text)}
             >
               {preset.label}
@@ -109,45 +109,27 @@ export function ChunkingCard({ apiBase = API_BASE }: ChunkingCardProps = {}) {
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem', marginTop: '0.25rem' }}>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>
-              Chunk Size (chars):
-            </label>
+        <div className="input-row">
+          <div className="input-group">
+            <label htmlFor="chunk-size">Chunk Size (chars)</label>
             <input
+              id="chunk-size"
               type="number"
               min={50}
               max={2000}
               value={chunkSize}
               onChange={(e) => setChunkSize(Number(e.target.value))}
-              style={{
-                width: '100%',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid #424242',
-                color: 'var(--text)',
-                padding: '4px 0',
-              }}
             />
           </div>
-          <div style={{ flex: 1 }}>
-            <label style={{ fontSize: '0.75rem', color: 'var(--text-muted)', display: 'block', marginBottom: '2px' }}>
-              Chunk Overlap (chars):
-            </label>
+          <div className="input-group">
+            <label htmlFor="chunk-overlap">Chunk Overlap (chars)</label>
             <input
+              id="chunk-overlap"
               type="number"
               min={0}
               max={500}
               value={chunkOverlap}
               onChange={(e) => setChunkOverlap(Number(e.target.value))}
-              style={{
-                width: '100%',
-                background: 'transparent',
-                border: 'none',
-                borderBottom: '1px solid #424242',
-                color: 'var(--text)',
-                padding: '4px 0',
-              }}
             />
           </div>
         </div>

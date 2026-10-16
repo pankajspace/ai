@@ -84,7 +84,7 @@ The MCP SDK passes the server child process only a minimal environment, so
 All `POST` routes read `{"message": "<text>"}` plus optional dropdown fields,
 return `{"result": "<text report>"}`, return `400` for an empty message or any
 value outside the allowed list, `500` on an unexpected failure (or a missing
-`GROQ_API_KEY`), and share the 10-POSTs-per-hour-per-IP rate limit (`429`).
+`GROQ_API_KEY`), and share the 30-POSTs-per-hour-per-IP rate limit (`429`).
 
 1. `GET /` — single-page UI with the `PATH_PREFIX` injected into `data-api-base`.
 2. `GET /css/<path:filename>` — stylesheets.
@@ -210,7 +210,7 @@ in SQLite at `/tmp/ai_rate_limit.db` inside the container; it survives
 The self-provisioning workflow `.github/workflows/deploy-mcp-evals.yml`
 creates the `techtoday/mcp-evals` ECR repository, seeds the image, writes
 `~/secrets/mcp-evals.env`, adds the Nginx `/mcp-evals/` location file under
-`/etc/nginx/conf.d/app-locations/` (POST rate limiting: 10 requests upfront,
+`/etc/nginx/conf.d/app-locations/` (POST rate limiting: 30 requests upfront,
 1r/m refill, `429` on excess), auto-ensures the `app-locations/*.conf`
 include, `/etc/nginx/conf.d/00-rate-limit.conf`, and
 `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf`, and creates

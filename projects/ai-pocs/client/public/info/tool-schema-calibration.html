@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-27-tool-schema-calibration-py">27_tool_schema_calibration.py</a></li>
+                    <li><a href="#source-28-tool-schema-calibration-py">03_tool_schema_calibration.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,32 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Each condition offers three weather tools (current, hourly precipitation, historical) and forces the model to pick one for &quot;What is the current hourly precipitation forecast for Seattle?&quot;. The right pick is the precipitation tool.</p>
-                    <p>Comparing the four conditions shows what the model relies on: with names like <code>service_fn_102</code>, only a precise description can lead it to the right tool.</p>
+                    <p>
+                        <strong>Tool Schema Routing Calibration</strong> uses a controlled <strong>2&times;2 factorial
+                        experiment</strong> to answer a fundamental question in agent engineering: when an LLM chooses
+                        between several similar tools, does it rely on the <strong>function name</strong> or the
+                        <strong>docstring description</strong>?
+                    </p>
+                    <p>
+                        Given a user query like <em>"What is the current hourly precipitation forecast for Seattle?"</em>,
+                        the model must choose among three weather tools (current conditions, hourly precipitation
+                        forecast, and 30-day historical climate) that all accept the exact same <code>location: str</code>
+                        parameter. The service tests all four combinations of naming and description quality at
+                        <code>temperature=0</code> with <code>tool_choice="required"</code>:
+                    </p>
+                    <ul>
+                        <li><strong>Condition A (Descriptive Names + Loose Descriptions):</strong> Informative names
+                            (<code>get_hourly_precipitation</code>) paired with vague, nearly identical descriptions
+                            (<code>"Gets weather information for a city."</code>).</li>
+                        <li><strong>Condition B (Descriptive Names + Tight Descriptions):</strong> Informative names
+                            paired with rich descriptions specifying data source, time horizon, and when to use each tool.</li>
+                        <li><strong>Condition C (Opaque Names + Loose Descriptions):</strong> Meaningless names
+                            (<code>service_fn_101</code>, <code>service_fn_102</code>, <code>service_fn_103</code>) paired
+                            with vague descriptions &mdash; leaving the model almost blind.</li>
+                        <li><strong>Condition D (Opaque Names + Tight Descriptions):</strong> Meaningless names
+                            (<code>service_fn_102</code>) paired with tight, explicit descriptions &mdash; isolating the
+                            power of the description alone.</li>
+                    </ul>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +148,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Tool routing:</strong> the model chooses tools from their names and descriptions only.</li>
-                        <li><strong>Factorial design:</strong> changing one factor at a time shows which one matters.</li>
-                        <li><strong>tool_choice=&quot;required&quot;:</strong> forces a tool call so every condition produces a choice to score.</li>
-                    </ul>
+                    <p><strong>1. Why a 2&times;2 Factorial Design Is Needed</strong></p>
+                    <p>
+                        If you only compare vague vs. detailed descriptions while keeping clear function names like
+                        <code>get_hourly_precipitation</code>, the model often scores 100% in both cases because the
+                        function name alone gives away the answer! Crossing <strong>Name Clarity</strong> (Descriptive
+                        vs. Opaque) with <strong>Description Precision</strong> (Loose vs. Tight) separates the two
+                        signals and reveals how each one contributes to routing accuracy.
+                    </p>
+                    <p><strong>2. Why Condition C &amp; D Matter in Real Enterprise Systems</strong></p>
+                    <p>
+                        In enterprise codebases and third-party MCP servers, tool names are often auto-generated from
+                        legacy RPC endpoints, internal service codes, or generic verbs (<code>query_v2</code>,
+                        <code>exec_proc_102</code>, <code>fetch_data</code>). Condition C shows what happens when those
+                        tools also have lazy one-line docstrings; Condition D proves that a well-written description
+                        alone can rescue routing accuracy even when function names are completely opaque.
+                    </p>
+                    <p><strong>3. Isolating Selection with <code>tool_choice="required"</code></strong></p>
+                    <p>
+                        When schemas are vague (as in Condition C), an unconstrained model might give up and reply in
+                        text instead of calling any tool. Setting <code>tool_choice="required"</code> and
+                        <code>temperature=0</code> forces the model to commit to one of the three tools deterministically,
+                        cleanly isolating <em>tool selection accuracy</em> from <em>tool invocation willingness</em>.
+                    </p>
+                    <p><strong>4. Anatomy of a High-Signal Tool Description</strong></p>
+                    <p>
+                        Look at the Tight description for the target tool in <code>CONDITIONS["B"]</code> and
+                        <code>CONDITIONS["D"]</code>: it states <strong>what data is returned</strong> (hourly rain/snow
+                        probability and mm volume), <strong>the time window</strong> (next 24 hours), and
+                        <strong>negative boundaries</strong> (what <em>not</em> to use it for).
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +212,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Service (<code>27_tool_schema_calibration.py</code>)</span>
+                            <span class="flow-title">Service (<code>03_tool_schema_calibration.py</code>)</span>
                             <span class="flow-detail">For each of 4 conditions, builds 3 tool schemas and asks OpenAI to pick one.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +247,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["ToolSchemaCalibrationCard.tsx<br/>POST /api/tool-schema-calibration"]:::entry -->|"query"| R["main.py<br/>tool_schema_calibration_service()"]:::fn
-    R -->|"query"| S["27_tool_schema_calibration.py<br/>run_tool_schema_calibration()"]:::fn
+    R -->|"query"| S["03_tool_schema_calibration.py<br/>run_tool_schema_calibration()"]:::fn
     S -->|"A: names + loose descriptions"| O[("OpenAI API<br/>tool_choice=required")]:::ext
     S -->|"B: names + tight descriptions"| O
     S -->|"C: opaque + loose"| O
@@ -226,12 +275,12 @@ flowchart TD
 
 <!-- ============================================================ 5 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-27-tool-schema-calibration-py">
+            <section class="topic-section is-collapsed" id="sec-source-28-tool-schema-calibration-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-27-tool-schema-calibration-py">
+                    aria-controls="content-source-28-tool-schema-calibration-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-27-tool-schema-calibration-py" class="topic-title is-file">27_tool_schema_calibration.py<a class="headerlink" href="#source-27-tool-schema-calibration-py"
+                        <h2 id="source-28-tool-schema-calibration-py" class="topic-title is-file">03_tool_schema_calibration.py<a class="headerlink" href="#source-28-tool-schema-calibration-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -244,8 +293,8 @@ flowchart TD
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-27-tool-schema-calibration-py">
-                    <span class="file-path">server/services/27_tool_schema_calibration.py</span>
+                <div class="topic-content" id="content-source-28-tool-schema-calibration-py">
+                    <span class="file-path">server/services/06-ai-reliability/03_tool_schema_calibration.py</span>
                     <p class="file-label">Tool Schema Routing Calibration Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Tool Schema Routing Calibration Service.
 

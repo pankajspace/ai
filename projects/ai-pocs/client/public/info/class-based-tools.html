@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-20-class-based-tools-py">20_class_based_tools.py</a></li>
+                    <li><a href="#source-20-class-based-tools-py">10_class_based_tools.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,22 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Decorating methods with <code>@tool</code> and passing <code>inventory.check_stock</code> / <code>inventory.update_stock</code> to the agent gives both tools access to <code>self.products</code>. An update made by one tool is seen by the other.</p>
-                    <p>One <code>InventoryTools</code> instance is created when the server starts, so stock changes persist across requests (until the server restarts). The card shows the current stock after each run.</p>
+                    <p>
+                        <strong>Class-Based Tools (Shared-Resource Pattern)</strong> solves a critical production
+                        engineering problem: how do multiple agent tools share state, database connection pools, or
+                        authenticated API clients without opening a brand-new connection on every single tool call or
+                        littering the codebase with global variables?
+                    </p>
+                    <p>
+                        This demo encapsulates an inventory store (<code>self.products</code>) and two decorated methods
+                        &mdash; <code>@tool def check_stock(self, product_id: str)</code> and
+                        <code>@tool def update_stock(self, product_id: str, quantity: int)</code> &mdash; inside an
+                        <code>InventoryTools</code> class. Passing the bound methods
+                        <code>tools=[inventory.check_stock, inventory.update_stock]</code> to the Strands
+                        <code>Agent</code> lets a single request like <em>"Update PROD-456 stock to 25 units, then
+                        confirm the new level"</em> mutate state in one tool call and immediately verify the updated
+                        value in the next.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +138,30 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>Shared resources:</strong> grouping tools in a class avoids opening a new connection per tool call.</li>
-                        <li><strong>Bound methods as tools:</strong> Strands hides <code>self</code> from the model; only <code>product_id</code> / <code>quantity</code> appear in the tool spec.</li>
-                        <li><strong>Multi-step state:</strong> &quot;update PROD-456 to 25, then confirm&quot; calls <code>update_stock</code> then <code>check_stock</code>.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. Why Standalone Tool Functions Break at Scale</strong></p>
+                    <p>
+                        If <code>check_stock()</code> and <code>update_stock()</code> are written as standalone
+                        functions that each call <code>psycopg2.connect(...)</code> inside their body, a 5-step agent
+                        turn opens and tears down 5 separate database connections &mdash; exhausting connection limits
+                        under concurrent traffic. Grouping related tools inside a class lets <code>__init__()</code>
+                        initialize a single connection pool, HTTP session, or state dictionary shared by every method.
+                    </p>
+                    <p><strong>2. Bound Methods and Automatic <code>self</code> Hiding</strong></p>
+                    <p>
+                        When you pass a bound method like <code>inventory.check_stock</code> to
+                        <code>Agent(tools=[...])</code>, Python binds the <code>self</code> parameter to the
+                        <code>inventory</code> instance, and Strands strips <code>self</code> from the generated JSON
+                        Schema. The LLM only sees <code>product_id: str</code> (and <code>quantity: int</code> for
+                        <code>update_stock</code>) &mdash; it never knows or cares that the tool is a method on a class.
+                    </p>
+                    <p><strong>3. Read-After-Write Verification in One Turn</strong></p>
+                    <p>
+                        Because both tools reference the exact same <code>self.products</code> dictionary, when the
+                        agent executes <code>update_stock(product_id="PROD-456", quantity=25)</code> on step 1 and
+                        <code>check_stock(product_id="PROD-456")</code> on step 2, the second call immediately sees
+                        <code>25 units</code>. The response also returns a snapshot of <code>current_inventory</code> so
+                        the UI displays the live state after every run.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -164,7 +196,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent (<code>20_class_based_tools.py</code>)</span>
+                            <span class="flow-title">Agent (<code>10_class_based_tools.py</code>)</span>
                             <span class="flow-detail">Bedrock calls the shared instance's <code>update_stock</code> / <code>check_stock</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -199,7 +231,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["ClassBasedToolsCard.tsx<br/>POST /api/class-based-tools"]:::entry -->|"query"| R["main.py<br/>class_based_tools_service()"]:::fn
-    R -->|"query"| S["20_class_based_tools.py<br/>run_class_based_tools_agent()"]:::fn
+    R -->|"query"| S["10_class_based_tools.py<br/>run_class_based_tools_agent()"]:::fn
     S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
     A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
     B -->|"toolUse: update_stock"| A
@@ -238,7 +270,7 @@ flowchart TD
                     aria-controls="content-source-20-class-based-tools-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-20-class-based-tools-py" class="topic-title is-file">20_class_based_tools.py<a class="headerlink" href="#source-20-class-based-tools-py"
+                        <h2 id="source-20-class-based-tools-py" class="topic-title is-file">10_class_based_tools.py<a class="headerlink" href="#source-20-class-based-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -252,7 +284,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-20-class-based-tools-py">
-                    <span class="file-path">server/services/20_class_based_tools.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/10_class_based_tools.py</span>
                     <p class="file-label">Class-Based Tools (Shared-Resource Pattern) Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Class-Based Tools (Shared-Resource Pattern) Agent Service.
 

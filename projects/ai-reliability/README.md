@@ -64,7 +64,7 @@ internally even when told not to, which erases the gaps being measured.
 
 All `POST` routes read `{"message": "<text>"}`, return `{"result": "<text report>"}`,
 return `400` for an empty (or, for `/cot`, unknown) input, `500` on an
-unexpected failure, and share the 10-POSTs-per-hour-per-IP rate limit (`429`).
+unexpected failure, and share the 30-POSTs-per-hour-per-IP rate limit (`429`).
 
 1. `GET /` — single-page UI with the `PATH_PREFIX` injected into `data-api-base`.
 2. `GET /css/<path:filename>` — stylesheets.
@@ -185,7 +185,7 @@ in SQLite at `/tmp/ai_rate_limit.db` inside the container; it survives
 The self-provisioning workflow `.github/workflows/deploy-ai-reliability.yml`
 creates the `techtoday/ai-reliability` ECR repository, seeds the image, writes
 `~/secrets/ai-reliability.env`, adds the Nginx `/ai-reliability/` location
-file under `/etc/nginx/conf.d/app-locations/` (POST rate limiting: 10 requests
+file under `/etc/nginx/conf.d/app-locations/` (POST rate limiting: 30 requests
 upfront, 1r/m refill, `429` on excess), auto-ensures the `app-locations/*.conf`
 include, `/etc/nginx/conf.d/00-rate-limit.conf`, and
 `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf`, and creates

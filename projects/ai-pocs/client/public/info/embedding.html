@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-09-embedding-py">09_embedding.py</a></li>
+                    <li><a href="#source-09-embedding-py">02_embedding.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,20 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>An embedding model maps text to a list of numbers so that texts with similar meaning end up pointing in a similar direction. &quot;A cat is sleeping on the couch&quot; and &quot;A kitten is napping on the sofa&quot; share almost no words but score high.</p>
-                    <p>The model is loaded once when the server starts, then each request encodes the two sentences and computes <code>dot(v1, v2) / (|v1| &times; |v2|)</code>.</p>
+                    <p>
+                        <strong>Sentence Embeddings</strong> demonstrates how AI systems measure <strong>semantic
+                        similarity</strong> (meaning) rather than keyword overlap. Using the local HuggingFace
+                        <code>SentenceTransformer("all-MiniLM-L6-v2")</code> model, the service encodes two input
+                        sentences into <strong>384-dimensional dense floating-point vectors</strong> and computes their
+                        <strong>cosine similarity</strong>.
+                    </p>
+                    <p>
+                        Because the embedding model maps concepts with similar meanings to nearby directions in
+                        384-dimensional space, <em>"A cat is sleeping on the couch"</em> and <em>"A kitten is napping on
+                        the sofa"</em> produce a high similarity score (~0.75+) despite sharing almost no content words.
+                        The response returns the rounded similarity score, the vector dimensionality (<code>384</code>),
+                        and the first 5 coordinates of each vector so you can inspect the numerical representation.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +136,41 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. From Discrete Words to Dense Semantic Vectors</strong></p>
+                    <p>
+                        Traditional search engines (like BM25 or SQL <code>LIKE</code>) match exact tokens: searching
+                        for <em>"sofa"</em> misses documents that only say <em>"couch"</em>. An embedding model is a
+                        neural network trained on millions of sentence pairs to project text into a continuous
+                        384-dimensional geometric space (<code>R<sup>384</sup></code>) where distance corresponds to
+                        semantic relatedness.
+                    </p>
+                    <p><strong>2. Cosine Similarity Mathematics</strong></p>
+                    <p>
+                        To compare two embedding vectors <code>v1</code> and <code>v2</code>, the service computes the
+                        cosine of the angle between them using NumPy's <code>dot</code> and <code>norm</code>:
+                    </p>
+                    <p>
+                        <code>similarity(v1, v2) = dot(v1, v2) / (||v1|| &times; ||v2||)</code>
+                    </p>
                     <ul>
-                        <li><strong>Vectors:</strong> each sentence becomes 384 numbers (the model's dimension).</li>
-                        <li><strong>Cosine similarity:</strong> near 1 = same meaning, near 0 = unrelated.</li>
-                        <li><strong>Meaning over words:</strong> &quot;bank&quot; (river) vs &quot;bank&quot; (loan) scores low even though the word matches.</li>
-                        <li><strong>Why it matters:</strong> this similarity is how RAG finds the right chunk for a question.</li>
+                        <li><strong>Near 1.0:</strong> Vectors point in the same direction (synonyms or paraphrases).</li>
+                        <li><strong>Near 0.0:</strong> Vectors are orthogonal (unrelated topics).</li>
+                        <li><strong>Below 0.0:</strong> Vectors point in opposite directions.</li>
                     </ul>
+                    <p><strong>3. Polysemy and Context Awareness</strong></p>
+                    <p>
+                        Unlike static word tables, transformer encoders read the whole sentence before producing the
+                        vector. The word <em>"bank"</em> in <em>"deposit money at the bank"</em> vs. <em>"sit by the
+                        river bank"</em> yields very different 384-number vectors because surrounding words shift the
+                        attention representations.
+                    </p>
+                    <p><strong>4. Startup Model Caching for Low-Latency Inference</strong></p>
+                    <p>
+                        Loading transformer weights from disk takes several hundred milliseconds. By instantiating
+                        <code>model = SentenceTransformer("all-MiniLM-L6-v2")</code> once at module import time, every
+                        subsequent HTTP request encodes sentences in a few milliseconds on CPU with zero external API
+                        cost.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -164,7 +205,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Service (<code>09_embedding.py</code>)</span>
+                            <span class="flow-title">Service (<code>02_embedding.py</code>)</span>
                             <span class="flow-detail"><code>model.encode()</code> both sentences, then cosine similarity with NumPy.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -199,7 +240,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["EmbeddingCard.tsx<br/>POST /api/embedding"]:::entry -->|"text1, text2"| R["main.py<br/>embedding_service()"]:::fn
-    R -->|"text1, text2"| S["09_embedding.py<br/>compute_similarity()"]:::fn
+    R -->|"text1, text2"| S["02_embedding.py<br/>compute_similarity()"]:::fn
     S -->|"sentences"| M[("SentenceTransformer<br/>all-MiniLM-L6-v2 (local)")]:::ext
     M -->|"two 384-d vectors"| S
     S -->|"cosine similarity"| R
@@ -229,7 +270,7 @@ flowchart TD
                     aria-controls="content-source-09-embedding-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-09-embedding-py" class="topic-title is-file">09_embedding.py<a class="headerlink" href="#source-09-embedding-py"
+                        <h2 id="source-09-embedding-py" class="topic-title is-file">02_embedding.py<a class="headerlink" href="#source-09-embedding-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -243,7 +284,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-09-embedding-py">
-                    <span class="file-path">server/services/09_embedding.py</span>
+                    <span class="file-path">server/services/02-ai-rag-chroma/02_embedding.py</span>
                     <p class="file-label">Sentence Embedding &amp; Similarity Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Sentence Embedding &amp; Similarity Service.
 

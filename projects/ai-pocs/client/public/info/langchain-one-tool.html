@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Compare this with the Single-Tool Agent: there is no hand-written JSON schema and no manual loop. LangChain reads the function's name, type hints and docstring to build the tool description, and <code>create_agent</code> runs the call &rarr; tool &rarr; answer loop for you.</p>
-                    <p>The response also reports whether a tool ran, found by checking for a message of type <code>tool</code> in the agent's message list.</p>
+                    <p>
+                        <strong>LangChain Single-Tool Agent</strong> implements the exact same single-tool agent pattern
+                        as the previous demo, but replaces 40 lines of manual JSON Schema definitions and two-phase loop
+                        plumbing with LangChain's high-level <code>create_agent()</code> factory.
+                    </p>
+                    <p>
+                        You simply write a plain Python function &mdash; <code>def get_weather(city: str) -> str:</code>
+                        with a clear docstring &mdash; and pass <code>tools=[get_weather]</code> to
+                        <code>create_agent()</code>. LangChain automatically introspects the function signature to build
+                        the tool schema, manages the multi-turn <code>tool_calls</code> conversation history internally,
+                        and returns the complete message trace so the service can report both the final answer and a
+                        boolean <code>tool_called</code> flag.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +135,41 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Automatic Schema Introspection from Python Type Hints</strong></p>
+                    <p>
+                        Instead of hand-authoring a nested <code>{"type": "function", "parameters": ...}</code>
+                        dictionary, LangChain inspects your Python function at registration time:
+                    </p>
                     <ul>
-                        <li><strong>Functions as tools:</strong> type hints say what arguments to pass; the docstring says when to use the tool.</li>
-                        <li><strong>Provider switch:</strong> <code>PROVIDER = &quot;groq&quot;</code> picks <code>GROQ_MODEL</code>, <code>GROQ_API_KEY</code> and <code>GROQ_BASE_URL</code> from <code>.env</code>.</li>
-                        <li><strong>Agent messages:</strong> <code>agent.invoke()</code> returns every message (human, AI, tool); the last one is the final answer.</li>
+                        <li><strong>Function Name (<code>get_weather</code>):</strong> Becomes the tool identifier.</li>
+                        <li><strong>Type Annotations (<code>city: str</code>):</strong> Compiled into JSON Schema
+                            property types (<code>{"city": {"type": "string"}}</code>) and required parameter lists.</li>
+                        <li><strong>Docstring (<code>"Get the current weather for a given city."</code>):</strong>
+                            Becomes the tool description the LLM reads to decide whether to call the tool.</li>
                     </ul>
+                    <p><strong>2. Automated Agent Loop Orchestration</strong></p>
+                    <p>
+                        When <code>agent.invoke({"messages": [...]})</code> runs, LangChain's runtime graph handles the
+                        entire cycle behind the scenes: sending the prompt + tool schemas, checking if the model emitted
+                        <code>tool_calls</code>, executing <code>get_weather()</code>, packaging the output into a
+                        <code>ToolMessage</code> with the matching <code>tool_call_id</code>, and re-querying the LLM
+                        until it produces a final <code>AIMessage</code>.
+                    </p>
+                    <p><strong>3. Inspecting the Execution Trace</strong></p>
+                    <p>
+                        <code>agent.invoke()</code> returns a dictionary containing the full list of LangChain message
+                        objects accumulated during the turn: <code>HumanMessage</code>, <code>AIMessage</code> (with
+                        <code>tool_calls</code>), <code>ToolMessage</code> (with <code>m.type == "tool"</code>), and the
+                        final <code>AIMessage</code>. Checking <code>any(m.type == "tool" for m in messages)</code>
+                        provides a deterministic signal of whether the agent used the tool or answered from memory.
+                    </p>
+                    <p><strong>4. Config-Driven Provider Switching</strong></p>
+                    <p>
+                        By reading <code>f"{prefix}_MODEL"</code>, <code>f"{prefix}_API_KEY"</code>, and
+                        <code>f"{prefix}_BASE_URL"</code> based on <code>PROVIDER = "groq"</code>, the agent runs on
+                        Groq's fast free tier by default while remaining switchable to OpenAI or Gemini via a single
+                        constant.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -248,7 +289,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-06-langchain-one-tool-py">
-                    <span class="file-path">server/services/06_langchain_one_tool.py</span>
+                    <span class="file-path">server/services/01-ai-basics/06_langchain_one_tool.py</span>
                     <p class="file-label"></p>
                     <pre><code data-lang="python">&quot;&quot;&quot;
 Langchain Version V1 - Agents (single tool)

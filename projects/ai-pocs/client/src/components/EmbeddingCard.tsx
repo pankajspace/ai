@@ -122,7 +122,7 @@ export function EmbeddingCard({ apiBase = API_BASE }: EmbeddingCardProps = {}) {
             <button
               type="button"
               key={preset.label}
-              className="preset-chip"
+              className={`preset-chip ${text1 === preset.t1 && text2 === preset.t2 ? 'active' : ''}`}
               onClick={() => {
                 setText1(preset.t1)
                 setText2(preset.t2)

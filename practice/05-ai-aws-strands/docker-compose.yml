@@ -1,0 +1,145 @@
+# ---------------------------------------------------------------------------
+# AWS Strands Agents Practice Suite — Docker Compose Configuration
+#
+# Run any individual lesson container from this directory:
+#   docker compose run --rm <service_name>
+# Example:
+#   docker compose run --rm 01_hello_world_agent
+#
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script into
+# `/app/` so code edits take effect immediately without rebuilding.
+# ---------------------------------------------------------------------------
+
+services:
+  # ① Lesson 1.1: Minimal autonomous agent with Strands + Amazon Bedrock Nova Lite
+  01_hello_world_agent:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./01_hello_world_agent.py:/app/01_hello_world_agent.py
+    entrypoint: ["python", "01_hello_world_agent.py"]
+
+  # ② Lesson 1.2: ReAct tool-calling agent loop implemented with LangGraph + Bedrock Converse
+  02_hello_world_langgraph:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./02_hello_world_langgraph.py:/app/02_hello_world_langgraph.py
+    entrypoint: ["python", "02_hello_world_langgraph.py"]
+
+  # ③ Lesson 2.1: Converting a plain Python function into an agent tool (@tool, type hints, docstring)
+  03_function_to_tool:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./03_function_to_tool.py:/app/03_function_to_tool.py
+    entrypoint: ["python", "03_function_to_tool.py"]
+
+  # ④ Lesson 2.2: Intent-driven parameter extraction with a tip calculator tool
+  04_tip_calculator:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./04_tip_calculator.py:/app/04_tip_calculator.py
+    entrypoint: ["python", "04_tip_calculator.py"]
+
+  # ⑤ Lesson 2.3: Autonomous multi-tool chaining (fetch sales -> analyze -> send email)
+  05_multi_tool_sales:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./05_multi_tool_sales.py:/app/05_multi_tool_sales.py
+    entrypoint: ["python", "05_multi_tool_sales.py"]
+
+  # ⑥ Lesson 2.4: Domain-specific custom tool querying a mock product inventory catalog
+  06_custom_tool_inventory:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./06_custom_tool_inventory.py:/app/06_custom_tool_inventory.py
+    entrypoint: ["python", "06_custom_tool_inventory.py"]
+
+  # ⑦ Lesson 2.5: Pre-built community calculator tool from strands_tools + standing system prompt
+  07_prebuilt_tools:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./07_prebuilt_tools.py:/app/07_prebuilt_tools.py
+    entrypoint: ["python", "07_prebuilt_tools.py"]
+
+  # ⑧ Lesson 2.6: Chaining multiple pre-built tools (http_request, calculator, file_write)
+  08_multi_prebuilt_tools:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./08_multi_prebuilt_tools.py:/app/08_multi_prebuilt_tools.py
+    entrypoint: ["python", "08_multi_prebuilt_tools.py"]
+
+  # ⑨ Lesson 2.7: Natural language AWS cloud inspection via strands_tools.use_aws
+  09_use_aws:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./09_use_aws.py:/app/09_use_aws.py
+    entrypoint: ["python", "09_use_aws.py"]
+
+  # ⑩ Lesson 2.8: Class-based tools sharing a single stateful connection/resource instance
+  10_class_based_tools:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./10_class_based_tools.py:/app/10_class_based_tools.py
+    entrypoint: ["python", "10_class_based_tools.py"]
+
+  # ⑪ Lesson 2.9: Parallel asynchronous tool execution with async def and invoke_async()
+  11_async_tools:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./11_async_tools.py:/app/11_async_tools.py
+    entrypoint: ["python", "11_async_tools.py"]
+
+  # ⑫ Capstone Project: Multi-step travel concierge combining weather, packing, cost, and calculator tools
+  12_travel_assistant:
+    build: .
+    image: practice-05-ai-aws-strands
+    env_file:
+      - path: ./.env
+        required: false
+    volumes:
+      - ./12_travel_assistant.py:/app/12_travel_assistant.py
+    entrypoint: ["python", "12_travel_assistant.py"]

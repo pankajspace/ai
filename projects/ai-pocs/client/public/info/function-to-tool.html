@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-13-function-to-tool-py">13_function_to_tool.py</a></li>
+                    <li><a href="#source-13-function-to-tool-py">03_function_to_tool.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,18 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Three things make a function a good tool: the <code>@tool</code> decorator (exposes it to the agent), type hints (what to pass), and the docstring (when to use it). Strands builds the tool spec the model sees from these.</p>
-                    <p>Try the experiment from the practice file: change the docstring to <code>&quot;&quot;&quot;Does a thing.&quot;&quot;&quot;</code> and the agent often stops calling the tool &mdash; the docstring is the manual the model reads.</p>
+                    <p>
+                        <strong>Function to Tool (Website Health Checker)</strong> demonstrates how a standard Python
+                        function that performs real network I/O &mdash; checking whether a live website is reachable via
+                        <code>requests.get(url, timeout=5)</code> &mdash; becomes an autonomous agent capability with a
+                        single <code>@tool</code> decorator in AWS Strands.
+                    </p>
+                    <p>
+                        When you ask <em>"Is https://www.google.com reachable right now?"</em>, the Bedrock model reads
+                        the schema Strands generated from <code>check_website(url: str) -> str</code>, extracts the URL,
+                        triggers the live HTTP request from the server, inspects the returned status string (e.g.,
+                        <code>"https://www.google.com is up (status 200)"</code>), and reports the result.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,12 +134,41 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
-                    <ul>
-                        <li><strong>@tool:</strong> registers the function and its schema with the agent.</li>
-                        <li><strong>Docstrings are prompts:</strong> vague descriptions lead to unreliable tool use.</li>
-                        <li><strong>Real side effects:</strong> the tool calls <code>requests.get(url, timeout=5)</code> and reports the status code or &quot;down&quot;.</li>
-                        <li>After the run, the service reads <code>agent.messages</code> and lists every <code>toolUse</code> block, so the card can show which tools the agent called and with what arguments.</li>
-                    </ul>
+                    <p><strong>1. The Three Pillars of a Strands <code>@tool</code> Function</strong></p>
+                    <p>
+                        When you decorate a function with <code>@tool</code>, Strands compiles a Bedrock Converse
+                        <code>toolSpec</code> from three parts of your Python definition:
+                    </p>
+                    <ol>
+                        <li><strong>Decorator (<code>@tool</code>):</strong> Wraps the function in a metadata descriptor
+                            that the <code>Agent</code> can register and invoke.</li>
+                        <li><strong>Type Hints (<code>url: str</code> &rarr; <code>str</code>):</strong> Defines the JSON
+                            Schema input types so the model knows to pass a string URL.</li>
+                        <li><strong>Docstring:</strong> Becomes the semantic prompt that tells the model <em>when</em>
+                            to call the tool and what the <code>url</code> parameter represents.</li>
+                    </ol>
+                    <p><strong>2. Docstrings Are Prompts (The "Does a Thing" Experiment)</strong></p>
+                    <p>
+                        The LLM never sees the body of <code>check_website()</code> (it cannot see that your code calls
+                        <code>requests.get</code>). It only sees the function name, parameter types, and docstring. If
+                        you replace the docstring with <code>&quot;&quot;&quot;Does a thing.&quot;&quot;&quot;</code>,
+                        the model loses confidence in what the tool does and frequently refuses to call it or passes
+                        malformed arguments.
+                    </p>
+                    <p><strong>3. Defensive Error Handling Inside Tools</strong></p>
+                    <p>
+                        Real-world network calls fail (DNS errors, connection timeouts, SSL errors). Wrapping
+                        <code>requests.get(url, timeout=5)</code> in <code>try/except requests.RequestException as
+                        e:</code> and returning a readable string (<code>f"{url} is down ({e})"</code>) allows the agent
+                        to report the outage gracefully instead of crashing the FastAPI worker with an unhandled
+                        exception.
+                    </p>
+                    <p><strong>4. Auditing Tool Invocations via <code>agent.messages</code></strong></p>
+                    <p>
+                        After <code>agent(prompt)</code> completes, iterating over <code>agent.messages</code> and
+                        extracting every content block containing a <code>"toolUse"</code> key lets the backend surface
+                        the exact function call and arguments (<code>check_website({'url': ...})</code>) in the UI.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -164,7 +203,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Agent (<code>13_function_to_tool.py</code>)</span>
+                            <span class="flow-title">Agent (<code>03_function_to_tool.py</code>)</span>
                             <span class="flow-detail">Bedrock picks the URL from the question and asks for <code>check_server_status</code>; Strands runs it.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -199,7 +238,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["FunctionToToolCard.tsx<br/>POST /api/function-to-tool"]:::entry -->|"question"| R["main.py<br/>function_to_tool_service()"]:::fn
-    R -->|"question"| S["13_function_to_tool.py<br/>run_function_to_tool_agent()"]:::fn
+    R -->|"question"| S["03_function_to_tool.py<br/>run_function_to_tool_agent()"]:::fn
     S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
     A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
     B -->|"toolUse: check_server_status"| A
@@ -235,7 +274,7 @@ flowchart TD
                     aria-controls="content-source-13-function-to-tool-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-13-function-to-tool-py" class="topic-title is-file">13_function_to_tool.py<a class="headerlink" href="#source-13-function-to-tool-py"
+                        <h2 id="source-13-function-to-tool-py" class="topic-title is-file">03_function_to_tool.py<a class="headerlink" href="#source-13-function-to-tool-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -249,7 +288,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-13-function-to-tool-py">
-                    <span class="file-path">server/services/13_function_to_tool.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/03_function_to_tool.py</span>
                     <p class="file-label">Function-to-Tool Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Function-to-Tool Agent Service.
 

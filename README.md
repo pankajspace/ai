@@ -14,7 +14,13 @@
 
 # Practice
 1. [Python](practice/01-python)
-2. [AI Basics (Docker)](practice/02-ai-basics/README.md)
+2. [AI Basics](practice/02-ai-basics/README.md)
+3. [AI RAG & Chroma](practice/03-ai-rag-chroma/README.md)
+4. [AI Model Training, ChromaDB & Redis](practice/04-ai-model-training-chromadb/README.md)
+5. [AWS Strands](practice/05-ai-aws-strands/README.md)
+6. [AI Systems](practice/06-ai-systems/README.md)
+7. [AI Reliability](practice/07-ai-reliability/README.md)
+8. [AI MCP & Evals](practice/08-ai-mcp-evals/README.md)
 
 # Projects
 

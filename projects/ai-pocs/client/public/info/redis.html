@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Redis Support Agent Memory &middot; AI POCs</title>
+    <meta name="description"
+        content="⚡ Redis Support Agent Memory persists multi-turn conversation history per session_id with TTL expiry and equips an OpenAI tool-calling support agent." />
+    <link rel="icon" href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-03-redis-py">03_redis.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">⚡ Redis Support Agent Memory<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>⚡ Redis Support Agent Memory</strong> stores multi-turn conversation history per <code>session_id</code> in Redis (with an automatic in-memory fallback) and runs the DeskBuddy OpenAI tool-calling agent with <code>calculator</code> and <code>get_datetime</code> tools.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>DeskBuddy (Redis Session-Memory Agent)</strong> combines multi-turn conversational memory
+                        with autonomous tool calling (<code>calculator</code> and <code>get_datetime</code>), backed by
+                        <strong>Redis</strong> as an external session store.
+                    </p>
+                    <p>
+                        Unlike client-held memory (where the browser must re-upload the entire chat transcript on every
+                        request), DeskBuddy requires the client to send only a lightweight <code>session_id</code> (such
+                        as <code>"demo"</code>) and the latest <code>message</code>. The backend loads that session's
+                        conversation list from Redis under <code>history:{session_id}</code> (or falls back to an
+                        in-memory dictionary if Redis is not running), runs a bounded 5-lap tool-calling loop with
+                        <code>gpt-4o-mini</code>, persists the updated history back to the store, and returns the final
+                        answer alongside a full trace of invoked tools and the total stored message count.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Stateless Application Tier + Stateful Redis Tier</strong></p>
+                    <p>
+                        In production, FastAPI/Flask servers run multiple worker processes or containers behind a load
+                        balancer. Storing chat history in a Python global variable breaks as soon as Request 1 hits
+                        Worker A and Request 2 hits Worker B. Externalizing session lists into Redis under
+                        <code>history:{session_id}</code> using <code>LRANGE</code>, <code>DELETE</code>, and
+                        <code>RPUSH</code> lets any worker serve any user turn seamlessly.
+                    </p>
+                    <p><strong>2. Graceful Degradation with Zero-Config Fallback</strong></p>
+                    <p>
+                        <code>_get_redis()</code> probes the Redis socket once with a fast 1.5-second connection timeout
+                        (<code>client.ping()</code>). If a Redis server is reachable, all session operations use Redis
+                        lists; if not, <code>_load_history</code> and <code>_save_history</code> transparently fall back
+                        to <code>_fallback_memory</code> and report <code>storage_backend="in-memory (redis
+                        fallback)"</code> in the response so the demo works out of the box.
+                    </p>
+                    <p><strong>3. Bounded Multi-Turn Tool Loop (Safety Fuse)</strong></p>
+                    <p>
+                        A query like <em>"What is 23*47, and what time is it right now?"</em> requires calling both
+                        <code>calculator</code> and <code>get_datetime</code> before answering. The loop
+                        <code>for _ in range(5):</code> calls the model, appends any assistant <code>tool_calls</code>
+                        plus each tool's <code>role="tool"</code> JSON output to <code>history</code>, and repeats until
+                        <code>not msg.tool_calls</code> &mdash; with the 5-iteration cap preventing runaway infinite
+                        loops.
+                    </p>
+                    <p><strong>4. Sandboxed Expression Evaluation &amp; Error Isolation</strong></p>
+                    <p>
+                        Inside <code>call_tool()</code>, the calculator evaluates arithmetic expressions with
+                        <code>eval(expr, {"__builtins__": {}})</code> (stripping Python built-ins) and wraps tool
+                        execution in a <code>try/except</code> block that returns <code>{"error": ...}</code> as a normal
+                        dict rather than crashing the request if the model passes malformed syntax.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>RedisAgentCard.tsx</code> sends <code>POST /api/redis</code> with <code>{ session_id, message }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>redis_agent_service(req)</code> calls <code>run_redis_agent()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Session + Tools (<code>03_redis.py</code>)</span>
+                            <span class="flow-detail">Loads history for <code>session_id</code>, runs OpenAI tool loop, and appends new turns with TTL.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows agent response, invoked tools, and stored session message count.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["RedisAgentCard.tsx<br/>POST /api/redis"]:::entry -->|"session_id, message"| R["main.py<br/>redis_agent_service()"]:::fn
+    R --> S["03_redis.py<br/>run_redis_agent()"]:::fn
+    S -->|"_load_history / _save_history"| M[("Redis / Session Store")]:::ext
+    S -->|"messages + TOOLS"| O[("OpenAI Chat Completions")]:::ext
+    O -->|"tool_calls"| T["calculator / get_datetime"]:::fn
+    T -->|"tool output"| S
+    O -->|"final answer"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs: the service implementation and the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+            <section class="topic-section is-collapsed" id="sec-source-03-redis-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-03-redis-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-03-redis-py" class="topic-title is-file">03_redis.py<a class="headerlink" href="#source-03-redis-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">224 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-03-redis-py">
+                    <span class="file-path">server/services/03-ai-model-training-chromadb/03_redis.py</span>
+                    <p class="file-label">Redis-Backed Multi-Turn Support Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;DeskBuddy — Tool-Calling Agent with Redis Session Memory Service.
+
+This service demonstrates an autonomous tool-calling agent backed by per-session memory:
+1. Connects to Redis (`redis.Redis`) to store and retrieve conversation history per `session_id`
+   under `history:{session_id}` (falls back to an in-memory session dictionary when Redis is not running).
+2. Exposes two tools (`calculator` and `get_datetime`) via OpenAI function-calling schemas (`TOOL_DEFS`).
+3. Runs a bounded agent loop (max 5 laps safety fuse: Think -&gt; Act -&gt; Observe), executing requested tools
+   and feeding results back until the LLM produces a final natural-language answer.
+&quot;&quot;&quot;
+
+import datetime
+import json
+import os
+
+import redis
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+_fallback_memory: dict[str, list[dict]] = {}
+_redis_client = None
+_redis_checked = False
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class RedisAgentRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for DeskBuddy Redis memory agent.&quot;&quot;&quot;
+
+    session_id: str = &quot;demo&quot;
+    message: str = &quot;What is 23*47, and what time is it right now?&quot;
+    reset_session: bool = False
+
+
+class RedisAgentToolCall(BaseModel):
+    &quot;&quot;&quot;Record of a single tool invocation during the agent loop.&quot;&quot;&quot;
+
+    tool: str
+    args: dict
+    result: dict
+
+
+class RedisAgentResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from DeskBuddy Redis memory agent.&quot;&quot;&quot;
+
+    session_id: str
+    message: str
+    answer: str
+    tool_calls: list[RedisAgentToolCall]
+    stored_messages_count: int
+    storage_backend: str
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Redis Memory Store (with In-Memory Fallback)
+# ---------------------------------------------------------------------------
+def _get_redis():
+    &quot;&quot;&quot;Return a connected Redis client if reachable, or None to use in-memory fallback.&quot;&quot;&quot;
+    global _redis_client, _redis_checked
+    if _redis_checked:
+        return _redis_client
+    _redis_checked = True
+    host = os.getenv(&quot;REDIS_HOST&quot;, &quot;localhost&quot;)
+    port = int(os.getenv(&quot;REDIS_PORT&quot;, &quot;6379&quot;))
+    try:
+        client = redis.Redis(host=host, port=port, decode_responses=True, socket_connect_timeout=1.5)
+        client.ping()
+        _redis_client = client
+    except Exception:
+        _redis_client = None
+    return _redis_client
+
+
+def _load_history(session_id: str) -&gt; tuple[list[dict], str]:
+    &quot;&quot;&quot;Load conversation history for `session_id`.&quot;&quot;&quot;
+    key = f&quot;history:{session_id}&quot;
+    r = _get_redis()
+    if r is not None:
+        return [json.loads(m) for m in r.lrange(key, 0, -1)], &quot;redis&quot;
+    return list(_fallback_memory.get(key, [])), &quot;in-memory (redis fallback)&quot;
+
+
+def _save_history(session_id: str, history: list[dict]) -&gt; None:
+    &quot;&quot;&quot;Persist conversation history for `session_id`.&quot;&quot;&quot;
+    key = f&quot;history:{session_id}&quot;
+    r = _get_redis()
+    if r is not None:
+        r.delete(key)
+        for m in history:
+            r.rpush(key, json.dumps(m))
+    else:
+        _fallback_memory[key] = list(history)
+
+
+def _clear_history(session_id: str) -&gt; None:
+    &quot;&quot;&quot;Delete conversation history for `session_id`.&quot;&quot;&quot;
+    key = f&quot;history:{session_id}&quot;
+    r = _get_redis()
+    if r is not None:
+        r.delete(key)
+    _fallback_memory.pop(key, None)
+
+
+# ---------------------------------------------------------------------------
+# Step 2: Tool Definitions &amp; Execution
+# ---------------------------------------------------------------------------
+TOOL_DEFS = [
+    {
+        &quot;type&quot;: &quot;function&quot;,
+        &quot;function&quot;: {
+            &quot;name&quot;: &quot;calculator&quot;,
+            &quot;description&quot;: &quot;Evaluate a math expression, e.g. &#x27;23*47&#x27; or &#x27;(100-8)/4&#x27;&quot;,
+            &quot;parameters&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {&quot;expression&quot;: {&quot;type&quot;: &quot;string&quot;}},
+                &quot;required&quot;: [&quot;expression&quot;],
+            },
+        },
+    },
+    {
+        &quot;type&quot;: &quot;function&quot;,
+        &quot;function&quot;: {
+            &quot;name&quot;: &quot;get_datetime&quot;,
+            &quot;description&quot;: &quot;Get the current date and time&quot;,
+            &quot;parameters&quot;: {&quot;type&quot;: &quot;object&quot;, &quot;properties&quot;: {}},
+        },
+    },
+]
+
+
+def call_tool(name: str, args: dict) -&gt; dict:
+    &quot;&quot;&quot;Execute the requested tool (`calculator` or `get_datetime`).&quot;&quot;&quot;
+    try:
+        if name == &quot;calculator&quot;:
+            expr = args.get(&quot;expression&quot;, &quot;&quot;)
+            result = eval(expr, {&quot;__builtins__&quot;: {}})
+            return {&quot;result&quot;: result}
+        if name == &quot;get_datetime&quot;:
+            return {&quot;now&quot;: datetime.datetime.now().isoformat()}
+        return {&quot;error&quot;: f&quot;unknown tool: {name}&quot;}
+    except Exception as e:
+        return {&quot;error&quot;: f&quot;tool call failed: {e}&quot;}
+
+
+# ---------------------------------------------------------------------------
+# Step 3: The Agent Loop (Think -&gt; Act -&gt; Observe -&gt; Repeat)
+# ---------------------------------------------------------------------------
+def run_redis_agent(
+    session_id: str = &quot;demo&quot;,
+    message: str = &quot;What is 23*47, and what time is it right now?&quot;,
+    reset_session: bool = False,
+) -&gt; dict:
+    &quot;&quot;&quot;Run one turn of the DeskBuddy agent with per-session conversation memory.&quot;&quot;&quot;
+    # ① Optionally clear session history if requested
+    if reset_session:
+        _clear_history(session_id)
+        if not message.strip():
+            _, backend = _load_history(session_id)
+            return {
+                &quot;session_id&quot;: session_id,
+                &quot;message&quot;: &quot;&quot;,
+                &quot;answer&quot;: f&quot;Session &#x27;{session_id}&#x27; memory cleared.&quot;,
+                &quot;tool_calls&quot;: [],
+                &quot;stored_messages_count&quot;: 0,
+                &quot;storage_backend&quot;: backend,
+            }
+
+    # ② Load this session&#x27;s conversation history and append the new user message
+    history, backend = _load_history(session_id)
+    history.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: message})
+
+    llm = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+        timeout=20.0,
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    # ③ Bounded agent loop (max 5 laps safety fuse)
+    tool_calls_trace: list[dict] = []
+    msg = None
+    for _ in range(5):
+        resp = llm.chat.completions.create(
+            model=model,
+            messages=history,
+            tools=TOOL_DEFS,
+        )
+        msg = resp.choices[0].message
+
+        if not msg.tool_calls:
+            break  # LLM answered in words -&gt; done
+
+        history.append(msg.model_dump(exclude_none=True))
+        for tc in msg.tool_calls:
+            args = json.loads(tc.function.arguments)
+            result = call_tool(tc.function.name, args)
+            tool_calls_trace.append({
+                &quot;tool&quot;: tc.function.name,
+                &quot;args&quot;: args,
+                &quot;result&quot;: result,
+            })
+            history.append({
+                &quot;role&quot;: &quot;tool&quot;,
+                &quot;tool_call_id&quot;: tc.id,
+                &quot;content&quot;: json.dumps(result),
+            })
+
+    # ④ Save updated conversation history back to Redis/memory and return response
+    answer = (msg.content if msg else &quot;&quot;) or &quot;&quot;
+    history.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: answer})
+    _save_history(session_id, history)
+
+    return {
+        &quot;session_id&quot;: session_id,
+        &quot;message&quot;: message,
+        &quot;answer&quot;: answer,
+        &quot;tool_calls&quot;: tool_calls_trace,
+        &quot;stored_messages_count&quot;: len(history),
+        &quot;storage_backend&quot;: backend,
+    }
+
+</code></pre>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">Route</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/redis</code>.</p>
+                    <pre><code data-lang="python">@app.post(&quot;/api/redis&quot;, response_model=RedisAgentResponse)
+def redis_agent_service(req: RedisAgentRequest):
+    &quot;&quot;&quot;Run the Redis-backed (or in-memory fallback) stateful support agent.&quot;&quot;&quot;
+    if not req.reset_session and not req.message.strip():
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        return RedisAgentResponse(
+            **run_redis_agent(
+                session_id=req.session_id,
+                message=req.message,
+                reset_session=req.reset_session,
+            )
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; ⚡ Redis Support Agent Memory &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
+

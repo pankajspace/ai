@@ -9,6 +9,8 @@ export interface RoundTrace {
 }
 
 export interface SycophancyTrapResponse {
+  model?: string
+  temperature?: number
   rounds: RoundTrace[]
   final_verdict: string
 }
@@ -33,9 +35,20 @@ const CASES = [
   },
 ]
 
+const MODEL_PRESETS = [
+  { id: 'gpt-4o-mini', label: 'gpt-4o-mini' },
+  { id: 'gpt-4o', label: 'gpt-4o' },
+  { id: 'gemini-3.8-flash', label: 'gemini-3.8-flash' },
+  { id: 'openai/gpt-oss-20b', label: 'gpt-oss-20b (Groq)' },
+]
+
+const TEMPERATURE_PRESETS = [0, 0.3, 0.7, 1.2]
+
 export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardProps = {}) {
   const [caseType, setCaseType] = useState<string>(CASES[0].name)
   const [question, setQuestion] = useState<string>(CASES[0].question)
+  const [model, setModel] = useState<string>(MODEL_PRESETS[0].id)
+  const [temperature, setTemperature] = useState<number>(0.7)
   const [submitting, setSubmitting] = useState<boolean>(false)
   const [result, setResult] = useState<SycophancyTrapResponse | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -49,7 +62,7 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
       const res = await fetch(`${apiBase}/api/sycophancy-trap`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ case_type: caseType }),
+        body: JSON.stringify({ case_type: caseType, model, temperature }),
         signal: AbortSignal.timeout(35000),
       })
 
@@ -92,13 +105,41 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
             <button
               type="button"
               key={c.name}
-              className="preset-chip"
+              className={`preset-chip ${caseType === c.name ? 'active' : ''}`}
               onClick={() => {
                 setCaseType(c.name)
                 setQuestion(c.question)
               }}
             >
               {c.name}
+            </button>
+          ))}
+        </div>
+
+        <div className="preset-row">
+          <span className="preset-label">Model:</span>
+          {MODEL_PRESETS.map((m) => (
+            <button
+              type="button"
+              key={m.id}
+              className={`preset-chip ${model === m.id ? 'active' : ''}`}
+              onClick={() => setModel(m.id)}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="preset-row">
+          <span className="preset-label">Temperature:</span>
+          {TEMPERATURE_PRESETS.map((t) => (
+            <button
+              type="button"
+              key={t}
+              className={`preset-chip ${temperature === t ? 'active' : ''}`}
+              onClick={() => setTemperature(t)}
+            >
+              {t}
             </button>
           ))}
         </div>
@@ -115,6 +156,9 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
 
       {result && (
         <div className="result visible">
+          <div style={{ fontSize: '0.75rem', color: 'var(--accent)', marginBottom: '0.35rem' }}>
+            Model: <code>{result.model ?? model}</code> &bull; Temp: <code>{result.temperature ?? temperature}</code>
+          </div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
             <span style={{ fontWeight: 'bold', color: result.final_verdict.includes('RESILIENT') ? '#81c784' : '#e57373' }}>
               {result.final_verdict}
@@ -143,4 +187,5 @@ export function SycophancyTrapCard({ apiBase = API_BASE }: SycophancyTrapCardPro
 }
 
 export default SycophancyTrapCard
+
 

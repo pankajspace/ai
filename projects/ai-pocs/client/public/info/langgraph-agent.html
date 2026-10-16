@@ -33,7 +33,7 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-12-hello-world-langgraph-py">12_hello_world_langgraph.py</a></li>
+                    <li><a href="#source-12-hello-world-langgraph-py">02_hello_world_langgraph.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
             </details>
@@ -100,8 +100,19 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>ReAct means <em>Reason, Act, Observe</em>: the model thinks, calls a tool, reads the result and repeats until it can answer. Asked to &quot;greet Alice and Bob&quot;, the agent calls <code>greet()</code> once per name.</p>
-                    <p>Putting this next to the Strands demos shows that the agent idea is the same across frameworks; only the API names change (<code>@tool</code> from LangChain, <code>init_chat_model(..., model_provider=&quot;bedrock_converse&quot;)</code>, <code>agent.invoke()</code>).</p>
+                    <p>
+                        <strong>LangGraph ReAct Agent</strong> sits right beside the Strands Hello World demo to prove a
+                        key architectural insight: <strong>the ReAct (Reason + Act) agent pattern is universal across AI
+                        frameworks</strong>. Here, the same Amazon Bedrock model (<code>amazon.nova-lite-v1:0</code>) is
+                        driven by <strong>LangGraph's</strong> <code>create_react_agent()</code> instead of AWS Strands.
+                    </p>
+                    <p>
+                        Equipped with a simple <code>@tool def greet(name: str) -> str</code> tool, the agent is asked
+                        to <em>"Greet Alice and Bob"</em>. It reasons that two greetings are needed, invokes
+                        <code>greet("Alice")</code> and <code>greet("Bob")</code>, observes the friendly outputs, and
+                        synthesizes a final response while the service extracts all intermediate <code>tool</code>
+                        messages from the graph state for display in the UI.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 2 -->
@@ -124,11 +135,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The ReAct Loop (Reason &rarr; Act &rarr; Observe)</strong></p>
+                    <p>
+                        Whether implemented in LangGraph, AWS Strands, or raw OpenAI code, a ReAct agent executes the
+                        same cyclic state graph:
+                    </p>
+                    <ol>
+                        <li><strong>Reason (Agent Node):</strong> The LLM inspects the conversation state and decides
+                            whether it needs external tool actions or can answer immediately.</li>
+                        <li><strong>Act (Tools Node):</strong> If the LLM emits <code>tool_calls</code>, the graph
+                            routes to the tool executor node, which runs <code>greet(name)</code> for each call.</li>
+                        <li><strong>Observe (State Edge):</strong> Each tool output is appended to the state's
+                            <code>messages</code> list as a <code>ToolMessage</code>, and control loops back to the
+                            Agent Node.</li>
+                    </ol>
+                    <p><strong>2. Side-by-Side Framework Comparison: Strands vs. LangGraph</strong></p>
                     <ul>
-                        <li><strong>ReAct loop:</strong> reason &rarr; act (tool) &rarr; observe (tool result) &rarr; repeat.</li>
-                        <li><strong>Message types:</strong> LangGraph returns <code>human</code>, <code>ai</code> and <code>tool</code> messages; the <code>tool</code> messages are the greet results shown on the card.</li>
-                        <li><strong>Framework-agnostic models:</strong> <code>init_chat_model</code> picks the provider by name.</li>
+                        <li><strong>Model Setup:</strong> Strands uses <code>BedrockModel(model_id=...)</code>;
+                            LangChain/LangGraph uses <code>init_chat_model(model_id,
+                            model_provider="bedrock_converse")</code>.</li>
+                        <li><strong>Tool Decorator:</strong> Strands uses <code>from strands import tool</code>;
+                            LangGraph uses <code>from langchain_core.tools import tool</code>.</li>
+                        <li><strong>Invocation:</strong> Strands calls <code>agent(prompt)</code>; LangGraph calls
+                            <code>agent.invoke({"messages": [("user", prompt)]})</code>.</li>
                     </ul>
+                    <p><strong>3. Extracting Tool Outputs from Graph State</strong></p>
+                    <p>
+                        LangGraph returns the complete state dictionary <code>{"messages": [...]}</code>. Filtering for
+                        <code>getattr(m, "type", None) == "tool"</code> isolates the exact strings returned by
+                        <code>greet()</code>, while <code>messages[-1].content</code> holds the assistant's final reply.
+                    </p>
                 </div>
             </section>
 <!-- ============================================================ 3 -->
@@ -163,7 +199,7 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">ReAct loop (<code>12_hello_world_langgraph.py</code>)</span>
+                            <span class="flow-title">ReAct loop (<code>02_hello_world_langgraph.py</code>)</span>
                             <span class="flow-detail"><code>agent.invoke()</code> lets Bedrock call <code>greet(name)</code> for each person.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
@@ -198,7 +234,7 @@
                         <div class="mermaid">
 flowchart TD
     UI["LangGraphAgentCard.tsx<br/>POST /api/langgraph-agent"]:::entry -->|"prompt"| R["main.py<br/>langgraph_agent_service()"]:::fn
-    R -->|"prompt"| S["12_hello_world_langgraph.py<br/>run_langgraph_agent()"]:::fn
+    R -->|"prompt"| S["02_hello_world_langgraph.py<br/>run_langgraph_agent()"]:::fn
     S -->|"user message"| A["create_react_agent<br/>agent.invoke()"]:::fn
     A -->|"messages + greet spec"| B[("Amazon Bedrock<br/>bedrock_converse")]:::ext
     B -->|"call greet(name)"| A
@@ -234,7 +270,7 @@ flowchart TD
                     aria-controls="content-source-12-hello-world-langgraph-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-12-hello-world-langgraph-py" class="topic-title is-file">12_hello_world_langgraph.py<a class="headerlink" href="#source-12-hello-world-langgraph-py"
+                        <h2 id="source-12-hello-world-langgraph-py" class="topic-title is-file">02_hello_world_langgraph.py<a class="headerlink" href="#source-12-hello-world-langgraph-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -248,7 +284,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-12-hello-world-langgraph-py">
-                    <span class="file-path">server/services/12_hello_world_langgraph.py</span>
+                    <span class="file-path">server/services/04-ai-aws-strands/02_hello_world_langgraph.py</span>
                     <p class="file-label">LangGraph ReAct Hello World Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;LangGraph ReAct Hello World Agent Service.
 

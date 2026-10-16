@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Delivery ETA Model Training &middot; AI POCs</title>
+    <meta name="description"
+        content="🛵 Delivery ETA Model Training trains a scikit-learn RandomForestRegressor on synthetic delivery orders, serializes it with joblib, and predicts ETA in minutes." />
+    <link rel="icon" href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI POCs</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI POCs</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-01-model-training-py">01_model_training.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🛵 Delivery ETA Model Training<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🛵 Delivery ETA Model Training</strong> generates a synthetic food delivery dataset, trains a scikit-learn <code>RandomForestRegressor</code>, saves the model artifact with <code>joblib</code>, and predicts delivery ETA in minutes.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>QuickBite ETA (ML Model Training &amp; Serving)</strong> illustrates classical tabular
+                        machine learning in production: predicting a continuous numerical target (food delivery arrival
+                        time in minutes) from structured operational features using <strong>scikit-learn</strong>,
+                        <strong>pandas</strong>, and <strong>joblib</strong>.
+                    </p>
+                    <p>
+                        On first invocation, <code>get_or_train_model()</code> synthesizes <strong>5,000 realistic
+                        delivery orders</strong> across four features &mdash; <code>distance_km</code>,
+                        <code>prep_time_min</code>, <code>rider_available</code> (0/1), and <code>is_raining</code>
+                        (0/1) &mdash; fits a 60-tree <code>RandomForestRegressor</code>, and serializes the trained
+                        artifact to disk at <code>/tmp/eta_model.pkl</code>. Every prediction request loads the cached
+                        model, constructs a single-row DataFrame from the validated order inputs, and predicts the ETA
+                        in milliseconds.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. When to Use Classical ML Instead of an LLM</strong></p>
+                    <p>
+                        Not every AI problem is a language problem. Predicting delivery ETAs, credit risk, or churn from
+                        numeric columns requires fast, calibrated regression over historical tables. A
+                        <code>RandomForestRegressor</code> runs in &lt;2 ms on CPU, costs zero API tokens, is 100%
+                        deterministic, and learns quantitative feature relationships directly from data.
+                    </p>
+                    <p><strong>2. Synthetic Data Generation &amp; Ground-Truth Formula</strong></p>
+                    <p>
+                        To make the demo self-contained without shipping a large CSV dataset, the service seeds NumPy
+                        (<code>np.random.seed(42)</code>) and generates <code>n = 5,000</code> orders with a noisy
+                        ground-truth law:
+                    </p>
+                    <p>
+                        <code>eta_min = 8 + 3 &times; distance_km + 0.7 &times; prep_time_min + 9 &times; is_raining + 6 &times; (1 - rider_available) + normal(0, 2)</code>
+                    </p>
+                    <p>
+                        Notice the domain logic encoded in the data: rain adds a 9-minute penalty, and having no nearby
+                        rider available (<code>rider_available == 0</code>) adds a 6-minute dispatch delay.
+                    </p>
+                    <p><strong>3. Ensemble Learning with <code>RandomForestRegressor</code></strong></p>
+                    <p>
+                        A Random Forest trains 60 independent decision trees (<code>n_estimators=60</code>) on bootstrap
+                        samples of the training data and averages their predictions (<em>bagging</em>). Averaging across
+                        many decorrelated trees cancels out the <code>normal(0, 2)</code> Gaussian noise and prevents
+                        overfitting to individual outliers.
+                    </p>
+                    <p><strong>4. Two-Tier Model Caching (Disk Artifact + In-Memory Singleton)</strong></p>
+                    <p>
+                        Training on every HTTP request would waste CPU and slow down responses. The service uses a
+                        two-tier cache: <code>joblib.dump(model, MODEL_PATH)</code> persists the trained estimator to
+                        <code>/tmp/eta_model.pkl</code> across worker restarts, while the module-level
+                        <code>_cached_model</code> reference keeps the deserialized object in RAM so subsequent calls
+                        skip disk I/O entirely.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>ModelTrainingCard.tsx</code> sends <code>POST /api/model-training</code> with order features.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>model_training_service(req)</code> calls <code>predict_delivery_eta()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Model Artifact (<code>01_model_training.py</code>)</span>
+                            <span class="flow-detail">Loads or trains <code>RandomForestRegressor</code> via <code>joblib</code> and runs <code>model.predict()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Displays predicted ETA in minutes and order summary.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["ModelTrainingCard.tsx<br/>POST /api/model-training"]:::entry -->|"distance_km, prep_time_min, rider_available, is_raining"| R["main.py<br/>model_training_service()"]:::fn
+    R --> S["01_model_training.py<br/>predict_delivery_eta()"]:::fn
+    S --> M["get_or_train_model()<br/>RandomForestRegressor + joblib"]:::ext
+    M -->|"model"| S
+    S -->|"feature vector"| P["model.predict()"]:::fn
+    P -->|"eta_minutes"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs: the service implementation and the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+            <section class="topic-section is-collapsed" id="sec-source-01-model-training-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-01-model-training-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-01-model-training-py" class="topic-title is-file">01_model_training.py<a class="headerlink" href="#source-01-model-training-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">112 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-01-model-training-py">
+                    <span class="file-path">server/services/03-ai-model-training-chromadb/01_model_training.py</span>
+                    <p class="file-label">Delivery ETA Model Training &amp; Inference Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;QuickBite ETA — ML Model Training &amp; ETA Prediction Service.
+
+This service demonstrates training, serializing, and serving predictions with a scikit-learn model:
+1. Generates 5,000 rows of synthetic food-delivery data (`distance_km`, `prep_time_min`, `rider_available`, `is_raining`).
+2. Trains a `RandomForestRegressor` to predict delivery arrival time (`eta_min`) and caches `eta_model.pkl` via `joblib`.
+3. Loads the persisted model artifact, validates delivery order inputs with Pydantic (`ModelTrainingRequest`), and returns ETA in minutes.
+&quot;&quot;&quot;
+
+import os
+from pathlib import Path
+
+import joblib
+import numpy as np
+import pandas as pd
+from pydantic import BaseModel
+from sklearn.ensemble import RandomForestRegressor
+
+MODEL_PATH = Path(os.getenv(&quot;MODEL_PATH&quot;, &quot;/tmp/eta_model.pkl&quot;))
+_cached_model = None
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class ModelTrainingRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for QuickBite ETA model prediction.&quot;&quot;&quot;
+
+    distance_km: float = 4.5
+    prep_time_min: float = 15.0
+    rider_available: int = 1
+    is_raining: int = 1
+
+
+class ModelTrainingResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing order features, predicted ETA, and status message.&quot;&quot;&quot;
+
+    distance_km: float
+    prep_time_min: float
+    rider_available: int
+    is_raining: int
+    eta_minutes: float
+    message: str
+
+
+# ---------------------------------------------------------------------------
+# Model Training &amp; Persistence
+# ---------------------------------------------------------------------------
+def get_or_train_model() -&gt; RandomForestRegressor:
+    &quot;&quot;&quot;Load the trained RandomForestRegressor from disk, or train and save it on first use.&quot;&quot;&quot;
+    global _cached_model
+    if _cached_model is not None:
+        return _cached_model
+
+    # ① Train and persist eta_model.pkl if it does not exist yet
+    if not MODEL_PATH.exists():
+        np.random.seed(42)
+        n = 5000
+
+        df = pd.DataFrame({
+            &quot;distance_km&quot;: np.random.uniform(0.5, 12, n),
+            &quot;prep_time_min&quot;: np.random.uniform(5, 30, n),
+            &quot;rider_available&quot;: np.random.randint(0, 2, n),
+            &quot;is_raining&quot;: np.random.randint(0, 2, n),
+        })
+
+        # ② Ground-truth formula: base + distance*3 + prep*0.7 + rain penalty + rider penalty + noise
+        df[&quot;eta_min&quot;] = (
+            8
+            + df.distance_km * 3
+            + df.prep_time_min * 0.7
+            + df.is_raining * 9
+            + (1 - df.rider_available) * 6
+            + np.random.normal(0, 2, n)
+        )
+
+        # ③ Fit RandomForestRegressor and save artifact with joblib
+        X, y = df.drop(columns=[&quot;eta_min&quot;]), df[&quot;eta_min&quot;]
+        model = RandomForestRegressor(n_estimators=60, random_state=42).fit(X, y)
+        joblib.dump(model, MODEL_PATH)
+
+    # ④ Load the persisted model artifact from disk
+    _cached_model = joblib.load(MODEL_PATH)
+    return _cached_model
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def predict_delivery_eta(
+    distance_km: float = 4.5,
+    prep_time_min: float = 15.0,
+    rider_available: int = 1,
+    is_raining: int = 1,
+) -&gt; dict:
+    &quot;&quot;&quot;Predict delivery ETA in minutes using the trained RandomForestRegressor.&quot;&quot;&quot;
+    # ⑤ Load (or train) the model and run inference on the single-row order DataFrame
+    model = get_or_train_model()
+    order_row = {
+        &quot;distance_km&quot;: float(distance_km),
+        &quot;prep_time_min&quot;: float(prep_time_min),
+        &quot;rider_available&quot;: 1 if int(rider_available) else 0,
+        &quot;is_raining&quot;: 1 if int(is_raining) else 0,
+    }
+    X = pd.DataFrame([order_row])
+    eta = round(float(model.predict(X)[0]), 1)
+
+    return {
+        **order_row,
+        &quot;eta_minutes&quot;: eta,
+        &quot;message&quot;: f&quot;Your food arrives in {eta} min 🍔&quot;,
+    }
+
+</code></pre>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">Route</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <span class="file-path">server/main.py</span>
+                    <p class="file-label">FastAPI route handler for <code>POST /api/model-training</code>.</p>
+                    <pre><code data-lang="python">@app.post(&quot;/api/model-training&quot;, response_model=ModelTrainingResponse)
+def model_training_service(req: ModelTrainingRequest):
+    &quot;&quot;&quot;Train/load the RandomForest delivery ETA model and predict ETA in minutes.&quot;&quot;&quot;
+    try:
+        return ModelTrainingResponse(
+            **predict_delivery_eta(
+                distance_km=req.distance_km,
+                prep_time_min=req.prep_time_min,
+                rider_available=req.rider_available,
+                is_raining=req.is_raining,
+            )
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI POCs &mdash; 🛵 Delivery ETA Model Training &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
+
