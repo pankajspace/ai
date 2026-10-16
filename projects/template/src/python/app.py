@@ -50,10 +50,10 @@ bp = Blueprint("main", __name__)
 
 @bp.before_request
 def enforce_rate_limit():
-    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    """Enforce strict 30 requests per hour limit on all POST endpoints."""
     if request.method == "POST":
         blocked, msg, retry_after = check_rate_limit(
-            request, max_requests=10, window_seconds=3600
+            request, max_requests=30, window_seconds=3600
         )
         if blocked:
             resp = jsonify({"error": msg})

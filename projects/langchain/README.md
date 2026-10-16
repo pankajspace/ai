@@ -53,7 +53,7 @@ start Docker Desktop and wait until Docker reports that it is running.
 The self-provisioning deploy workflow creates the ECR repository, seeds the
 image, writes `~/secrets/langchain.env`, adds the Nginx
 `/langchain/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate
-limiting enabled: 10 requests upfront, 1r/m refill), auto-ensures the
+limiting enabled: 30 requests upfront, 1r/m refill), auto-ensures the
 `app-locations/*.conf` include and `00-rate-limit.conf`, and creates the
 per-project Compose service (`~/apps/langchain/docker-compose.yml`) automatically
 on every push.

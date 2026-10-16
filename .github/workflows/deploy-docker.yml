@@ -188,7 +188,7 @@ jobs:
                 'error_page 429 = @rate_limit_error;' \
                 'location @rate_limit_error {' \
                 '    default_type application/json;' \
-                '    return 429 '\''{"error": "Rate limit exceeded (10 requests per hour). Please wait an hour and try again."}\n'\'';' \
+                '    return 429 '\''{"error": "Rate limit exceeded (30 requests per hour). Please wait an hour and try again."}\n'\'';' \
                 '}' > "$RATE_RESP_TMP"
               sudo cp "$RATE_RESP_TMP" "$RATE_RESP"
               rm -f "$RATE_RESP_TMP"
@@ -210,7 +210,7 @@ jobs:
             NGINX_TMP=$(mktemp)
             cat > "$NGINX_TMP" <<'NGINX'
             location /docker/ {
-                limit_req          zone=ai_inputs burst=9 nodelay;
+                limit_req          zone=ai_inputs burst=29 nodelay;
                 limit_req_status   429;
                 proxy_pass         http://localhost:5003;
                 proxy_set_header   Host $host;

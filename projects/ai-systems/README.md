@@ -147,7 +147,7 @@ Source files under `src/` are bind-mounted into the container, so code edits tak
 
 ## Production Setup
 
-The self-provisioning deploy workflow creates the ECR repository, seeds the image, writes `~/secrets/ai-systems.env`, drops the Nginx location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting enabled: 10 requests upfront, 1r/m refill), auto-ensures the `app-locations/*.conf` include and `00-rate-limit.conf`, and creates the per-project Compose service on EC2 automatically on every push.
+The self-provisioning deploy workflow creates the ECR repository, seeds the image, writes `~/secrets/ai-systems.env`, drops the Nginx location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting enabled: 30 requests upfront, 1r/m refill), auto-ensures the `app-locations/*.conf` include and `00-rate-limit.conf`, and creates the per-project Compose service on EC2 automatically on every push.
 
 **One manual step**: If any of the 3 provider keys or model names are not already in `techtoday/secrets`, add them locally as the `techtoday` IAM user before the first deploy:
 

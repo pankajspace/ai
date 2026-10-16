@@ -30,7 +30,7 @@ def get_db():
 
 
 def get_client_ip(req):
-    """Extract client IP address from Starlette/FastAPI Request or mock object."""
+    """Extract client IP address from request (supporting Flask, Starlette/FastAPI, or string)."""
     if isinstance(req, str):
         return req
     headers = getattr(req, "headers", None)
@@ -44,7 +44,7 @@ def get_client_ip(req):
     client = getattr(req, "client", None)
     if client and getattr(client, "host", None):
         return client.host
-    return getattr(req, "remote_addr", "unknown")
+    return getattr(req, "remote_addr", "unknown") or "unknown"
 
 
 def check_rate_limit(req, max_requests=30, window_seconds=3600):
@@ -82,4 +82,3 @@ def check_rate_limit(req, max_requests=30, window_seconds=3600):
             (client_ip, now),
         )
         return False, None, 0
-

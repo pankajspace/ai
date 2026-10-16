@@ -42,7 +42,7 @@ cd "$PROJECT_NAME"
 Adjust the copied files:
 
 1. `docker-compose.yml` — change the `web` service's published port from `8090` to `<local-port>`.
-2. `src/python/` — replace the starter `echo` feature and update `src/python/app.py` routes. Keep `PATH_PREFIX` support, `src/python/rate_limiter.py`, and the `enforce_rate_limit` `before_request` hook that caps POST requests at 10 per hour per IP.
+2. `src/python/` — replace the starter `echo` feature and update `src/python/app.py` routes. Keep `PATH_PREFIX` support, `src/python/rate_limiter.py`, and the `enforce_rate_limit` `before_request` hook that caps POST requests at 30 per hour per IP.
 3. `src/index.html`, `src/css/`, and `src/js/` — update the UI and browser behavior for the new project. Keep the `!res.ok` branch in `src/js/main.js` that renders 429 rate-limit errors.
 4. `requirements.txt` — add libraries the project needs.
 5. `.env.example` — list required environment variables.
