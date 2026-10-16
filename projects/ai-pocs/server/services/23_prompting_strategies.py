@@ -24,6 +24,8 @@ class PromptingStrategiesRequest(BaseModel):
 
     question: str = "A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)"
     expected_answer: str = "293"
+    model: str = "gpt-4o-mini"
+    temperature: float = 0.7
 
 
 class StrategyResult(BaseModel):
@@ -41,6 +43,8 @@ class PromptingStrategiesResponse(BaseModel):
     """Output payload from Prompting Strategies Benchmark."""
 
     expected_answer: str
+    model: str = "gpt-4o-mini"
+    temperature: float = 0.7
     strategies: List[StrategyResult]
 
 
@@ -61,6 +65,35 @@ Thought:
 3. In 4 hours, they make 36 * 4 = 144 widgets.
 Answer: 144
 """
+
+
+def _resolve_client_and_model(model_choice: str) -> tuple[OpenAI, str]:
+    """Resolve the OpenAI-compatible client and model identifier for the chosen model."""
+    choice = (model_choice or "").strip().lower()
+    if "gemini" in choice and os.getenv("GEMINI_API_KEY"):
+        return (
+            OpenAI(
+                api_key=os.getenv("GEMINI_API_KEY"),
+                base_url=os.getenv("GEMINI_BASE_URL", "https://generativelanguage.googleapis.com/v1beta/openai/"),
+            ),
+            os.getenv("GEMINI_MODEL", "gemini-3.8-flash"),
+        )
+    if ("groq" in choice or "oss" in choice or "llama" in choice) and os.getenv("GROQ_API_KEY"):
+        return (
+            OpenAI(
+                api_key=os.getenv("GROQ_API_KEY"),
+                base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"),
+            ),
+            os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
+        )
+    resolved_model = model_choice.strip() if choice in ("gpt-4o", "gpt-4o-mini") else os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    return (
+        OpenAI(
+            api_key=os.getenv("OPENAI_API_KEY"),
+            base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
+        ),
+        resolved_model,
+    )
 
 
 def extract_final_answer(response_text: str) -> str:
@@ -92,14 +125,13 @@ def evaluate_accuracy(extracted: str, expected: str) -> bool:
 def run_prompting_strategies(
     question: str = "A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)",
     expected_answer: str = "293",
+    model: str = "gpt-4o-mini",
+    temperature: float = 0.7,
 ) -> dict:
     """Execute all three prompting strategies and compare metrics."""
-    # ① Initialize the OpenAI client and model configuration
-    client = OpenAI(
-        api_key=os.getenv("OPENAI_API_KEY"),
-        base_url=os.getenv("OPENAI_BASE_URL", "https://api.openai.com/v1"),
-    )
-    model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+    # ① Initialize the LLM client and resolve model and temperature configuration
+    client, resolved_model = _resolve_client_and_model(model)
+    clamped_temp = max(0.0, min(2.0, float(temperature)))
 
     # ② Construct Direct, Zero-Shot CoT, and Few-Shot CoT prompts
     prompts = {
@@ -114,14 +146,14 @@ def run_prompting_strategies(
     for name, p_text in prompts.items():
         start_t = time.perf_counter()
         resp = client.chat.completions.create(
-            model=model,
+            model=resolved_model,
             messages=[{"role": "user", "content": p_text}],
-            temperature=0.3,
+            temperature=clamped_temp,
         )
         dur = time.perf_counter() - start_t
         text = resp.choices[0].message.content or ""
-        p_tok = resp.usage.prompt_tokens
-        c_tok = resp.usage.completion_tokens
+        p_tok = resp.usage.prompt_tokens if resp.usage else 0
+        c_tok = resp.usage.completion_tokens if resp.usage else 0
 
         # ④ Extract the final answer and score accuracy against ground truth
         extracted = extract_final_answer(text)
@@ -141,5 +173,11 @@ def run_prompting_strategies(
         )
 
     # ⑤ Return comparative benchmark metrics across all three strategies
-    return {"expected_answer": expected_answer, "strategies": results}
+    return {
+        "expected_answer": expected_answer,
+        "model": resolved_model,
+        "temperature": clamped_temp,
+        "strategies": results,
+    }
+
 

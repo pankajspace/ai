@@ -400,7 +400,9 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
     if not req.question.strip():
         raise HTTPException(status_code=400, detail="Question cannot be empty")
     try:
-        return PromptingStrategiesResponse(**run_prompting_strategies(req.question, req.expected_answer))
+        return PromptingStrategiesResponse(
+            **run_prompting_strategies(req.question, req.expected_answer, req.model, req.temperature)
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
@@ -409,7 +411,9 @@ def prompting_strategies_service(req: PromptingStrategiesRequest):
 def sycophancy_trap_service(req: SycophancyTrapRequest):
     # ① Execute multi-turn sycophancy resilience benchmark
     try:
-        return SycophancyTrapResponse(**run_sycophancy_trap(req.case_type))
+        return SycophancyTrapResponse(
+            **run_sycophancy_trap(req.case_type, req.model, req.temperature)
+        )
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc))
 
