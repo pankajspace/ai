@@ -33,8 +33,8 @@
                     <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-31-mcp-evals-py">31_mcp_evals.py</a></li>
-                    <li><a href="#source-30-mcp-agent-py">30_mcp_agent.py</a></li>
+                    <li><a href="#source-32-mcp-evals-py">32_mcp_evals.py</a></li>
+                    <li><a href="#source-31-mcp-agent-py">31_mcp_agent.py</a></li>
                     <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                 </ol>
@@ -102,7 +102,7 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-concept">
-                    <p>Every case runs the real agent from <code>30_mcp_agent.py</code> and applies two assertions: <strong>tool routing</strong> (did it call the expected tool, or no tool for &quot;What is 2 + 2?&quot;) and <strong>ground truth</strong> (does the answer contain e.g. &quot;287&quot; or &quot;164&quot;).</p>
+                    <p>Every case runs the real agent from <code>31_mcp_agent.py</code> and applies two assertions: <strong>tool routing</strong> (did it call the expected tool, or no tool for &quot;What is 2 + 2?&quot;) and <strong>ground truth</strong> (does the answer contain e.g. &quot;287&quot; or &quot;164&quot;).</p>
                     <p>Re-running the suite after changing a prompt, model or tool description shows quickly whether the agent got better or worse.</p>
                 </div>
             </section>
@@ -166,8 +166,8 @@
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">Suite (<code>31_mcp_evals.py</code>)</span>
-                            <span class="flow-detail">For each of the 5 <code>TEST_CASES</code>, the loop calls <code>run_mcp_agent()</code> from <code>30_mcp_agent.py</code>, reads <code>tools_used</code> from its <code>trace</code> and applies both assertions.</span>
+                            <span class="flow-title">Suite (<code>32_mcp_evals.py</code>)</span>
+                            <span class="flow-detail">For each of the 5 <code>TEST_CASES</code>, the loop calls <code>run_mcp_agent()</code> from <code>31_mcp_agent.py</code>, reads <code>tools_used</code> from its <code>trace</code> and applies both assertions.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -201,8 +201,8 @@
                         <div class="mermaid">
 flowchart TD
     UI["McpEvalsCard.tsx<br/>POST /api/mcp-evals"]:::entry --> R["main.py<br/>mcp_evals_service()"]:::fn
-    R -->|"asyncio.run()"| E["31_mcp_evals.py<br/>run_mcp_evals_suite()"]:::fn
-    E -->|"each test case: question"| A["30_mcp_agent.py<br/>run_mcp_agent()"]:::fn
+    R -->|"asyncio.run()"| E["32_mcp_evals.py<br/>run_mcp_evals_suite()"]:::fn
+    E -->|"each test case: question"| A["31_mcp_agent.py<br/>run_mcp_agent()"]:::fn
     A -->|"tools/list, tools/call"| M[("cricket_server.py<br/>FastMCP")]:::ext
     A -->|"messages + tools"| G[("Groq API")]:::ext
     G -->|"tool calls / answer"| A
@@ -231,12 +231,12 @@ flowchart TD
 
 <!-- ============================================================ 5 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-31-mcp-evals-py">
+            <section class="topic-section is-collapsed" id="sec-source-32-mcp-evals-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-31-mcp-evals-py">
+                    aria-controls="content-source-32-mcp-evals-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-31-mcp-evals-py" class="topic-title is-file">31_mcp_evals.py<a class="headerlink" href="#source-31-mcp-evals-py"
+                        <h2 id="source-32-mcp-evals-py" class="topic-title is-file">32_mcp_evals.py<a class="headerlink" href="#source-32-mcp-evals-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -249,8 +249,8 @@ flowchart TD
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-31-mcp-evals-py">
-                    <span class="file-path">server/services/31_mcp_evals.py</span>
+                <div class="topic-content" id="content-source-32-mcp-evals-py">
+                    <span class="file-path">server/services/32_mcp_evals.py</span>
                     <p class="file-label">MCP Agent Evaluation Suite Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP Agent Evaluation Suite Service.
 
@@ -265,8 +265,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-# ① Reuse the MCP agent loop from 30_mcp_agent.py (importlib, because the file name starts with a digit)
-mcp_agent = importlib.import_module(&quot;.30_mcp_agent&quot;, package=__package__)
+# ① Reuse the MCP agent loop from 31_mcp_agent.py (importlib, because the file name starts with a digit)
+mcp_agent = importlib.import_module(&quot;.31_mcp_agent&quot;, package=__package__)
 
 
 class TestCaseEvalResult(BaseModel):
@@ -336,12 +336,12 @@ async def run_mcp_evals_suite() -&gt; dict:
             </section>
 <!-- ============================================================ 6 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-30-mcp-agent-py">
+            <section class="topic-section is-collapsed" id="sec-source-31-mcp-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-30-mcp-agent-py">
+                    aria-controls="content-source-31-mcp-agent-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="source-30-mcp-agent-py" class="topic-title is-file">30_mcp_agent.py<a class="headerlink" href="#source-30-mcp-agent-py"
+                        <h2 id="source-31-mcp-agent-py" class="topic-title is-file">31_mcp_agent.py<a class="headerlink" href="#source-31-mcp-agent-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -354,8 +354,8 @@ async def run_mcp_evals_suite() -&gt; dict:
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-30-mcp-agent-py">
-                    <span class="file-path">server/services/30_mcp_agent.py</span>
+                <div class="topic-content" id="content-source-31-mcp-agent-py">
+                    <span class="file-path">server/services/31_mcp_agent.py</span>
                     <p class="file-label">MCP-Enabled LLM Agent Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;MCP-Enabled LLM Agent Service.
 

@@ -27,17 +27,18 @@ import { ClassBasedToolsCard } from './components/ClassBasedToolsCard'
 import { AsyncToolsCard } from './components/AsyncToolsCard'
 import { TravelAssistantCard } from './components/TravelAssistantCard'
 
-// Section 3: AI Systems & Prompting (23 - 24)
+// Section 3: AI Systems & Multi-Turn Pressure (23 - 25)
 import { PromptingStrategiesCard } from './components/PromptingStrategiesCard'
 import { SycophancyTrapCard } from './components/SycophancyTrapCard'
+import { RefundBenchCard } from './components/RefundBenchCard'
 
-// Section 4: AI Reliability & Calibration (25 - 28)
+// Section 4: AI Reliability & Calibration (26 - 29)
 import { CotVsDirectCard } from './components/CotVsDirectCard'
 import { VarianceDeterminismCard } from './components/VarianceDeterminismCard'
 import { ToolSchemaCalibrationCard } from './components/ToolSchemaCalibrationCard'
 import { ToolErrorInjectionCard } from './components/ToolErrorInjectionCard'
 
-// Section 5: FastMCP & Evals (29 - 31)
+// Section 5: FastMCP & Evals (30 - 32)
 import { McpClientCard } from './components/McpClientCard'
 import { McpAgentCard } from './components/McpAgentCard'
 import { McpEvalsCard } from './components/McpEvalsCard'
@@ -197,7 +198,7 @@ function App() {
           <div className="container">
             <h1>AI POCs</h1>
             <p className="subtitle">
-              Comprehensive Suite of 31 AI Services &bull; FastAPI + React Multi-Container Architecture
+              Comprehensive Suite of 32 AI Services &bull; FastAPI + React Multi-Container Architecture
             </p>
           </div>
         </section>
@@ -209,7 +210,7 @@ function App() {
               <div className="accordion-toolbar-info">
                 <span>5 Domains</span>
                 <span className="toolbar-dot">&bull;</span>
-                <span>31 Interactive Services</span>
+                <span>32 Interactive Services</span>
               </div>
               <div className="accordion-toolbar-actions">
                 <button
@@ -303,25 +304,26 @@ function App() {
               <TravelAssistantCard />
             </SectionAccordion>
 
-            {/* SECTION 3: AI SYSTEMS & PROMPTING STRATEGIES (23 - 24) */}
+            {/* SECTION 3: AI SYSTEMS & MULTI-TURN PRESSURE (23 - 25) */}
             <SectionAccordion
               id="systems"
               title="Part 3 • AI Systems & Multi-Turn Pressure"
-              count={2}
+              count={3}
               startCount={22}
               isExpanded={expanded.systems}
               onToggle={() => toggleSection('systems')}
             >
               <PromptingStrategiesCard />
               <SycophancyTrapCard />
+              <RefundBenchCard />
             </SectionAccordion>
 
-            {/* SECTION 4: AI RELIABILITY & CALIBRATION (25 - 28) */}
+            {/* SECTION 4: AI RELIABILITY & CALIBRATION (26 - 29) */}
             <SectionAccordion
               id="reliability"
               title="Part 4 • AI Reliability & Error Injection"
               count={4}
-              startCount={24}
+              startCount={25}
               isExpanded={expanded.reliability}
               onToggle={() => toggleSection('reliability')}
             >
@@ -331,12 +333,12 @@ function App() {
               <ToolErrorInjectionCard />
             </SectionAccordion>
 
-            {/* SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (29 - 31) */}
+            {/* SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (30 - 32) */}
             <SectionAccordion
               id="mcp"
               title="Part 5 • FastMCP Protocol & Automated Evals"
               count={3}
-              startCount={28}
+              startCount={29}
               isExpanded={expanded.mcp}
               onToggle={() => toggleSection('mcp')}
             >
@@ -350,7 +352,7 @@ function App() {
 
       <footer>
         <div className="container">
-          <p>&copy; TechToday &bull; 31 Integrated AI Services</p>
+          <p>&copy; TechToday &bull; 32 Integrated AI Services</p>
         </div>
       </footer>
     </>

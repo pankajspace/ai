@@ -1,6 +1,6 @@
 # AI POCs Server (FastAPI)
 
-FastAPI backend service hosting 31 modular AI services across 5 sequential domains in a multi-container architecture.
+FastAPI backend service hosting 32 modular AI services across 5 sequential domains in a multi-container architecture.
 
 ## Overview
 
@@ -10,7 +10,7 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 
 ## File Structure
 
-1. `main.py`: FastAPI app with CORS middleware, health check, and 31 route endpoints.
+1. `main.py`: FastAPI app with CORS middleware, health check, and 32 route endpoints.
 2. `services/__init__.py`: Package entrypoint dynamically loading numbered services and exporting schemas.
 3. `services/01_chat_openai.py`: OpenAI travel guide chat completion service.
 4. `services/02_chat_groq.py`: Groq joke generator chat completion service.
@@ -36,17 +36,18 @@ FastAPI backend service hosting 31 modular AI services across 5 sequential domai
 24. `services/22_travel_assistant.py`: Capstone travel agent combining weather forecasts, packing lists, and cost estimation.
 25. `services/23_prompting_strategies.py`: Benchmarks Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning.
 26. `services/24_sycophancy_trap.py`: 4-round escalating pushback evaluator testing model sycophancy and integrity.
-27. `services/25_cot_vs_direct.py`: Side-by-side reliability benchmark measuring CoT reasoning gains on logic puzzles.
-28. `services/26_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
-29. `services/27_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
-30. `services/28_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
-31. `services/29_mcp_client.py`: MCP client over stdio without an LLM (handshake, tool discovery, direct tool call).
-32. `services/30_mcp_agent.py`: Groq agent that discovers and calls the MCP server's tools over stdio.
-33. `services/31_mcp_evals.py`: 5-case eval suite running the service 30 agent and asserting tool routing and facts.
-34. `services/cricket_server.py`: FastMCP stdio server (demo live scores and player stats) started as a subprocess by services 29-31.
-35. `requirements.txt`: Python package dependencies.
-36. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
-37. `.env.example`: Configuration variables for port, host, and API keys.
+27. `services/25_refund_bench.py`: 4-stage multi-judge food dispute adjudication pipeline with code-driven pricing.
+28. `services/26_cot_vs_direct.py`: Side-by-side reliability benchmark measuring CoT reasoning gains on logic puzzles.
+29. `services/27_variance_determinism.py`: Evaluates structured output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced modes.
+30. `services/28_tool_schema_calibration.py`: Measures routing sensitivity on function names vs docstrings via 2x2 matrix.
+31. `services/29_tool_error_injection.py`: Simulates upstream API outages (HTTP 503) to benchmark error transparency and hallucination prevention.
+32. `services/30_mcp_client.py`: MCP client over stdio without an LLM (handshake, tool discovery, direct tool call).
+33. `services/31_mcp_agent.py`: Groq agent that discovers and calls the MCP server's tools over stdio.
+34. `services/32_mcp_evals.py`: 5-case eval suite running the service 31 agent and asserting tool routing and facts.
+35. `services/cricket_server.py`: FastMCP stdio server (demo live scores and player stats) started as a subprocess by services 30-32.
+36. `requirements.txt`: Python package dependencies.
+37. `Dockerfile`: Container image build instructions using Python 3.12-slim and `uv`.
+38. `.env.example`: Configuration variables for port, host, and API keys.
 
 ## Running the Server
 
@@ -95,7 +96,7 @@ From the `projects/ai-pocs/server` directory:
 ## Endpoints
 
 1. `GET /`: Basic service status check.
-2. `GET /health`: Healthcheck endpoint reporting status and total service count (31).
+2. `GET /health`: Healthcheck endpoint reporting status and total service count (32).
 3. `POST /api/travel`: OpenAI travel suggestions.
 4. `POST /api/joke`: Groq joke generator.
 5. `POST /api/summarize`: LangChain LCEL text summarizer.
@@ -120,10 +121,11 @@ From the `projects/ai-pocs/server` directory:
 24. `POST /api/travel-assistant`: Capstone weather, packing, and cost planner agent.
 25. `POST /api/prompting-strategies`: Benchmarking Direct vs Zero-Shot CoT vs Few-Shot CoT.
 26. `POST /api/sycophancy-trap`: Multi-turn pushback and capitulation evaluator.
-27. `POST /api/cot-vs-direct`: CoT vs Direct reasoning reliability benchmark.
-28. `POST /api/variance-determinism`: Structured output determinism evaluator.
-29. `POST /api/tool-schema-calibration`: 2x2 tool schema routing calibration matrix.
-30. `POST /api/tool-error-injection`: Upstream API error injection and hallucination test.
-31. `POST /api/mcp-client`: Direct FastMCP protocol client.
-32. `POST /api/mcp-agent`: LLM-guided FastMCP cricket assistant.
-33. `POST /api/mcp-evals`: Automated assertion evaluation suite for FastMCP agent.
+27. `POST /api/refund-bench`: Multi-judge dispute adjudication pipeline.
+28. `POST /api/cot-vs-direct`: CoT vs Direct reasoning reliability benchmark.
+29. `POST /api/variance-determinism`: Structured output determinism evaluator.
+30. `POST /api/tool-schema-calibration`: 2x2 tool schema routing calibration matrix.
+31. `POST /api/tool-error-injection`: Upstream API error injection and hallucination test.
+32. `POST /api/mcp-client`: Direct FastMCP protocol client.
+33. `POST /api/mcp-agent`: LLM-guided FastMCP cricket assistant.
+34. `POST /api/mcp-evals`: Automated assertion evaluation suite for FastMCP agent.

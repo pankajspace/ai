@@ -74,14 +74,17 @@ from services import (
     TravelAssistantRequest,
     TravelAssistantResponse,
     run_travel_assistant_agent,
-    # 23 - 24: AI Systems
+    # 23 - 25: AI Systems
     PromptingStrategiesRequest,
     PromptingStrategiesResponse,
     run_prompting_strategies,
     SycophancyTrapRequest,
     SycophancyTrapResponse,
     run_sycophancy_trap,
-    # 25 - 28: AI Reliability
+    RefundBenchRequest,
+    RefundBenchResponse,
+    run_refund_bench,
+    # 26 - 29: AI Reliability
     CotVsDirectRequest,
     CotVsDirectResponse,
     run_cot_vs_direct_benchmark,
@@ -94,7 +97,7 @@ from services import (
     ToolErrorInjectionRequest,
     ToolErrorInjectionResponse,
     run_tool_error_injection,
-    # 29 - 31: MCP & Evals
+    # 30 - 32: MCP & Evals
     McpClientRequest,
     McpClientResponse,
     run_mcp_client,
@@ -122,12 +125,12 @@ app.add_middleware(
 
 @app.get("/")
 def read_root():
-    return {"message": "AI POCs Server is running (31 Integrated Services)", "status": "ok"}
+    return {"message": "AI POCs Server is running (32 Integrated Services)", "status": "ok"}
 
 
 @app.get("/health")
 def health_check():
-    return {"status": "healthy", "total_services": 31}
+    return {"status": "healthy", "total_services": 32}
 
 
 # ==============================================================================
@@ -391,7 +394,7 @@ def travel_assistant_service(req: TravelAssistantRequest):
 
 
 # ==============================================================================
-# SECTION 3: AI SYSTEMS & PROMPTING STRATEGIES (23 - 24)
+# SECTION 3: AI SYSTEMS & MULTI-TURN PRESSURE (23 - 25)
 # ==============================================================================
 
 @app.post("/api/prompting-strategies", response_model=PromptingStrategiesResponse)
@@ -418,8 +421,19 @@ def sycophancy_trap_service(req: SycophancyTrapRequest):
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@app.post("/api/refund-bench", response_model=RefundBenchResponse)
+def refund_bench_service(req: RefundBenchRequest):
+    # ① Execute 4-stage multi-judge food dispute adjudication pipeline
+    try:
+        return RefundBenchResponse(
+            **run_refund_bench(req.complaint_text, req.bench, req.cap)
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))
+
+
 # ==============================================================================
-# SECTION 4: AI RELIABILITY & CALIBRATION (25 - 28)
+# SECTION 4: AI RELIABILITY & CALIBRATION (26 - 29)
 # ==============================================================================
 
 @app.post("/api/cot-vs-direct", response_model=CotVsDirectResponse)
@@ -465,7 +479,7 @@ def tool_error_injection_service(req: ToolErrorInjectionRequest):
 
 
 # ==============================================================================
-# SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (29 - 31)
+# SECTION 5: MODEL CONTEXT PROTOCOL & EVALS (30 - 32)
 # ==============================================================================
 
 @app.post("/api/mcp-client", response_model=McpClientResponse)

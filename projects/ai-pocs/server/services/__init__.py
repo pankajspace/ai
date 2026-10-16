@@ -27,20 +27,21 @@ class_based_tools = importlib.import_module(".20_class_based_tools", package=__n
 async_tools = importlib.import_module(".21_async_tools", package=__name__)
 travel_assistant = importlib.import_module(".22_travel_assistant", package=__name__)
 
-# Practice 04: AI Systems & Prompting Strategies (23 - 24)
+# Practice 04: AI Systems & Prompting Strategies (23 - 25)
 prompting_strategies = importlib.import_module(".23_prompting_strategies", package=__name__)
 sycophancy_trap = importlib.import_module(".24_sycophancy_trap", package=__name__)
+refund_bench = importlib.import_module(".25_refund_bench", package=__name__)
 
-# Practice 05: AI Reliability & Calibration (25 - 28)
-cot_vs_direct = importlib.import_module(".25_cot_vs_direct", package=__name__)
-variance_determinism = importlib.import_module(".26_variance_determinism", package=__name__)
-tool_schema_calibration = importlib.import_module(".27_tool_schema_calibration", package=__name__)
-tool_error_injection = importlib.import_module(".28_tool_error_injection", package=__name__)
+# Practice 05: AI Reliability & Calibration (26 - 29)
+cot_vs_direct = importlib.import_module(".26_cot_vs_direct", package=__name__)
+variance_determinism = importlib.import_module(".27_variance_determinism", package=__name__)
+tool_schema_calibration = importlib.import_module(".28_tool_schema_calibration", package=__name__)
+tool_error_injection = importlib.import_module(".29_tool_error_injection", package=__name__)
 
-# Practice 06: MCP & Evals (29 - 31)
-mcp_client = importlib.import_module(".29_mcp_client", package=__name__)
-mcp_agent = importlib.import_module(".30_mcp_agent", package=__name__)
-mcp_evals = importlib.import_module(".31_mcp_evals", package=__name__)
+# Practice 06: MCP & Evals (30 - 32)
+mcp_client = importlib.import_module(".30_mcp_client", package=__name__)
+mcp_agent = importlib.import_module(".31_mcp_agent", package=__name__)
+mcp_evals = importlib.import_module(".32_mcp_evals", package=__name__)
 
 # Register canonical module paths in sys.modules
 service_registry = {
@@ -68,6 +69,7 @@ service_registry = {
     "travel_assistant": travel_assistant,
     "prompting_strategies": prompting_strategies,
     "sycophancy_trap": sycophancy_trap,
+    "refund_bench": refund_bench,
     "cot_vs_direct": cot_vs_direct,
     "variance_determinism": variance_determinism,
     "tool_schema_calibration": tool_schema_calibration,
@@ -172,7 +174,7 @@ TravelAssistantRequest = travel_assistant.TravelAssistantRequest
 TravelAssistantResponse = travel_assistant.TravelAssistantResponse
 run_travel_assistant_agent = travel_assistant.run_travel_assistant_agent
 
-# 23 - 24: AI Systems
+# 23 - 25: AI Systems
 PromptingStrategiesRequest = prompting_strategies.PromptingStrategiesRequest
 PromptingStrategiesResponse = prompting_strategies.PromptingStrategiesResponse
 run_prompting_strategies = prompting_strategies.run_prompting_strategies
@@ -181,7 +183,14 @@ SycophancyTrapRequest = sycophancy_trap.SycophancyTrapRequest
 SycophancyTrapResponse = sycophancy_trap.SycophancyTrapResponse
 run_sycophancy_trap = sycophancy_trap.run_sycophancy_trap
 
-# 25 - 28: AI Reliability
+RefundBenchRequest = refund_bench.RefundBenchRequest
+RefundBenchResponse = refund_bench.RefundBenchResponse
+GrievanceRuling = refund_bench.GrievanceRuling
+JudgedGrievance = refund_bench.JudgedGrievance
+run_refund_bench = refund_bench.run_refund_bench
+adjudicate_dispute = refund_bench.adjudicate_dispute
+
+# 26 - 29: AI Reliability
 CotVsDirectRequest = cot_vs_direct.CotVsDirectRequest
 CotVsDirectResponse = cot_vs_direct.CotVsDirectResponse
 run_cot_vs_direct_benchmark = cot_vs_direct.run_cot_vs_direct_benchmark
@@ -198,7 +207,7 @@ ToolErrorInjectionRequest = tool_error_injection.ToolErrorInjectionRequest
 ToolErrorInjectionResponse = tool_error_injection.ToolErrorInjectionResponse
 run_tool_error_injection = tool_error_injection.run_tool_error_injection
 
-# 29 - 31: MCP & Evals
+# 30 - 32: MCP & Evals
 McpClientRequest = mcp_client.McpClientRequest
 McpClientResponse = mcp_client.McpClientResponse
 run_mcp_client = mcp_client.run_mcp_client
@@ -235,15 +244,17 @@ __all__ = [
     "ClassBasedToolsRequest", "ClassBasedToolsResponse", "run_class_based_tools_agent",
     "AsyncToolsRequest", "AsyncToolsResponse", "run_async_tools_agent",
     "TravelAssistantRequest", "TravelAssistantResponse", "run_travel_assistant_agent",
-    # 23-24
+    # 23-25
     "PromptingStrategiesRequest", "PromptingStrategiesResponse", "run_prompting_strategies",
     "SycophancyTrapRequest", "SycophancyTrapResponse", "run_sycophancy_trap",
-    # 25-28
+    "RefundBenchRequest", "RefundBenchResponse", "GrievanceRuling", "JudgedGrievance",
+    "run_refund_bench", "adjudicate_dispute",
+    # 26-29
     "CotVsDirectRequest", "CotVsDirectResponse", "run_cot_vs_direct_benchmark",
     "VarianceDeterminismRequest", "VarianceDeterminismResponse", "run_variance_determinism_benchmark",
     "ToolSchemaCalibrationRequest", "ToolSchemaCalibrationResponse", "run_tool_schema_calibration",
     "ToolErrorInjectionRequest", "ToolErrorInjectionResponse", "run_tool_error_injection",
-    # 29-31
+    # 30-32
     "McpClientRequest", "McpClientResponse", "run_mcp_client",
     "McpAgentRequest", "McpAgentResponse", "run_mcp_agent",
     "McpEvalsResponse", "run_mcp_evals_suite",

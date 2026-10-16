@@ -1,6 +1,6 @@
-# AI POCs: Multi-Container Suite of 31 AI Services
+# AI POCs: Multi-Container Suite of 32 AI Services
 
-A unified, modular full-stack application hosting 31 production-grade AI services across 5 sequential practice domains using FastAPI, React + Vite, and Docker Compose.
+A unified, modular full-stack application hosting 32 production-grade AI services across 5 sequential practice domains using FastAPI, React + Vite, and Docker Compose.
 
 Each interactive card in the React dashboard features a green `ⓘ` icon in its header linking to a dedicated `info/<demo>.html` explainer page under `client/public/info/` with two units: Unit 1 (Concept, Theory & Concepts, end-to-end Request Flow, and Mermaid `flowchart TD` Code Flow) and Unit 2 (complete, unedited Python source code).
 
@@ -16,12 +16,12 @@ Each interactive card in the React dashboard features a green `ⓘ` icon in its 
 Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-client (vite preview :5173)
                                                      ├── Static UI & info/*.html
                                                      └── Proxy /ai-pocs/api/* ──▶ ai-pocs-server (FastAPI :8000)
-                                                                                       └── 31 AI Services (OpenAI, Groq, Bedrock, FastMCP)
+                                                                                       └── 32 AI Services (OpenAI, Groq, Bedrock, FastMCP)
 ```
 
 ---
 
-## Sequential Domain Overview (31 Services)
+## Sequential Domain Overview (32 Services)
 
 ### Domain 1: AI Basics & LangChain (Services 01 - 10)
 
@@ -51,23 +51,24 @@ Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-cl
 21. `21_async_tools` (`info/async-tools.html`): Async Strands tool run with `agent.invoke_async`, so three 2-second warehouse lookups run in parallel.
 22. `22_travel_assistant` (`info/travel-assistant.html`): Capstone multi-tool planner chaining `get_weather_forecast`, `suggest_packing_list`, `estimate_trip_cost`, and `calculator`.
 
-### Domain 3: AI Systems & Prompting (Services 23 - 24)
+### Domain 3: AI Systems & Multi-Turn Pressure (Services 23 - 25)
 
 23. `23_prompting_strategies` (`info/prompting-strategies.html`): Benchmark measuring Direct vs Zero-Shot CoT vs Few-Shot CoT on multi-step reasoning questions.
 24. `24_sycophancy_trap` (`info/sycophancy-trap.html`): Multi-turn pushback evaluator testing model resilience against gaslighting and authority pressure.
+25. `25_refund_bench` (`info/refund-bench.html`): 4-stage multi-judge food dispute adjudication pipeline with code-driven pricing.
 
-### Domain 4: AI Reliability & Calibration (Services 25 - 28)
+### Domain 4: AI Reliability & Calibration (Services 26 - 29)
 
-25. `25_cot_vs_direct` (`info/cot-vs-direct.html`): Side-by-side reliability benchmark measuring CoT gains on complex state-tracking logic puzzles.
-26. `26_variance_determinism` (`info/variance-determinism.html`): Evaluates output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced JSON modes.
-27. `27_tool_schema_calibration` (`info/tool-schema-calibration.html`): Measures model routing sensitivity between tool names and docstrings via a 2x2 calibration matrix.
-28. `28_tool_error_injection` (`info/tool-error-injection.html`): Simulates upstream API outages (HTTP 503) to test error transparency and hallucination prevention.
+26. `26_cot_vs_direct` (`info/cot-vs-direct.html`): Side-by-side reliability benchmark measuring CoT gains on complex state-tracking logic puzzles.
+27. `27_variance_determinism` (`info/variance-determinism.html`): Evaluates output consistency across Unconstrained, Prompt-Constrained, and Schema-Enforced JSON modes.
+28. `28_tool_schema_calibration` (`info/tool-schema-calibration.html`): Measures model routing sensitivity between tool names and docstrings via a 2x2 calibration matrix.
+29. `29_tool_error_injection` (`info/tool-error-injection.html`): Simulates upstream API outages (HTTP 503) to test error transparency and hallucination prevention.
 
-### Domain 5: Model Context Protocol & Evals (Services 29 - 31)
+### Domain 5: Model Context Protocol & Evals (Services 30 - 32)
 
-29. `29_mcp_client` (`info/mcp-client.html`): MCP client that starts `cricket_server.py` over stdio and runs the handshake, tool discovery, and a direct tool call without an LLM.
-30. `30_mcp_agent` (`info/mcp-agent.html`): Groq LLM agent that discovers the MCP server's tools and calls them over stdio.
-31. `31_mcp_evals` (`info/mcp-evals.html`): 5-case eval suite that runs the service 30 agent and asserts tool routing and ground-truth facts.
+30. `30_mcp_client` (`info/mcp-client.html`): MCP client that starts `cricket_server.py` over stdio and runs the handshake, tool discovery, and a direct tool call without an LLM.
+31. `31_mcp_agent` (`info/mcp-agent.html`): Groq LLM agent that discovers the MCP server's tools and calls them over stdio.
+32. `32_mcp_evals` (`info/mcp-evals.html`): 5-case eval suite that runs the service 31 agent and asserts tool routing and ground-truth facts.
 
 ---
 
@@ -116,13 +117,14 @@ Browser ──HTTPS (/ai-pocs/)──▶ Nginx (5010, gzip) ──▶ ai-pocs-cl
 25. `POST /api/travel-assistant` — 5-tool capstone travel planner (`{"query": "..."}`).
 26. `POST /api/prompting-strategies` — Direct vs Zero-Shot CoT vs Few-Shot CoT (`{"question": "...", "expected_answer": "293"}`).
 27. `POST /api/sycophancy-trap` — Multi-turn pushback resilience benchmark (`{"case_type": "Math Gaslight"}`).
-28. `POST /api/cot-vs-direct` — CoT vs Direct puzzle benchmark (`{"problem_title": "Spatial Navigation (Grid)"}`).
-29. `POST /api/variance-determinism` — Unconstrained vs Prompt-Constrained vs Schema-Enforced JSON (`{"review_text": "..."}`).
-30. `POST /api/tool-schema-calibration` — 2x2 tool name vs docstring routing calibration (`{"query": "..."}`).
-31. `POST /api/tool-error-injection` — HTTP 503 error injection and hallucination test (`{"question": "..."}`).
-32. `POST /api/mcp-client` — Direct FastMCP tool invocation without an LLM (`{"tool_name": "get_live_score", "tool_args": {...}}`).
-33. `POST /api/mcp-agent` — LLM-guided FastMCP cricket agent (`{"question": "..."}`).
-34. `POST /api/mcp-evals` — Automated assertion eval suite for the FastMCP agent (no request body needed).
+28. `POST /api/refund-bench` — 4-stage multi-judge food dispute adjudication pipeline (`{"complaint_text": "...", "bench": "mixed3", "cap": 2000.0}`).
+29. `POST /api/cot-vs-direct` — CoT vs Direct puzzle benchmark (`{"problem_title": "Spatial Navigation (Grid)"}`).
+30. `POST /api/variance-determinism` — Unconstrained vs Prompt-Constrained vs Schema-Enforced JSON (`{"review_text": "..."}`).
+31. `POST /api/tool-schema-calibration` — 2x2 tool name vs docstring routing calibration (`{"query": "..."}`).
+32. `POST /api/tool-error-injection` — HTTP 503 error injection and hallucination test (`{"question": "..."}`).
+33. `POST /api/mcp-client` — Direct FastMCP tool invocation without an LLM (`{"tool_name": "get_live_score", "tool_args": {...}}`).
+34. `POST /api/mcp-agent` — LLM-guided FastMCP cricket agent (`{"question": "..."}`).
+35. `POST /api/mcp-evals` — Automated assertion eval suite for the FastMCP agent (no request body needed).
 
 ### Project Structure
 
@@ -141,20 +143,20 @@ projects/ai-pocs/
 │   ├── public/
 │   │   ├── css/info.css        # Shared explainer page stylesheet
 │   │   ├── js/info.js          # Shared explainer page scripts (accordions, copy, Mermaid)
-│   │   └── info/               # 31 "How it works" explainer HTML pages (one per demo card)
+│   │   └── info/               # 32 "How it works" explainer HTML pages (one per demo card)
 │   └── src/
-│       ├── App.tsx             # Category tabs and 31 service cards across 5 domains
+│       ├── App.tsx             # Category tabs and 32 service cards across 5 domains
 │       ├── App.css             # Component and layout styles
 │       ├── config.ts           # Runtime API_BASE resolution
-│       └── components/         # 31 interactive React card components
+│       └── components/         # 32 interactive React card components
 └── server/
     ├── Dockerfile              # Python 3.12-slim + uv + CPU PyTorch + FastAPI Uvicorn
     ├── requirements.txt        # FastAPI, OpenAI, LangChain, LangGraph, Strands, SentenceTransformers, MCP
-    ├── main.py                 # FastAPI app, CORS, healthcheck, and 31 POST routes
+    ├── main.py                 # FastAPI app, CORS, healthcheck, and 32 POST routes
     └── services/
         ├── __init__.py         # Dynamic service loader and schema exports
-        ├── 01_chat_openai.py .. 31_mcp_evals.py  # 31 modular AI service implementations
-        └── cricket_server.py                     # FastMCP stdio server started by services 29-31
+        ├── 01_chat_openai.py .. 32_mcp_evals.py  # 32 modular AI service implementations
+        └── cricket_server.py                     # FastMCP stdio server started by services 30-32
 ```
 
 ---

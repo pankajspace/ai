@@ -66,14 +66,17 @@ export type { AsyncToolsCardProps, AsyncToolsResponse } from './AsyncToolsCard'
 export { TravelAssistantCard } from './TravelAssistantCard'
 export type { TravelAssistantCardProps, TravelAssistantResponse } from './TravelAssistantCard'
 
-// Section 3: AI Systems & Prompting Strategies (23 - 24)
+// Section 3: AI Systems & Multi-Turn Pressure (23 - 25)
 export { PromptingStrategiesCard } from './PromptingStrategiesCard'
 export type { PromptingStrategiesCardProps, PromptingStrategiesResponse } from './PromptingStrategiesCard'
 
 export { SycophancyTrapCard } from './SycophancyTrapCard'
 export type { SycophancyTrapCardProps, SycophancyTrapResponse } from './SycophancyTrapCard'
 
-// Section 4: AI Reliability & Calibration (25 - 28)
+export { RefundBenchCard, default as RefundBenchTile } from './RefundBenchCard'
+export type { RefundBenchCardProps, RefundBenchResponse, JudgedGrievance, GrievanceRuling } from './RefundBenchCard'
+
+// Section 4: AI Reliability & Calibration (26 - 29)
 export { CotVsDirectCard } from './CotVsDirectCard'
 export type { CotVsDirectCardProps, CotVsDirectResponse } from './CotVsDirectCard'
 
@@ -86,7 +89,7 @@ export type { ToolSchemaCalibrationCardProps, ToolSchemaCalibrationResponse } fr
 export { ToolErrorInjectionCard } from './ToolErrorInjectionCard'
 export type { ToolErrorInjectionCardProps, ToolErrorInjectionResponse } from './ToolErrorInjectionCard'
 
-// Section 5: MCP & Evals (29 - 31)
+// Section 5: MCP & Evals (30 - 32)
 export { McpClientCard } from './McpClientCard'
 export type { McpClientCardProps, McpClientResponse } from './McpClientCard'
 

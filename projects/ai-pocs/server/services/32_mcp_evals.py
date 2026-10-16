@@ -1,6 +1,6 @@
 """MCP Agent Evaluation Suite Service.
 
-Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 30):
+Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 31):
 1. Tool routing assertion: verifies the LLM chooses the expected MCP tool (`get_live_score`, `get_player_stats`, or none).
 2. Ground-truth verification: checks whether required factual tokens appear in the agent's final answer.
 3. Suite scoring: aggregates pass/fail counts and overall accuracy percentage across all test cases.
@@ -11,8 +11,8 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-# ① Reuse the MCP agent loop from 30_mcp_agent.py (importlib, because the file name starts with a digit)
-mcp_agent = importlib.import_module(".30_mcp_agent", package=__package__)
+# ① Reuse the MCP agent loop from 31_mcp_agent.py (importlib, because the file name starts with a digit)
+mcp_agent = importlib.import_module(".31_mcp_agent", package=__package__)
 
 
 class TestCaseEvalResult(BaseModel):
