@@ -6,42 +6,53 @@
 #   docker compose run --rm 02_variance_determinism
 #   docker compose run --rm 03_tool_schema_calibration
 #   docker compose run --rm 04_tool_error_injection
+#
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script into
+# `/app/` so code edits take effect immediately without rebuilding.
 # ---------------------------------------------------------------------------
 
 services:
   # ① Chain-of-Thought vs. Direct Answer: Measuring CoT as a reliability lever
   01_cot_vs_direct:
-    build: ./01_cot_vs_direct
+    build: .
+    image: practice-05-ai-reliability
     env_file:
-      - path: ./01_cot_vs_direct/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./01_cot_vs_direct/main.py:/app/main.py
+      - ./01_cot_vs_direct.py:/app/01_cot_vs_direct.py
+    entrypoint: ["python", "01_cot_vs_direct.py"]
 
   # ② Variance & Determinism: Unconstrained vs. Prompt-Constrained vs. Schema-Enforced JSON
   02_variance_determinism:
-    build: ./02_variance_determinism
+    build: .
+    image: practice-05-ai-reliability
     env_file:
-      - path: ./02_variance_determinism/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./02_variance_determinism/main.py:/app/main.py
+      - ./02_variance_determinism.py:/app/02_variance_determinism.py
+    entrypoint: ["python", "02_variance_determinism.py"]
 
   # ③ Tool Schema Calibration: 2x2 routing benchmark (Descriptive/Opaque x Loose/Tight)
   03_tool_schema_calibration:
-    build: ./03_tool_schema_calibration
+    build: .
+    image: practice-05-ai-reliability
     env_file:
-      - path: ./03_tool_schema_calibration/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./03_tool_schema_calibration/main.py:/app/main.py
+      - ./03_tool_schema_calibration.py:/app/03_tool_schema_calibration.py
+    entrypoint: ["python", "03_tool_schema_calibration.py"]
 
   # ④ Tool Error Injection: HTTP 503 failure handling and hallucination prevention
   04_tool_error_injection:
-    build: ./04_tool_error_injection
+    build: .
+    image: practice-05-ai-reliability
     env_file:
-      - path: ./04_tool_error_injection/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./04_tool_error_injection/main.py:/app/main.py
-
+      - ./04_tool_error_injection.py:/app/04_tool_error_injection.py
+    entrypoint: ["python", "04_tool_error_injection.py"]

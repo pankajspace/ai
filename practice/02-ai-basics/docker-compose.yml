@@ -2,103 +2,121 @@
 # AI Basics Practice Suite - Docker Compose Configuration
 # ---------------------------------------------------------------------------
 # Run any single exercise from this folder (`practice/02-ai-basics/`):
-#   docker compose run --rm --build 01_chat_openai
-#   docker compose run --rm --build 10_rag
+#   docker compose run --rm 01_chat_openai
+#   docker compose run --rm 10_rag
 #
-# Each service mounts `./<example>/main.py` into `/app/main.py` so edits to
-# `main.py` take effect immediately on the next `docker compose run --rm <service>`
-# without rebuilding the image.
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script into
+# `/app/` so code edits take effect immediately without rebuilding.
 # ---------------------------------------------------------------------------
 
 services:
   # ① Direct OpenAI Chat Completions API (Travel Guide)
   01_chat_openai:
-    build: ./01_chat_openai
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./01_chat_openai/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./01_chat_openai/main.py:/app/main.py
+      - ./01_chat_openai.py:/app/01_chat_openai.py
+    entrypoint: ["python", "01_chat_openai.py"]
 
   # ② Groq Chat Completions via OpenAI-compatible client (Joke Generator)
   02_chat_groq:
-    build: ./02_chat_groq
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./02_chat_groq/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./02_chat_groq/main.py:/app/main.py
+      - ./02_chat_groq.py:/app/02_chat_groq.py
+    entrypoint: ["python", "02_chat_groq.py"]
 
   # ③ LangChain LCEL Pipe Chain: prompt | model | parser (Text Summarizer)
   03_langchain_summarizer:
-    build: ./03_langchain_summarizer
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./03_langchain_summarizer/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./03_langchain_summarizer/main.py:/app/main.py
+      - ./03_langchain_summarizer.py:/app/03_langchain_summarizer.py
+    entrypoint: ["python", "03_langchain_summarizer.py"]
 
   # ④ Multi-turn Conversational Memory with MessagesPlaceholder
   04_langchain_memory_chat:
-    build: ./04_langchain_memory_chat
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./04_langchain_memory_chat/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./04_langchain_memory_chat/main.py:/app/main.py
+      - ./04_langchain_memory_chat.py:/app/04_langchain_memory_chat.py
+    entrypoint: ["python", "04_langchain_memory_chat.py"]
 
   # ⑤ Minimal Single-Tool Agent Loop using Raw OpenAI Function Calling
   05_agent_one_tool:
-    build: ./05_agent_one_tool
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./05_agent_one_tool/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./05_agent_one_tool/main.py:/app/main.py
+      - ./05_agent_one_tool.py:/app/05_agent_one_tool.py
+    entrypoint: ["python", "05_agent_one_tool.py"]
 
   # ⑥ LangChain Single-Tool Agent (`create_agent`)
   06_langchain_one_tool:
-    build: ./06_langchain_one_tool
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./06_langchain_one_tool/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./06_langchain_one_tool/main.py:/app/main.py
+      - ./06_langchain_one_tool.py:/app/06_langchain_one_tool.py
+    entrypoint: ["python", "06_langchain_one_tool.py"]
 
   # ⑦ LangChain Multi-Tool Agent with Visible Tool Execution Trace
   07_langchain_multi_tools:
-    build: ./07_langchain_multi_tools
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./07_langchain_multi_tools/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./07_langchain_multi_tools/main.py:/app/main.py
+      - ./07_langchain_multi_tools.py:/app/07_langchain_multi_tools.py
+    entrypoint: ["python", "07_langchain_multi_tools.py"]
 
   # ⑧ Document Chunking with RecursiveCharacterTextSplitter (No API Key Needed)
   08_chunking:
-    build: ./08_chunking
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./08_chunking/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./08_chunking/main.py:/app/main.py
+      - ./08_chunking.py:/app/08_chunking.py
+    entrypoint: ["python", "08_chunking.py"]
 
   # ⑨ Local Sentence Embeddings & Cosine Similarity (No API Key Needed)
   09_embedding:
-    build: ./09_embedding
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./09_embedding/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./09_embedding/main.py:/app/main.py
+      - ./09_embedding.py:/app/09_embedding.py
+    entrypoint: ["python", "09_embedding.py"]
 
   # ⑩ Complete Paragraph RAG Pipeline (Chunk -> Chroma Vector Store -> LLM Answer)
   10_rag:
-    build: ./10_rag
+    build: .
+    image: practice-02-ai-basics
     env_file:
-      - path: ./10_rag/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./10_rag/main.py:/app/main.py
-
-
+      - ./10_rag.py:/app/10_rag.py
+    entrypoint: ["python", "10_rag.py"]

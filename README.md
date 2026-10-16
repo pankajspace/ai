@@ -14,7 +14,11 @@
 
 # Practice
 1. [Python](practice/01-python)
-2. [AI Basics (Docker)](practice/02-ai-basics/README.md)
+2. [AI Basics](practice/02-ai-basics/README.md)
+3. [AWS Strands](practice/03-ai-aws-strands/README.md)
+4. [AI Systems](practice/04-ai-systems/README.md)
+5. [AI Reliability](practice/05-ai-reliability/README.md)
+6. [AI MCP & Evals](practice/06-ai-mcp-evals/README.md)
 
 # Projects
 

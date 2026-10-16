@@ -5,34 +5,42 @@
 #   docker compose run --rm 01_prompting_strategies
 #   docker compose run --rm 02_sycophancy_trap
 #   docker compose run --rm 03_refund_bench
+#
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script into
+# `/app/` so code edits take effect immediately without rebuilding.
 # ---------------------------------------------------------------------------
 
 services:
   # ① Prompting Strategies Benchmark: Direct vs. Zero-Shot CoT vs. Few-Shot CoT
   01_prompting_strategies:
-    build: ./01_prompting_strategies
+    build: .
+    image: practice-04-ai-systems
     env_file:
-      - path: ./01_prompting_strategies/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./01_prompting_strategies/main.py:/app/main.py
+      - ./01_prompting_strategies.py:/app/01_prompting_strategies.py
+    entrypoint: ["python", "01_prompting_strategies.py"]
 
   # ② The Sycophancy Trap: Multi-turn resilience under escalating user pushbacks
   02_sycophancy_trap:
-    build: ./02_sycophancy_trap
+    build: .
+    image: practice-04-ai-systems
     env_file:
-      - path: ./02_sycophancy_trap/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./02_sycophancy_trap/main.py:/app/main.py
+      - ./02_sycophancy_trap.py:/app/02_sycophancy_trap.py
+    entrypoint: ["python", "02_sycophancy_trap.py"]
 
   # ③ The Refund Bench: 4-stage multi-judge dispute adjudication pipeline
   03_refund_bench:
-    build: ./03_refund_bench
+    build: .
+    image: practice-04-ai-systems
     env_file:
-      - path: ./03_refund_bench/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./03_refund_bench/main.py:/app/main.py
-
-
+      - ./03_refund_bench.py:/app/03_refund_bench.py
+    entrypoint: ["python", "03_refund_bench.py"]

@@ -5,37 +5,45 @@
 #   docker compose run --rm 01_mcp_client
 #   docker compose run --rm 02_mcp_agent
 #   docker compose run --rm 03_mcp_evals
+#
+# All services share a single Docker image built from the common `Dockerfile`
+# and `requirements.txt`, load `./.env`, and mount their `.py` script plus
+# `cricket_server.py` into `/app/` so edits take effect immediately.
 # ---------------------------------------------------------------------------
 
 services:
   # ① Step 1: Direct FastMCP Client (no LLM required; tests stdio handshake & tool call)
   01_mcp_client:
-    build: ./01_mcp_client
+    build: .
+    image: practice-06-ai-mcp-evals
     env_file:
-      - path: ./01_mcp_client/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./01_mcp_client/main.py:/app/main.py
-      - ./01_mcp_client/cricket_server.py:/app/cricket_server.py
+      - ./01_mcp_client.py:/app/01_mcp_client.py
+      - ./cricket_server.py:/app/cricket_server.py
+    entrypoint: ["python", "01_mcp_client.py"]
 
   # ② Step 2: MCP-Enabled LLM Agent (Groq LLM + FastMCP cricket tools)
   02_mcp_agent:
-    build: ./02_mcp_agent
+    build: .
+    image: practice-06-ai-mcp-evals
     env_file:
-      - path: ./02_mcp_agent/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./02_mcp_agent/main.py:/app/main.py
-      - ./02_mcp_agent/cricket_server.py:/app/cricket_server.py
+      - ./02_mcp_agent.py:/app/02_mcp_agent.py
+      - ./cricket_server.py:/app/cricket_server.py
+    entrypoint: ["python", "02_mcp_agent.py"]
 
   # ③ Step 3: MCP Agent Evaluation Suite (Tool routing & ground-truth assertions)
   03_mcp_evals:
-    build: ./03_mcp_evals
+    build: .
+    image: practice-06-ai-mcp-evals
     env_file:
-      - path: ./03_mcp_evals/.env
+      - path: ./.env
         required: false
     volumes:
-      - ./03_mcp_evals/main.py:/app/main.py
-      - ./03_mcp_evals/cricket_server.py:/app/cricket_server.py
-
-
+      - ./03_mcp_evals.py:/app/03_mcp_evals.py
+      - ./cricket_server.py:/app/cricket_server.py
+    entrypoint: ["python", "03_mcp_evals.py"]
