@@ -110,7 +110,7 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${query === p ? 'active' : ''}`}
               onClick={() => setQuery(p)}
             >
               {p.slice(0, 30)}…

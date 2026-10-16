@@ -77,7 +77,7 @@ export function FunctionToToolCard({ apiBase = API_BASE }: FunctionToToolCardPro
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${question === p ? 'active' : ''}`}
               onClick={() => setQuestion(p)}
             >
               {p.slice(0, 32)}…

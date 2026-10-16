@@ -93,7 +93,7 @@ export function SummarizerCard({ apiBase = API_BASE }: SummarizerCardProps = {})
             <button
               type="button"
               key={preset.label}
-              className="preset-chip"
+              className={`preset-chip ${text === preset.text ? 'active' : ''}`}
               onClick={() => setText(preset.text)}
             >
               {preset.label}

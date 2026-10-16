@@ -77,7 +77,7 @@ export function LangGraphAgentCard({ apiBase = API_BASE }: LangGraphAgentCardPro
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${prompt === p ? 'active' : ''}`}
               onClick={() => setPrompt(p)}
             >
               {p}

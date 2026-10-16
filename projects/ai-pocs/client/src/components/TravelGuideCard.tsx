@@ -76,7 +76,7 @@ export function TravelGuideCard({ apiBase = API_BASE }: TravelGuideCardProps = {
             <button
               type="button"
               key={preset}
-              className="preset-chip"
+              className={`preset-chip ${city === preset ? 'active' : ''}`}
               onClick={() => setCity(preset)}
             >
               {preset}

@@ -108,7 +108,7 @@ export function McpAgentCard({ apiBase = API_BASE }: McpAgentCardProps = {}) {
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${question === p ? 'active' : ''}`}
               onClick={() => setQuestion(p)}
             >
               {p.slice(0, 30)}…

@@ -77,7 +77,7 @@ export function HelloWorldAgentCard({ apiBase = API_BASE }: HelloWorldAgentCardP
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${prompt === p ? 'active' : ''}`}
               onClick={() => setPrompt(p)}
             >
               {p.slice(0, 30)}…

@@ -102,7 +102,7 @@ export function MultiToolSalesCard({ apiBase = API_BASE }: MultiToolSalesCardPro
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${task === p ? 'active' : ''}`}
               onClick={() => setTask(p)}
             >
               {p.slice(0, 30)}…

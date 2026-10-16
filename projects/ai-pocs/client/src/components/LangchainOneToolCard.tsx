@@ -85,7 +85,7 @@ export function LangchainOneToolCard({ apiBase = API_BASE }: LangchainOneToolCar
             <button
               type="button"
               key={preset}
-              className="preset-chip"
+              className={`preset-chip ${message === preset ? 'active' : ''}`}
               onClick={() => setMessage(preset)}
             >
               {preset}

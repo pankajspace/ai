@@ -116,7 +116,7 @@ export function RagCard({ apiBase = API_BASE }: RagCardProps = {}) {
             <button
               type="button"
               key={preset.label}
-              className="preset-chip"
+              className={`preset-chip ${paragraph === preset.paragraph ? 'active' : ''}`}
               onClick={() => {
                 setActivePresetIndex(idx)
                 setParagraph(preset.paragraph)
@@ -147,7 +147,7 @@ export function RagCard({ apiBase = API_BASE }: RagCardProps = {}) {
             <button
               type="button"
               key={q}
-              className="preset-chip"
+              className={`preset-chip ${question === q ? 'active' : ''}`}
               onClick={() => setQuestion(q)}
             >
               {q}

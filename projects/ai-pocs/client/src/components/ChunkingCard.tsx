@@ -101,7 +101,7 @@ export function ChunkingCard({ apiBase = API_BASE }: ChunkingCardProps = {}) {
             <button
               type="button"
               key={preset.label}
-              className="preset-chip"
+              className={`preset-chip ${text === preset.text ? 'active' : ''}`}
               onClick={() => setText(preset.text)}
             >
               {preset.label}

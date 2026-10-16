@@ -83,7 +83,7 @@ export function ToolErrorInjectionCard({ apiBase = API_BASE }: ToolErrorInjectio
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${question === p ? 'active' : ''}`}
               onClick={() => setQuestion(p)}
             >
               {p.slice(0, 32)}…

@@ -101,7 +101,7 @@ export function UseAwsCard({ apiBase = API_BASE }: UseAwsCardProps = {}) {
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${prompt === p ? 'active' : ''}`}
               onClick={() => setPrompt(p)}
             >
               {p.slice(0, 30)}…

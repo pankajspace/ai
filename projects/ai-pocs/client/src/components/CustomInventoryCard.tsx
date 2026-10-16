@@ -108,7 +108,7 @@ export function CustomInventoryCard({ apiBase = API_BASE }: CustomInventoryCardP
             <button
               type="button"
               key={p}
-              className="preset-chip"
+              className={`preset-chip ${question === p ? 'active' : ''}`}
               onClick={() => setQuestion(p)}
             >
               {p.slice(0, 26)}…

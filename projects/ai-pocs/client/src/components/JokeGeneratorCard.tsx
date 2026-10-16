@@ -76,7 +76,7 @@ export function JokeGeneratorCard({ apiBase = API_BASE }: JokeGeneratorCardProps
             <button
               type="button"
               key={preset}
-              className="preset-chip"
+              className={`preset-chip ${topic === preset ? 'active' : ''}`}
               onClick={() => setTopic(preset)}
             >
               {preset}

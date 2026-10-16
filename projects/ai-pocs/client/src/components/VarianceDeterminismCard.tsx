@@ -82,7 +82,7 @@ export function VarianceDeterminismCard({ apiBase = API_BASE }: VarianceDetermin
             <button
               type="button"
               key={i}
-              className="preset-chip"
+              className={`preset-chip ${reviewText === p ? 'active' : ''}`}
               onClick={() => setReviewText(p)}
             >
               Review {i + 1}
