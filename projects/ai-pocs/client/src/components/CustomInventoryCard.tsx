@@ -129,11 +129,23 @@ export function CustomInventoryCard({ apiBase = API_BASE }: CustomInventoryCardP
       {result && (
         <div className="result visible">
           {result.tool_calls.map((c, i) => (
-            <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <div
+              key={i}
+              className="tool-call-item"
+              style={{
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
+            >
               🔧 {c}
             </div>
           ))}
-          <div style={{ marginTop: '0.4rem' }}>{result.response}</div>
+          <div style={{ marginTop: '0.4rem', overflowWrap: 'anywhere', wordBreak: 'break-word' }}>
+            {result.response}
+          </div>
         </div>
       )}
     </div>

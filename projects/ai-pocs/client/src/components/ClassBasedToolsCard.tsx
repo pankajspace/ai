@@ -131,7 +131,17 @@ export function ClassBasedToolsCard({ apiBase = API_BASE }: ClassBasedToolsCardP
       {result && (
         <div className="result visible">
           {result.tool_calls.map((c, i) => (
-            <div key={i} style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+            <div
+              key={i}
+              className="tool-call-item"
+              style={{
+                fontFamily: 'monospace',
+                fontSize: '0.8rem',
+                color: 'var(--text-muted)',
+                overflowWrap: 'anywhere',
+                wordBreak: 'break-word',
+              }}
+            >
               🔧 {c}
             </div>
           ))}
