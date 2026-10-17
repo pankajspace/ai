@@ -132,7 +132,7 @@ export function RefundBenchCard({ apiBase = API_BASE }: RefundBenchCardProps = {
   }
 
   return (
-    <div className="card card-full">
+    <div className="card card-wide">
       <h2>
         <span className="card-title">⚖️ The Refund Bench</span>
         <a className="info-link" href="info/refund-bench.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
