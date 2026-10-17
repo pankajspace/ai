@@ -2,7 +2,7 @@
 
 A unified, modular full-stack application hosting 35 production-grade AI services across 7 sequential practice domains (`01-ai-basics` through `07-ai-mcp-evals`) using FastAPI, React + Vite, and Docker Compose.
 
-Each interactive card in the React dashboard features a green `ⓘ` icon in its header linking to a dedicated `info/<demo>.html` explainer page under `client/public/info/` with two units: Unit 1 (Concept, Theory & Concepts, end-to-end Request Flow, and Mermaid `flowchart TD` Code Flow) and Unit 2 (complete Python source code).
+Each interactive card in the React dashboard features a green `ⓘ` icon in its header linking to a dedicated `info/<demo>.html` explainer page under `client/public/info/` with two units: Unit 1 (Concept, Theory, end-to-end Request Flow, and Mermaid `flowchart TD` Code Flow) and Unit 2 (complete Python source code).
 
 ---
 
