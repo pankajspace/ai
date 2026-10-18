@@ -15,7 +15,7 @@ Small projects that show big AI ideas
 
 ### AI Basics
 
-Direct OpenAI (GPT-4o mini) and Groq (LLaMA 3.3 70B) chat completions: system personas, travel activity suggestions, and low-latency joke generation.
+Direct OpenAI (GPT-4o mini) and Groq LPU (LLaMA 3.3 70B) chat completions: system personas and prompts, temperature tuning, low-latency inference, and Pydantic schema validation.
 
 [Open project →](https://app.techtoday.click/01-ai-basics/)
 
@@ -23,7 +23,7 @@ Direct OpenAI (GPT-4o mini) and Groq (LLaMA 3.3 70B) chat completions: system pe
 
 ### LangChain & Agents
 
-LCEL summarization chains, multi-turn conversation memory, manual OpenAI tool-calling loops, and LangGraph ReAct single- and multi-tool agents.
+LangChain Expression Language (LCEL) chains, multi-turn conversational memory, native OpenAI function calling execution loops, and LangGraph cyclical ReAct agent graphs.
 
 [Open project →](https://app.techtoday.click/02-langchain-agents/)
 
@@ -31,7 +31,7 @@ LCEL summarization chains, multi-turn conversation memory, manual OpenAI tool-ca
 
 ### AI RAG & Chroma
 
-Recursive character chunking, 384-D MiniLM sentence embeddings with cosine similarity, and grounded vector RAG QA with Chroma.
+Retrieval-Augmented Generation (RAG) architecture: recursive text chunking with overlap, 384-D dense vector embeddings (MiniLM), Chroma vector similarity search (cosine / k-NN), and context-grounded LLM generation.
 
 [Open project →](https://app.techtoday.click/03-ai-rag-chroma/)
 
@@ -39,7 +39,7 @@ Recursive character chunking, 384-D MiniLM sentence embeddings with cosine simil
 
 ### AI Model Training & ChromaDB
 
-Supervised RandomForest delivery ETA prediction, persistent ChromaDB study-notes RAG, and Redis-backed DeskBuddy agent session memory.
+Supervised machine learning regression (scikit-learn RandomForestRegressor), persistent vector database indexing and semantic retrieval (ChromaDB), and distributed LLM agent session memory (Redis).
 
 [Open project →](https://app.techtoday.click/04-ai-model-training-chromadb/)
 
@@ -47,7 +47,7 @@ Supervised RandomForest delivery ETA prediction, persistent ChromaDB study-notes
 
 ### AWS Strands Agents
 
-12 Amazon Bedrock (Nova Lite) and LangGraph agent patterns: custom @tool reflection, prebuilt tools, use_aws CLI, stateful classes, and async parallel tools.
+Amazon Bedrock (Nova Lite Converse API), AWS Strands Agents SDK, LangGraph ReAct agents, dynamic tool schema reflection (@tool), stateful class tools, and async parallel tool orchestration.
 
 [Open project →](https://app.techtoday.click/05-ai-aws-strands/)
 
@@ -55,7 +55,7 @@ Supervised RandomForest delivery ETA prediction, persistent ChromaDB study-notes
 
 ### AI Systems
 
-Prompting strategy benchmarks (Direct, Zero-Shot CoT, Few-Shot CoT), 4-round sycophancy pressure tests, and 4-stage multi-judge food refund arbitration.
+Prompt engineering paradigms (Direct, Zero-Shot CoT, Few-Shot CoT), model alignment and sycophancy evaluation under adversarial pressure, and multi-model LLM-as-a-Judge jury consensus.
 
 [Open project →](https://app.techtoday.click/06-ai-systems/)
 
@@ -63,7 +63,7 @@ Prompting strategy benchmarks (Direct, Zero-Shot CoT, Few-Shot CoT), 4-round syc
 
 ### AI Reliability
 
-Chain-of-Thought vs Direct logic benchmarks, strict JSON Schema determinism, 2×2 tool routing calibration, and HTTP 503 fault injection scoring.
+Chain-of-Thought (CoT) reasoning traces, Structured Outputs JSON Schema determinism, 2×2 tool schema routing calibration, and tool fault injection with hallucination prevention.
 
 [Open project →](https://app.techtoday.click/07-ai-reliability/)
 
@@ -71,7 +71,7 @@ Chain-of-Thought vs Direct logic benchmarks, strict JSON Schema determinism, 2×
 
 ### AI MCP & Evals
 
-Direct FastMCP stdio client, dynamic OpenAI + MCP tool-calling agent loop, and a 5-case automated routing and grounding evaluation suite.
+Model Context Protocol (MCP) client-server architecture via FastMCP, dynamic tool discovery and tool-calling agent loops, and automated tool routing and factual grounding evaluations.
 
 [Open project →](https://app.techtoday.click/08-ai-mcp-evals/)
 
@@ -79,7 +79,7 @@ Direct FastMCP stdio client, dynamic OpenAI + MCP tool-calling agent loop, and a
 
 ### InterviewIQ
 
-Dual-agent AI mock-interview coach with 4-tool ReAct answer evaluation (STAR structure, relevance, filler density), adaptive interviewer routing, and session memory.
+Multi-agent orchestration architecture (Interviewer & Evaluator agents), ReAct reasoning and tool-calling execution loops, heuristic evaluation metrics, and shared conversational session memory.
 
 [Open project →](https://app.techtoday.click/09-interviewiq/)
 
@@ -87,7 +87,7 @@ Dual-agent AI mock-interview coach with 4-tool ReAct answer evaluation (STAR str
 
 ### Shipment Exception Desk
 
-LangChain logistics exception triage pipeline applying tier-aware compensation caps, escalation routing, customer/internal drafts, and live daily KPI aggregation.
+LangChain Expression Language (LCEL) pipelines, LLM classification and conditional routing logic, policy-grounded prompt templates, and deterministic tool execution.
 
 [Open project →](https://app.techtoday.click/10-shipment-exception-desk/)
 
