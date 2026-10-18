@@ -23,10 +23,12 @@ _CUR_DIR = Path(__file__).resolve().parent
 
 
 def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
     file_path = _CUR_DIR / filename
     spec = importlib.util.spec_from_file_location(f"services.{alias}", file_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load module from {file_path}")
+    # ② Register and execute the module so its functions can be called by routes
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"services.{alias}"] = mod
     spec.loader.exec_module(mod)
@@ -41,11 +43,14 @@ mod_err = _load_service("04_tool_error_injection.py", "tool_error_injection")
 
 @bp.before_request
 def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
     if request.method == "POST":
+        # ② Check whether this client has exceeded 30 requests per hour
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -54,9 +59,11 @@ def enforce_rate_limit():
 
 @bp.route("/")
 def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ② Return the patched HTML page
     return app.response_class(html, mimetype="text/html")
 
 
@@ -84,9 +91,11 @@ def theory_pages(filename):
 
 @bp.route("/api/cot-vs-direct", methods=["POST"])
 def cot_vs_direct_route():
+    # ① Parse problem_title from the JSON request body
     data = request.get_json(force=True, silent=True) or {}
     problem_title = data.get("problem_title") or "Spatial Navigation (Grid)"
     try:
+        # ② Run Direct vs Chain-of-Thought benchmark in 01_cot_vs_direct.py
         res = mod_cot.run_cot_vs_direct_benchmark(problem_title)
         res["result"] = f"Direct: {'Correct' if res['direct_result']['is_correct'] else 'Failed'} | CoT: {'Correct' if res['cot_result']['is_correct'] else 'Failed'}"
         return jsonify(res)
@@ -96,11 +105,13 @@ def cot_vs_direct_route():
 
 @bp.route("/api/variance-determinism", methods=["POST"])
 def variance_determinism_route():
+    # ① Parse review_text from the JSON request body and reject empty strings
     data = request.get_json(force=True, silent=True) or {}
     review_text = (data.get("review_text") or data.get("message") or "").strip()
     if not review_text:
         return jsonify({"error": "Review text cannot be empty"}), 400
     try:
+        # ② Run the 3-strategy JSON determinism benchmark in 02_variance_determinism.py
         res = mod_var.run_variance_determinism_benchmark(review_text)
         res["result"] = f"Tested {len(res.get('strategies', []))} JSON extraction strategies."
         return jsonify(res)
@@ -110,11 +121,13 @@ def variance_determinism_route():
 
 @bp.route("/api/tool-schema-calibration", methods=["POST"])
 def tool_schema_calibration_route():
+    # ① Parse query from the JSON request body and reject empty strings
     data = request.get_json(force=True, silent=True) or {}
     query = (data.get("query") or data.get("message") or "").strip()
     if not query:
         return jsonify({"error": "Query cannot be empty"}), 400
     try:
+        # ② Run the 2x2 tool schema calibration matrix in 03_tool_schema_calibration.py
         res = mod_calib.run_tool_schema_calibration(query)
         res["result"] = res.get("analysis_summary", "Calibration complete.")
         return jsonify(res)
@@ -124,11 +137,13 @@ def tool_schema_calibration_route():
 
 @bp.route("/api/tool-error-injection", methods=["POST"])
 def tool_error_injection_route():
+    # ① Parse question from the JSON request body and reject empty strings
     data = request.get_json(force=True, silent=True) or {}
     question = (data.get("question") or data.get("message") or "").strip()
     if not question:
         return jsonify({"error": "Question cannot be empty"}), 400
     try:
+        # ② Run the upstream 503 error injection benchmark in 04_tool_error_injection.py
         res = mod_err.run_tool_error_injection(question)
         res["result"] = f"Evaluated error handling across {len(res.get('scenarios', []))} prompt configurations."
         return jsonify(res)

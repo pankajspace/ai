@@ -1,6 +1,6 @@
 """MCP Agent Evaluation Suite Service.
 
-Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (service 31):
+Runs unit-test style evaluation assertions against the MCP-enabled cricket agent (02_mcp_agent.py):
 1. Tool routing assertion: verifies the LLM chooses the expected MCP tool (`get_live_score`, `get_player_stats`, or none).
 2. Ground-truth verification: checks whether required factual tokens appear in the agent's final answer.
 3. Suite scoring: aggregates pass/fail counts and overall accuracy percentage across all test cases.

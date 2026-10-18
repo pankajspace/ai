@@ -134,14 +134,18 @@ document.addEventListener("DOMContentLoaded", () => {
                 cap: parseFloat(refundCap.value),
             },
             render: (data, el) => {
-                const s = data.settlement || {};
-                let out = `⚖️ Adjudication Disposition: ${s.disposition || "RESOLVED"}\n`;
-                out += `Total Refund: $${(s.total_refund || 0).toFixed(2)} (Auto-Approve Cap: $${data.cap})\n\n`;
-                out += `Stage 2: Extracted Grievances (${(data.grievances || []).length}):\n`;
-                (data.grievances || []).forEach((g, i) => {
-                    out += `  ${i + 1}. [${g.category}] ${g.claim}\n`;
+                const disposition = data.cap_exceeded
+                    ? "ESCALATED TO HUMAN REVIEW (Cap Exceeded)"
+                    : "AUTO-APPROVED";
+                let out = `⚖️ Adjudication Disposition: ${disposition}\n`;
+                out += `Judge Bench: ${data.bench_label || data.bench}\n`;
+                out += `Approved Refund: ₹${(data.total_approved_refund || 0).toFixed(0)} | Held for Review: ₹${(data.total_held_for_review || 0).toFixed(0)} (Auto-Approve Cap: ₹${(data.auto_approval_cap || 0).toFixed(0)})\n\n`;
+                out += `Stage 2 & 3: Extracted Grievances & Bench Verdicts (${(data.grievances || []).length}):\n`;
+                (data.grievances || []).forEach((g) => {
+                    out += `  ${g.grievance_id}. [${g.category}] ${g.text}\n`;
+                    out += `     Verdict: ${g.verdict} (${g.vote_split}) | Approved: ₹${(g.refund_amount || 0).toFixed(0)} | Held: ₹${(g.held_amount || 0).toFixed(0)}\n`;
                 });
-                out += `\nCustomer Notification Message:\n${s.customer_message || "Dispute processed."}`;
+                out += `\nStage 4 Customer Notification Message:\n${data.customer_message || "Dispute processed."}`;
                 el.textContent = out;
             },
         });

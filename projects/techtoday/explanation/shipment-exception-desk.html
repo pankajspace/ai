@@ -1146,14 +1146,14 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
                 <div class="topic-content" id="content-source-app-py">
                     <span class="file-path">10-shipment-exception-desk/src/python/app.py</span>
                     <p class="file-label">Flask web server for Shipment Exception Desk.</p>
-                    <pre><code data-lang="python">"""Flask web server for Shipment Exception Desk.
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask web server for Shipment Exception Desk.
 
 Serves the dashboard UI and provides API endpoints for:
 - /api/triage: process exception reports through the pipeline
 - /api/log: fetch the current session triage ledger
 - /api/summary: fetch aggregated KPI summary
 - /api/reset: clear current in-memory session ledger
-"""
+&quot;&quot;&quot;
 
 import os
 from pathlib import Path
@@ -1165,88 +1165,88 @@ from pipeline import process_exception
 from rate_limiter import check_rate_limit
 from session import clear_session, generate_daily_summary, get_triage_log
 
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
 
 STATIC_DIR = Path(__file__).resolve().parents[1]
 app = Flask(__name__, static_folder=str(STATIC_DIR))
 CORS(app)
-bp = Blueprint("main", __name__)
+bp = Blueprint(&quot;main&quot;, __name__)
 
 
 @bp.before_request
 def enforce_rate_limit():
-    """Enforce strict 10 requests per hour limit on all POST endpoints."""
+    &quot;&quot;&quot;Enforce strict 30 requests per hour limit on all POST endpoints.&quot;&quot;&quot;
     # ① apply rate limits only to state-changing post requests
-    if request.method == "POST":
+    if request.method == &quot;POST&quot;:
         # ② ask the limiter whether this client has exceeded the hourly quota
         blocked, msg, retry_after = check_rate_limit(
-            request, max_requests=10, window_seconds=3600
+            request, max_requests=30, window_seconds=3600
         )
         # ③ return http 429 with retry timing when the request is blocked
         if blocked:
-            resp = jsonify({"error": msg})
+            resp = jsonify({&quot;error&quot;: msg})
             resp.status_code = 429
-            resp.headers["Retry-After"] = str(retry_after)
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
             return resp
 
 
 
-@bp.route("/")
+@bp.route(&quot;/&quot;)
 def index():
-    """Serve index.html with API base injected for local/prod parity."""
+    &quot;&quot;&quot;Serve index.html with API base injected for local/prod parity.&quot;&quot;&quot;
     # ① read the static dashboard page from the configured static folder
-    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
         html = f.read()
     # ② inject the deployment path prefix so browser api calls use the right base
-    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
     # ③ return the modified page as html
-    return app.response_class(html, mimetype="text/html")
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
 
 
-@bp.route("/css/&lt;path:filename&gt;")
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
 def css(filename):
-    """Serve stylesheets from src/css."""
-    return app.send_static_file(os.path.join("css", filename))
+    &quot;&quot;&quot;Serve stylesheets from src/css.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
 
 
-@bp.route("/js/&lt;path:filename&gt;")
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
 def js(filename):
-    """Serve scripts from src/js."""
-    return app.send_static_file(os.path.join("js", filename))
+    &quot;&quot;&quot;Serve scripts from src/js.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
 
 
-@bp.route("/api/health", methods=["GET"])
+@bp.route(&quot;/api/health&quot;, methods=[&quot;GET&quot;])
 def health_check():
-    """Health check endpoint."""
-    return jsonify({"status": "ok", "service": "10-shipment-exception-desk"})
+    &quot;&quot;&quot;Health check endpoint.&quot;&quot;&quot;
+    return jsonify({&quot;status&quot;: &quot;ok&quot;, &quot;service&quot;: &quot;10-shipment-exception-desk&quot;})
 
 
-@bp.route("/api/triage", methods=["POST"])
+@bp.route(&quot;/api/triage&quot;, methods=[&quot;POST&quot;])
 def triage_report():
-    """Process an incoming shipment exception report."""
+    &quot;&quot;&quot;Process an incoming shipment exception report.&quot;&quot;&quot;
     # ① parse and normalize request fields from the json body
     data = request.get_json(force=True) or {}
-    report_text = (data.get("report_text") or "").strip()
-    shipment_value = data.get("shipment_value")
-    customer_tier = (data.get("customer_tier") or "standard").strip().lower()
+    report_text = (data.get(&quot;report_text&quot;) or &quot;&quot;).strip()
+    shipment_value = data.get(&quot;shipment_value&quot;)
+    customer_tier = (data.get(&quot;customer_tier&quot;) or &quot;standard&quot;).strip().lower()
 
     # ② reject missing report text before invoking the ai workflow
     if not report_text:
-        return jsonify({"detail": "Report text cannot be empty."}), 400
+        return jsonify({&quot;detail&quot;: &quot;Report text cannot be empty.&quot;}), 400
 
     # ③ convert shipment value to a number or return validation error
     try:
         shipment_value = float(shipment_value)
     except (TypeError, ValueError):
-        return jsonify({"detail": "Shipment value must be a valid number."}), 400
+        return jsonify({&quot;detail&quot;: &quot;Shipment value must be a valid number.&quot;}), 400
 
     # ④ reject negative values because compensation cannot be negative
     if shipment_value &lt; 0:
-        return jsonify({"detail": "Shipment value cannot be negative."}), 400
+        return jsonify({&quot;detail&quot;: &quot;Shipment value cannot be negative.&quot;}), 400
 
     # ⑤ accept only supported service tiers for policy lookup
-    if customer_tier not in {"standard", "premium"}:
-        return jsonify({"detail": "Customer tier must be standard or premium."}), 400
+    if customer_tier not in {&quot;standard&quot;, &quot;premium&quot;}:
+        return jsonify({&quot;detail&quot;: &quot;Customer tier must be standard or premium.&quot;}), 400
 
     # ⑥ run the triage pipeline and return its structured result
     try:
@@ -1259,36 +1259,36 @@ def triage_report():
         return jsonify(result)
     # ⑦ return pipeline errors as client-readable json
     except Exception as exc:
-        return jsonify({"detail": str(exc)}), 500
+        return jsonify({&quot;detail&quot;: str(exc)}), 500
 
 
-@bp.route("/api/log", methods=["GET"])
+@bp.route(&quot;/api/log&quot;, methods=[&quot;GET&quot;])
 def fetch_log():
-    """Return all triage records logged in the current session."""
+    &quot;&quot;&quot;Return all triage records logged in the current session.&quot;&quot;&quot;
     return jsonify(get_triage_log())
 
 
-@bp.route("/api/summary", methods=["GET"])
+@bp.route(&quot;/api/summary&quot;, methods=[&quot;GET&quot;])
 def fetch_summary():
-    """Return aggregated summary metrics and category breakdown."""
+    &quot;&quot;&quot;Return aggregated summary metrics and category breakdown.&quot;&quot;&quot;
     return jsonify(generate_daily_summary())
 
 
-@bp.route("/api/reset", methods=["POST"])
+@bp.route(&quot;/api/reset&quot;, methods=[&quot;POST&quot;])
 def reset_session():
-    """Clear session records."""
+    &quot;&quot;&quot;Clear session records.&quot;&quot;&quot;
     # ① clear the in-memory ledger for a fresh demo session
     clear_session()
     # ② confirm the reset so the dashboard can refresh state
-    return jsonify({"status": "session_cleared"})
+    return jsonify({&quot;status&quot;: &quot;session_cleared&quot;})
 
 
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 
-if __name__ == "__main__":
+if __name__ == &quot;__main__&quot;:
     # ① start flask when this file is executed directly
-    app.run(host="0.0.0.0", port=5000)</code></pre>
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
 <!-- ============================================================ 15 -->

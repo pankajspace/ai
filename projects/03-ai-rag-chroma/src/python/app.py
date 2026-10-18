@@ -23,10 +23,12 @@ _CUR_DIR = Path(__file__).resolve().parent
 
 
 def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
     file_path = _CUR_DIR / filename
     spec = importlib.util.spec_from_file_location(f"services.{alias}", file_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load module from {file_path}")
+    # ② Register and execute the module so its functions can be called by routes
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"services.{alias}"] = mod
     spec.loader.exec_module(mod)
@@ -40,11 +42,14 @@ mod_rag = _load_service("03_rag.py", "rag")
 
 @bp.before_request
 def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
     if request.method == "POST":
+        # ② Check whether this client has exceeded 30 requests per hour
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -53,9 +58,11 @@ def enforce_rate_limit():
 
 @bp.route("/")
 def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ② Return the patched HTML page
     return app.response_class(html, mimetype="text/html")
 
 
@@ -83,6 +90,7 @@ def theory_pages(filename):
 
 @bp.route("/api/chunk", methods=["POST"])
 def chunking_service():
+    # ① Parse text, chunk_size, and chunk_overlap from the JSON request body
     data = request.get_json(force=True, silent=True) or {}
     text = (data.get("text") or "").strip()
     chunk_size = int(data.get("chunk_size") or 250)
@@ -90,6 +98,7 @@ def chunking_service():
     if not text:
         return jsonify({"error": "Text cannot be empty"}), 400
     try:
+        # ② Split the text into overlapping chunks via 01_chunking.py and return JSON
         chunks = mod_chunk.chunk_text(text, chunk_size, chunk_overlap)
         return jsonify({
             "result": f"Split document into {len(chunks)} chunks (size {chunk_size}, overlap {chunk_overlap}).",
@@ -104,12 +113,14 @@ def chunking_service():
 
 @bp.route("/api/embedding", methods=["POST"])
 def embedding_service():
+    # ① Parse both input strings and validate that neither is empty
     data = request.get_json(force=True, silent=True) or {}
     text1 = (data.get("text1") or "").strip()
     text2 = (data.get("text2") or "").strip()
     if not text1 or not text2:
         return jsonify({"error": "Both text1 and text2 are required"}), 400
     try:
+        # ② Compute vector embeddings and cosine similarity via 02_embedding.py
         res = mod_embed.compute_similarity(text1, text2)
         res["result"] = f"Cosine Similarity: {res['similarity']:.4f} (Dimension: {res['dimensions']})"
         return jsonify(res)
@@ -119,12 +130,14 @@ def embedding_service():
 
 @bp.route("/api/rag", methods=["POST"])
 def rag_service():
+    # ① Parse the source paragraph and user question from the JSON request body
     data = request.get_json(force=True, silent=True) or {}
     paragraph = (data.get("paragraph") or "").strip()
     question = (data.get("question") or data.get("message") or "").strip()
     if not paragraph or not question:
         return jsonify({"error": "Both paragraph and question are required"}), 400
     try:
+        # ② Execute the Chroma RAG pipeline in 03_rag.py and return answer + sources
         res = mod_rag.answer_rag(paragraph, question)
         res["result"] = res["answer"]
         return jsonify(res)

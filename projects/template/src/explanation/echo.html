@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#0b0d10" />
     <title>How it works — Echo &middot; Project Template</title>
     <meta name="description"
-        content="🧩 Echo is the reference starter feature for container projects, demonstrating Flask blueprint routing, rate limiting, and client-server flow." />
+        content="🧩 Echo is the reference starter feature for container projects, demonstrating plain HTML/CSS/JS frontend wiring, Flask Blueprint routing, rate limiting, and JSON request-response flow." />
     <link rel="icon"
         href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
@@ -43,7 +43,7 @@
             <h1 id="how-it-works">🧩 Echo<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede"><strong>🧩 Echo</strong> demonstrates the foundational request-response lifecycle of a containerized project: frontend event handling, asynchronous <code>fetch()</code> dispatch with dynamic <code>PATH_PREFIX</code>, backend rate limiting, and JSON response formatting.</p>
+            <p class="lede"><strong>🧩 Echo</strong> demonstrates the foundational request-response lifecycle of a containerized TechToday project: plain HTML/CSS/JS event handling, asynchronous <code>fetch()</code> dispatch with dynamic <code>PATH_PREFIX</code>, Flask Blueprint rate limiting, and JSON response formatting.</p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
@@ -60,128 +60,213 @@
                         <polyline points="7 13 12 18 17 13"></polyline>
                         <polyline points="7 6 12 11 17 6"></polyline>
                     </svg>
-                    Expand All
+                    <span>Expand All</span>
                 </button>
                 <button type="button" class="action-btn" data-course-action="collapse-all">
                     <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
                         <polyline points="17 11 12 6 7 11"></polyline>
                         <polyline points="17 18 12 13 7 18"></polyline>
                     </svg>
-                    Collapse All
+                    <span>Collapse All</span>
                 </button>
             </div>
 
-            <div class="unit-divider">
-                <span class="unit-tag">Unit 1</span>
-                <h2>How It Works</h2>
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the starter demo, the request it sends, and the function calls that answer it.</p>
+                </div>
             </div>
 
-            <section class="topic-section" id="concept">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">1</span>
-                    <h2 class="topic-title">Concept<a class="headerlink" href="#concept" title="Permanent link">#</a></h2>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
-                    <p>The <strong>Echo</strong> endpoint acts as the canonical pattern for every interactive feature tile in the platform:</p>
+                <div class="topic-content" id="content-concept">
+                    <p>The <strong>Echo</strong> endpoint is the canonical starter pattern for every interactive feature card across the TechToday container projects:</p>
                     <ul>
-                        <li><strong>Input Validation:</strong> The frontend checks that the user has entered non-empty text before enabling the submit button.</li>
-                        <li><strong>Environment Neutrality:</strong> All API calls use a relative path prefixed by <code>data-api-base</code> so the UI behaves identically whether mounted at <code>http://localhost:8090/</code> or <code>https://app.techtoday.click/template/</code>.</li>
-                        <li><strong>Stateless Backend Processing:</strong> The Flask application reads the incoming JSON payload, passes it to the isolated business module (<code>echo.py</code>), and returns the serialized result.</li>
+                        <li><strong>Plain HTML, CSS &amp; JS UI:</strong> <code>index.html</code> and <code>main.js</code> validate that the user has entered non-empty text before enabling the submit button and sending a JSON <code>POST /echo</code> request.</li>
+                        <li><strong>Environment Neutrality (<code>PATH_PREFIX</code>):</strong> At request time, <code>app.py</code> injects <code>PATH_PREFIX</code> into <code>data-api-base</code> on <code>&lt;body&gt;</code> so <code>main.js</code> works identically at <code>http://localhost:8090/</code> locally and behind Nginx at <code>https://app.techtoday.click/&lt;project&gt;/</code>.</li>
+                        <li><strong>Isolated Feature Module:</strong> The Flask route handler parses the JSON body, delegates business logic to <code>echo.py</code>, and returns a structured <code>{"result": ...}</code> JSON payload.</li>
                     </ul>
                 </div>
             </section>
 
-            <section class="topic-section" id="theory-concepts">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">2</span>
-                    <h2 class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts" title="Permanent link">#</a></h2>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
-                    <p>Key architectural concepts demonstrated by this pattern:</p>
-                    <ol>
-                        <li><strong>Reverse Proxy Path Forwarding:</strong> Production traffic passes through Nginx without stripping the prefix segment. Flask Blueprints registered with <code>PATH_PREFIX</code> map routes seamlessly across environments.</li>
-                        <li><strong>Sliding-Window Rate Limiting:</strong> A SQLite-backed rate limiter on EC2 guards against abusive request bursts while permitting normal user exploration.</li>
-                        <li><strong>Deterministic Error Handling:</strong> Bad input returns an HTTP 400 with a structured <code>{"error": "..."}</code> message; service failures return HTTP 500.</li>
-                    </ol>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Reverse Proxy Path-Prefix Routing</strong></p>
+                    <p>
+                        Production traffic on EC2 passes through a shared Nginx reverse proxy without stripping the project prefix segment. Registering all routes on a Flask <code>Blueprint</code> mounted at <code>url_prefix=PATH_PREFIX</code> lets the exact same container image run at <code>/</code> locally and at <code>/&lt;project-slug&gt;</code> in production.
+                    </p>
+                    <p><strong>2. Two-Layer Sliding-Window Rate Limiting</strong></p>
+                    <p>
+                        Every mutating <code>POST</code> request passes through <code>enforce_rate_limit()</code> before reaching the route handler. When <code>RATE_LIMIT_ENABLED=true</code> on EC2, a SQLite-backed sliding window caps each client IP at 30 requests per hour and returns HTTP 429 with a <code>Retry-After</code> header when exceeded.
+                    </p>
+                    <p><strong>3. Deterministic Error Contracts</strong></p>
+                    <p>
+                        Empty inputs return HTTP 400 with <code>{"error": "..."}</code>, and unexpected runtime exceptions return HTTP 500 with the error message so <code>callApi()</code> in <code>main.js</code> can render a consistent error banner.
+                    </p>
                 </div>
             </section>
 
-            <section class="topic-section" id="request-flow">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">3</span>
-                    <h2 class="topic-title">Request flow<a class="headerlink" href="#request-flow" title="Permanent link">#</a></h2>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
+                <div class="topic-content" id="content-request-flow">
                     <div class="flow-diagram">
                         <div class="flow-step">
-                            <strong>1. Client Browser</strong>
-                            <span>User enters text &rarr; click Send</span>
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /echo</code> with <code>{ message }</code>.</span>
                         </div>
+                        <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <strong>2. Nginx Reverse Proxy</strong>
-                            <span>Applies rate limiting &rarr; proxy_pass to loopback port</span>
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>echo_route()</code> checks the rate limit, validates <code>message</code>, and calls <code>echo(message)</code>.</span>
                         </div>
+                        <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <strong>3. Flask Blueprint</strong>
-                            <span>Validates JSON body &rarr; calls echo()</span>
+                            <span class="flow-title">Service (<code>echo.py</code>)</span>
+                            <span class="flow-detail">Strips whitespace, uppercases the message, and appends the character count.</span>
                         </div>
+                        <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <strong>4. Feature Module</strong>
-                            <span>Processes payload &rarr; returns result</span>
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Renders <code>{ result }</code> inside <code>#echoResult</code>.</span>
                         </div>
                     </div>
                 </div>
             </section>
 
-            <section class="topic-section" id="code-flow">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">4</span>
-                    <h2 class="topic-title">Code flow<a class="headerlink" href="#code-flow" title="Permanent link">#</a></h2>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
+                <div class="topic-content" id="content-code-flow">
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    A[Browser<br/>user input] -->|POST /echo| B[app.py<br/>echo_route]
-    B -->|check rate limit| C[rate_limiter.py<br/>check_rate_limit]
-    C -->|allowed| B
-    B -->|message text| D[echo.py<br/>echo]
-    D -->|echoed text| B
-    B -->|JSON result| A
+    UI["index.html + main.js<br/>POST /echo"]:::entry -->|"message"| R["app.py<br/>echo_route()"]:::fn
+    R -->|"check_rate_limit()"| RL["rate_limiter.py<br/>enforce_rate_limit()"]:::fn
+    RL -->|"allowed"| R
+    R -->|"message"| S["echo.py<br/>echo()"]:::fn
+    S -->|"formatted string"| R
+    R -->|"JSON { result }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
                         </div>
                     </div>
                 </div>
             </section>
 
-            <div class="unit-divider">
-                <span class="unit-tag">Unit 2</span>
-                <h2>Source Code</h2>
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the feature module first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
             </div>
 
-            <section class="topic-section" id="source-echo-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">5</span>
-                    <h2 class="topic-title is-file">echo.py<a class="headerlink" href="#source-echo-py" title="Permanent link">#</a></h2>
-                    <span class="topic-meta-chip">src/python/echo.py</span>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-echo-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-echo-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-echo-py" class="topic-title is-file">echo.py<a class="headerlink" href="#source-echo-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">28 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
-                    <p class="file-label">Starter feature function echoing back user messages.</p>
-                    <pre><code data-lang="python">"""Starter feature: a dependency-free "echo" that transforms text.
+                <div class="topic-content" id="content-source-echo-py">
+                    <span class="file-path">src/python/echo.py</span>
+                    <p class="file-label">Starter feature: a dependency-free &quot;echo&quot; that transforms text.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Starter feature: a dependency-free &quot;echo&quot; that transforms text.
 
 This module exists so the template runs end to end without any API keys.
-Replace it with your project's real feature modules (one module per feature,
+Replace it with your project&#x27;s real feature modules (one module per feature,
 each exposing a small function that ``app.py`` calls). Keeping features in
 their own modules makes them easy to add, remove, or test in isolation.
-"""
+&quot;&quot;&quot;
 
 
-def echo(text: str) -> str:
-    """Return a short, upper-cased confirmation of the input text.
+def echo(text: str) -&gt; str:
+    &quot;&quot;&quot;Return a short, upper-cased confirmation of the input text.
 
     Args:
         text: The message to echo back.
@@ -189,30 +274,62 @@ def echo(text: str) -> str:
     Returns:
         A formatted string echoing the input. Pure Python — no network or
         API keys — so it works offline and in CI.
-    """
+    &quot;&quot;&quot;
     # ① clean and format the message
     cleaned = text.strip()
-    return f"You said: {cleaned.upper()} ({len(cleaned)} characters)"
+    return f&quot;You said: {cleaned.upper()} ({len(cleaned)} characters)&quot;
 
 
-if __name__ == "__main__":
+if __name__ == &quot;__main__&quot;:
     # Allow running this feature directly:  docker compose run --rm echo
-    message = input("Enter a message to echo: ")
-    print(echo(message))
-</code></pre>
+    message = input(&quot;Enter a message to echo: &quot;)
+    print(echo(message))</code></pre>
                 </div>
             </section>
 
-            <section class="topic-section" id="source-app-py">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
-                    <span class="topic-badge">6</span>
-                    <h2 class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py" title="Permanent link">#</a></h2>
-                    <span class="topic-meta-chip">src/python/app.py</span>
-                    <span class="topic-chevron"></span>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">146 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
                 </div>
-                <div class="topic-body">
-                    <p class="file-label">Flask Blueprint application with rate limiting and static routing.</p>
-                    <pre><code data-lang="python">import os
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (echo_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server exposing the starter ``/echo`` endpoint.
+
+Architecture notes
+------------------
+- All routes are attached to a Blueprint (``bp``) instead of directly to
+  ``app``. This lets us register the entire Blueprint under a runtime URL
+  prefix (``PATH_PREFIX``) without touching individual route strings.
+- In local development PATH_PREFIX is empty, so routes are at &quot;/&quot;, &quot;/echo&quot;,
+  etc. In production Nginx forwards ``/&lt;project-name&gt;/...`` traffic to the
+  container and PATH_PREFIX is set to &quot;/&lt;project-name&gt;&quot;, keeping every URL
+  consistent.
+- flask-cors adds ``Access-Control-Allow-Origin: *`` headers so the HTML
+  page can call the API even if it is served from a different origin during
+  development.
+
+To add a feature: create a module under ``src/python/`` (see ``echo.py``), import
+its function here, and add a matching ``@bp.route(...)`` handler.
+&quot;&quot;&quot;
+
+import os
 from pathlib import Path
 
 from flask import Blueprint, Flask, jsonify, request
@@ -221,79 +338,131 @@ from flask_cors import CORS
 from echo import echo
 from rate_limiter import check_rate_limit
 
-PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+# ---------------------------------------------------------------------------
+# Configuration
+# ---------------------------------------------------------------------------
+
+# PATH_PREFIX is set by the deployment environment (e.g. &quot;/&lt;project-name&gt;&quot;) so
+# the app works correctly behind an Nginx location block. Locally it is an
+# empty string, which mounts all routes at the root.
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+
+# app.py lives in src/python, while index.html, css/, and js/ live in src/.
 STATIC_DIR = Path(__file__).resolve().parents[1]
 app = Flask(__name__, static_folder=str(STATIC_DIR))
+
+# Allow cross-origin requests from any origin. In production you would
+# restrict this to the specific front-end domain.
 CORS(app)
 
-bp = Blueprint("main", __name__)
+# A Blueprint groups related routes. We register it once at the bottom with
+# the runtime PATH_PREFIX, avoiding any hardcoded path strings in the routes.
+bp = Blueprint(&quot;main&quot;, __name__)
 
 
 @bp.before_request
 def enforce_rate_limit():
-    if request.method == "POST":
+    &quot;&quot;&quot;Enforce strict 30 requests per hour limit on all POST endpoints.&quot;&quot;&quot;
+    # ① Only rate-limit mutating API requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded the hourly window
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
-            resp = jsonify({"error": msg})
+            # ③ Return HTTP 429 with a Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
             resp.status_code = 429
-            resp.headers["Retry-After"] = str(retry_after)
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
             return resp
 
 
-@bp.route("/")
+# ---------------------------------------------------------------------------
+# Routes
+# ---------------------------------------------------------------------------
+
+
+@bp.route(&quot;/&quot;)
 def index():
-    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+    &quot;&quot;&quot;Serve index.html, injecting the correct API base URL for the environment.&quot;&quot;&quot;
+    # ① Read the frontend HTML template from the static folder
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
         html = f.read()
-    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
-    return app.response_class(html, mimetype="text/html")
+    # ② Replace the empty data-api-base with the deployment path prefix
+    # The HTML file ships with &#x27;data-api-base=&quot;&quot;&#x27; (empty = relative URL, works
+    # locally). For production we replace it with the actual path prefix so
+    # all fetch() calls in the browser target the right endpoint.
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ③ Return the patched HTML response to the browser
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
 
 
-@bp.route("/css/<path:filename>")
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
 def css(filename):
-    return app.send_static_file(os.path.join("css", filename))
+    &quot;&quot;&quot;Serve stylesheets from the src/css directory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
 
 
-@bp.route("/js/<path:filename>")
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
 def js(filename):
-    return app.send_static_file(os.path.join("js", filename))
+    &quot;&quot;&quot;Serve scripts from the src/js directory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
 
 
-@bp.route("/explanation/<path:filename>")
-@bp.route("/info/<path:filename>")
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
 def explanation(filename):
-    return app.send_static_file(os.path.join("explanation", filename))
+    &quot;&quot;&quot;Serve the &quot;how this demo works&quot; explainer pages from src/explanation.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
 
 
-@bp.route("/echo", methods=["POST"])
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/echo&quot;, methods=[&quot;POST&quot;])
 def echo_route():
-    data = request.get_json(force=True, silent=True) or {}
-    message = (data.get("message") or "").strip()
+    &quot;&quot;&quot;Echo back the posted message — the starter feature.
+
+    Request body (JSON): ``{ &quot;message&quot;: &quot;&lt;text&gt;&quot; }``
+    Response (JSON):     ``{ &quot;result&quot;: &quot;&lt;echoed text&gt;&quot; }``
+    Error response:      ``{ &quot;error&quot;: &quot;&lt;message&gt;&quot; }`` with HTTP 400 (missing
+                         message).
+    &quot;&quot;&quot;
+    # ① Parse the JSON payload and normalize the message string
+    data = request.get_json(force=True)
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    # ② Validate at the boundary — return 400 immediately rather than processing
+    # an empty message.
     if not message:
-        return jsonify({"error": "Please provide a non-empty 'message'."}), 400
-    try:
-        result = echo(message)
-        return jsonify({"result": result})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+        return jsonify({&quot;error&quot;: &quot;A message is required.&quot;}), 400
+    # ③ Delegate to the echo feature function and return JSON
+    return jsonify({&quot;result&quot;: echo(message)})
 
 
+# ---------------------------------------------------------------------------
+# Blueprint registration + server entry point
+# ---------------------------------------------------------------------------
+
+# Register all Blueprint routes under the optional path prefix. This single
+# line is the only place where PATH_PREFIX is applied — every route above is
+# written as a relative path (e.g. &quot;/echo&quot;) and the prefix is prepended here.
 app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=True)
-</code></pre>
+
+if __name__ == &quot;__main__&quot;:
+    # Run the development server. 0.0.0.0 makes the app reachable from outside
+    # the container; port 5000 is mapped to the host port in docker-compose.yml.
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+
         </article>
     </main>
-
-    <footer class="study-footer">
-        Project Template &mdash; 🧩 Echo &middot; How it works
-    </footer>
-
-    <button class="back-to-top" id="backToTop" aria-label="Back to top">&uarr;</button>
+    <footer class="study-footer">Project Template &mdash; 🧩 Echo &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
     <script src="../js/info.js"></script>

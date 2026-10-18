@@ -34,7 +34,7 @@
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-03-agent-one-tool-py">03_agent_one_tool.py</a></li>
-                    <li><a href="#source-main-py">main.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -204,12 +204,12 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>AgentOneToolCard.tsx</code> sends <code>POST /api/agent</code> with <code>{ message }</code>.</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/agent</code> with <code>{ message }</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
-                            <span class="flow-detail"><code>agent_service(req)</code> calls <code>run_agent_with_tool(message)</code>.</span>
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>agent_service()</code> calls <code>run_agent_with_tool(message)</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -257,7 +257,7 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["AgentOneToolCard.tsx<br/>POST /api/agent"]:::entry -->|"message"| R["main.py<br/>agent_service()"]:::fn
+    UI["index.html + main.js<br/>POST /api/agent"]:::entry -->|"message"| R["app.py<br/>agent_service()"]:::fn
     R -->|"message"| S["03_agent_one_tool.py<br/>run_agent_with_tool()"]:::fn
     S -->|"question + tool schema"| O[("OpenAI API")]:::ext
     O -->|"tool_calls: get_price(item)"| S
@@ -281,7 +281,7 @@ flowchart TD
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
                 </div>
             </div>
 
@@ -306,6 +306,7 @@ flowchart TD
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-03-agent-one-tool-py">
+                    <span class="file-path">src/python/03_agent_one_tool.py</span>
                     <p class="file-label">Minimal Single-Tool Agent Demonstration.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Minimal Single-Tool Agent Demonstration.
 
@@ -451,16 +452,16 @@ def run_agent_with_tool(question: str = &quot;How much are the shoes?&quot;) -&g
             </section>
 <!-- ============================================================ 6 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-main-py">
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-main-py">
+                    aria-controls="content-source-app-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-meta-chip">180 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -469,42 +470,189 @@ def run_agent_with_tool(question: str = &quot;How much are the shoes?&quot;) -&g
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-main-py">
-                    <p class="file-label">FastAPI route handler for <code>POST /api/agent</code> (agent_service) in <code>server/main.py</code>.</p>
-                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
-from fastapi import FastAPI, HTTPException
-from fastapi.middleware.cors import CORSMiddleware
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (agent_service) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 02-langchain-agents.&quot;&quot;&quot;
 
-from services import (
-    AgentRequest,
-    AgentResponse,
-    run_agent_with_tool,
-)
+import importlib.util
+import os
+import sys
+from pathlib import Path
 
-# Load environment variables
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
 load_dotenv(find_dotenv())
 
-app = FastAPI(title=&quot;LangChain &amp; Agents API&quot;)
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
 
-# Enable CORS for frontend requests
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=[&quot;*&quot;],
-    allow_credentials=True,
-    allow_methods=[&quot;*&quot;],
-    allow_headers=[&quot;*&quot;],
-)
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
 
 
-@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
-def agent_service(req: AgentRequest):
-    # ① Validate message and delegate to raw OpenAI single-tool agent
-    if not req.message.strip():
-        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_summarize = _load_service(&quot;01_langchain_summarizer.py&quot;, &quot;langchain_summarizer&quot;)
+mod_memory = _load_service(&quot;02_langchain_memory_chat.py&quot;, &quot;langchain_memory_chat&quot;)
+mod_agent = _load_service(&quot;03_agent_one_tool.py&quot;, &quot;agent_one_tool&quot;)
+mod_lc_tool = _load_service(&quot;04_langchain_one_tool.py&quot;, &quot;langchain_one_tool&quot;)
+mod_lc_multi = _load_service(&quot;05_langchain_multi_tools.py&quot;, &quot;langchain_multi_tools&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/summarize&quot;, methods=[&quot;POST&quot;])
+def summarizer_service():
+    # ① Parse input text from JSON payload and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    text = (data.get(&quot;text&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not text:
+        return jsonify({&quot;error&quot;: &quot;Text cannot be empty&quot;}), 400
     try:
-        return AgentResponse(message=req.message, response=run_agent_with_tool(req.message))
+        # ② Run the LangChain LCEL summarizer chain in 01_langchain_summarizer.py
+        summary = mod_summarize.summarize(text)
+        return jsonify({&quot;result&quot;: summary, &quot;summary&quot;: summary})
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/memory-chat&quot;, methods=[&quot;POST&quot;])
+def memory_chat_service():
+    # ① Parse user message and prior conversation history from JSON payload
+    data = request.get_json(force=True, silent=True) or {}
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    history = data.get(&quot;history&quot;) or []
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;Message cannot be empty&quot;}), 400
+    try:
+        # ② Convert history dicts to ChatMessage models and run chat_with_memory()
+        chat_history = [
+            mod_memory.ChatMessage(**m) if isinstance(m, dict) else m
+            for m in history
+        ]
+        reply, updated_history = mod_memory.chat_with_memory(message, chat_history)
+        return jsonify({
+            &quot;result&quot;: reply,
+            &quot;response&quot;: reply,
+            &quot;history&quot;: [m.model_dump() if hasattr(m, &quot;model_dump&quot;) else m for m in updated_history],
+        })
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/agent&quot;, methods=[&quot;POST&quot;])
+def agent_service():
+    # ① Parse user query from JSON payload and reject empty messages
+    data = request.get_json(force=True, silent=True) or {}
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;Message cannot be empty&quot;}), 400
+    try:
+        # ② Run the raw OpenAI tool-calling loop in 03_agent_one_tool.py
+        reply = mod_agent.run_agent_with_tool(message)
+        return jsonify({&quot;result&quot;: reply, &quot;response&quot;: reply})
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/langchain-one-tool&quot;, methods=[&quot;POST&quot;])
+def langchain_one_tool_service():
+    # ① Parse user query from JSON payload and reject empty messages
+    data = request.get_json(force=True, silent=True) or {}
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;Message cannot be empty&quot;}), 400
+    try:
+        # ② Run the LangChain single-tool agent in 04_langchain_one_tool.py
+        reply, tool_called = mod_lc_tool.run_langchain_one_tool(message)
+        return jsonify({&quot;result&quot;: reply, &quot;response&quot;: reply, &quot;tool_called&quot;: tool_called})
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/multi-tool-agent&quot;, methods=[&quot;POST&quot;])
+def multi_tool_agent_service():
+    # ① Parse user query from JSON payload and reject empty messages
+    data = request.get_json(force=True, silent=True) or {}
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not message:
+        return jsonify({&quot;error&quot;: &quot;Message cannot be empty&quot;}), 400
+    try:
+        # ② Run the LangGraph ReAct multi-tool agent in 05_langchain_multi_tools.py
+        reply, tool_called = mod_lc_multi.run_multi_tool_agent(message)
+        return jsonify({&quot;result&quot;: reply, &quot;response&quot;: reply, &quot;tool_called&quot;: tool_called})
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
 

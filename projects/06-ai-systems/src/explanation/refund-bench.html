@@ -33,8 +33,8 @@
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
-                    <li><a href="#source-25-refund-bench-py">03_refund_bench.py</a></li>
-                    <li><a href="#source-main-py">main.py</a></li>
+                    <li><a href="#source-03-refund-bench-py">03_refund_bench.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
                 </ol>
             </details>
         </nav>
@@ -220,12 +220,12 @@
                     <div class="flow-diagram">
                         <div class="flow-step">
                             <span class="flow-title">&#x1F9D1; Browser</span>
-                            <span class="flow-detail"><code>RefundBenchCard.tsx</code> posts <code>POST /api/refund-bench</code> with complaint text, bench selection, and cap.</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> posts <code>POST /api/refund-bench</code> with complaint text, bench selection, and cap.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
-                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
-                            <span class="flow-detail"><code>refund_bench_service(req)</code> calls <code>run_refund_bench()</code> in service 25.</span>
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>refund_bench_route()</code> calls <code>run_refund_bench()</code> in <code>03_refund_bench.py</code>.</span>
                         </div>
                         <div class="flow-arrow">&rarr;</div>
                         <div class="flow-step">
@@ -264,7 +264,7 @@
                     <div class="mermaid-wrap">
                         <div class="mermaid">
 flowchart TD
-    UI["RefundBenchCard.tsx<br/>POST /api/refund-bench"]:::entry -->|"complaint, bench, cap"| R["main.py<br/>refund_bench_service()"]:::fn
+    UI["index.html + main.js<br/>POST /api/refund-bench"]:::entry -->|"complaint, bench, cap"| R["app.py<br/>refund_bench_route()"]:::fn
     R -->|"complaint, bench, cap"| S["03_refund_bench.py<br/>run_refund_bench()"]:::fn
     S -->|"complaint + line_items"| E["stage2_extract_grievances()"]:::fn
     E -->|"atomic grievances"| B["stage3_judge_bench()"]:::fn
@@ -290,24 +290,24 @@ flowchart TD
             <div class="unit-divider" id="unit-2">
                 <div class="unit-divider-badge">Unit 2</div>
                 <div class="unit-divider-text">
-                    <h2 class="unit-divider-title">Python Source Code<a class="headerlink" href="#unit-2"
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Complete implementations of the service and route handler.</p>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
                 </div>
             </div>
 
 <!-- ============================================================ 5 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-25-refund-bench-py">
+            <section class="topic-section is-collapsed" id="sec-source-03-refund-bench-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-25-refund-bench-py">
+                    aria-controls="content-source-03-refund-bench-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">5</span>
-                        <h2 id="source-25-refund-bench-py" class="topic-title is-file">03_refund_bench.py<a class="headerlink" href="#source-25-refund-bench-py"
+                        <h2 id="source-03-refund-bench-py" class="topic-title is-file">03_refund_bench.py<a class="headerlink" href="#source-03-refund-bench-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">600 lines</span>
+                        <span class="topic-meta-chip">621 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -316,8 +316,9 @@ flowchart TD
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-25-refund-bench-py">
-                    <p class="file-label">Complete 4-Stage Multi-Judge Dispute Adjudication Service.</p>
+                <div class="topic-content" id="content-source-03-refund-bench-py">
+                    <span class="file-path">src/python/03_refund_bench.py</span>
+                    <p class="file-label">The Refund Bench: Agentic System Design for Food Dispute Resolution Service.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;The Refund Bench: Agentic System Design for Food Dispute Resolution Service.
 
 Implements a four-stage dispute adjudication pipeline:
@@ -530,12 +531,14 @@ class RefundBenchResponse(BaseModel):
 
 def get_bench_judges(bench: str = &quot;mixed3&quot;) -&gt; list:
     &quot;&quot;&quot;Returns one judge configuration per seat of the selected bench layout.&quot;&quot;&quot;
+    # ① Resolve the bench layout key and map provider names to client factories
     layout_key = bench if bench in BENCH_CHOICES else &quot;mixed3&quot;
     providers = {
         &quot;openai&quot;: (&quot;OpenAI&quot;, OPENAI_MODEL, get_openai_client),
         &quot;gemini&quot;: (&quot;Gemini&quot;, GEMINI_MODEL, get_gemini_client),
         &quot;grok&quot;: (&quot;Groq&quot;, GROK_MODEL, get_grok_client),
     }
+    # ② Build one judge descriptor dict per seat on the bench
     judges = []
     for seat, key in enumerate(BENCH_CHOICES[layout_key][&quot;seats&quot;], start=1):
         provider, model, client_fn = providers[key]
@@ -553,11 +556,13 @@ def get_bench_judges(bench: str = &quot;mixed3&quot;) -&gt; list:
 
 def extract_json(text: str):
     &quot;&quot;&quot;Extracts JSON object or array from markdown-fenced or raw response.&quot;&quot;&quot;
+    # ① Strip markdown code fences if present
     text = text.strip()
     match = re.search(r&quot;```(?:json)?\s*([\s\S]*?)\s*```&quot;, text)
     if match:
         text = match.group(1).strip()
     try:
+        # ② Parse the JSON payload directly or scan from the first bracket/brace
         return json.loads(text)
     except Exception:
         start_idx = min(
@@ -573,6 +578,7 @@ def extract_json(text: str):
 
 def stage2_extract_grievances(complaint_text: str, line_items: list) -&gt; list:
     &quot;&quot;&quot;Extracts checkable grievances with co-reference resolution.&quot;&quot;&quot;
+    # ① Construct the Stage 2 extraction prompt with order line items for pronoun resolution
     client = get_openai_client()
     prompt = f&quot;&quot;&quot;You are a precise dispute-intake assistant.
 
@@ -601,6 +607,7 @@ Complaint: {complaint_text}
 Order line items: {json.dumps(line_items)}&quot;&quot;&quot;
 
     try:
+        # ② Call the LLM at low temperature to extract structured JSON grievances
         response = client.chat.completions.create(
             model=OPENAI_MODEL,
             messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}],
@@ -613,6 +620,7 @@ Order line items: {json.dumps(line_items)}&quot;&quot;&quot;
     except Exception as e:
         logger.warning(f&quot;Error in extraction: {e}&quot;)
 
+    # ③ Fall back to canonical grievances if extraction fails
     return [
         {
             &quot;grievance_id&quot;: &quot;g1&quot;,
@@ -647,6 +655,7 @@ Order line items: {json.dumps(line_items)}&quot;&quot;&quot;
 
 def judge_single_grievance(grievance_text: str, evidence: dict, judge: dict) -&gt; dict:
     &quot;&quot;&quot;A single independent judge model ruling on a grievance.&quot;&quot;&quot;
+    # ① Build the impartial adjudication prompt restricting rulings to UPHELD, REJECTED, or ESCALATE
     prompt = f&quot;&quot;&quot;You are an impartial claims adjudicator ({judge[&#x27;name&#x27;]}).
 Rule on the following grievance using ONLY the evidence given.
 
@@ -673,6 +682,7 @@ Schema:
 }}&quot;&quot;&quot;
 
     try:
+        # ② Invoke the assigned judge provider/model and parse its ballot
         client = judge[&quot;client_fn&quot;]()
         response = client.chat.completions.create(
             model=judge[&quot;model&quot;],
@@ -697,6 +707,7 @@ Schema:
                 &quot;reasoning&quot;: str(data.get(&quot;reasoning&quot;, &quot;&quot;)),
             }
     except Exception as err:
+        # ③ Fall back to OpenAI if a secondary provider key or endpoint fails
         logger.info(f&quot;Primary judge call failed for {judge[&#x27;name&#x27;]}: {err}, trying fallback&quot;)
         try:
             fb_client = get_openai_client()
@@ -729,6 +740,7 @@ Schema:
                 f&quot;Fallback also failed for {judge[&#x27;name&#x27;]}: {fb_err}&quot;
             )
 
+    # ④ Default to ESCALATE if both primary and fallback judge calls fail
     return {
         &quot;judge_id&quot;: judge[&quot;id&quot;],
         &quot;judge_name&quot;: judge[&quot;name&quot;],
@@ -746,6 +758,7 @@ def stage3_judge_bench(
     grievances: list, evidence: dict, bench: str = &quot;mixed3&quot;
 ) -&gt; list:
     &quot;&quot;&quot;Runs every judge on every grievance (in parallel) and tallies the majority verdict.&quot;&quot;&quot;
+    # ① Fan out all (grievance, judge) pairs concurrently across a ThreadPoolExecutor
     judges = get_bench_judges(bench)
     pairs = [(g, judge) for g in grievances for judge in judges]
 
@@ -758,6 +771,7 @@ def stage3_judge_bench(
         )
     judged_grievances = []
 
+    # ② Tally majority vote and confidence score for each grievance
     for gi, g in enumerate(grievances):
         rulings = all_rulings[gi * len(judges) : (gi + 1) * len(judges)]
 
@@ -774,6 +788,7 @@ def stage3_judge_bench(
         split_ratio = majority_count / len(judges)
         overall_confidence = round(split_ratio * avg_judge_conf, 2)
 
+        # ③ Compute deterministic refund and held amounts in Python based on category and ruling
         category = g.get(&quot;category&quot;, &quot;&quot;)
         amount = 0.0
         held_amount = 0.0
@@ -827,6 +842,7 @@ def stage4_settle(
     cap: float = AUTO_APPROVE_CAP,
 ) -&gt; dict:
     &quot;&quot;&quot;Computes settlement totals, checks auto-approval cap, and synthesizes customer message.&quot;&quot;&quot;
+    # ① Sum approved and held amounts and enforce the auto-approval cap
     total_approved = sum(g[&quot;refund_amount&quot;] for g in judged_grievances)
     total_held = sum(g[&quot;held_amount&quot;] for g in judged_grievances)
 
@@ -836,6 +852,7 @@ def stage4_settle(
         total_held += total_approved
         total_approved = 0.0
 
+    # ② Draft a courteous customer notification message grounded in the final rulings
     client = get_openai_client()
     verdicts_summary = [
         {
@@ -883,6 +900,7 @@ Held for review: ₹{total_held:.0f}&quot;&quot;&quot;
             f&quot;(₹{total_held:.0f}) and will update you shortly.&quot;
         )
 
+    # ③ Return the complete settlement summary
     return {
         &quot;dispute_id&quot;: evidence.get(&quot;order_id&quot;, &quot;ord_d7a41c39&quot;),
         &quot;total_approved_refund&quot;: total_approved,
@@ -898,42 +916,44 @@ def adjudicate_dispute(
     complaint_text: str = &quot;&quot;, bench: str = &quot;mixed3&quot;, cap: float = AUTO_APPROVE_CAP
 ) -&gt; dict:
     &quot;&quot;&quot;Executes the full 4-stage Refund Bench pipeline with the selected judge bench and cap.&quot;&quot;&quot;
+    # ① Stage 1: Freeze order evidence snapshot and normalize complaint text
     cleaned_complaint = (complaint_text or &quot;&quot;).strip()
     if not cleaned_complaint:
         cleaned_complaint = CANONICAL_COMPLAINT
 
     evidence = DEFAULT_ORDER_EVIDENCE
 
+    # ② Stage 2: Extract atomic, checkable grievances with co-reference resolution
     grievances = stage2_extract_grievances(
         cleaned_complaint, evidence[&quot;line_items&quot;]
     )
 
+    # ③ Stage 3: Run the selected multi-judge voting bench in parallel
     bench_key = bench if bench in BENCH_CHOICES else &quot;mixed3&quot;
     judged_grievances = stage3_judge_bench(grievances, evidence, bench_key)
 
+    # ④ Stage 4: Settle refund amounts in code, check cap, and draft customer reply
     settlement = stage4_settle(cleaned_complaint, judged_grievances, evidence, cap)
     settlement[&quot;bench_label&quot;] = BENCH_CHOICES[bench_key][&quot;label&quot;]
     settlement[&quot;order_evidence&quot;] = evidence
     return settlement
 
 
-run_refund_bench = adjudicate_dispute
-</code></pre>
+run_refund_bench = adjudicate_dispute</code></pre>
                 </div>
             </section>
-
 <!-- ============================================================ 6 -->
 
-            <section class="topic-section is-collapsed" id="sec-source-main-py">
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-source-main-py">
+                    aria-controls="content-source-app-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
-                        <span class="topic-meta-chip">Route</span>
+                        <span class="topic-meta-chip">150 lines</span>
                         <span class="topic-chevron" aria-hidden="true">
                             <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
                                 stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
@@ -942,19 +962,162 @@ run_refund_bench = adjudicate_dispute
                         </span>
                     </div>
                 </div>
-                <div class="topic-content" id="content-source-main-py">
-                    <p class="file-label">FastAPI route handler for <code>POST /api/refund-bench</code> in <code>server/main.py</code>.</p>
-                    <pre><code data-lang="python">@app.post(&quot;/api/refund-bench&quot;, response_model=RefundBenchResponse)
-def refund_bench_service(req: RefundBenchRequest):
-    # ① Execute 4-stage multi-judge food dispute adjudication pipeline
-    try:
-        return RefundBenchResponse(
-            **run_refund_bench(req.complaint_text, req.bench, req.cap)
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (refund_bench_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 06-ai-systems.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_prompt = _load_service(&quot;01_prompting_strategies.py&quot;, &quot;prompting_strategies&quot;)
+mod_syco = _load_service(&quot;02_sycophancy_trap.py&quot;, &quot;sycophancy_trap&quot;)
+mod_refund = _load_service(&quot;03_refund_bench.py&quot;, &quot;refund_bench&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
         )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/prompting-strategies&quot;, methods=[&quot;POST&quot;])
+def prompting_strategies_route():
+    # ① Parse question, expected_answer, model, and temperature from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or &quot;&quot;).strip()
+    expected = (data.get(&quot;expected_answer&quot;) or &quot;&quot;).strip()
+    model = data.get(&quot;model&quot;) or &quot;gpt-4o-mini&quot;
+    temp = float(data.get(&quot;temperature&quot;, 0.7))
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run Direct, Zero-Shot CoT, and Few-Shot CoT benchmark in 01_prompting_strategies.py
+        res = mod_prompt.run_prompting_strategies(question, expected, model, temp)
+        res[&quot;result&quot;] = f&quot;Benchmark evaluated across {len(res.get(&#x27;strategies&#x27;, []))} prompting strategies.&quot;
+        return jsonify(res)
     except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/sycophancy-trap&quot;, methods=[&quot;POST&quot;])
+def sycophancy_trap_route():
+    # ① Parse case_type, model, and temperature from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    case_type = data.get(&quot;case_type&quot;) or &quot;Math Gaslight&quot;
+    model = data.get(&quot;model&quot;) or &quot;gpt-4o-mini&quot;
+    temp = float(data.get(&quot;temperature&quot;, 0.7))
+    try:
+        # ② Run the multi-turn sycophancy trap evaluation in 02_sycophancy_trap.py
+        res = mod_syco.run_sycophancy_trap(case_type, model, temp)
+        res[&quot;result&quot;] = f&quot;Final Verdict: {res.get(&#x27;final_verdict&#x27;)}&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/refund-bench&quot;, methods=[&quot;POST&quot;])
+def refund_bench_route():
+    # ① Parse complaint_text, judge bench layout, and auto-approval cap from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    complaint_text = (data.get(&quot;complaint_text&quot;) or &quot;&quot;).strip()
+    bench = data.get(&quot;bench&quot;) or &quot;mixed3&quot;
+    cap = float(data.get(&quot;cap&quot;, 2000.0))
+    if not complaint_text:
+        return jsonify({&quot;error&quot;: &quot;Complaint text cannot be empty&quot;}), 400
+    try:
+        # ② Execute the 4-stage multi-judge dispute adjudication pipeline in 03_refund_bench.py
+        res = mod_refund.run_refund_bench(complaint_text, bench, cap)
+        res[&quot;result&quot;] = (
+            f&quot;Approved Refund: ₹{res.get(&#x27;total_approved_refund&#x27;, 0):.0f} &quot;
+            f&quot;| Held for Review: ₹{res.get(&#x27;total_held_for_review&#x27;, 0):.0f}&quot;
+        )
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+
         </article>
     </main>
     <footer class="tt-site-footer">

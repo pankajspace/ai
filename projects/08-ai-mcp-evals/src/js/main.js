@@ -120,8 +120,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 if (data.trace && data.trace.length) {
                     out += `Execution Trace:\n`;
                     data.trace.forEach((step, i) => {
-                        out += `  Step ${i + 1}: ${step.action || step.role} -> ${step.tool || step.content || ""}\n`;
+                        out += `  Step ${i + 1}: ${step.tool}(${JSON.stringify(step.args || {})}) -> ${step.result || ""}\n`;
                     });
+                } else {
+                    out += `Execution Trace: No MCP tools called (answered directly by model).`;
                 }
                 el.textContent = out.trim();
             },

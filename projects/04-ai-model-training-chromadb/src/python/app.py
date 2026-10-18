@@ -23,10 +23,12 @@ _CUR_DIR = Path(__file__).resolve().parent
 
 
 def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
     file_path = _CUR_DIR / filename
     spec = importlib.util.spec_from_file_location(f"services.{alias}", file_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load module from {file_path}")
+    # ② Register and execute the module so its functions can be called by routes
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"services.{alias}"] = mod
     spec.loader.exec_module(mod)
@@ -40,11 +42,14 @@ mod_redis = _load_service("03_redis.py", "redis_agent")
 
 @bp.before_request
 def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
     if request.method == "POST":
+        # ② Check whether this client has exceeded 30 requests per hour
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -53,9 +58,11 @@ def enforce_rate_limit():
 
 @bp.route("/")
 def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ② Return the patched HTML page
     return app.response_class(html, mimetype="text/html")
 
 
@@ -83,6 +90,7 @@ def theory_pages(filename):
 
 @bp.route("/api/model-training", methods=["POST"])
 def model_training_service():
+    # ① Parse delivery order features from the JSON request body
     data = request.get_json(force=True, silent=True) or {}
     try:
         distance_km = float(data.get("distance_km", 4.5))
@@ -91,6 +99,7 @@ def model_training_service():
         is_raining = int(data.get("is_raining", 1))
         if distance_km <= 0 or prep_time_min <= 0:
             return jsonify({"error": "Distance and prep time must be positive."}), 400
+        # ② Run RandomForestRegressor inference in 01_model_training.py and return ETA
         res = mod_ml.predict_delivery_eta(distance_km, prep_time_min, rider_available, is_raining)
         res["result"] = f"Predicted Arrival: {res['eta_minutes']} min 🍔"
         return jsonify(res)
@@ -100,11 +109,13 @@ def model_training_service():
 
 @bp.route("/api/chromadb", methods=["POST"])
 def chromadb_service():
+    # ① Parse student question from JSON payload and reject empty queries
     data = request.get_json(force=True, silent=True) or {}
     question = (data.get("question") or data.get("message") or "").strip()
     if not question:
         return jsonify({"error": "Question cannot be empty"}), 400
     try:
+        # ② Query ChromaDB notes collection via 02_chromadb.py and return answer + sources
         res = mod_chroma.ask_chromadb_notes(question)
         res["result"] = res["answer"]
         return jsonify(res)
@@ -114,6 +125,7 @@ def chromadb_service():
 
 @bp.route("/api/redis", methods=["POST"])
 def redis_agent_service():
+    # ① Parse session_id, message, and optional reset flag from JSON payload
     data = request.get_json(force=True, silent=True) or {}
     session_id = (data.get("session_id") or "demo").strip()
     message = (data.get("message") or "").strip()
@@ -121,6 +133,7 @@ def redis_agent_service():
     if not session_id or (not reset_session and not message):
         return jsonify({"error": "Session ID and message are required"}), 400
     try:
+        # ② Run DeskBuddy agent turn (or session reset) backed by Redis in 03_redis.py
         res = mod_redis.run_redis_agent(session_id, message, reset_session)
         res["result"] = res["answer"]
         return jsonify(res)

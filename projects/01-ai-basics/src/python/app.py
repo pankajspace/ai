@@ -23,10 +23,12 @@ _CUR_DIR = Path(__file__).resolve().parent
 
 
 def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
     file_path = _CUR_DIR / filename
     spec = importlib.util.spec_from_file_location(f"services.{alias}", file_path)
     if spec is None or spec.loader is None:
         raise ImportError(f"Cannot load module from {file_path}")
+    # ② Register and execute the module so its functions can be called by routes
     mod = importlib.util.module_from_spec(spec)
     sys.modules[f"services.{alias}"] = mod
     spec.loader.exec_module(mod)
@@ -39,11 +41,14 @@ mod_joke = _load_service("02_chat_groq.py", "chat_groq")
 
 @bp.before_request
 def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
     if request.method == "POST":
+        # ② Check whether this client has exceeded 30 requests per hour
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -52,9 +57,11 @@ def enforce_rate_limit():
 
 @bp.route("/")
 def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ② Return the patched HTML page
     return app.response_class(html, mimetype="text/html")
 
 
@@ -82,11 +89,13 @@ def theory_pages(filename):
 
 @bp.route("/api/travel", methods=["POST"])
 def travel_suggestion():
+    # ① Parse city from JSON payload and reject empty values
     data = request.get_json(force=True, silent=True) or {}
     city = (data.get("city") or data.get("message") or "").strip()
     if not city:
         return jsonify({"error": "City cannot be empty"}), 400
     try:
+        # ② Call get_travel_suggestion() in 01_chat_openai.py and return JSON
         suggestion = mod_travel.get_travel_suggestion(city)
         return jsonify({"result": suggestion, "city": city, "suggestion": suggestion})
     except Exception as exc:
@@ -95,11 +104,13 @@ def travel_suggestion():
 
 @bp.route("/api/joke", methods=["POST"])
 def joke_generator():
+    # ① Parse topic from JSON payload and reject empty values
     data = request.get_json(force=True, silent=True) or {}
     topic = (data.get("topic") or data.get("message") or "").strip()
     if not topic:
         return jsonify({"error": "Topic cannot be empty"}), 400
     try:
+        # ② Call get_groq_joke() in 02_chat_groq.py and return JSON
         joke = mod_joke.get_groq_joke(topic)
         return jsonify({"result": joke, "topic": topic, "joke": joke})
     except Exception as exc:

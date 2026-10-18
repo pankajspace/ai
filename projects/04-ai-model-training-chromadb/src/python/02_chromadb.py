@@ -2,7 +2,7 @@
 
 This service demonstrates a complete Retrieval-Augmented Generation (RAG) workflow over markdown notes:
 1. Connects to ChromaDB (`chromadb.HttpClient` when `CHROMA_HOST` is configured, or an in-memory
-   `chromadb.EphemeralClient` inside the FastAPI server).
+   `chromadb.EphemeralClient` inside the Flask server).
 2. Reads `.md` and `.txt` notes from `docs/`, splits them into paragraph chunks, embeds them with OpenAI's
    `text-embedding-3-small`, and upserts them into the `"notes"` Chroma collection.
 3. Executes the 3-stage RAG pipeline (Retrieve -> Augment -> Generate): queries top-3 relevant chunks from

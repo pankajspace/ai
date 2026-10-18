@@ -40,10 +40,22 @@ async function callApi({ btn, result, endpoint, body, render }) {
         } else {
             let out = data.response || data.result || JSON.stringify(data, null, 2);
             if (data.tool_calls && data.tool_calls.length) {
-                out += `\n\n[Tools Called: ${data.tool_calls.join(", ")}]`;
+                out += `\n\n[Tools Called: ${data.tool_calls.join(" -> ")}]`;
+            }
+            if (data.tool_sequence && data.tool_sequence.length) {
+                out += `\n\n[Tool Sequence: ${data.tool_sequence.join(" -> ")}]`;
+            }
+            if (data.operations_executed && data.operations_executed.length) {
+                out += `\n\n[AWS Operations: ${data.operations_executed.join(", ")}]`;
+            }
+            if (data.workflow_steps && data.workflow_steps.length) {
+                out += `\n\n[Workflow Steps: ${data.workflow_steps.join(" -> ")}]`;
+            }
+            if (data.current_inventory) {
+                out += `\n\n[Current Inventory: ${JSON.stringify(data.current_inventory)}]`;
             }
             if (data.parallel_duration_seconds) {
-                out += `\n[Duration: ${data.parallel_duration_seconds}s]`;
+                out += `\n[Parallel Duration: ${data.parallel_duration_seconds}s]`;
             }
             result.textContent = out;
         }

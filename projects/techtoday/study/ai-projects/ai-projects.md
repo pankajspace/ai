@@ -15,7 +15,7 @@ Small projects that show big AI ideas
 
 ### AI Basics
 
-Direct OpenAI and Groq LLM chat completions: system roles, temperature tuning, and low-latency LPU inference.
+Direct OpenAI (GPT-4o mini) and Groq (LLaMA 3.3 70B) chat completions: system personas, travel activity suggestions, and low-latency joke generation.
 
 [Open project →](https://app.techtoday.click/01-ai-basics/)
 
@@ -23,7 +23,7 @@ Direct OpenAI and Groq LLM chat completions: system roles, temperature tuning, a
 
 ### LangChain & Agents
 
-LCEL chains, multi-turn conversation memory, raw OpenAI tool-calling loops, and LangGraph ReAct multi-tool agents.
+LCEL summarization chains, multi-turn conversation memory, manual OpenAI tool-calling loops, and LangGraph ReAct single- and multi-tool agents.
 
 [Open project →](https://app.techtoday.click/02-langchain-agents/)
 
@@ -31,7 +31,7 @@ LCEL chains, multi-turn conversation memory, raw OpenAI tool-calling loops, and 
 
 ### AI RAG & Chroma
 
-Recursive character chunking, semantic sentence embeddings, and vector RAG retrieval with Chroma.
+Recursive character chunking, 384-D MiniLM sentence embeddings with cosine similarity, and grounded vector RAG QA with Chroma.
 
 [Open project →](https://app.techtoday.click/03-ai-rag-chroma/)
 
@@ -39,7 +39,7 @@ Recursive character chunking, semantic sentence embeddings, and vector RAG retri
 
 ### AI Model Training & ChromaDB
 
-Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session memory.
+Supervised RandomForest delivery ETA prediction, persistent ChromaDB study-notes RAG, and Redis-backed DeskBuddy agent session memory.
 
 [Open project →](https://app.techtoday.click/04-ai-model-training-chromadb/)
 
@@ -47,7 +47,7 @@ Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session
 
 ### AWS Strands Agents
 
-12 Bedrock and LangGraph agent patterns: custom tools, prebuilt tools, class-based state, and async pipelines.
+12 Amazon Bedrock (Nova Lite) and LangGraph agent patterns: custom @tool reflection, prebuilt tools, use_aws CLI, stateful classes, and async parallel tools.
 
 [Open project →](https://app.techtoday.click/05-ai-aws-strands/)
 
@@ -55,7 +55,7 @@ Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session
 
 ### AI Systems
 
-Prompting strategies (Direct, Zero-Shot CoT, Few-Shot CoT), sycophancy trap benchmarks, and multi-judge refund arbitration.
+Prompting strategy benchmarks (Direct, Zero-Shot CoT, Few-Shot CoT), 4-round sycophancy pressure tests, and 4-stage multi-judge food refund arbitration.
 
 [Open project →](https://app.techtoday.click/06-ai-systems/)
 
@@ -63,7 +63,7 @@ Prompting strategies (Direct, Zero-Shot CoT, Few-Shot CoT), sycophancy trap benc
 
 ### AI Reliability
 
-Chain-of-thought vs direct reasoning, JSON determinism, tool schema calibration, and error injection benchmarks.
+Chain-of-Thought vs Direct logic benchmarks, strict JSON Schema determinism, 2×2 tool routing calibration, and HTTP 503 fault injection scoring.
 
 [Open project →](https://app.techtoday.click/07-ai-reliability/)
 
@@ -71,7 +71,7 @@ Chain-of-thought vs direct reasoning, JSON determinism, tool schema calibration,
 
 ### AI MCP & Evals
 
-Direct Model Context Protocol client, MCP agent loop, and automated tool evaluation suite over stdio.
+Direct FastMCP stdio client, dynamic OpenAI + MCP tool-calling agent loop, and a 5-case automated routing and grounding evaluation suite.
 
 [Open project →](https://app.techtoday.click/08-ai-mcp-evals/)
 
@@ -79,7 +79,7 @@ Direct Model Context Protocol client, MCP agent loop, and automated tool evaluat
 
 ### InterviewIQ
 
-An AI coach for mock interviews. A ReAct agent checks each answer for STAR structure, relevance, and filler words. It remembers the session and gives tips. Uses OpenAI.
+Dual-agent AI mock-interview coach with 4-tool ReAct answer evaluation (STAR structure, relevance, filler density), adaptive interviewer routing, and session memory.
 
 [Open project →](https://app.techtoday.click/09-interviewiq/)
 
@@ -87,7 +87,7 @@ An AI coach for mock interviews. A ReAct agent checks each answer for STAR struc
 
 ### Shipment Exception Desk
 
-Sorts shipment problems by urgency. Applies compensation policies, escalates issues, and drafts messages. Keeps a live daily ledger with KPI totals.
+LangChain logistics exception triage pipeline applying tier-aware compensation caps, escalation routing, customer/internal drafts, and live daily KPI aggregation.
 
 [Open project →](https://app.techtoday.click/10-shipment-exception-desk/)
 
