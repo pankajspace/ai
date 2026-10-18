@@ -110,6 +110,13 @@ def theory_pages(filename):
     return app.send_static_file(os.path.join("theory", filename))
 
 
+@bp.route("/logo.svg")
+def logo():
+    """Serve logo.svg for favicons and site branding."""
+    return app.send_static_file("logo.svg")
+
+
+
 @bp.route("/echo", methods=["POST"])
 def echo_route():
     """Echo back the posted message — the starter feature.
