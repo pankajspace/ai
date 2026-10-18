@@ -638,9 +638,9 @@ Static assets are served through the same Blueprint (`/css/<path:filename>` and 
 
 Used by all production AI applications (`01-ai-basics` through `07-ai-mcp-evals`, `interviewiq`, `shipment-exception-desk`, and `template`):
 1. **Self-Contained Image:** A single Docker image built from the project's root `Dockerfile`.
-2. **Integrated Full-Stack Runtime:** Encapsulates Python 3.11+, dependencies (`requirements.txt`), vanilla HTML/CSS/JS frontend assets (`src/`, `src/css`, `src/js`, `src/info`), and backend feature modules (`src/python`).
+2. **Integrated Full-Stack Runtime:** Encapsulates Python 3.11+, dependencies (`requirements.txt`), vanilla HTML/CSS/JS frontend assets (`src/`, `src/css`, `src/js`, `src/explanation`), and backend feature modules (`src/python`).
 3. **Stateless Compute:** Purely stateless compute; persistent state is either stored in memory during an active session or delegated to cloud APIs and external stores (e.g., ChromaDB, Redis).
-4. **Dedicated Explainer Pages (ⓘ):** Every demo card links to a companion `src/info/<demo>.html` explainer page served directly by Flask, containing concept theory, request-flow box diagrams, Mermaid code-flow diagrams, and syntax-highlighted source code.
+4. **Dedicated Explainer Pages (ⓘ):** Every demo card links to a companion `src/explanation/<demo>.html` explainer page served directly by Flask, containing concept theory, request-flow box diagrams, Mermaid code-flow diagrams, and syntax-highlighted source code.
 
 ---
 

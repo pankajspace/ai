@@ -91,6 +91,13 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/explanation/<path:filename>")
+@bp.route("/info/<path:filename>")
+def explanation(filename):
+    """Serve the "how this demo works" explainer pages from src/explanation."""
+    return app.send_static_file(os.path.join("explanation", filename))
+
+
 @bp.route("/echo", methods=["POST"])
 def echo_route():
     """Echo back the posted message — the starter feature.

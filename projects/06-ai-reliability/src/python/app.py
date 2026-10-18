@@ -70,9 +70,10 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/explanation/<path:filename>")
 @bp.route("/info/<path:filename>")
-def info_pages(filename):
-    return app.send_static_file(os.path.join("info", filename))
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join("explanation", filename))
 
 
 @bp.route("/api/cot-vs-direct", methods=["POST"])

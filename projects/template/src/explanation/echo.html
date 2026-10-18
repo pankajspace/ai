@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Echo &middot; Project Template</title>
+    <meta name="description"
+        content="🧩 Echo is the reference starter feature for container projects, demonstrating Flask blueprint routing, rate limiting, and client-server flow." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>Project Template</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to Project Template</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-echo-py">echo.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🧩 Echo<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🧩 Echo</strong> demonstrates the foundational request-response lifecycle of a containerized project: frontend event handling, asynchronous <code>fetch()</code> dispatch with dynamic <code>PATH_PREFIX</code>, backend rate limiting, and JSON response formatting.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    Expand All
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    Collapse All
+                </button>
+            </div>
+
+            <div class="unit-divider">
+                <span class="unit-tag">Unit 1</span>
+                <h2>How It Works</h2>
+            </div>
+
+            <section class="topic-section" id="concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">1</span>
+                    <h2 class="topic-title">Concept<a class="headerlink" href="#concept" title="Permanent link">#</a></h2>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <p>The <strong>Echo</strong> endpoint acts as the canonical pattern for every interactive feature tile in the platform:</p>
+                    <ul>
+                        <li><strong>Input Validation:</strong> The frontend checks that the user has entered non-empty text before enabling the submit button.</li>
+                        <li><strong>Environment Neutrality:</strong> All API calls use a relative path prefixed by <code>data-api-base</code> so the UI behaves identically whether mounted at <code>http://localhost:8090/</code> or <code>https://app.techtoday.click/template/</code>.</li>
+                        <li><strong>Stateless Backend Processing:</strong> The Flask application reads the incoming JSON payload, passes it to the isolated business module (<code>echo.py</code>), and returns the serialized result.</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section class="topic-section" id="theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">2</span>
+                    <h2 class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts" title="Permanent link">#</a></h2>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <p>Key architectural concepts demonstrated by this pattern:</p>
+                    <ol>
+                        <li><strong>Reverse Proxy Path Forwarding:</strong> Production traffic passes through Nginx without stripping the prefix segment. Flask Blueprints registered with <code>PATH_PREFIX</code> map routes seamlessly across environments.</li>
+                        <li><strong>Sliding-Window Rate Limiting:</strong> A SQLite-backed rate limiter on EC2 guards against abusive request bursts while permitting normal user exploration.</li>
+                        <li><strong>Deterministic Error Handling:</strong> Bad input returns an HTTP 400 with a structured <code>{"error": "..."}</code> message; service failures return HTTP 500.</li>
+                    </ol>
+                </div>
+            </section>
+
+            <section class="topic-section" id="request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">3</span>
+                    <h2 class="topic-title">Request flow<a class="headerlink" href="#request-flow" title="Permanent link">#</a></h2>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <strong>1. Client Browser</strong>
+                            <span>User enters text &rarr; click Send</span>
+                        </div>
+                        <div class="flow-step">
+                            <strong>2. Nginx Reverse Proxy</strong>
+                            <span>Applies rate limiting &rarr; proxy_pass to loopback port</span>
+                        </div>
+                        <div class="flow-step">
+                            <strong>3. Flask Blueprint</strong>
+                            <span>Validates JSON body &rarr; calls echo()</span>
+                        </div>
+                        <div class="flow-step">
+                            <strong>4. Feature Module</strong>
+                            <span>Processes payload &rarr; returns result</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="topic-section" id="code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">4</span>
+                    <h2 class="topic-title">Code flow<a class="headerlink" href="#code-flow" title="Permanent link">#</a></h2>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    A[Browser<br/>user input] -->|POST /echo| B[app.py<br/>echo_route]
+    B -->|check rate limit| C[rate_limiter.py<br/>check_rate_limit]
+    C -->|allowed| B
+    B -->|message text| D[echo.py<br/>echo]
+    D -->|echoed text| B
+    B -->|JSON result| A
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider">
+                <span class="unit-tag">Unit 2</span>
+                <h2>Source Code</h2>
+            </div>
+
+            <section class="topic-section" id="source-echo-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">5</span>
+                    <h2 class="topic-title is-file">echo.py<a class="headerlink" href="#source-echo-py" title="Permanent link">#</a></h2>
+                    <span class="topic-meta-chip">src/python/echo.py</span>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <p class="file-label">Starter feature function echoing back user messages.</p>
+                    <pre><code data-lang="python">"""Starter feature: a dependency-free "echo" that transforms text.
+
+This module exists so the template runs end to end without any API keys.
+Replace it with your project's real feature modules (one module per feature,
+each exposing a small function that ``app.py`` calls). Keeping features in
+their own modules makes them easy to add, remove, or test in isolation.
+"""
+
+
+def echo(text: str) -> str:
+    """Return a short, upper-cased confirmation of the input text.
+
+    Args:
+        text: The message to echo back.
+
+    Returns:
+        A formatted string echoing the input. Pure Python — no network or
+        API keys — so it works offline and in CI.
+    """
+    # ① clean and format the message
+    cleaned = text.strip()
+    return f"You said: {cleaned.upper()} ({len(cleaned)} characters)"
+
+
+if __name__ == "__main__":
+    # Allow running this feature directly:  docker compose run --rm echo
+    message = input("Enter a message to echo: ")
+    print(echo(message))
+</code></pre>
+                </div>
+            </section>
+
+            <section class="topic-section" id="source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false">
+                    <span class="topic-badge">6</span>
+                    <h2 class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py" title="Permanent link">#</a></h2>
+                    <span class="topic-meta-chip">src/python/app.py</span>
+                    <span class="topic-chevron"></span>
+                </div>
+                <div class="topic-body">
+                    <p class="file-label">Flask Blueprint application with rate limiting and static routing.</p>
+                    <pre><code data-lang="python">import os
+from pathlib import Path
+
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+
+from echo import echo
+from rate_limiter import check_rate_limit
+
+PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint("main", __name__)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    if request.method == "POST":
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            resp = jsonify({"error": msg})
+            resp.status_code = 429
+            resp.headers["Retry-After"] = str(retry_after)
+            return resp
+
+
+@bp.route("/")
+def index():
+    with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
+        html = f.read()
+    html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    return app.response_class(html, mimetype="text/html")
+
+
+@bp.route("/css/<path:filename>")
+def css(filename):
+    return app.send_static_file(os.path.join("css", filename))
+
+
+@bp.route("/js/<path:filename>")
+def js(filename):
+    return app.send_static_file(os.path.join("js", filename))
+
+
+@bp.route("/explanation/<path:filename>")
+@bp.route("/info/<path:filename>")
+def explanation(filename):
+    return app.send_static_file(os.path.join("explanation", filename))
+
+
+@bp.route("/echo", methods=["POST"])
+def echo_route():
+    data = request.get_json(force=True, silent=True) or {}
+    message = (data.get("message") or "").strip()
+    if not message:
+        return jsonify({"error": "Please provide a non-empty 'message'."}), 400
+    try:
+        result = echo(message)
+        return jsonify({"result": result})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=True)
+</code></pre>
+                </div>
+            </section>
+        </article>
+    </main>
+
+    <footer class="study-footer">
+        Project Template &mdash; 🧩 Echo &middot; How it works
+    </footer>
+
+    <button class="back-to-top" id="backToTop" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

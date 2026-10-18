@@ -11,7 +11,7 @@ Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
 Small projects that show big AI ideas
 
-[ⓘ](../../info/interviewiq.html)
+[ⓘ](../../explanation/interviewiq.html)
 
 ### InterviewIQ
 
@@ -19,7 +19,7 @@ An AI coach for mock interviews. A ReAct agent checks each answer for STAR struc
 
 [Open project →](https://app.techtoday.click/interviewiq/)
 
-[ⓘ](../../info/shipment-exception-desk.html)
+[ⓘ](../../explanation/shipment-exception-desk.html)
 
 ### Shipment Exception Desk
 
