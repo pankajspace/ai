@@ -26,7 +26,7 @@ Read before editing:
 2. [projects/ARCHITECTURE.md](../../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
 3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the branch flow the README must describe (any branch deploys on push for testing; merge into `main` to release).
 4. [projects/template/README.md](../../../projects/template/README.md) and [projects/template/src/python/app.py](../../../projects/template/src/python/app.py).
-5. A neighboring project ([basic](../../../projects/basic), [langchain](../../../projects/langchain), or [rag](../../../projects/rag)) when its structure helps.
+5. A neighboring project ([interviewiq](../../../projects/interviewiq) or [shipment-exception-desk](../../../projects/shipment-exception-desk)) when its structure helps.
 6. The matching `study/NN-<topic>/` folder, if one exists, for feature context and source material: its `.md`, the companion `.html` deck, and the class code under `notes/` (project classes also ship a reference solution folder beside `notes/`).
 
 ## Inputs To Resolve
@@ -344,7 +344,7 @@ The stock `deploy.yml.template` is self-provisioning but single-service: it buil
 
 1. Still create `.github/workflows/deploy-<project-name>.yml` — never skip it.
 2. Ensure an ECR repository exists and build/push an image for **every** build context, or build them together via `docker compose build` against the production Compose file.
-3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service. Name every service explicitly in both `docker compose pull` and `docker compose up -d --wait`, including dependency services (databases, Redis, Chroma) and services behind `--profile` flags. A bare `up -d --wait` acts on every service in the file, so a leftover or broken entry from another project in a shared Compose file aborts the whole rollout. Prefer the template's per-project `~/apps/<project-name>/docker-compose.yml`; `.github/workflows/deploy-docker.yml` is the working multi-service example (it still uses the shared `~/docker-compose.yml`, which is why it names its services).
+3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service. Name every service explicitly in both `docker compose pull` and `docker compose up -d --wait`, including dependency services (databases, Redis, Chroma) and services behind `--profile` flags. A bare `up -d --wait` acts on every service in the file, so a leftover or broken entry from another project in a shared Compose file aborts the whole rollout. Prefer the template's per-project `~/apps/<project-name>/docker-compose.yml`; `.github/workflows/deploy-ai-pocs.yml` is the working multi-service example.
 4. If examples are keyless and rarely change, automating only the gateway is acceptable — but say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
 5. Never call a complex project deploy-ready while the workflow covers only the gateway image.
 

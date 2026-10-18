@@ -16,7 +16,7 @@ The primary architectural goal is **maximum operational efficiency and minimal c
 2. **No AWS ECS or Fargate:** Running containers directly via Docker and Docker Compose on an EC2 instance avoids ECS cluster management fees, private VPC endpoint charges, and per-vCPU/GB Fargate runtime premiums, saving approximately $20 to $40 per month.
 3. **Free Automated SSL Certificates:** Let's Encrypt with Certbot automates certificate issuance, renewal, and Nginx configuration for both the apex domain and application subdomains at zero cost. (AWS Certificate Manager certificates cannot be bound directly to EC2 instances without an ALB or CloudFront distribution).
 4. **Single Elastic IP with Route 53:** Three DNS A-records in Route 53 point directly to a single static Elastic IP associated with the EC2 host. While attached to a running instance, the Elastic IP is free. Route 53 hosted zone costs are approximately $0.50 per month.
-5. **Path-Based Reverse Proxy Routing:** Rather than provisioning separate DNS subdomains, SSL certificates, or cloud infrastructure for every new application, all containerized projects share the `app.techtoday.click` subdomain. Nginx routes traffic by URL path prefix (for example, `/basic/`, `/langchain/`, `/shipment-exception-desk/`) to unique loopback ports on the host.
+5. **Path-Based Reverse Proxy Routing:** Rather than provisioning separate DNS subdomains, SSL certificates, or cloud infrastructure for every new application, all containerized projects share the `app.techtoday.click` subdomain. Nginx routes traffic by URL path prefix (for example, `/interviewiq/`, `/shipment-exception-desk/`, `/ai-pocs/`) to unique loopback ports on the host.
 6. **Isolated Self-Provisioning Deployments:** Each container application is self-contained. On git push, CI/CD workflows automatically create the project's Amazon ECR repository, generate its secrets configuration, provision its isolated Nginx routing block, and launch its isolated Docker Compose stack.
 7. **Centralized Secrets with Zero-Commitment Security:** All application API keys are stored centrally in AWS Secrets Manager under `techtoday/secrets`. No credentials exist in Git repositories, Docker image layers, or GitHub Actions secrets. The EC2 instance retrieves and injects secrets into containers at deployment time.
 
@@ -160,13 +160,9 @@ flowchart TD
     %% TIER 5: HOST LOOPBACK ROUTING
     subgraph Tier5["5. Shielded Host Loopback Ports (127.0.0.1 - Zero Public Exposure)"]
         direction TB
-        LPort5000["127.0.0.1:5000 (basic)"]
-        LPort5001["127.0.0.1:5001 (langchain)"]
-        LPort5002["127.0.0.1:5002 (rag)"]
-        LPort5003["127.0.0.1:5003 (docker gateway)"]
-        LPort5004["127.0.0.1:5004 (aws-strands)"]
         LPort5005["127.0.0.1:5005 (interviewiq)"]
         LPort5006["127.0.0.1:5006 (shipment-exception-desk)"]
+        LPort5010["127.0.0.1:5010 (ai-pocs)"]
     end
 
     %% TIER 6: DOCKER CONTAINER APPS RUNTIME
@@ -175,38 +171,9 @@ flowchart TD
 
         subgraph ModernApps["Isolated Self-Provisioning Stacks (~/apps/[project]/)"]
             direction TB
-            AppBasic["basic Container (OpenAI Fundamentals & Playground)"]
-            AppLangchain["langchain Container (LangChain LCEL & Agents)"]
-            AppRAG["rag Container (ChromaDB + FlashRank Reranker)"]
-            AppStrands["aws-strands Container (Bedrock Strands Agents)"]
             AppInterview["interviewiq Container (Groq AI Interview Coach)"]
             AppShipment["shipment-exception-desk Container (Logistics Exception Desk)"]
-        end
-
-        subgraph DockerMulti["Multi-Container Microservices Stack (~/docker-compose.yml)"]
-            direction TB
-            DockerWeb["web: Flask API Gateway (Internal Port 5000)"]
-            QuickBite["quickbite: FastAPI ETA Service (Level 1)"]
-
-            subgraph ScalerGPTGroup["Level 2: ScalerGPT Knowledge Retrieval"]
-                ScalerGPT["scalergpt: RAG App Service (Port 8000)"]
-                ChromaDB["chromadb: Vector Database (Port 8000)"]
-                VolChroma[("Named Volume: scalergpt_chroma_data")]
-                ScalerGPT <--> ChromaDB
-                ChromaDB --- VolChroma
-            end
-
-            subgraph DeskBuddyGroup["Level 3: DeskBuddy Agent System"]
-                DeskBuddy["deskbuddy-agent: LangChain ReAct (Port 9000)"]
-                DeskBuddyTools["deskbuddy-tools: Tool Executor (Port 7000)"]
-                RedisMem["deskbuddy-redis: Redis 7 Memory Store (Port 6379)"]
-                VolRedis[("Named Volume: deskbuddy_memory")]
-                DeskBuddy <--> DeskBuddyTools
-                DeskBuddy <--> RedisMem
-                RedisMem --- VolRedis
-            end
-
-            DockerWeb --> QuickBite & ScalerGPT & DeskBuddy
+            AppPocs["ai-pocs Containers (FastAPI Backend + Vite Frontend)"]
         end
     end
 
@@ -228,7 +195,7 @@ flowchart TD
     subgraph Tier8["8. Automated CI/CD Pipelines (GitHub Actions & OIDC)"]
         direction TB
         GitHubRepo["GitHub Repository (ai) - main branch"]
-        GHA_Workflows["8 Project Workflows (.github/workflows/deploy-*.yml)"]
+        GHA_Workflows["4 Active Project Workflows (.github/workflows/deploy-*.yml)"]
         GHA_OIDC["IAM Role: github-actions-deploy (OIDC Federation)"]
 
         GitHubRepo --> GHA_Workflows
@@ -253,17 +220,13 @@ flowchart TD
     Port443 -- "HTTPS Requests" --> Nginx
     Port22 -- "Deployment Commands" --> EC2_Role
 
-    AppLocations -- "proxy_pass /basic/" --> LPort5000 --> AppBasic
-    AppLocations -- "proxy_pass /langchain/" --> LPort5001 --> AppLangchain
-    AppLocations -- "proxy_pass /rag/" --> LPort5002 --> AppRAG
-    AppLocations -- "proxy_pass /docker/" --> LPort5003 --> DockerWeb
-    AppLocations -- "proxy_pass /aws-strands/" --> LPort5004 --> AppStrands
     AppLocations -- "proxy_pass /interviewiq/" --> LPort5005 --> AppInterview
     AppLocations -- "proxy_pass /shipment-exception-desk/" --> LPort5006 --> AppShipment
+    AppLocations -- "proxy_pass /ai-pocs/" --> LPort5010 --> AppPocs
 
-    AppBasic & AppLangchain & AppRAG & DockerWeb & ScalerGPT & DeskBuddy & AppShipment -- "Outbound HTTPS (Port 443)" --> OpenAI
-    AppInterview -- "Outbound HTTPS (Port 443)" --> Groq
-    AppStrands -- "Outbound SigV4 HTTPS (Port 443)" --> Bedrock
+    AppShipment & AppPocs -- "Outbound HTTPS (Port 443)" --> OpenAI
+    AppInterview & AppPocs -- "Outbound HTTPS (Port 443)" --> Groq
+    AppPocs -- "Outbound SigV4 HTTPS (Port 443)" --> Bedrock
 ```
 
 ---
@@ -359,7 +322,7 @@ Nginx runs natively as a systemd service on the EC2 host (`systemctl status ngin
 1. `/etc/nginx/nginx.conf`: Base Nginx server configuration, worker process tuning, MIME type mappings, and default logging.
 2. `/etc/nginx/conf.d/techtoday.conf`: Virtual host configuration for `techtoday.click` and `www.techtoday.click`.
 3. `/etc/nginx/conf.d/app.conf`: Virtual host configuration for `app.techtoday.click`.
-4. `/etc/nginx/conf.d/app-locations/`: Directory containing modular, per-project reverse proxy location files (e.g., `shipment-exception-desk.conf`, `interviewiq.conf`, `aws-strands.conf`).
+4. `/etc/nginx/conf.d/app-locations/`: Directory containing modular, per-project reverse proxy location files (e.g., `shipment-exception-desk.conf`, `interviewiq.conf`, `ai-pocs.conf`).
 5. `/var/www/techtoday/`: Filesystem root holding static HTML/CSS/JS assets and compiled study notes.
 
 ### 4.2. Virtual Host 1: Static Site (`techtoday.conf`)
@@ -488,7 +451,7 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
 
 The Nginx zone in Section 4.6 is a token-bucket refilling at 1 request per minute, so it cannot express a hard hourly cap, and it is bypassed entirely when an app is reached outside the proxy (local development, or a container port opened for debugging). Every project therefore ships a second, authoritative quota inside the Flask process.
 
-1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`basic`, `langchain`, `rag`, `docker`, `aws-strands`, `interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
+1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
 2. **Sliding Window Quota:** A strict sliding window of **30 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
 3. **Storage:** SQLite at `/tmp/ai_rate_limit.db` in WAL mode, with an `(ip, timestamp)` index. No Redis or external dependency is required, and the quota survives worker threads within a container. The counter resets when the container is recreated, which is acceptable for an abuse guard.
 4. **Client Identification:** `get_client_ip()` prefers the first entry of `X-Forwarded-For`, falls back to `X-Real-IP`, then `request.remote_addr` — matching the headers Nginx sets in Section 4.4.
@@ -512,53 +475,29 @@ All dynamic projects run as containerized services managed by Docker Engine (`do
 
 To prevent port collision across applications on both local development machines and the production EC2 host, ports are strictly registered:
 
-1. **`basic` (AI Fundamentals Lab):**
-   - Path Prefix: `/basic`
-   - Local Development Port: `8080:5000`
-   - EC2 Host Port: `5000:5000`
-   - ECR Repository: `techtoday/basic`
-   - Technologies: Flask, OpenAI API (GPT-4o mini)
-2. **`langchain` (LangChain Lab):**
-   - Path Prefix: `/langchain`
-   - Local Development Port: `8081:5000`
-   - EC2 Host Port: `5001:5000`
-   - ECR Repository: `techtoday/langchain`
-   - Technologies: Flask, LangChain, LCEL, Memory buffers
-3. **`rag` (RAG & Vector Retrieval Lab):**
-   - Path Prefix: `/rag`
-   - Local Development Port: `8082:5000`
-   - EC2 Host Port: `5002:5000`
-   - ECR Repository: `techtoday/rag`
-   - Technologies: Flask, ChromaDB, HuggingFace embeddings, FlashRank reranker
-4. **`docker` (Multi-Container Microservices Lab):**
-   - Path Prefix: `/docker`
-   - Local Development Port: `8083:5000`
-   - EC2 Host Port: `5003:5000`
-   - ECR Repositories: `techtoday/docker-{web,quickbite,scalergpt,deskbuddy-agent,deskbuddy-tools}`
-   - Technologies: Flask gateway, FastAPI, ChromaDB container, Redis container, Docker Compose profiles
-5. **`aws-strands` (Amazon Bedrock Strands Lab):**
-   - Path Prefix: `/aws-strands`
-   - Local Development Port: `8084:5000`
-   - EC2 Host Port: `5004:5000`
-   - ECR Repository: `techtoday/aws-strands`
-   - Technologies: Flask, AWS Strands Agents SDK, Amazon Bedrock Converse API
-6. **`interviewiq` (AI Mock Interview Coach):**
+1. **`interviewiq` (AI Mock Interview Coach):**
    - Path Prefix: `/interviewiq`
    - Local Development Port: `8085:5000`
    - EC2 Host Port: `5005:5000`
    - ECR Repository: `techtoday/interviewiq`
    - Technologies: Flask, Groq API (Llama 3, Whisper), ReAct tool-calling agent
-7. **`shipment-exception-desk` (Logistics Exception Agent):**
+2. **`shipment-exception-desk` (Logistics Exception Agent):**
    - Path Prefix: `/shipment-exception-desk`
    - Local Development Port: `8086:5000`
    - EC2 Host Port: `5006:5000`
    - ECR Repository: `techtoday/shipment-exception-desk`
    - Technologies: Flask, OpenAI API, Structured exception triage engine
-8. **`template` (Starter Reference Implementation):**
+3. **`ai-pocs` (35 AI Services Suite):**
+   - Path Prefix: `/ai-pocs`
+   - Local Development Port: `8091:5173` (client), `8000:8000` (server)
+   - EC2 Host Port: `5010:5173` (client, proxies to internal backend)
+   - ECR Repositories: `techtoday/ai-pocs-client`, `techtoday/ai-pocs-server`
+   - Technologies: FastAPI, React + Vite, Docker Compose, 35 AI Services across 7 domains
+4. **`template` (Starter Reference Implementation):**
    - Path Prefix: `/<project-name>`
    - Starter Local Port: `8090:5000`
-   - Next Free Local Development Port: `8087`
-   - Next Free EC2 Host Port: `5007`
+   - Next Free Local Development Port: `8092`
+   - Next Free EC2 Host Port: `5011`
    - Technologies: Standardized Flask Blueprint, UI shell, and deploy workflow template
 
 ### 5.3. Flask Runtime Architecture and `PATH_PREFIX` Convention
@@ -655,55 +594,33 @@ Static assets are served through the same Blueprint (`/css/<path:filename>` and 
 
 #### 5.4.1. Single-Container Topology (Standard Model)
 
-Used by `basic`, `langchain`, `rag`, `aws-strands`, `interviewiq`, `shipment-exception-desk`, and `template`.
+Used by `interviewiq`, `shipment-exception-desk`, and `template`.
 - A single Docker image built from the project's root `Dockerfile`.
 - Encapsulates Python 3.11+, dependencies (`requirements.txt`), frontend static files (`src/css`, `src/js`), and backend feature modules (`src/python`).
 - Purely stateless compute; persistent state is either stored in memory during an active session or delegated to cloud APIs.
 
-#### 5.4.2. Multi-Container Topology (`projects/docker`)
+#### 5.4.2. Multi-Container Topology (`projects/ai-pocs`)
 
-Demonstrates multi-tier enterprise microservices architectures with Docker Compose profiles, inter-service networking, and persistent volume mounts:
+Demonstrates multi-tier container architectures with Docker Compose, inter-service networking, and coordinated client/server pipelines:
 
 ```mermaid
 flowchart LR
-    subgraph Host["Host Port 5003"]
-        Gateway["web: Flask Gateway (Port 5000)"]
+    subgraph Host["Host Port 5010"]
+        ViteClient["ai-pocs-client: React + Vite (Port 5173)"]
     end
 
-    subgraph Level1["Level 1 (Keyless)"]
-        QuickBite["quickbite: FastAPI ETA Service (Port 8000)"]
+    subgraph Backend["Internal Compose Network"]
+        FastAPIServer["ai-pocs-server: FastAPI (Port 8000)"]
     end
 
-    subgraph Level2["Level 2 (Profile: level2)"]
-        ScalerGPT["scalergpt: RAG App (Port 8000)"]
-        Chroma["scalergpt-chroma: ChromaDB (Port 8000)"]
-        VolChroma[("Volume: scalergpt_chroma_data")]
-    end
-
-    subgraph Level3["Level 3 (Profile: level3)"]
-        DeskBuddyAgent["deskbuddy-agent: LangChain ReAct (Port 9000)"]
-        DeskBuddyTools["deskbuddy-tools: Tool Executor (Port 7000)"]
-        RedisMem["deskbuddy-redis: Redis 7 (Port 6379)"]
-        VolRedis[("Volume: deskbuddy_memory")]
-    end
-
-    Gateway -- "HTTP Proxy" --> QuickBite
-    Gateway -- "HTTP Proxy" --> ScalerGPT
-    Gateway -- "HTTP Proxy" --> DeskBuddyAgent
-
-    ScalerGPT -- "Vector Ingest / Query" --> Chroma
-    Chroma --- VolChroma
-
-    DeskBuddyAgent -- "Tool Calls" --> DeskBuddyTools
-    DeskBuddyAgent -- "Session State" --> RedisMem
-    RedisMem --- VolRedis
+    ViteClient -- "Reverse Proxy /ai-pocs/api/*" --> FastAPIServer
 ```
 
 Multi-Container Features:
-1. **Docker Compose Profiles:** Profiles (`level2`, `level3`) allow starting services conditionally (`docker compose --profile level2 --profile level3 up -d`).
-2. **Internal Bridge Network:** Containers communicate using Docker's internal DNS names (e.g. `http://scalergpt-chroma:8000` and `http://deskbuddy-tools:7000`), completely shielded from host exposure.
-3. **Healthcheck Dependency Chaining:** Services utilize `depends_on` with `condition: service_healthy` to guarantee that databases (Redis, ChromaDB) are fully ready to accept socket connections before the consuming applications start.
-4. **Persistent Volumes:** Docker named volumes (`scalergpt_chroma_data`, `deskbuddy_memory`) persist vector embeddings and session histories across container recreations and image upgrades.
+1. **Separation of Concerns:** React + Vite single-page application for dashboard UI and interactive cards; FastAPI backend hosting 35 AI services across 7 domain folders.
+2. **Internal Bridge Network:** Frontend proxies API requests to `http://server:8000` via internal Docker DNS, keeping backend endpoints shielded from public port exposure.
+3. **Healthcheck & Dependencies:** Client container depends on server health before routing requests.
+4. **Independent Buildx Pipelines:** Both client and server Dockerfiles are built and pushed to separate ECR repositories (`techtoday/ai-pocs-client` and `techtoday/ai-pocs-server`).
 
 ---
 
@@ -842,13 +759,9 @@ Deployments are entirely automated using GitHub Actions. Pipelines are idempoten
 All workflows reside under `.github/workflows/`. Every one of them triggers on pushes to any branch that touch its own project path, runs in a per-workflow `concurrency` group so deploys of the same project never overlap, and also exposes a manual `workflow_dispatch` trigger for deploying any branch without a code change:
 
 1. **`deploy-techtoday.yml`:** Static site pipeline. Syncs `projects/techtoday/` to `/var/www/techtoday/` via `rsync` over SSH.
-2. **`deploy-basic.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/basic/`), and restarts `basic`.
-3. **`deploy-langchain.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/langchain/`), and restarts `langchain`.
-4. **`deploy-rag.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx location with rate limiting, per-project Compose (`~/apps/rag/`), and restarts `rag`.
-5. **`deploy-docker.yml`:** Multi-container pipeline. Builds 5 microservice images with Buildx cache, auto-provisions Nginx location with rate limiting, pulls and restarts stack via Compose profiles (`level2`, `level3`), and runs post-start ingestion.
-6. **`deploy-aws-strands.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `aws-strands`.
-7. **`deploy-interviewiq.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `interviewiq`.
-8. **`deploy-shipment-exception-desk.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `shipment-exception-desk`.
+2. **`deploy-interviewiq.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `interviewiq`.
+3. **`deploy-shipment-exception-desk.yml`:** Self-provisioning container pipeline. Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `shipment-exception-desk`.
+4. **`deploy-ai-pocs.yml`:** Multi-container pipeline. Builds client and server images with Buildx cache, auto-provisions ECR repositories, Nginx location with rate limiting, and restarts the `ai-pocs` stack.
 
 ### 7.2. Shared GitHub Actions Secrets
 
@@ -862,7 +775,7 @@ Only five shared secrets are required in GitHub (**Settings → Secrets and vari
 
 ### 7.3. The Self-Provisioning Deployment Architecture
 
-Modern container applications (`aws-strands`, `interviewiq`, `shipment-exception-desk`, and projects created from `template`) use a self-provisioning CI/CD pattern. On the very first git push of a new project, the pipeline automatically creates every required server-side resource without requiring manual SSH sessions or AWS CLI setup.
+Modern container applications (`interviewiq`, `shipment-exception-desk`, and projects created from `template`) use a self-provisioning CI/CD pattern. On the very first git push of a new project, the pipeline automatically creates every required server-side resource without requiring manual SSH sessions or AWS CLI setup.
 
 ```mermaid
 sequenceDiagram
@@ -937,11 +850,11 @@ Self-Provisioning Execution Steps:
 
 ### 7.4. Unified Self-Provisioning and Multi-Service Compose Model
 
-All single-service container applications (`basic`, `langchain`, `rag`, `aws-strands`, `interviewiq`, and `shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
+Single-service container applications (`interviewiq` and `shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
 
-1. **Per-Project Isolation (`~/apps/<project>/`):** Each project owns its own `docker-compose.yml`, mapped to its assigned loopback port (`5000`–`5006`), running with isolated secrets (`~/secrets/<project>.env`).
+1. **Per-Project Isolation (`~/apps/<project>/`):** Each project owns its own `docker-compose.yml`, mapped to its assigned loopback port (`5005`, `5006`), running with isolated secrets (`~/secrets/<project>.env`).
 2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=29 nodelay;`).
-3. **Multi-Service Exception (`docker`):** The `docker` project continues to utilize its multi-service profile orchestration on EC2 while also taking advantage of the automated Nginx location routing and rate limiting.
+3. **Multi-Service Stacks (`ai-pocs`):** Multi-container projects utilize dedicated per-project compose orchestration (`~/apps/ai-pocs/docker-compose.yml`) managing dependent services, internal networking, and host port binding (`5010`).
 
 ### 7.5. Branch Deployment Strategy (Any Branch Deploys)
 
@@ -1015,7 +928,7 @@ To roll back a containerized project to a previous build:
    ssh -i techtoday.pem ec2-user@$ELASTIC_IP
    ```
 3. **Update the Image Tag:**
-   - For a self-provisioning project (e.g. `basic`, `langchain`, `rag`, `shipment-exception-desk`):
+   - For a single-service project (e.g. `interviewiq`, `shipment-exception-desk`):
      ```bash
      cd ~/apps/<project-name>
      # Edit docker-compose.yml to replace :latest with :<build-tag>
@@ -1023,11 +936,12 @@ To roll back a containerized project to a previous build:
      docker compose pull
      docker compose up -d
      ```
-   - For the multi-service `docker` stack:
+   - For a multi-container stack like `ai-pocs`:
      ```bash
-     # Edit ~/docker-compose.yml to pin the specific sub-image tag
-     docker compose -f ~/docker-compose.yml pull web
-     docker compose -f ~/docker-compose.yml up -d --no-deps web
+     cd ~/apps/ai-pocs
+     # Edit docker-compose.yml to pin specific client/server build tags
+     docker compose pull
+     docker compose up -d
      ```
 4. **Verify Rollback:**
    ```bash
@@ -1106,23 +1020,23 @@ flowchart TD
 
     subgraph TargetGroups["ALB Target Groups (Path-Based Routing)"]
         TG_Static["Target Group: S3 / CloudFront (Static)"]
-        TG_Basic["Target Group: basic-tg"]
         TG_Interview["Target Group: interviewiq-tg"]
         TG_Shipment["Target Group: shipment-tg"]
+        TG_Pocs["Target Group: ai-pocs-tg"]
     end
 
     subgraph ECS_Cluster["Amazon ECS Cluster (AWS Fargate)"]
-        Task_Basic["ECS Task: basic (Auto-scaling)"]
         Task_Interview["ECS Task: interviewiq (Auto-scaling)"]
         Task_Shipment["ECS Task: shipment (Auto-scaling)"]
+        Task_Pocs["ECS Task: ai-pocs (Auto-scaling)"]
     end
 
     Client --> R53
     R53 --> ALB
     ACM -.-> ALB
-    ALB -- "/basic/*" --> TG_Basic --> Task_Basic
     ALB -- "/interviewiq/*" --> TG_Interview --> Task_Interview
     ALB -- "/shipment-exception-desk/*" --> TG_Shipment --> Task_Shipment
+    ALB -- "/ai-pocs/*" --> TG_Pocs --> Task_Pocs
     ALB -- "/" --> TG_Static
 ```
 

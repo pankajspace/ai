@@ -32,18 +32,10 @@
 
 ## Project Runbooks
 1. [TechToday Home Page](projects/techtoday/README.md)
-2. [AI Playground](projects/basic/README.md)
-3. [LangChain Lab](projects/langchain/README.md)
-4. [RAG Lab](projects/rag/README.md)
-5. [Docker Demo Lab](projects/docker/README.md)
-6. [AWS Strands Lab](projects/aws-strands/README.md)
-7. [InterviewIQ](projects/interviewiq/README.md)
-8. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
-9. [AI Systems Lab](projects/ai-systems/README.md)
-10. [AI Reliability Lab](projects/ai-reliability/README.md)
-11. [MCP & Evals Lab](projects/mcp-evals/README.md)
-12. [AI POCs](projects/ai-pocs/README.md)
-13. [Container App Template](projects/template/README.md)
+2. [InterviewIQ](projects/interviewiq/README.md)
+3. [Shipment Exception Desk](projects/shipment-exception-desk/README.md)
+4. [AI POCs](projects/ai-pocs/README.md)
+5. [Container App Template](projects/template/README.md)
 
 ---
 

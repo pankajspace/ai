@@ -1,6 +1,6 @@
 # Demo Explainer Pages (ⓘ)
 
-Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/basic`) and which card(s)/demo(s) to explain; defaults to all cards.
+Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/template`) and which card(s)/demo(s) to explain; defaults to all cards.
 
 Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explainer per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on.
 
@@ -84,16 +84,16 @@ def info(filename):
 
 ## 3. Shared assets
 
-Create once per project (not once per demo) by copying these two files verbatim from `projects/basic/src/`:
+Create once per project (not once per demo) by copying these two files verbatim from `projects/ai-pocs/client/public/`:
 
 - `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
 - `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
 
-Every project (`ai-reliability`, `ai-systems`, `aws-strands`, `basic`, `docker`, `langchain`, `mcp-evals`, `rag`) carries byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
+Projects carry byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
 
 ## 4. One page per demo — `src/info/<demo>.html`
 
-Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
+Copy the shell of an existing page (e.g. `projects/ai-pocs/client/public/info/travel-guide.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
 
 - **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a `&larr; <Project>` `nav-back-link`.
 - **`<h1 id="how-it-works">`** — the card's emoji + title (CSS adds the "How it works" eyebrow), then a `p.lede` with the models/providers used.

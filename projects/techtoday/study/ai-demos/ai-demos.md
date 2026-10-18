@@ -17,7 +17,7 @@ Small projects that show big AI ideas
 
 Features a joke generator, travel suggestions, a website summarizer, and an LLM Arena. Built with Groq (GPT OSS 120B), OpenAI (GPT-4o mini), and Flask.
 
-[Open project →](https://app.techtoday.click/basic/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](langchain-agents.html)
 
@@ -25,7 +25,7 @@ Features a joke generator, travel suggestions, a website summarizer, and an LLM 
 
 Explores chains, memory, and agents. Includes a website summarizer, a chat with memory, and a shop agent. Built with LangChain, OpenAI (GPT-4o mini), and Flask.
 
-[Open project →](https://app.techtoday.click/langchain/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](rag-embeddings.html)
 
@@ -33,7 +33,7 @@ Explores chains, memory, and agents. Includes a website summarizer, a chat with 
 
 Shows the full RAG pipeline: embeddings, chunking, vector search, reranking, and PDF chat. Built with LangChain, Chroma, GPT-4o mini, and Flask.
 
-[Open project →](https://app.techtoday.click/rag/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](docker.html)
 
@@ -41,7 +41,7 @@ Shows the full RAG pipeline: embeddings, chunking, vector search, reranking, and
 
 Live demos of three Docker projects. Ranges from a single ML container to an agent system running multiple services. Built with Flask and Docker Compose.
 
-[Open project →](https://app.techtoday.click/docker/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](aws-strands.html)
 
@@ -49,7 +49,7 @@ Live demos of three Docker projects. Ranges from a single ML container to an age
 
 Agents that use tools and reason in steps. Built with the AWS Strands Agents SDK on Amazon Bedrock (Converse API) and Flask.
 
-[Open project →](https://app.techtoday.click/aws-strands/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](../../info/interviewiq.html)
 
@@ -73,7 +73,7 @@ Sorts shipment problems by urgency. Applies compensation policies, escalates iss
 
 Shows trade-offs between prompting styles and how models yield to pressure (sycophancy). Includes The Refund Bench: a 4-stage agent pipeline that settles disputes using three voting judges.
 
-[Open project →](https://app.techtoday.click/ai-systems/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](../../info/ai-reliability.html)
 
@@ -81,7 +81,7 @@ Shows trade-offs between prompting styles and how models yield to pressure (syco
 
 Measures what makes AI reliable. Tests forcing a schema, chain-of-thought, and routing by tool schema. Checks if a model admits failed tool calls or invents data.
 
-[Open project →](https://app.techtoday.click/ai-reliability/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
 
 [ⓘ](mcp-evals.html)
 
@@ -89,4 +89,4 @@ Measures what makes AI reliable. Tests forcing a schema, chain-of-thought, and r
 
 A cricket-score MCP server you can call manually. Includes an agent that picks the right MCP tool. Features a small eval suite that scores the agent with and without tools.
 
-[Open project →](https://app.techtoday.click/mcp-evals/)
+[Open project →](https://app.techtoday.click/ai-pocs/)
