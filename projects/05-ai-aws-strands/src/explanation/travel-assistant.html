@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-12-travel-assistant-py">12_travel_assistant.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -224,11 +226,87 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>1. Purpose of Each File</strong></p>
+                    <ul>
+                        <li><code>src/python/12_travel_assistant.py</code> &mdash; Defines the <strong>Capstone Travel Assistant Agent</strong> service: implements three custom <code>@tool</code> functions (<code>get_weather_forecast</code>, <code>suggest_packing_list</code>, and <code>estimate_trip_cost</code>), combines them with the prebuilt <code>calculator</code> tool and a workflow-guiding <code>system_prompt</code>, runs the multi-step planning loop, and returns the itinerary and <code>workflow_steps</code>.</li>
+                        <li><code>src/python/app.py</code> &mdash; Loads <code>12_travel_assistant.py</code> dynamically as <code>s_travel</code>, enforces hourly POST rate limits, and exposes <code>POST /api/travel-assistant</code> via <code>travel_assistant_route()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🏖️ Capstone Travel Planner</strong> card, sends the user's natural-language trip prompt to <code>POST /api/travel-assistant</code> with <code>{ query }</code>, and displays the complete travel plan alongside the ordered <code>workflow_steps</code>.</li>
+                    </ul>
+
+                    <p><strong>2. Schemas, Custom &amp; Prebuilt Tools, and Agent Setup in <code>12_travel_assistant.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
+                        <li><strong><code>TravelAssistantRequest(BaseModel)</code> &amp; <code>TravelAssistantResponse(BaseModel)</code>:</strong> Define the default trip brief (3 days in Goa with 2 friends on a ₹20,000 budget) and the response structure (<code>query</code>, <code>response</code>, and <code>workflow_steps: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Custom Tool 1 &mdash; <code>@tool def get_weather_forecast(city: str, days: int) -&gt; dict</code>:</strong> Looks up <code>city.lower()</code> in the <code>forecasts</code> dictionary (covering <code>"goa"</code>, <code>"bangalore"</code>, <code>"jaipur"</code>, and <code>"manali"</code>, with a moderate fallback of <code>28°C / 20°C</code> for unknown cities) and returns <code>{"city": city, "days": days, "high_c": ..., "low_c": ..., "conditions": ...}</code>.</li>
+                        <li><strong>Custom Tool 2 &mdash; <code>@tool def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list</code>:</strong> Starts with base items (<code>f"{days + 1} sets of clothes"</code>, <code>"toiletries"</code>, <code>"phone charger"</code>) and applies deterministic threshold rules:
+                            <ul>
+                                <li><code>high_c &gt;= 30</code> &rarr; adds light cotton clothing, sunscreen, sunglasses, reusable water bottle.</li>
+                                <li><code>low_c &lt;= 15</code> &rarr; adds warm jacket, thermal layer; <code>elif low_c &lt;= 22</code> &rarr; adds light jacket for evenings.</li>
+                                <li><code>"rain"</code> or <code>"shower"</code> in <code>conditions.lower()</code> &rarr; adds compact umbrella, quick-dry footwear.</li>
+                                <li><code>"snow"</code> in <code>conditions.lower()</code> &rarr; adds gloves, woollen cap, waterproof boots.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Custom Tool 3 &mdash; <code>@tool def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict</code>:</strong> Computes accommodation (<code>per_night.get(city.lower(), 3000) * days</code>), food (<code>1200 * days * travellers</code>), and local transport (<code>800 * days</code>) in Indian rupees, returning the itemized breakdown and <code>total_inr</code>.</li>
+                        <li><strong>Prebuilt Tool 4 &mdash; <code>calculator</code> (from <code>strands_tools</code>):</strong> Available to verify budget differences, per-person splits, or extra arithmetic.</li>
+                        <li><strong>Service Entry Point &mdash; <code>run_travel_assistant_agent(query: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step ③:</strong> Instantiates <code>Agent</code> with all four tools and a standing <code>system_prompt</code> instructing the agent to check weather first, suggest packing second, estimate cost third, and state whether the trip fits the user's budget.</li>
+                                <li><strong>Step ④:</strong> Runs <code>response = agent(query)</code> across multiple Bedrock Converse turns.</li>
+                                <li><strong>Step ⑤:</strong> Extracts all <code>"toolUse"</code> blocks from <code>agent.messages</code> into <code>workflow_steps</code> and returns <code>{"query": query, "response": str(response), "workflow_steps": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>travel_assistant_route()</code> (<code>POST /api/travel-assistant</code>):</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Parses <code>query</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step ②:</strong> Calls <code>s_travel.run_travel_assistant_agent(query)</code>, copies <code>res["response"]</code> to <code>res["result"]</code>, and returns the JSON payload to the browser.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <ol>
+                        <li>The user clicks <strong>Run</strong> on the <strong>🏖️ Capstone Travel Planner</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/travel-assistant</code> with the Goa 3-day trip query.</li>
+                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> checks the hourly request rate and routes the POST request to <code>travel_assistant_route()</code>.</li>
+                        <li><code>travel_assistant_route()</code> validates <code>query</code> and invokes <code>s_travel.run_travel_assistant_agent(query)</code> in <code>12_travel_assistant.py</code>.</li>
+                        <li><code>run_travel_assistant_agent()</code> creates a Strands <code>Agent</code> with <code>[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator]</code> and the travel-planning <code>system_prompt</code>.</li>
+                        <li>Following the system prompt, Bedrock starts by calling <code>get_weather_forecast(city="Goa", days=3)</code>, which returns <code>{"city": "Goa", "days": 3, "high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"}</code>.</li>
+                        <li>On the next turn, Bedrock pipes those exact weather outputs into <code>suggest_packing_list(high_c=32, low_c=26, days=3, conditions="humid, occasional showers")</code>, receiving the 9-item checklist including cotton clothes, sunscreen, and a compact umbrella.</li>
+                        <li>Bedrock also infers from <em>"I'm going... with 2 friends"</em> that <code>travellers=3</code> and calls <code>estimate_trip_cost(city="Goa", days=3, travellers=3)</code>, which returns <code>stay_inr=10500</code>, <code>food_inr=10800</code>, <code>local_travel_inr=2400</code>, and <code>total_inr=23700</code> (optionally invoking <code>calculator</code> to compare ₹23,700 against the ₹20,000 budget).</li>
+                        <li>Bedrock synthesizes the complete weather summary, packing checklist, itemized cost breakdown, and budget verdict (₹3,700 over the ₹20,000 budget), and <code>app.py</code> returns <code>response</code> and <code>workflow_steps</code> to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -284,13 +362,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-12-travel-assistant-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-12-travel-assistant-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-12-travel-assistant-py" class="topic-title is-file">12_travel_assistant.py<a class="headerlink" href="#source-12-travel-assistant-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -455,13 +533,13 @@ def run_travel_assistant_agent(query: str) -&gt; dict:
     return {&quot;query&quot;: query, &quot;response&quot;: str(response), &quot;workflow_steps&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -776,7 +854,49 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use this numbered checklist to review the multi-tool orchestration, semantic extraction, and hybrid rule-engine patterns in the <strong>🏖️ Capstone Travel Planner</strong> demo:</p>
+                    <ol>
+                        <li><strong>Combining Custom <code>@tool</code> Functions with Prebuilt <code>strands_tools</code>:</strong> A single Strands <code>Agent</code> can mix domain-specific custom tools (<code>get_weather_forecast</code>, <code>suggest_packing_list</code>, <code>estimate_trip_cost</code>) and off-the-shelf prebuilt tools (<code>calculator</code>) in the same <code>tools=[...]</code> list.</li>
+                        <li><strong>Declarative Workflow Steering via <code>system_prompt</code>:</strong> Instructing the agent in the system prompt (<em>"check the weather first, then suggest what to pack based on that weather, then estimate the cost"</em>) enforces a logical tool order for full trip queries while keeping the agent adaptable to single-topic questions.</li>
+                        <li><strong>Cross-Tool Data Dependency (Weather &rarr; Packing):</strong> Because <code>suggest_packing_list(high_c, low_c, days, conditions)</code> requires temperature and condition values that are not in the user's prompt, the agent must execute <code>get_weather_forecast</code> first and feed its output into <code>suggest_packing_list</code>.</li>
+                        <li><strong>Pragmatic Natural-Language Inference ("with 2 friends" &rarr; <code>travellers=3</code>):</strong> Unlike regex or keyword parsers that would extract the literal number <code>2</code>, the LLM understands that the speaker plus two friends equals <code>3</code> travellers and passes <code>travellers=3</code> to <code>estimate_trip_cost()</code>.</li>
+                        <li><strong>Optional Parameters with Default Values:</strong> Defining <code>def estimate_trip_cost(city: str, days: int, travellers: int = 1)</code> marks <code>travellers</code> as optional in the generated JSON Schema so solo trip prompts do not fail if headcount is omitted.</li>
+                        <li><strong>Hybrid Rule Engine + LLM Synthesis:</strong> <code>suggest_packing_list()</code> uses deterministic Python <code>if/elif</code> thresholds (<code>high_c &gt;= 30</code>, <code>low_c &lt;= 15</code>, <code>"rain" in conditions</code>) so essential gear is never forgotten, while the LLM formats the resulting list into natural prose.</li>
+                        <li><strong>Graceful Dictionary Fallbacks:</strong> Both <code>get_weather_forecast()</code> and <code>estimate_trip_cost()</code> normalize city names with <code>city.lower()</code> and provide sensible defaults via <code>.get(...)</code> so queries for unlisted cities still succeed without raising a <code>KeyError</code>.</li>
+                        <li><strong>Deterministic Budget Verification:</strong> By computing itemized stay, food, and local travel totals in Python (<code>total_inr = 23700</code>) and comparing against the user's ₹20,000 budget (with <code>calculator</code> available for exact differences), the agent accurately reports that the trip exceeds the budget by ₹3,700.</li>
+                        <li><strong>End-to-End Traceability (<code>workflow_steps</code>):</strong> Capturing every <code>toolUse</code> call in chronological order inside <code>workflow_steps</code> lets developers and users verify the exact sequence of tools and arguments executed during the capstone planning loop.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AWS Strands Agents &mdash; 🏖️ Capstone Travel Planner &middot; How it works</footer>

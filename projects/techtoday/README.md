@@ -128,9 +128,6 @@ projects/techtoday/
 │   └── info.css                 ← styles for project explanation pages
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
-├── explanation/
-│   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
-│   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
     ├── ai-projects/             ← ai-projects.html catalog (10 container projects) + shared study theme/scripts

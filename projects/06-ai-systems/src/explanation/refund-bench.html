@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-03-refund-bench-py">03_refund_bench.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -243,11 +245,123 @@
 
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <ul>
+                        <li><code>src/python/03_refund_bench.py</code>: Implements the 4-stage multi-agent dispute adjudication pipeline: freezing order &amp; sensor evidence (Stage 1), extracting atomic checkable grievances with co-reference resolution (Stage 2), running a parallel multi-provider voting bench via <code>ThreadPoolExecutor</code> and pricing upheld claims in Python (Stage 3), and enforcing the financial auto-approval cap before drafting the customer message (Stage 4).</li>
+                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads <code>03_refund_bench.py</code> as <code>mod_refund</code>, enforces rate limiting on <code>POST</code> requests, and exposes <code>POST /api/refund-bench</code> via <code>refund_bench_route()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser frontend where users edit or select a dispute complaint, choose a judge bench layout (<code>bench</code>) and auto-approval cap (<code>cap</code>), post to <code>/api/refund-bench</code>, and inspect the frozen order evidence, extracted grievances, individual judge ballots, vote splits, rupee payouts, and customer response.</li>
+                    </ul>
+
+                    <p><strong>2. Multi-Provider Client Factories, Allowlists &amp; Presets in <code>03_refund_bench.py</code></strong></p>
+                    <ul>
+                        <li><code>get_env(name: str, default: str = "") -&gt; str</code>: Reads environment variables with a fallback default, used to configure <code>OPENAI_MODEL</code> (<code>"gpt-4o-mini"</code>), <code>GEMINI_MODEL</code> (<code>"gemini-3.8-flash"</code>), and <code>GROK_MODEL</code> (<code>"openai/gpt-oss-20b"</code>).</li>
+                        <li><code>get_openai_client()</code>, <code>get_gemini_client()</code>, and <code>get_grok_client()</code>: Lazy singleton factories that initialize OpenAI-compatible SDK clients for OpenAI, Google Gemini (<code>generativelanguage.googleapis.com</code>), and Groq/xAI (automatically selecting <code>api.groq.com</code> when the key starts with <code>gsk_</code>), falling back to <code>get_openai_client()</code> if a secondary provider key is absent.</li>
+                        <li><code>AUTO_APPROVE_CAP = 2000.0</code>: Default rupee circuit-breaker threshold above which approved payouts are held for human review.</li>
+                        <li><code>BENCH_CHOICES</code>: Dictionary allowlist mapping bench layout keys to human labels and provider seat arrays:
+                            <ul>
+                                <li><code>"single"</code>: 1 seat (<code>["openai"]</code>).</li>
+                                <li><code>"openai3"</code>: 3 seats of the same provider (<code>["openai"] * 3</code>, testing self-consistency).</li>
+                                <li><code>"mixed3"</code>: 3 cross-provider seats (<code>["openai", "gemini", "grok"]</code>).</li>
+                                <li><code>"mixed5"</code>: 5 cross-provider seats (<code>["openai", "gemini", "grok", "openai", "gemini"]</code>).</li>
+                            </ul>
+                        </li>
+                        <li><code>DEFAULT_ORDER_EVIDENCE</code> &amp; <code>CANONICAL_COMPLAINT</code>: The frozen Stage 1 database/sensor snapshot for order <code>ord_d7a41c39</code> (4 Hyderabadi Chicken Biryanis at ₹320, 2 Mirchi Ka Salan at ₹80, 1 Raita Container at ₹60, ₹49 delivery fee, 85-minute actual delivery vs. 45-minute SLA, 1.2 kg pickup weight vs. 2.4 kg expected weight, 5-star door rating, and <code>packaging_condition_recorded: None</code>) paired with the canonical multi-issue customer complaint.</li>
+                    </ul>
+
+                    <p><strong>3. Pydantic Schemas &amp; Helper Functions in <code>03_refund_bench.py</code></strong></p>
+                    <ul>
+                        <li><code>RefundBenchRequest(BaseModel)</code>, <code>GrievanceRuling(BaseModel)</code>, <code>JudgedGrievance(BaseModel)</code>, and <code>RefundBenchResponse(BaseModel)</code>: Define the structured input/output contracts for requests, individual judge ballots, per-grievance vote tallies + rupee amounts, and the overall settlement payload.</li>
+                        <li><code>get_bench_judges(bench: str = "mixed3") -&gt; list</code>:
+                            <ul>
+                                <li><strong>Step ①:</strong> Validates <code>bench</code> against <code>BENCH_CHOICES</code> (falling back to <code>"mixed3"</code>) and maps provider keys to <code>(provider_name, model_name, client_fn)</code> tuples.</li>
+                                <li><strong>Step ②:</strong> Iterates over the selected bench's <code>seats</code> list and returns one descriptor dictionary per seat (<code>id</code>, <code>name</code>, <code>provider</code>, <code>model</code>, <code>client_fn</code>).</li>
+                            </ul>
+                        </li>
+                        <li><code>extract_json(text: str)</code>: Strips optional <code>```json ... ```</code> markdown fences via regex (<strong>Step ①</strong>) and parses the JSON object or array via <code>json.loads()</code>, scanning from the first <code>[</code> or <code>{</code> character if leading text is present (<strong>Step ②</strong>).</li>
+                    </ul>
+
+                    <p><strong>4. The 4-Stage Pipeline Functions in <code>03_refund_bench.py</code></strong></p>
+                    <ul>
+                        <li><code>stage2_extract_grievances(complaint_text: str, line_items: list) -&gt; list</code>:
+                            <ul>
+                                <li><strong>Step ①:</strong> Builds the dispute-intake prompt instructing the model to extract atomic, checkable grievances, resolve vague pronouns against <code>line_items</code>, strip emotional language/demands, and classify each claim into <code>LATE_DELIVERY | MISSING_ITEM | WRONG_ITEM | QUALITY | PACKAGING | PARTNER_CONDUCT | BILLING</code>.</li>
+                                <li><strong>Step ②:</strong> Calls <code>OPENAI_MODEL</code> at <code>temperature=0.2</code> and parses the returned JSON array via <code>extract_json()</code>.</li>
+                                <li><strong>Step ③:</strong> Falls back to the 4 canonical grievances (<code>g1</code>–<code>g4</code>) if the API call or JSON parsing fails.</li>
+                            </ul>
+                        </li>
+                        <li><code>judge_single_grievance(grievance_text: str, evidence: dict, judge: dict) -&gt; dict</code>:
+                            <ul>
+                                <li><strong>Step ①:</strong> Builds the constitutional adjudication prompt restricting rulings to <code>UPHELD</code> (supported by evidence), <code>REJECTED</code> (contradicted by evidence), or <code>ESCALATE</code> (evidence is silent, absent, or ambiguous).</li>
+                                <li><strong>Step ②:</strong> Invokes the seat's assigned provider client (<code>judge["client_fn"]()</code>) at <code>temperature=0.7</code>, parses the JSON ballot, normalizes invalid ruling strings to <code>"ESCALATE"</code>, and returns the <code>GrievanceRuling</code> dictionary with <code>is_fallback: False</code>.</li>
+                                <li><strong>Step ③:</strong> If a secondary provider key or endpoint fails, catches the exception and retries the exact same prompt on OpenAI, marking <code>is_fallback: True</code>.</li>
+                                <li><strong>Step ④:</strong> If both primary and fallback calls fail, safely defaults to <code>ruling: "ESCALATE"</code> with <code>confidence: 0.5</code> so no claim is silently dropped or auto-rejected on timeout.</li>
+                            </ul>
+                        </li>
+                        <li><code>stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") -&gt; list</code>:
+                            <ul>
+                                <li><strong>Step ①:</strong> Builds the Cartesian product <code>pairs = [(g, judge) for g in grievances for judge in judges]</code> and fans out all <code>judge_single_grievance()</code> calls concurrently across a <code>ThreadPoolExecutor(max_workers=8)</code>.</li>
+                                <li><strong>Step ②:</strong> Slices the returned ballots per grievance, counts votes for <code>UPHELD</code>, <code>REJECTED</code>, and <code>ESCALATE</code>, determines the <code>majority_ruling</code>, and calculates <code>overall_confidence = round(split_ratio * avg_judge_conf, 2)</code>.</li>
+                                <li><strong>Step ③:</strong> Executes deterministic Python pricing based on <code>category</code> and <code>majority_ruling</code> (<code>₹49</code> delivery fee for <code>LATE_DELIVERY</code>, <code>2 * ₹320 = ₹640</code> for <code>MISSING_ITEM</code>, <code>₹60</code> for <code>PACKAGING</code>, and <code>₹0</code> for <code>PARTNER_CONDUCT</code>), assigning the rupee value to <code>refund_amount</code> when <code>UPHELD</code> or <code>held_amount</code> when <code>ESCALATE</code>.</li>
+                            </ul>
+                        </li>
+                        <li><code>stage4_settle(complaint_text: str, judged_grievances: list, evidence: dict, cap: float = AUTO_APPROVE_CAP) -&gt; dict</code>:
+                            <ul>
+                                <li><strong>Step ①:</strong> Sums <code>total_approved</code> and <code>total_held</code> across all grievances and enforces the auto-approval cap: if <code>total_approved &gt; cap</code>, sets <code>escalated_to_human = True</code>, shifts <code>total_approved</code> into <code>total_held</code>, and zeroes out <code>total_approved</code>.</li>
+                                <li><strong>Step ②:</strong> Prompts <code>OPENAI_MODEL</code> at <code>temperature=0.2</code> to write a 3–4 sentence customer support message stating the exact pre-computed <code>₹{total_approved:.0f}</code> payout and any held review amount without re-adjudicating rulings or lecturing the customer.</li>
+                                <li><strong>Step ③:</strong> Returns the final settlement dictionary containing totals, cap status, <code>customer_message</code>, and <code>grievances</code>.</li>
+                            </ul>
+                        </li>
+                        <li><code>adjudicate_dispute()</code> (aliased as <code>run_refund_bench</code>): Orchestrates Stage 1 (<strong>Step ①</strong>), Stage 2 (<strong>Step ②</strong>), Stage 3 (<strong>Step ③</strong>), and Stage 4 (<strong>Step ④</strong>), attaching <code>bench_label</code> and <code>order_evidence</code> to the returned response.</li>
+                    </ul>
+
+                    <p><strong>5. Flask Route Handler in <code>app.py</code></strong></p>
+                    <ul>
+                        <li><code>refund_bench_route()</code> (<code>POST /api/refund-bench</code>):
+                            <ul>
+                                <li><strong>Step ①:</strong> Parses <code>complaint_text</code>, <code>bench</code> (defaulting to <code>"mixed3"</code> or validating against <code>BENCH_CHOICES</code> via allowlist helpers such as <code>read_choice</code> / <code>invalid_choice</code>), and <code>cap</code> (default <code>2000.0</code>) from the JSON request body, returning HTTP <code>400</code> if <code>complaint_text</code> is empty.</li>
+                                <li><strong>Step ②:</strong> Calls <code>mod_refund.run_refund_bench(complaint_text, bench, cap)</code>, formats <code>res["result"]</code> with the approved and held rupee totals, and returns the JSON payload.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>6. End-to-End Data Flow Walkthrough</strong></p>
+                    <ol>
+                        <li>The user enters a food delivery complaint, selects a judge bench layout (e.g., <code>mixed3</code>) and auto-approval cap in <code>src/index.html</code>, and clicks <strong>Run Refund Bench</strong>, causing <code>src/js/main.js</code> to send <code>POST /api/refund-bench</code> with <code>{ complaint_text, bench, cap }</code>.</li>
+                        <li>Flask's <code>enforce_rate_limit()</code> middleware verifies the client's rate limit and forwards the request to <code>refund_bench_route()</code> in <code>app.py</code>.</li>
+                        <li><code>refund_bench_route()</code> validates the request and calls <code>run_refund_bench(complaint_text, bench, cap)</code> in <code>03_refund_bench.py</code>.</li>
+                        <li><strong>Stage 1 &amp; Stage 2:</strong> <code>adjudicate_dispute()</code> freezes <code>DEFAULT_ORDER_EVIDENCE</code> and calls <code>stage2_extract_grievances()</code>, which resolves pronouns against the order's line items and decomposes the complaint into atomic JSON grievances.</li>
+                        <li><strong>Stage 3 (Parallel Multi-Judge Bench):</strong> <code>stage3_judge_bench()</code> pairs every extracted grievance with every judge seat on the chosen bench (OpenAI, Gemini, Groq) and executes all judge calls in parallel using <code>ThreadPoolExecutor(max_workers=8)</code>.</li>
+                        <li>Each judge compares one grievance against the frozen sensor evidence and votes <code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code>; Python tallies the majority vote and computes exact rupee amounts from catalog prices.</li>
+                        <li><strong>Stage 4 (Settlement &amp; Cap Guardrail):</strong> <code>stage4_settle()</code> sums the approved and held amounts, shifts the payout to human review if <code>total_approved &gt; cap</code>, generates the customer support reply, and returns the complete JSON settlement to the browser UI.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -296,13 +410,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-03-refund-bench-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-03-refund-bench-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-03-refund-bench-py" class="topic-title is-file">03_refund_bench.py<a class="headerlink" href="#source-03-refund-bench-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -942,13 +1056,13 @@ def adjudicate_dispute(
 run_refund_bench = adjudicate_dispute</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -1117,7 +1231,48 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Review these core multi-agent architecture, ensemble voting, and financial guardrail principles from The Refund Bench:</p>
+                    <ol>
+                        <li><strong>Decomposing Monolithic Prompts into Isolated Stages:</strong> Asking a single LLM call to read an emotional complaint, verify facts, and pick a refund number invites sycophancy and math hallucinations; splitting Intake (Stage 1), Extraction (Stage 2), Adjudication (Stage 3), and Settlement (Stage 4) isolates each cognitive responsibility.</li>
+                        <li><strong>Atomic Grievance Extraction with Co-Reference Resolution:</strong> Stage 2 uses <code>line_items</code> context to turn vague phrases like <em>"two of the four were missing"</em> into self-contained, testable claims (<em>"2 of the 4 Hyderabadi Biryani units ordered were not delivered"</em>) while stripping emotional rhetoric and refund demands.</li>
+                        <li><strong>Cross-Provider Ensemble Benches vs. Self-Consistency:</strong> Running <code>openai3</code> (same model 3 times) only reduces sampling variance; seating <code>mixed3</code> or <code>mixed5</code> (OpenAI + Gemini + Groq) combines uncorrelated training distributions so a single model family's blind spot cannot dictate the verdict.</li>
+                        <li><strong>Epistemic Humility via the <code>ESCALATE</code> Verdict:</strong> Judges are instructed to vote <code>UPHELD</code> only when sensor evidence confirms a claim, <code>REJECTED</code> when sensor evidence contradicts it (e.g., 5-star door rating vs. rudeness claim), and <code>ESCALATE</code> whenever sensors are silent (e.g., <code>packaging_condition_recorded: null</code> for leaked raita).</li>
+                        <li><strong>Concurrent Fan-Out with <code>ThreadPoolExecutor</code>:</strong> Evaluating G grievances across J judges requires G &times; J LLM calls; running all pairs concurrently via <code>ThreadPoolExecutor(max_workers=8)</code> bounds Stage 3 wall-clock latency to roughly the slowest single judge call.</li>
+                        <li><strong>Zero-LLM Money Math (Code-Driven Pricing):</strong> No LLM in the pipeline is allowed to invent a rupee figure; Python deterministically maps each upheld or escalated grievance category to catalog unit prices and delivery fees, eliminating arithmetic hallucination.</li>
+                        <li><strong>Graceful Provider Fallback &amp; Safe Error Defaults:</strong> If a secondary provider API key is missing or times out inside <code>judge_single_grievance()</code>, the seat transparently falls back to OpenAI (<code>is_fallback: True</code>) and defaults to <code>ESCALATE</code> if all retries fail.</li>
+                        <li><strong>Financial Circuit Breaker (Auto-Approval Cap):</strong> Even after majority voting and code pricing, <code>stage4_settle()</code> checks <code>if total_approved &gt; cap</code> and diverts high-value payouts to <code>total_held_for_review</code>, bounding maximum automated financial exposure.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="tt-site-footer">

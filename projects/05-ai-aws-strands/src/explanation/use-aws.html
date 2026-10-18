@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-09-use-aws-py">09_use_aws.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -214,11 +216,77 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>1. Purpose of Each File</strong></p>
+                    <ul>
+                        <li><code>src/python/09_use_aws.py</code> &mdash; Defines the <strong>Natural Language AWS Agent</strong> service: imports the prebuilt <code>use_aws</code> meta-tool from <code>strands_tools</code>, configures the Strands <code>Agent</code> with a cloud-management system prompt, runs plain-English AWS queries against real AWS APIs via <code>boto3</code>, and records every executed AWS operation.</li>
+                        <li><code>src/python/app.py</code> &mdash; Loads <code>09_use_aws.py</code> dynamically as <code>s_aws</code>, enforces rate limiting on POST requests, and exposes <code>POST /api/use-aws</code> via <code>use_aws_route()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>☁️ AWS Cloud Assistant</strong> card, sends the user's plain-English AWS prompt to <code>POST /api/use-aws</code> with <code>{ prompt }</code>, and displays both the summarized cloud resource report and <code>operations_executed</code>.</li>
+                    </ul>
+
+                    <p><strong>2. Pydantic Schemas, Prebuilt <code>use_aws</code> Tool &amp; Agent Setup in <code>09_use_aws.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_DEFAULT_REGION</code>) and Bedrock model configuration from <code>.env</code>.</li>
+                        <li><strong><code>UseAwsRequest(BaseModel)</code> &amp; <code>UseAwsResponse(BaseModel)</code>:</strong> Specify the input payload (<code>prompt: str</code> defaulting to <code>"List all S3 buckets in my account"</code>) and output payload (<code>prompt</code>, <code>response</code>, and <code>operations_executed: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Prebuilt Meta-Tool (<code>from strands_tools import use_aws</code>):</strong> Exposes the entire AWS SDK for Python (<code>boto3</code>) through a single structured tool schema accepting <code>service_name</code> (e.g., <code>"s3"</code>, <code>"sts"</code>, <code>"dynamodb"</code>), <code>operation_name</code> (e.g., <code>"list_buckets"</code>, <code>"get_caller_identity"</code>), <code>parameters</code> (dict), <code>region</code> (str), and <code>label</code> (str).</li>
+                        <li><strong>Service Entry Point &mdash; <code>run_use_aws_agent(prompt: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step ③:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[use_aws], system_prompt="You are an AWS assistant that helps manage cloud resources.")</code>.</li>
+                                <li><strong>Step ④:</strong> Calls <code>response = agent(prompt)</code>, where Bedrock maps the user's English request to the exact <code>boto3</code> service and snake_case operation name, invokes <code>use_aws</code>, and summarizes the returned AWS JSON.</li>
+                                <li><strong>Step ⑤:</strong> Extracts all <code>"toolUse"</code> blocks from <code>agent.messages</code> into <code>operations_executed</code> and returns <code>{"prompt": prompt, "response": str(response), "operations_executed": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>use_aws_route()</code> (<code>POST /api/use-aws</code>):</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Parses <code>prompt</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step ②:</strong> Calls <code>s_aws.run_use_aws_agent(prompt)</code>, copies <code>res["response"]</code> to <code>res["result"]</code>, and returns the JSON payload (or HTTP <code>500</code> on error).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <ol>
+                        <li>The user clicks <strong>Run</strong> on the <strong>☁️ AWS Cloud Assistant</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/use-aws</code> with <code>{"prompt": "List all S3 buckets in my account"}</code>.</li>
+                        <li>Flask's <code>enforce_rate_limit()</code> middleware verifies the client is within the 30-requests/hour limit and dispatches the request to <code>use_aws_route()</code>.</li>
+                        <li><code>use_aws_route()</code> validates <code>prompt</code> and calls <code>s_aws.run_use_aws_agent(prompt)</code> in <code>09_use_aws.py</code>.</li>
+                        <li><code>run_use_aws_agent()</code> initializes a Strands <code>Agent</code> with <code>BedrockModel(model_id=model_id)</code> and <code>tools=[use_aws]</code>.</li>
+                        <li>Calling <code>agent(prompt)</code> sends the prompt and the <code>use_aws</code> tool specification to Amazon Bedrock via the Converse API.</li>
+                        <li>Bedrock translates <em>"List all S3 buckets in my account"</em> into a <code>toolUse</code> block calling <code>use_aws(service_name="s3", operation_name="list_buckets", parameters={}, region="us-east-1", label="List all S3 buckets")</code>.</li>
+                        <li>Inside <code>use_aws</code>, the tool verifies that <code>list_buckets</code> is a non-mutating read operation, creates a <code>boto3.client("s3")</code> using the server's IAM credentials, executes <code>client.list_buckets()</code> against AWS, and returns the bucket list in a <code>toolResult</code> block.</li>
+                        <li>Bedrock formats the bucket names and creation dates into a clean answer, <code>run_use_aws_agent()</code> collects <code>operations_executed</code> from <code>agent.messages</code>, and <code>app.py</code> returns the JSON response to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -265,13 +333,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-09-use-aws-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-09-use-aws-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-09-use-aws-py" class="topic-title is-file">09_use_aws.py<a class="headerlink" href="#source-09-use-aws-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -350,13 +418,13 @@ def run_use_aws_agent(prompt: str = &quot;List all S3 buckets in my account&quot
     return {&quot;prompt&quot;: prompt, &quot;response&quot;: str(response), &quot;operations_executed&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -671,7 +739,48 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use this numbered checklist to review the core concepts, <code>boto3</code> meta-tool architecture, and cloud security guardrails in the <strong>☁️ AWS Cloud Assistant</strong> demo:</p>
+                    <ol>
+                        <li><strong>The Meta-Tool Pattern (<code>use_aws</code>):</strong> Instead of registering thousands of separate tools for 200+ AWS services (which would overflow the LLM context window), <code>use_aws</code> exposes a single parameterized schema (<code>service_name</code>, <code>operation_name</code>, <code>parameters</code>, <code>region</code>, <code>label</code>) backed by <code>boto3</code>.</li>
+                        <li><strong>Leveraging Pretrained <code>boto3</code> Knowledge:</strong> Frontier and Nova models already know <code>boto3</code> service names (like <code>"s3"</code>, <code>"ec2"</code>, <code>"sts"</code>) and snake_case operation names (like <code>"list_buckets"</code>, <code>"describe_instances"</code>) from pretraining, allowing zero-shot translation from English to AWS API calls.</li>
+                        <li><strong>Hard Security Boundary via IAM Least Privilege:</strong> Because <code>use_aws</code> executes real API calls using the host environment's AWS credentials, the true security boundary is the <strong>IAM Policy</strong> attached to those credentials &mdash; always restrict agent roles to read-only permissions.</li>
+                        <li><strong>Built-In Consent Guardrail for Mutating Calls:</strong> <code>use_aws</code> inspects <code>operation_name</code> before invoking <code>boto3</code>; mutating verbs (<code>create_*</code>, <code>delete_*</code>, <code>terminate_*</code>, <code>put_*</code>) and secret reads (<code>get_secret_value</code>) require interactive terminal confirmation, which automatically fails closed in a headless web server.</li>
+                        <li><strong>Self-Documenting Calls via <code>label</code>:</strong> The <code>use_aws</code> schema requires a human-readable <code>label</code> argument on every call, making audit logs and UI tool traces immediately understandable alongside the raw <code>boto3</code> parameters.</li>
+                        <li><strong>Multi-Call Discovery &amp; Error Recovery:</strong> If an operation requires a resource identifier (such as a bucket name or table name) or if the model supplies an invalid parameter on its first attempt, the Strands Converse loop lets the agent list resources first or self-correct based on the returned <code>boto3</code> exception.</li>
+                        <li><strong>Auditing Cloud Actions (<code>operations_executed</code>):</strong> Extracting every <code>toolUse</code> block from <code>agent.messages</code> into <code>operations_executed</code> gives operators full visibility into which AWS services, regions, and parameters were queried.</li>
+                        <li><strong>Shared Credentials Between Bedrock and <code>use_aws</code>:</strong> Both <code>BedrockModel</code> (which calls <code>bedrock-runtime:Converse</code>) and <code>use_aws</code> (which calls target services like S3 or STS) authenticate through the standard <code>boto3</code> credential chain loaded via <code>load_dotenv()</code> or IAM roles.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AWS Strands Agents &mdash; ☁️ AWS Cloud Assistant &middot; How it works</footer>

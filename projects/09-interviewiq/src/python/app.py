@@ -104,6 +104,19 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/explanation/<path:filename>")
+@bp.route("/info/<path:filename>")
+def explanation_pages(filename):
+    """Serve explanation pages from src/explanation."""
+    return app.send_static_file(os.path.join("explanation", filename))
+
+
+@bp.route("/logo.svg")
+def logo():
+    """Serve logo.svg for favicons and site branding."""
+    return app.send_static_file("logo.svg")
+
+
 @bp.route("/questions", methods=["GET"])
 def questions():
     """Return all interview questions from the bank.

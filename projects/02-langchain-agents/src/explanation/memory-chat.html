@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-02-langchain-memory-chat-py">02_langchain_memory_chat.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -229,11 +231,71 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p>This demo is built across two backend Python files in <code>src/python/</code> that work with the frontend browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to run a multi-turn conversational chatbot that remembers context across turns within a session.</p>
+                    <p><strong>1. Purpose of each file</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/02_langchain_memory_chat.py</code></strong>: The feature module that manages per-session conversation history in memory, constructs a prompt template containing a history placeholder, wraps the LangChain LCEL chain with <code>RunnableWithMessageHistory</code>, and exposes <code>chat_with_memory()</code> and <code>clear_session()</code>.</li>
+                        <li><strong><code>src/python/app.py</code></strong>: The Flask web server and API Blueprint (<code>/api</code>) that validates incoming requests, dynamically imports numbered feature scripts via <code>load_module()</code>, and routes <code>POST /api/chat</code> to <code>02_langchain_memory_chat.py</code>.</li>
+                    </ul>
+                    <p><strong>2. Key entities in <code>src/python/02_langchain_memory_chat.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>ChatRequest(BaseModel)</code> &amp; <code>ChatResponse(BaseModel)</code></strong>: Pydantic data contracts documenting the expected input (<code>session_id</code>, <code>message</code>, and optional <code>reset_session</code> boolean) and output (<code>reply</code>, <code>session_id</code>, and <code>turn_count</code>).</li>
+                        <li><strong><code>_store: dict[str, InMemoryChatMessageHistory]</code> (Step ①)</strong>: A module-level Python dictionary mapping each string <code>session_id</code> to its own <code>InMemoryChatMessageHistory</code> object so different browser tabs or users do not share conversation state.</li>
+                        <li><strong><code>get_session_history(session_id: str) -&gt; InMemoryChatMessageHistory</code></strong>: The factory lookup function passed to <code>RunnableWithMessageHistory</code>. If <code>session_id</code> is not yet in <code>_store</code>, it creates and stores a fresh <code>InMemoryChatMessageHistory()</code> instance before returning it.</li>
+                        <li><strong><code>clear_session(session_id: str) -&gt; None</code></strong>: Removes <code>session_id</code> from <code>_store</code> using <code>_store.pop(session_id, None)</code>, resetting that user&apos;s conversation memory to a blank slate.</li>
+                        <li><strong><code>prompt</code>, <code>model</code>, and <code>chain</code> (Step ②)</strong>:
+                            <ul>
+                                <li><code>prompt = ChatPromptTemplate.from_messages([...])</code> defines three slots: a <code>system</code> persona instruction, <code>MessagesPlaceholder(variable_name="history")</code> where prior human/AI messages are spliced in, and the latest <code>("human", "{input}")</code> message.</li>
+                                <li><code>model = ChatOpenAI(model="gpt-4o-mini", temperature=0.6)</code> initializes the OpenAI chat model.</li>
+                                <li><code>chain = prompt | model | StrOutputParser()</code> pipes the formatted messages into the model and unwraps the reply into a plain Python string.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>with_history = RunnableWithMessageHistory(...)</code> (Step ③)</strong>: Wraps <code>chain</code> so that before every invocation it calls <code>get_session_history(session_id)</code>, injects past messages into the <code>history</code> placeholder, runs the chain with <code>input</code>, and automatically appends both the new human message and AI reply to the session store.</li>
+                        <li><strong><code>chat_with_memory(session_id: str, message: str) -&gt; tuple[str, int]</code> (Step ④)</strong>: Invokes <code>with_history.invoke({"input": message}, config={"configurable": {"session_id": session_id}})</code>, computes the completed conversation turns as <code>len(history.messages) // 2</code>, and returns <code>(reply, turns)</code>.</li>
+                        <li><strong><code>if __name__ == "__main__":</code> block</strong>: Runs a 3-turn self-test under session <code>demo-user-1</code> to verify that the assistant remembers facts from turn 1 when asked in turn 3.</li>
+                    </ul>
+                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>load_module(name, filename)</code></strong>: Uses <code>importlib.util.spec_from_file_location</code> to load <code>02_langchain_memory_chat.py</code> at runtime despite its leading numeric prefix.</li>
+                        <li><strong><code>require_openai_key()</code> &amp; <code>read_json_field()</code></strong>: Guard helpers that verify <code>OPENAI_API_KEY</code> is configured and extract required non-empty string fields from the request JSON.</li>
+                        <li><strong><code>chat_service()</code> (<code>POST /api/chat</code>)</strong>: Reads <code>session_id</code> (defaulting to <code>"default"</code>) and <code>reset_session</code>. If <code>reset_session</code> is true and no message was sent, it calls <code>mod.clear_session(session_id)</code> and returns immediately; otherwise it validates <code>message</code>, optionally resets the session first, calls <code>mod.chat_with_memory(session_id, message)</code>, and returns the JSON response.</li>
+                    </ul>
+                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <ol>
+                        <li>The browser UI sends a <code>POST /api/chat</code> request with <code>{"session_id": "...", "message": "...", "reset_session": false}</code>.</li>
+                        <li><code>chat_service()</code> in <code>app.py</code> checks the API key, loads <code>02_langchain_memory_chat.py</code>, and calls <code>chat_with_memory(session_id, message)</code>.</li>
+                        <li><code>RunnableWithMessageHistory</code> looks up the session&apos;s <code>InMemoryChatMessageHistory</code> via <code>get_session_history(session_id)</code> and injects prior messages into the <code>MessagesPlaceholder("history")</code> slot of <code>prompt</code>.</li>
+                        <li><code>ChatOpenAI</code> generates a context-aware response, <code>StrOutputParser</code> extracts the string, and <code>RunnableWithMessageHistory</code> saves the new human/AI message pair back into <code>_store[session_id]</code>.</li>
+                        <li><code>chat_with_memory()</code> calculates <code>turn_count</code> and returns it with <code>reply</code> to <code>app.py</code>, which serializes the JSON payload back to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -274,13 +336,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-02-langchain-memory-chat-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-02-langchain-memory-chat-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-02-langchain-memory-chat-py" class="topic-title is-file">02_langchain_memory_chat.py<a class="headerlink" href="#source-02-langchain-memory-chat-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -396,13 +458,13 @@ def chat_with_memory(question: str, history: list[ChatMessage]) -&gt; tuple[str,
     ]</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -601,7 +663,48 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use these numbered takeaways to quickly revise the core AI and LangChain concepts demonstrated in the Memory Chat feature:</p>
+                    <ol>
+                        <li><strong>LLMs are Stateless by Default:</strong> Every HTTP call to an LLM API is independent; the model has no built-in memory of earlier requests unless the application explicitly re-sends prior messages in the prompt payload.</li>
+                        <li><strong>Conversational Memory Pattern:</strong> Chat memory works by storing each turn&apos;s <code>HumanMessage</code> and <code>AIMessage</code> in a session store and splicing them into the prompt before the latest user input on subsequent turns.</li>
+                        <li><strong><code>MessagesPlaceholder</code> in Prompt Templates:</strong> Using <code>MessagesPlaceholder(variable_name="history")</code> inside <code>ChatPromptTemplate.from_messages()</code> reserves a typed list slot where a variable number of historical message objects can be dynamically inserted between the system prompt and the new user message.</li>
+                        <li><strong><code>RunnableWithMessageHistory</code> Wrapper:</strong> Instead of manually loading and appending messages on every turn, <code>RunnableWithMessageHistory</code> wraps an LCEL pipeline to automatically load history before execution and persist the new user/assistant exchange afterward.</li>
+                        <li><strong>Session Isolation via <code>configurable.session_id</code>:</strong> Passing <code>config={"configurable": {"session_id": session_id}}</code> routes each request to its own isolated <code>InMemoryChatMessageHistory</code> bucket so concurrent users never leak context into each other&apos;s chats.</li>
+                        <li><strong>LCEL Composition (<code>prompt | model | StrOutputParser()</code>):</strong> The underlying pipeline remains a clean 3-stage declarative chain, proving that state management can be layered around a stateless chain without modifying its internal logic.</li>
+                        <li><strong>Turn Counting &amp; Session Reset:</strong> Because each completed turn adds exactly two messages (one <code>HumanMessage</code> and one <code>AIMessage</code>), dividing <code>len(history.messages)</code> by 2 gives the exact turn count, while popping the key from <code>_store</code> cleanly resets the conversation.</li>
+                        <li><strong>In-Memory vs. Production Persistence:</strong> <code>InMemoryChatMessageHistory</code> lives inside the Python process RAM (ideal for local demos and single-worker prototypes), whereas multi-worker production deployments swap the factory function to back onto Redis, Postgres, or DynamoDB without changing the chain code.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">LangChain &amp; Agents &mdash; 🧠 Conversational Memory &middot; How it works</footer>

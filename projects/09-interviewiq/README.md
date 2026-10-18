@@ -63,6 +63,8 @@ Built from the best parts of two study implementations:
    once every question has been answered.  It is a `GET` (it only reads
    session memory), so it sits outside the POST rate limits in Flask and
    Nginx, and a full 5-question run still leaves room for `/coach`.
+8. `GET /explanation/<path:filename>` (alias `/info/<path:filename>`) — serve
+   "how this works" deep-dive explanation page (`interviewiq.html`).
 
 ---
 
@@ -86,9 +88,16 @@ projects/09-interviewiq/
     │   ├── run_multi_agent.py   # Ask 4: CLI orchestrator (Interviewer → Evaluator)
     │   ├── tools.py         # Deterministic evaluation tools (regex-based)
     │   └── interview_bank.py # 5 categorized questions with keywords + samples
+    ├── explanation/
+    │   └── interviewiq.html # deep-dive explanation page ("How it works")
     ├── index.html           # single-page UI (served by Flask)
-    ├── css/style.css        # dark theme (shares TechToday design tokens)
-    └── js/main.js           # front-end behavior, no frameworks
+    ├── css/
+    │   ├── style.css        # dark theme (shares TechToday design tokens)
+    │   ├── info.css         # styles for deep-dive explanation page
+    │   └── logo.svg         # SVG logo asset
+    └── js/
+        ├── main.js          # front-end behavior, no frameworks
+        └── info.js          # explanation page accordions, syntax highlighting, Mermaid
 ```
 
 ---

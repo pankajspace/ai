@@ -26,10 +26,16 @@
     padding: 0;
 }
 
+html {
+    font-size: 16px;
+    scroll-behavior: smooth;
+}
+
 body {
     background: var(--bg);
     color: var(--text);
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    font-size: 16px;
     line-height: 1.6;
     min-height: 100vh;
     display: flex;
@@ -141,7 +147,7 @@ body > header {
 
 .brand-tagline {
     color: var(--text-muted);
-    font-size: 0.9rem;
+    font-size: 1rem;
 }
 
 .header-status {
@@ -188,7 +194,7 @@ body > header {
 
 .grid-layout {
     display: grid;
-    grid-template-columns: 1.2fr 1fr;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
     gap: 24px;
     align-items: start;
     margin-bottom: 24px;
@@ -199,6 +205,8 @@ body > header {
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 20px;
+    min-width: 0;
+    max-width: 100%;
     transition: border-color 0.2s, box-shadow 0.2s;
 }
 
@@ -214,6 +222,7 @@ body > header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     margin-bottom: 14px;
     padding-bottom: 12px;
     border-bottom: 1px solid var(--border);
@@ -235,6 +244,8 @@ body > header {
     font-weight: 600;
     letter-spacing: 0.3px;
     text-transform: uppercase;
+    white-space: nowrap;
+    flex-shrink: 0;
 }
 
 .badge-neutral {
@@ -273,7 +284,7 @@ body > header {
 
 .section-label {
     display: block;
-    font-size: 0.82rem;
+    font-size: 0.9rem;
     color: var(--text-muted);
     font-weight: 600;
     margin-bottom: 0.45rem;
@@ -291,7 +302,7 @@ body > header {
 
 .form-group label {
     display: block;
-    font-size: 0.875rem;
+    font-size: 1rem;
     font-weight: 500;
     margin-bottom: 0.35rem;
     color: #d4d4d4;
@@ -309,7 +320,7 @@ input[type="number"] {
     color: var(--text);
     border-radius: var(--radius-sm);
     padding: 12px;
-    font-size: 0.9rem;
+    font-size: 1rem;
     outline: none;
 }
 
@@ -364,7 +375,7 @@ input[type="number"]:focus {
     color: var(--text-muted);
     padding: 8px;
     border-radius: 6px;
-    font-size: 0.82rem;
+    font-size: 0.95rem;
     font-weight: 600;
     cursor: pointer;
 }
@@ -378,7 +389,7 @@ input[type="number"]:focus {
     padding: 9px 14px;
     border: none;
     border-radius: var(--radius-sm);
-    font-size: 0.84rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -434,7 +445,7 @@ input[type="number"]:focus {
     background: var(--bg);
     border: 1px solid var(--border);
     color: var(--text-muted);
-    font-size: 0.76rem;
+    font-size: 0.85rem;
     padding: 7px 10px;
 }
 
@@ -446,7 +457,7 @@ input[type="number"]:focus {
 
 .btn-sm {
     padding: 6px 10px;
-    font-size: 0.75rem;
+    font-size: 0.85rem;
 }
 
 .btn-spinner {
@@ -502,12 +513,12 @@ input[type="number"]:focus {
 }
 
 .banner-content h3 {
-    font-size: 0.92rem;
+    font-size: 1.05rem;
     margin-bottom: 3px;
 }
 
 .banner-content p {
-    font-size: 0.82rem;
+    font-size: 1rem;
 }
 
 .metrics-row {
@@ -533,7 +544,7 @@ input[type="number"]:focus {
 
 .metric-val {
     color: var(--text);
-    font-size: 0.92rem;
+    font-size: 1rem;
     font-weight: 700;
 }
 
@@ -548,7 +559,7 @@ input[type="number"]:focus {
 }
 
 .step-list li {
-    font-size: 0.81rem;
+    font-size: 1rem;
     color: #dbe2ee;
     border-bottom: 1px dashed rgba(158, 158, 158, 0.2);
     padding: 6px 0;
@@ -567,8 +578,13 @@ input[type="number"]:focus {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
     gap: 8px;
     margin-bottom: 8px;
+}
+
+.draft-header .section-label {
+    margin-bottom: 0;
 }
 
 .draft-box {
@@ -577,11 +593,14 @@ input[type="number"]:focus {
     border-radius: var(--radius-sm);
     padding: 12px;
     white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+    max-width: 100%;
     max-height: 220px;
     overflow-y: auto;
     color: #d8e0ef;
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 0.8rem;
+    font-size: 1rem;
 }
 
 .tab-controls {
@@ -596,7 +615,7 @@ input[type="number"]:focus {
     border: none;
     padding: 8px 10px;
     border-bottom: 2px solid transparent;
-    font-size: 0.85rem;
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
 }
@@ -621,6 +640,8 @@ input[type="number"]:focus {
 
 .table-container {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    max-width: 100%;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
 }
@@ -628,7 +649,7 @@ input[type="number"]:focus {
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 0.82rem;
+    font-size: 1rem;
 }
 
 th,
@@ -708,7 +729,7 @@ tbody tr:hover {
 
 .category-breakdown-section h3 {
     margin-bottom: 8px;
-    font-size: 0.98rem;
+    font-size: 1.05rem;
     font-weight: 700;
 }
 
@@ -757,7 +778,7 @@ footer {
 
 @media (max-width: 992px) {
     .grid-layout {
-        grid-template-columns: 1fr;
+        grid-template-columns: minmax(0, 1fr);
     }
 
     .app-header {
@@ -767,7 +788,7 @@ footer {
     }
 
     .summary-kpi-grid {
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 
@@ -777,16 +798,122 @@ footer {
         padding: 0 0.75rem;
     }
 
+    .project-shell {
+        padding: 0.35rem 0 1rem;
+    }
+
+    .app-header {
+        padding: 10px 14px;
+        margin-bottom: 12px;
+        border-radius: var(--radius-sm);
+        gap: 8px;
+    }
+
+    .brand-wrapper {
+        align-items: center;
+        gap: 10px;
+    }
+
+    .brand-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 18px;
+        border-radius: var(--radius-sm);
+        flex-shrink: 0;
+    }
+
+    .brand-title {
+        font-size: 1.15rem;
+    }
+
+    .brand-tagline {
+        font-size: 1rem;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .grid-layout {
+        gap: 12px;
+        margin-bottom: 12px;
+    }
+
+    .grid-layout > .card {
+        margin-bottom: 0;
+    }
+
     .form-row {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
 
     .metrics-row {
         grid-template-columns: 1fr;
+        gap: 8px;
+    }
+
+    .summary-kpi-grid {
+        grid-template-columns: 1fr;
+        gap: 8px;
     }
 
     .card {
-        padding: 16px;
+        padding: 12px 14px;
+        margin-bottom: 12px;
+        border-radius: var(--radius-sm);
+    }
+
+    .card-header {
+        margin-bottom: 10px;
+    }
+
+    .card-header h2 {
+        font-size: 1.05rem;
+    }
+
+    /* Scrollable compact preset buttons */
+    .preset-buttons {
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 6px;
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .preset-buttons::-webkit-scrollbar {
+        display: none;
+    }
+
+    .btn-preset {
+        flex-shrink: 0;
+        white-space: nowrap;
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+
+    .tab-controls {
+        width: 100%;
+        display: flex;
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        gap: 4px;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .tab-controls::-webkit-scrollbar {
+        display: none;
+    }
+
+    .tab-btn {
+        flex: 1 1 auto;
+        white-space: nowrap;
+        font-size: 0.85rem;
+        padding: 6px 8px;
+        text-align: center;
     }
 
     .tab-actions {
@@ -795,5 +922,32 @@ footer {
 
     .tab-actions .btn {
         flex: 1;
+    }
+
+    #triage-table {
+        min-width: 640px;
+    }
+
+    #breakdown-table {
+        min-width: 480px;
+    }
+
+    .modal-content {
+        padding: 20px;
+    }
+
+    .btn {
+        padding: 7px 12px;
+        font-size: 1rem;
+    }
+
+    .btn-sm {
+        padding: 4px 8px;
+        font-size: 0.85rem;
+    }
+
+    footer {
+        margin-top: 14px;
+        padding: 0.75rem 0;
     }
 }

@@ -32,10 +32,12 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-01-mcp-client-py">01_mcp_client.py</a></li>
                     <li><a href="#source-cricket-server-py">cricket_server.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -48,9 +50,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>7 Topics</span>
+                    <span>9 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>3 Python Files in Full</span>
                 </div>
@@ -228,11 +230,116 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p>This demo spans three Python files that together implement a complete, LLM-free Model Context Protocol (MCP) client-server call over standard input/output (<code>stdio</code>):</p>
+                    <ul>
+                        <li><code>01_mcp_client.py</code> &mdash; Spawns the MCP server as a child process over <code>stdio</code>, performs the protocol handshake, discovers all registered tools and their JSON schemas, and invokes one tool directly with structured arguments.</li>
+                        <li><code>cricket_server.py</code> &mdash; A standalone FastMCP server exposing two cricket data tools (<code>get_live_score</code> and <code>get_player_stats</code>) backed by an in-memory mock data store and communicating over <code>stdio</code>.</li>
+                        <li><code>app.py</code> &mdash; The Flask Blueprint web server that serves the frontend UI, enforces sliding-window rate limits on <code>POST</code> requests, and exposes <code>POST /api/mcp-client</code> to run the async MCP client and return JSON to the browser.</li>
+                    </ul>
+
+                    <p><strong>1. Direct MCP Client Module (<code>01_mcp_client.py</code>)</strong></p>
+                    <ul>
+                        <li><strong>Pydantic Payload Contracts (<code>McpClientRequest</code>, <code>McpToolDescriptor</code>, <code>McpClientResponse</code>):</strong> Document the input and output structure of the client service:
+                            <ul>
+                                <li><code>McpClientRequest</code> defines the default call parameters: <code>tool_name: str = "get_live_score"</code> and <code>tool_args: dict = {"teams": "India vs West Indies"}</code>.</li>
+                                <li><code>McpToolDescriptor</code> represents a single discovered tool with <code>name: str</code>, <code>description: str</code>, and <code>input_schema: dict</code>.</li>
+                                <li><code>McpClientResponse</code> wraps the list of discovered <code>server_tools: list[McpToolDescriptor]</code> and the raw string <code>result: str</code> returned by the invoked tool.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Step ① &mdash; Subprocess Server Parameters (<code>server_script</code> &amp; <code>server</code>):</strong> Resolves the sibling file path <code>Path(__file__).with_name("cricket_server.py")</code> and constructs <code>StdioServerParameters(command=sys.executable, args=[server_script])</code> so the client launches the server using the active Python interpreter and virtual environment.</li>
+                        <li><strong><code>async def run_mcp_client(tool_name: str, tool_args: dict) -&gt; dict</code>:</strong> Executes the 3-step MCP client protocol flow without any LLM:
+                            <ul>
+                                <li><strong>Step ② &mdash; Open <code>stdio</code> Transport &amp; Session:</strong> Enters <code>async with stdio_client(server) as (read, write):</code> to spawn <code>cricket_server.py</code> and attach to its <code>stdin</code>/<code>stdout</code> pipes, then wraps those streams in <code>async with ClientSession(read, write) as session:</code> to manage JSON-RPC 2.0 framing.</li>
+                                <li><strong>Step ③ &mdash; STEP 1 Handshake (<code>await session.initialize()</code>):</strong> Sends the MCP <code>initialize</code> request and waits for the server to confirm protocol version compatibility and server capabilities.</li>
+                                <li><strong>Step ④ &mdash; STEP 2 Tool Discovery (<code>await session.list_tools()</code>):</strong> Sends the MCP <code>tools/list</code> RPC call and extracts <code>.tools</code>, a list of tool descriptor objects containing each tool's name, docstring description, and auto-generated JSON Schema (<code>inputSchema</code>).</li>
+                                <li><strong>Step ⑤ &mdash; STEP 3 Direct Tool Call (<code>await session.call_tool(tool_name, tool_args)</code>):</strong> Sends the MCP <code>tools/call</code> RPC frame with the caller's chosen <code>tool_name</code> and <code>tool_args</code> dictionary, receiving a tool result object whose <code>.content</code> list holds typed content blocks (such as <code>TextContent</code>).</li>
+                                <li><strong>Step ⑥ &mdash; Format Return Dict:</strong> Serializes each discovered tool into a plain dict (<code>{"name": t.name, "description": t.description or "", "input_schema": t.inputSchema}</code>) and extracts <code>result.content[0].text</code> (falling back to <code>"(empty response)"</code> if empty). Exiting the <code>async with</code> blocks cleanly terminates the child server process.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>2. FastMCP Cricket Server (<code>cricket_server.py</code>)</strong></p>
+                    <ul>
+                        <li><strong>Server Instance (<code>mcp = FastMCP("Cricket-Score-Server")</code>):</strong> Creates the FastMCP server object that registers tool functions, synthesizes JSON Schemas from type annotations, and handles JSON-RPC 2.0 dispatch.</li>
+                        <li><strong>Mock Data Constants (<code>LIVE_MATCHES</code> &amp; <code>PLAYER_STATS</code>):</strong>
+                            <ul>
+                                <li><code>LIVE_MATCHES</code> maps normalized matchup keys (<code>"india vs west indies"</code>) to a scorecard dictionary containing <code>series</code>, <code>match</code> (<code>"2nd ODI"</code>), <code>status</code> (<code>"LIVE"</code>), team scores (<code>"287/6 (50 overs)"</code>, <code>"198/5 (38.2 overs)"</code>), <code>target</code> (<code>288</code>), <code>required</code> (<code>"90 runs from 70 balls"</code>), and <code>series_score</code>.</li>
+                                <li><code>PLAYER_STATS</code> maps lowercase player names (<code>"shubman gill"</code>, <code>"shai hope"</code>) to series batting records (<code>team</code>, <code>series_runs</code>, <code>innings</code>, <code>highest</code>).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>@mcp.tool(...) def get_live_score(teams: str = Field(...)) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li>Decorated with <code>@mcp.tool(description=...)</code> and a Pydantic <code>Field(description=...)</code> on <code>teams</code> so FastMCP automatically builds the JSON Schema exposed during <code>tools/list</code>.</li>
+                                <li><strong>Step ① &mdash; Diagnostic Logging to <code>stderr</code>:</strong> Calls <code>print(..., file=sys.stderr)</code> because <code>stdout</code> is reserved exclusively for MCP JSON-RPC wire frames.</li>
+                                <li><strong>Step ② &mdash; Normalization &amp; Lookup:</strong> Lowercases and strips <code>teams</code>, normalizes <code>"windies"</code> to <code>"west indies"</code>, and returns the matching dict from <code>LIVE_MATCHES</code> (or an <code>{"error": ...}</code> dict if not found).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>@mcp.tool(...) def get_player_stats(player_name: str = Field(...)) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li>Exposes player batting stats via MCP with an annotated <code>player_name</code> parameter.</li>
+                                <li><strong>Step ①:</strong> Logs the invocation to <code>sys.stderr</code>.</li>
+                                <li><strong>Step ②:</strong> Normalizes <code>player_name.strip().lower()</code> and returns the player's stats dict from <code>PLAYER_STATS</code> (or an <code>{"error": ...}</code> dict if unknown).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Entry Point (<code>if __name__ == "__main__": mcp.run(transport="stdio")</code>):</strong> Starts the event loop listening for JSON-RPC requests on <code>sys.stdin</code> and writing responses to <code>sys.stdout</code>.</li>
+                    </ul>
+
+                    <p><strong>3. Flask Web Server &amp; Blueprint Routes (<code>app.py</code>)</strong></p>
+                    <ul>
+                        <li><strong>App &amp; Dynamic Module Loader (<code>_load_service(filename, alias)</code>):</strong>
+                            <ul>
+                                <li>Reads <code>PATH_PREFIX</code> and configures Flask to serve static assets from <code>src/</code>.</li>
+                                <li>Because Python module filenames starting with digits (<code>01_mcp_client.py</code>) cannot be imported with a normal <code>import</code> statement, <code>_load_service()</code> uses <code>importlib.util.spec_from_file_location()</code> (Step ①) and <code>spec.loader.exec_module(mod)</code> (Step ②) to load <code>01_mcp_client.py</code>, <code>02_mcp_agent.py</code>, and <code>03_mcp_evals.py</code> into <code>sys.modules</code> at startup.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>@bp.before_request def enforce_rate_limit()</code>:</strong> Intercepts every incoming <code>POST</code> request (Step ①), checks <code>check_rate_limit(request, max_requests=30, window_seconds=3600)</code> (Step ②), and returns HTTP <code>429</code> with a <code>Retry-After</code> header if the client exceeds 30 requests per hour (Step ③).</li>
+                        <li><strong>Static &amp; HTML Routes (<code>index</code>, <code>css</code>, <code>js</code>, <code>explanation_pages</code>, <code>theory_pages</code>):</strong> <code>index()</code> reads <code>src/index.html</code> (Step ①), injects <code>PATH_PREFIX</code> into <code>data-api-base</code>, and returns the patched HTML response (Step ②).</li>
+                        <li><strong><code>@bp.route("/api/mcp-client", methods=["POST"]) def mcp_client_route()</code>:</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Parses the JSON request body and extracts <code>tool_name</code> (defaulting to <code>"get_live_score"</code>) and <code>tool_args</code> (defaulting to <code>{"teams": "India vs West Indies"}</code>).</li>
+                                <li><strong>Step ②:</strong> Bridges synchronous Flask into async MCP by calling <code>asyncio.run(mod_mcp_client.run_mcp_client(tool_name, tool_args))</code> and returning the resulting dictionary via <code>jsonify(res)</code> (or HTTP <code>500</code> if an exception occurs).</li>
+                            </ul>
+                        </li>
+                        <li><strong>Sibling API Routes (<code>mcp_agent_route</code> &amp; <code>mcp_evals_route</code>):</strong> Expose <code>POST /api/mcp-agent</code> and <code>POST /api/mcp-evals</code> for the other two demos in the project.</li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Connection Flow</strong></p>
+                    <ol>
+                        <li>The user picks a tool and arguments in the browser UI and clicks run, sending <code>POST /api/mcp-client</code> with <code>{"tool_name": ..., "tool_args": ...}</code>.</li>
+                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> verifies the client is within the 30 POSTs/hour quota, and <code>mcp_client_route()</code> invokes <code>asyncio.run(mod_mcp_client.run_mcp_client(tool_name, tool_args))</code>.</li>
+                        <li><code>run_mcp_client()</code> in <code>01_mcp_client.py</code> uses <code>stdio_client(server)</code> to launch <code>cricket_server.py</code> as a child process connected via <code>stdin</code>/<code>stdout</code> pipes.</li>
+                        <li>Over that pipe, <code>ClientSession</code> sends three JSON-RPC 2.0 requests in sequence: <code>initialize</code> (handshake), <code>tools/list</code> (schema discovery), and <code>tools/call</code> (invoking <code>get_live_score</code> or <code>get_player_stats</code>).</li>
+                        <li><code>cricket_server.py</code> logs diagnostic info to <code>sys.stderr</code>, looks up the requested match or player in <code>LIVE_MATCHES</code> or <code>PLAYER_STATS</code>, and writes the JSON result back over <code>stdout</code>.</li>
+                        <li><code>run_mcp_client()</code> unpacks the discovered tool schemas and the tool's text output, closes the subprocess cleanly, and returns the dictionary to <code>mcp_client_route()</code>, which serializes it as JSON for the browser to render.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -278,13 +385,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-01-mcp-client-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-01-mcp-client-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-01-mcp-client-py" class="topic-title is-file">01_mcp_client.py<a class="headerlink" href="#source-01-mcp-client-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -367,13 +474,13 @@ async def run_mcp_client(tool_name: str, tool_args: dict) -&gt; dict:
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-cricket-server-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-cricket-server-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-cricket-server-py" class="topic-title is-file">cricket_server.py<a class="headerlink" href="#source-cricket-server-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -468,13 +575,13 @@ if __name__ == &quot;__main__&quot;:
     mcp.run(transport=&quot;stdio&quot;)</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 7 -->
+<!-- ============================================================ 8 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">7</span>
+                        <span class="topic-badge">8</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -629,7 +736,50 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 9 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Review these core concepts to solidify how the Model Context Protocol (MCP) operates under the hood before introducing an LLM agent:</p>
+                    <ol>
+                        <li><strong>Model Context Protocol (MCP) Solving the <em>M &times; N</em> Problem:</strong> MCP is an open client-server standard that decouples AI hosts (<em>M</em> applications) from external data and tool providers (<em>N</em> servers), reducing ecosystem integration complexity from <em>M &times; N</em> custom connectors to <em>M + N</em> reusable implementations.</li>
+                        <li><strong>MCP Works Without an LLM:</strong> At its foundation, MCP is a deterministic JSON-RPC 2.0 wire protocol. Calling <code>initialize()</code>, <code>list_tools()</code>, and <code>call_tool()</code> directly from Python proves the transport and tool plumbing work independently of model inference.</li>
+                        <li><strong>Three-Phase MCP Session Lifecycle:</strong> Every MCP client interaction follows a strict sequence: (1) <code>await session.initialize()</code> to negotiate protocol versions and capabilities, (2) <code>await session.list_tools()</code> to discover tool names, descriptions, and JSON input schemas, and (3) <code>await session.call_tool(name, args)</code> to execute a tool with structured arguments.</li>
+                        <li><strong>Standard Input/Output (<code>stdio</code>) Subprocess Transport:</strong> Using <code>StdioServerParameters(command=sys.executable, args=[server_script])</code> with <code>stdio_client(server)</code> spawns the MCP server as a local child process and communicates over its <code>stdin</code> and <code>stdout</code> pipes &mdash; requiring zero network ports or firewall configuration.</li>
+                        <li><strong>The Golden Rule of <code>stdio</code> Logging (<code>sys.stderr</code> Only):</strong> Because <code>stdout</code> carries newline-delimited JSON-RPC 2.0 frames from the server back to the client, any regular <code>print()</code> statement on the server would corrupt the protocol stream. Server diagnostic logs must always write to <code>file=sys.stderr</code>.</li>
+                        <li><strong>Automatic JSON Schema Synthesis with FastMCP:</strong> Decorating Python functions with <code>@mcp.tool(description=...)</code> and annotating parameters with Pydantic <code>Field(description=...)</code> lets <code>FastMCP</code> inspect type hints at registration time and auto-generate the JSON Schema <code>inputSchema</code> returned by <code>tools/list</code>.</li>
+                        <li><strong>Typed Content Blocks in Tool Responses:</strong> MCP tool executions return a response containing a list of typed content objects (<code>result.content</code>, such as <code>TextContent</code> or <code>ImageContent</code>), where the serialized JSON payload is accessed via <code>result.content[0].text</code>.</li>
+                        <li><strong>Process Isolation &amp; Clean Teardown:</strong> Wrapping <code>stdio_client(server)</code> and <code>ClientSession(read, write)</code> in nested <code>async with</code> context managers guarantees that child server processes and OS pipes are closed deterministically as soon as the request completes.</li>
+                        <li><strong>Async-to-Sync Bridging in Flask:</strong> Because the official Python <code>mcp</code> SDK is built on <code>anyio</code>/<code>asyncio</code> coroutines while Flask route handlers are synchronous, <code>mcp_client_route()</code> runs <code>asyncio.run(run_mcp_client(...))</code> to execute the async protocol session and return a standard JSON HTTP response.</li>
+                        <li><strong>Graceful Domain Error Handling:</strong> Rather than raising unhandled exceptions that crash the server subprocess, MCP tools normalize inputs (e.g., mapping <code>"windies"</code> to <code>"west indies"</code>) and return structured <code>{"error": ...}</code> dictionaries when a requested match or player is not found.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AI MCP & Evals &mdash; 📡 FastMCP Protocol Client &middot; How it works</footer>
