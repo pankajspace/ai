@@ -133,7 +133,7 @@ projects/techtoday/
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
-    ├── ai-demos/             ← ai-demos.html catalog + LLM, RAG, Docker, Strands guides
+    ├── ai-projects/             ← ai-projects.html catalog + LLM, RAG, Docker, Strands guides
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
     ├── design-patterns/         ← design-patterns-courses.html catalog + crash course + detailed course
     ├── devops/                  ← devops-courses.html catalog (4 cards)
@@ -165,7 +165,7 @@ projects/techtoday/
 
 ## Adding a New Project Card
 
-1. Open `study/ai-demos/ai-demos.html`.
+1. Open `study/ai-projects/ai-projects.html`.
 2. Inside the `<div class="grid">` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and theory/explanation link.
 4. Update `index.html` under the **AI Projects** tile's `.hub-bullet-list` to include the new project shortcut.

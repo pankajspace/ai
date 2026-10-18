@@ -1,14 +1,14 @@
 ---
-description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design in plain, simple language (removing Gradio, agenda, LinkedIn content, class numbers and interactive sims, which become static examples) and regenerating its .md"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-projects/*.html) into the DSA-course design in plain, simple language (removing Gradio, agenda, LinkedIn content, class numbers and interactive sims, which become static examples) and regenerating its .md"
 name: "create-container-project"
-argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-demos/*.html class-notes page to simplify"
+argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-projects/*.html class-notes page to simplify"
 ---
 
 This skill covers a container project and its two kinds of companion teaching page. Pick the task, then read only the file it needs:
 
 1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**. This always includes one ⓘ explainer page per demo tile (Workflow step 8, built with task 2).
 2. **Add ⓘ explainer pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
-3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-demos/*.html` into the DSA-course design, rewrite it in plain language, replace its interactive examples with static information, and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
+3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-projects/*.html` into the DSA-course design, rewrite it in plain language, replace its interactive examples with static information, and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
 
 When a new public project needs its catalog ⓘ link (Workflow step 12), build the target page with task 2 (§7) or 3.
 
@@ -60,8 +60,8 @@ Proceed without extra questions if you have enough information.
     ```
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
 12. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add the root `README.md` runbook entry under `## Project Runbooks` (`N. [<Display Name>](projects/<project-name>/README.md)`, above *Container App Template*). If the project should be public, follow `ADD_PROJECT.md` § 8 *Public project catalog card update*:
-    1. Add a card to `projects/techtoday/study/ai-demos/ai-demos.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-demos.md`.
-    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-demos/` (built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
+    1. Add a card to `projects/techtoday/study/ai-projects/ai-projects.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-projects.md`.
+    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-projects/` (built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
     3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Projects** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
 
 ## README Requirements

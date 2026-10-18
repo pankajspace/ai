@@ -2,11 +2,11 @@
 Source: docker.html
 Title: Dockerize Everything — ML • LLM • Agents | TechToday
 Theme-color: #0b0d10
-Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-demos.css
+Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-projects.css
 Scripts: ../dsa/dsa-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Projects](ai-demos.html)
+Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
 
 STUDENT REVISION GUIDE
 
