@@ -70,7 +70,7 @@ def js(filename):
 @bp.route("/api/health", methods=["GET"])
 def health_check():
     """Health check endpoint."""
-    return jsonify({"status": "ok", "service": "shipment-exception-desk"})
+    return jsonify({"status": "ok", "service": "09-shipment-exception-desk"})
 
 
 @bp.route("/api/triage", methods=["POST"])

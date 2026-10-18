@@ -2,7 +2,7 @@
 //
 // The API base path is injected by the Flask server into the <body
 // data-api-base="..."> attribute. Locally it is empty (relative URLs);
-// in production it is the path prefix (e.g. "/interviewiq").
+// in production it is the path prefix (e.g. "/08-interviewiq").
 
 const API = document.body.dataset.apiBase || "";
 

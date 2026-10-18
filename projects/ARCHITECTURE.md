@@ -16,7 +16,7 @@ The primary architectural goal is **maximum operational efficiency and minimal c
 2. **No AWS ECS or Fargate:** Running containers directly via Docker and Docker Compose on an EC2 instance avoids ECS cluster management fees, private VPC endpoint charges, and per-vCPU/GB Fargate runtime premiums, saving approximately $20 to $40 per month.
 3. **Free Automated SSL Certificates:** Let's Encrypt with Certbot automates certificate issuance, renewal, and Nginx configuration for both the apex domain and application subdomains at zero cost. (AWS Certificate Manager certificates cannot be bound directly to EC2 instances without an ALB or CloudFront distribution).
 4. **Single Elastic IP with Route 53:** Three DNS A-records in Route 53 point directly to a single static Elastic IP associated with the EC2 host. While attached to a running instance, the Elastic IP is free. Route 53 hosted zone costs are approximately $0.50 per month.
-5. **Path-Based Reverse Proxy Routing:** Rather than provisioning separate DNS subdomains, SSL certificates, or cloud infrastructure for every new application, all containerized projects share the `app.techtoday.click` subdomain. Nginx routes traffic by URL path prefix (for example, `/interviewiq/`, `/shipment-exception-desk/`, `/01-ai-basics/`) to unique loopback ports on the host.
+5. **Path-Based Reverse Proxy Routing:** Rather than provisioning separate DNS subdomains, SSL certificates, or cloud infrastructure for every new application, all containerized projects share the `app.techtoday.click` subdomain. Nginx routes traffic by URL path prefix (for example, `/01-ai-basics/`, `/08-interviewiq/`, `/09-shipment-exception-desk/`) to unique loopback ports on the host.
 6. **Isolated Self-Provisioning Deployments:** Each container application is self-contained. On git push, CI/CD workflows automatically create the project's Amazon ECR repository, generate its secrets configuration, provision its isolated Nginx routing block, and launch its isolated Docker Compose stack.
 7. **Centralized Secrets with Zero-Commitment Security:** All application API keys are stored centrally in AWS Secrets Manager under `techtoday/secrets`. No credentials exist in Git repositories, Docker image layers, or GitHub Actions secrets. The EC2 instance retrieves and injects secrets into containers at deployment time.
 
@@ -164,8 +164,8 @@ flowchart TD
         LPort5002["127.0.0.1:5002 (02-ai-rag-chroma)"]
         LPort5003["127.0.0.1:5003 (03-ai-model-training-chromadb)"]
         LPort5004["127.0.0.1:5004 (04-ai-aws-strands)"]
-        LPort5005["127.0.0.1:5005 (interviewiq)"]
-        LPort5006["127.0.0.1:5006 (shipment-exception-desk)"]
+        LPort5005["127.0.0.1:5005 (08-interviewiq)"]
+        LPort5006["127.0.0.1:5006 (09-shipment-exception-desk)"]
         LPort5007["127.0.0.1:5007 (05-ai-systems)"]
         LPort5008["127.0.0.1:5008 (06-ai-reliability)"]
         LPort5009["127.0.0.1:5009 (07-ai-mcp-evals)"]
@@ -177,8 +177,8 @@ flowchart TD
 
         subgraph ModernApps["Isolated Self-Provisioning Stacks (~/apps/[project]/)"]
             direction TB
-            AppInterview["interviewiq Container (Groq AI Interview Coach)"]
-            AppShipment["shipment-exception-desk Container (Logistics Exception Desk)"]
+            AppInterview["08-interviewiq Container (Groq AI Interview Coach)"]
+            AppShipment["09-shipment-exception-desk Container (Logistics Exception Desk)"]
             AppAIProjects["01-07 AI Domain Containers (Basics, RAG, Training, AWS Strands, Systems, Reliability, MCP)"]
         end
     end
@@ -226,8 +226,8 @@ flowchart TD
     Port443 -- "HTTPS Requests" --> Nginx
     Port22 -- "Deployment Commands" --> EC2_Role
 
-    AppLocations -- "proxy_pass /interviewiq/" --> LPort5005 --> AppInterview
-    AppLocations -- "proxy_pass /shipment-exception-desk/" --> LPort5006 --> AppShipment
+    AppLocations -- "proxy_pass /08-interviewiq/" --> LPort5005 --> AppInterview
+    AppLocations -- "proxy_pass /09-shipment-exception-desk/" --> LPort5006 --> AppShipment
     AppLocations -- "proxy_pass /01-ai-basics/ ... /07-ai-mcp-evals/" --> LPort5001 --> AppAIProjects
 
     AppShipment & AppAIProjects -- "Outbound HTTPS (Port 443)" --> OpenAI
@@ -328,7 +328,7 @@ Nginx runs natively as a systemd service on the EC2 host (`systemctl status ngin
 1. `/etc/nginx/nginx.conf`: Base Nginx server configuration, worker process tuning, MIME type mappings, and default logging.
 2. `/etc/nginx/conf.d/techtoday.conf`: Virtual host configuration for `techtoday.click` and `www.techtoday.click`.
 3. `/etc/nginx/conf.d/app.conf`: Virtual host configuration for `app.techtoday.click`.
-4. `/etc/nginx/conf.d/app-locations/`: Directory containing modular, per-project reverse proxy location files (e.g., `shipment-exception-desk.conf`, `interviewiq.conf`, `01-ai-basics.conf`).
+4. `/etc/nginx/conf.d/app-locations/`: Directory containing modular, per-project reverse proxy location files (e.g., `09-shipment-exception-desk.conf`, `08-interviewiq.conf`, `01-ai-basics.conf`).
 5. `/var/www/techtoday/`: Filesystem root holding static HTML/CSS/JS assets and compiled study notes.
 
 ### 4.2. Virtual Host 1: Static Site (`techtoday.conf`)
@@ -404,10 +404,10 @@ server {
 
 Every container application drops an isolated configuration file into `/etc/nginx/conf.d/app-locations/<project-name>.conf`.
 
-Example (`/etc/nginx/conf.d/app-locations/shipment-exception-desk.conf`), written verbatim by the project's deploy workflow:
+Example (`/etc/nginx/conf.d/app-locations/09-shipment-exception-desk.conf`), written verbatim by the project's deploy workflow:
 
 ```nginx
-location /shipment-exception-desk/ {
+location /09-shipment-exception-desk/ {
     limit_req          zone=ai_inputs burst=29 nodelay;
     limit_req_status   429;
     proxy_pass         http://localhost:5006;
@@ -457,7 +457,7 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
 
 The Nginx zone in Section 4.6 is a token-bucket refilling at 1 request per minute, so it cannot express a hard hourly cap, and it is bypassed entirely when an app is reached outside the proxy (local development, or a container port opened for debugging). Every project therefore ships a second, authoritative quota inside the Flask process.
 
-1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`interviewiq`, `shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
+1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`08-interviewiq`, `09-shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
 2. **Sliding Window Quota:** A strict sliding window of **30 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
 3. **Storage:** SQLite at `/tmp/ai_rate_limit.db` in WAL mode, with an `(ip, timestamp)` index. No Redis or external dependency is required, and the quota survives worker threads within a container. The counter resets when the container is recreated, which is acceptable for an abuse guard.
 4. **Client Identification:** `get_client_ip()` prefers the first entry of `X-Forwarded-For`, falls back to `X-Real-IP`, then `request.remote_addr` — matching the headers Nginx sets in Section 4.4.
@@ -544,7 +544,7 @@ To prevent port collision across applications on both local development machines
 
 ### 5.3. Flask Runtime Architecture and `PATH_PREFIX` Convention
 
-Because Nginx forwards the entire path to the upstream container without stripping the project URL segment (e.g. `https://app.techtoday.click/shipment-exception-desk/` is forwarded to `http://localhost:5006/shipment-exception-desk/`), the backend Flask application must natively understand its mounting prefix.
+Because Nginx forwards the entire path to the upstream container without stripping the project URL segment (e.g. `https://app.techtoday.click/09-shipment-exception-desk/` is forwarded to `http://localhost:5006/09-shipment-exception-desk/`), the backend Flask application must natively understand its mounting prefix.
 
 #### 5.3.1. Blueprint Registration with `PATH_PREFIX`
 
@@ -606,7 +606,7 @@ Static assets are served through the same Blueprint (`/css/<path:filename>` and 
    ```html
    <body data-api-base="">
    ```
-   Served locally it stays empty (relative URLs); in production it becomes `data-api-base="/shipment-exception-desk"`. No template engine is involved — the same file opens correctly from the filesystem during UI work.
+   Served locally it stays empty (relative URLs); in production it becomes `data-api-base="/09-shipment-exception-desk"`. No template engine is involved — the same file opens correctly from the filesystem during UI work.
 2. **Client-Side Discovery:** In `src/js/main.js`, all asynchronous `fetch()` requests read this base attribute and handle non-2xx responses (notably `429`) before parsing:
    ```javascript
    const API = document.body.dataset.apiBase || "";
@@ -630,7 +630,7 @@ Static assets are served through the same Blueprint (`/css/<path:filename>` and 
        return await res.json();
    }
    ```
-3. **Environment Parity:** This design guarantees that the exact same JavaScript code functions locally on `http://localhost:8086/` (where `PATH_PREFIX` is empty or `/`) and in production on `https://app.techtoday.click/shipment-exception-desk/` without conditional domain logic or environment flags in the browser bundle.
+3. **Environment Parity:** This design guarantees that the exact same JavaScript code functions locally on `http://localhost:8086/` (where `PATH_PREFIX` is empty or `/`) and in production on `https://app.techtoday.click/09-shipment-exception-desk/` without conditional domain logic or environment flags in the browser bundle.
 
 ### 5.4. Application Container Topology
 
@@ -891,7 +891,7 @@ For complete step-by-step instructions, branch lifecycles, and rollback commands
 
 ### 8.1. Client HTTP Request Execution Flow
 
-The sequence below illustrates the complete path of an end-user request calling an AI feature (e.g. submitting a logistics exception report in `shipment-exception-desk`):
+The sequence below illustrates the complete path of an end-user request calling an AI feature (e.g. submitting a logistics exception report in `09-shipment-exception-desk`):
 
 ```mermaid
 sequenceDiagram
@@ -904,11 +904,11 @@ sequenceDiagram
 
     User->>R53: DNS Query: app.techtoday.click
     R53-->>User: Returns Elastic IP (A Record)
-    User->>Nginx: TLS Handshake & HTTPS POST /shipment-exception-desk/triage
+    User->>Nginx: TLS Handshake & HTTPS POST /09-shipment-exception-desk/triage
     Note over User,Nginx: Terminated via Let's Encrypt Cert
 
-    Nginx->>Nginx: Match location /shipment-exception-desk/
-    Nginx->>Flask: Reverse proxy to http://127.0.0.1:5006/shipment-exception-desk/triage
+    Nginx->>Nginx: Match location /09-shipment-exception-desk/
+    Nginx->>Flask: Reverse proxy to http://127.0.0.1:5006/09-shipment-exception-desk/triage
     Note over Nginx,Flask: Forwards Host, X-Real-IP, X-Forwarded-Proto
 
     Flask->>Flask: Match Blueprint route @bp.route('/triage')
@@ -1032,23 +1032,23 @@ flowchart TD
 
     subgraph TargetGroups["ALB Target Groups (Path-Based Routing)"]
         TG_Static["Target Group: S3 / CloudFront (Static)"]
-        TG_Interview["Target Group: interviewiq-tg"]
-        TG_Shipment["Target Group: shipment-tg"]
         TG_AIProjects["Target Group: ai-projects-tg"]
+        TG_Interview["Target Group: 08-interviewiq-tg"]
+        TG_Shipment["Target Group: 09-shipment-tg"]
     end
 
     subgraph ECS_Cluster["Amazon ECS Cluster (AWS Fargate)"]
-        Task_Interview["ECS Task: interviewiq (Auto-scaling)"]
-        Task_Shipment["ECS Task: shipment (Auto-scaling)"]
         Task_AIProjects["ECS Tasks: 01-07-ai-projects (Auto-scaling)"]
+        Task_Interview["ECS Task: 08-interviewiq (Auto-scaling)"]
+        Task_Shipment["ECS Task: 09-shipment (Auto-scaling)"]
     end
 
     Client --> R53
     R53 --> ALB
     ACM -.-> ALB
-    ALB -- "/interviewiq/*" --> TG_Interview --> Task_Interview
-    ALB -- "/shipment-exception-desk/*" --> TG_Shipment --> Task_Shipment
     ALB -- "/01-ai-basics/* ... /07-ai-mcp-evals/*" --> TG_AIProjects --> Task_AIProjects
+    ALB -- "/08-interviewiq/*" --> TG_Interview --> Task_Interview
+    ALB -- "/09-shipment-exception-desk/*" --> TG_Shipment --> Task_Shipment
     ALB -- "/" --> TG_Static
 ```
 
