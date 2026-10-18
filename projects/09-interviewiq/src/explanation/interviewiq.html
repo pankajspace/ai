@@ -35,6 +35,7 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-agent-py">agent.py</a></li>
                     <li><a href="#source-interviewer-agent-py">interviewer_agent.py</a></li>
@@ -43,6 +44,7 @@
                     <li><a href="#source-config-py">config.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
                     <li><a href="#source-run-multi-agent-py">run_multi_agent.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -57,9 +59,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>15 Topics</span>
+                    <span>17 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>8 Explainers</span>
+                    <span>10 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>7 Python Files in Full</span>
                 </div>
@@ -89,7 +91,7 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 1 -->
+<!-- ============================================================ 1 -->
 
             <section class="topic-section is-collapsed" id="sec-problem">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -117,7 +119,7 @@
                         all of that through a UI &mdash; not just a terminal.</p>
                 </div>
             </section>
-            <!-- ============================================================ 2 -->
+<!-- ============================================================ 2 -->
 
             <section class="topic-section is-collapsed" id="sec-asks">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-asks">
@@ -184,7 +186,7 @@
                         required to build or that gets graded, since it goes beyond what was actually taught.</p>
                 </div>
             </section>
-            <!-- ============================================================ 3 -->
+<!-- ============================================================ 3 -->
 
             <section class="topic-section is-collapsed" id="sec-approach">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -220,7 +222,7 @@
                     </ol>
                 </div>
             </section>
-            <!-- ============================================================ 4 -->
+<!-- ============================================================ 4 -->
 
             <section class="topic-section is-collapsed" id="sec-milestones">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -278,7 +280,7 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 5 -->
+<!-- ============================================================ 5 -->
 
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -326,7 +328,7 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 6 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -471,7 +473,7 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 7 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -554,13 +556,144 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 8 -->
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p>InterviewIQ is organized across seven focused Python modules that separate deterministic NLP diagnostics, ReAct agent orchestration, multi-agent category selection, and the Flask web interface:</p>
+                    <ul>
+                        <li><code>agent.py</code> &mdash; Implements <code>InterviewSessionMemory</code> (append-only session ledger with anti-recency-bias ranking and report aggregation) and <code>EvaluatorAgent</code> (the ReAct tool-calling loop that scores candidate answers and handles mid-session meta-questions).</li>
+                        <li><code>interviewer_agent.py</code> &mdash; Implements <code>InterviewerAgent</code> (Ask 4 bonus), a second specialized agent that reads shared session memory and chooses the next question's category based on candidate performance.</li>
+                        <li><code>tools.py</code> &mdash; Implements the three deterministic, rule-based diagnostic tools: <code>detect_filler_words</code>, <code>check_star_structure</code>, and <code>score_relevance</code> (plus inflection-aware regex helper <code>_build_keyword_pattern</code>).</li>
+                        <li><code>interview_bank.py</code> &mdash; Stores the 5 categorized interview questions (<code>QUESTIONS</code>), their expected keyword rubrics, sample strong/weak answers, and lookup helpers.</li>
+                        <li><code>config.py</code> &mdash; Centralizes environment loading (<code>.env</code>) and constructs the OpenAI-compatible client (<code>get_openai_client()</code>) with automatic provider fallback (Groq &rarr; OpenAI &rarr; deterministic offline mode).</li>
+                        <li><code>app.py</code> &mdash; Exposes the Flask Blueprint web server and REST API endpoints (<code>/questions</code>, <code>/evaluate</code>, <code>/coach</code>, <code>/next-question</code>, <code>/scorecard</code>, <code>/report</code>, <code>/reset</code>).</li>
+                        <li><code>run_multi_agent.py</code> &mdash; A CLI orchestrator script that coordinates <code>InterviewerAgent</code> and <code>EvaluatorAgent</code> over a shared <code>InterviewSessionMemory</code> instance.</li>
+                    </ul>
+
+                    <p><strong>1. Session Memory &amp; ReAct Evaluator Agent (<code>agent.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>class InterviewSessionMemory</code>:</strong> Append-only store (`self._turns: list[dict]`) tracking every evaluated turn across the interview:
+                            <ul>
+                                <li><code>turns</code> &amp; <code>turn_count</code> properties: Return a shallow copy of recorded turns and the total count.</li>
+                                <li><code>add_turn(question, answer, results, category="", question_id=0, expected_keywords=None)</code>: <strong>Step ①</strong> appends a structured turn record containing <code>turn_id</code>, <code>question_id</code>, <code>question</code>, <code>category</code>, <code>expected_keywords</code>, <code>answer</code>, and the raw <code>results</code> dictionary returned by the evaluation tools.</li>
+                                <li><code>get_weakest_area() -&gt; dict | None</code>: Eliminates LLM recency bias by ranking all turns globally. <strong>Step ①</strong> returns <code>None</code> if empty; <strong>Step ②</strong> defines a 3-tuple composite sort key <code>sort_key(turn) = (rel, star, -fillers)</code> where lower relevance, lower STAR percentage, and higher filler count rank as weaker; <strong>Step ③</strong> selects <code>min(self._turns, key=sort_key)</code>; <strong>Step ④</strong> returns the weakest turn's question, category, scores, and <code>unmatched_keywords</code>.</li>
+                                <li><code>get_strongest_area() -&gt; dict | None</code>: Uses the exact same composite <code>sort_key</code> (Steps ①&ndash;②) with <code>max(self._turns, key=sort_key)</code> (Step ③) to return the strongest turn's summary (Step ④).</li>
+                                <li><code>get_average_relevance() -&gt; float</code>: Collects relevance scores across all turns (Step ①) and returns their rounded mean or <code>0.0</code> (Step ②).</li>
+                                <li><code>get_scorecard() -&gt; list[dict]</code>: Loops through <code>self._turns</code> (Step ①), extracts relevance, STAR, and filler metrics (Step ②), and formats compact rows (<code>Turn</code>, <code>Category</code>, truncated <code>Question</code>, <code>Relevance Score</code>, <code>STAR Score</code>, <code>Fillers</code>) for the UI table (Step ③).</li>
+                                <li><code>get_category_breakdown() -&gt; dict</code>: Groups relevance and STAR scores by question category (Step ①), computes per-category averages and question counts (Step ②), and returns the breakdown dict (Step ③).</li>
+                                <li><code>generate_final_report_dict() -&gt; dict</code>: Builds the full Markdown assessment report and structured KPI payload for the UI. Returns an empty-session message if no turns exist (Step ①); computes session-wide totals, averages, STAR mastery rate, and strongest/weakest areas (Step ②); formats top-line metrics (Step ③), strongest/weakest highlights with missed keywords (Step ④), category breakdown bullets (Step ⑤), and threshold-based coaching recommendations (Step ⑥); then returns both machine-readable metrics and <code>report_text</code> (Step ⑦).</li>
+                                <li><code>clear()</code>: Resets <code>self._turns</code> for a new session.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>TOOLS_SCHEMA</code>, <code>SYSTEM_PROMPT</code>, <code>MAX_TOOL_ROUNDS = 5</code>, <code>MAX_GLITCH_RETRIES = 3</code>:</strong>
+                            <ul>
+                                <li><code>TOOLS_SCHEMA</code> exposes 4 OpenAI function schemas to the LLM: <code>detect_filler_words(answer)</code>, <code>check_star_structure(answer)</code>, <code>score_relevance(answer, expected_keywords)</code>, and <code>generate_final_report()</code> (which takes no arguments and lets the LLM answer mid-session meta-questions).</li>
+                                <li><code>SYSTEM_PROMPT</code> instructs the model to call the evaluation tools before giving short, encouraging feedback, and to invoke <code>generate_final_report</code> whenever the candidate asks how they are doing or what their weakest area is.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>class EvaluatorAgent</code>:</strong>
+                            <ul>
+                                <li><code>__init__(self, memory=None)</code>: <strong>Step ①</strong> attaches <code>InterviewSessionMemory</code> and fetches <code>(self._client, self._model)</code> from <code>get_openai_client()</code>; <strong>Step ②</strong> binds <code>self._tool_functions</code> mapping each schema name to its Python callable.</li>
+                                <li><code>evaluate_answer(self, question_data: dict, answer: str) -&gt; dict</code>: <strong>Step ①</strong> unpacks <code>question</code>, <code>expected_keywords</code>, <code>category</code>, and <code>id</code>; <strong>Step ②</strong> falls back to <code>_deterministic_evaluate()</code> if no API key is configured; <strong>Step ③</strong> constructs the user prompt with the question, candidate answer, and expected keywords; <strong>Step ④</strong> initializes <code>messages</code> with <code>SYSTEM_PROMPT</code>; <strong>Step ⑤</strong> runs <code>self._run_loop(messages, results_out=results)</code> to execute tools and get synthesized coaching feedback, then logs the turn via <code>self.memory.add_turn(...)</code>; <strong>Step ⑥</strong> returns <code>turn</code>, <code>feedback</code>, <code>relevance_evaluation</code>, <code>star_evaluation</code>, and <code>filler_evaluation</code>.</li>
+                                <li><code>ask_agent(self, user_message: str) -&gt; str</code>: Handles free-form coaching questions (e.g., <em>"What is my weakest area so far?"</em>). Uses <code>generate_final_report()</code> directly in offline mode (Step ①) or sends <code>user_message</code> through <code>self._run_loop(messages)</code> (Step ②) where the LLM autonomously calls the <code>generate_final_report</code> tool.</li>
+                                <li><code>generate_final_report(self) -&gt; str</code>: Formats a plain-text session summary (Steps ①&ndash;⑤) listing every turn's filler, STAR, and relevance metrics plus the session-wide average relevance, globally weakest question from <code>self.memory.get_weakest_area()</code>, and total fillers.</li>
+                                <li><code>_create_with_retry(self, **kwargs)</code>: Calls <code>self._client.chat.completions.create(**kwargs)</code> up to <code>MAX_GLITCH_RETRIES</code> (3) times (Step ①), retrying only if Groq raises a <code>BadRequestError</code> with <code>code == "tool_use_failed"</code> (Step ②), and re-raising on final failure (Step ③).</li>
+                                <li><code>_run_loop(self, messages: list, results_out: dict | None = None) -&gt; str</code>: The core ReAct loop running up to <code>MAX_TOOL_ROUNDS</code> (5) turns. <strong>Step ①</strong> calls <code>_create_with_retry()</code> with <code>tools=TOOLS_SCHEMA</code> and <code>tool_choice="auto"</code>; <strong>Step ②</strong> returns <code>msg.content</code> immediately once <code>msg.tool_calls</code> is empty; <strong>Step ③</strong> parses JSON arguments and dispatches each requested tool in <code>self._tool_functions</code>; <strong>Step ④</strong> saves per-answer tool output dicts into <code>results_out</code>; <strong>Step ⑤</strong> appends each tool result to <code>messages</code> with <code>role="tool"</code> and <code>tool_call_id=call.id</code>; <strong>Step ⑥</strong> requests a final synthesis without tools if all 5 rounds are exhausted.</li>
+                                <li><code>_deterministic_evaluate(...)</code>: Offline fallback (Steps ①&ndash;⑤) that calls all three tools directly, records the turn in <code>self.memory</code>, and concatenates their summary messages when no LLM API key is available.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>2. Specialized Interviewer Agent (<code>interviewer_agent.py</code>)</strong></p>
+                    <ul>
+                        <li><strong>Constants (<code>WEAK_THRESHOLD = 60</code>, <code>CATEGORY_FAMILIES</code>, <code>SYSTEM_PROMPT</code>):</strong> Groups categories into <code>"people"</code> (<code>Behavioral</code>, <code>Leadership</code>) and <code>"engineering"</code> (<code>Technical</code>, <code>System Design</code>, <code>Problem-Solving</code>). After a weak answer (<code>relevance &lt; 60</code>), the Interviewer stays in the same family to reinforce the skill; after a strong answer, it switches family to test breadth.</li>
+                        <li><strong><code>class InterviewerAgent</code>:</strong>
+                            <ul>
+                                <li><code>__init__(self, client=None, model=None)</code>: Uses an injected client or calls <code>get_openai_client()</code> (Step ①).</li>
+                                <li><code>choose_next(self, memory) -&gt; dict | None</code>: <strong>Step ①</strong> computes unanswered questions and remaining categories from <code>memory.turns</code> (returning <code>None</code> when all 5 bank questions are answered); <strong>Step ②</strong> queries <code>_ask_llm(memory, available)</code> if an LLM client exists and multiple categories remain, falling back to <code>_rule_based(memory, available)</code> otherwise; <strong>Step ③</strong> attaches the first unanswered question matching the chosen category and returns <code>{"category", "reason", "source", "question"}</code>.</li>
+                                <li><code>build_summary(memory, available)</code>: Formats a concise plain-English recap of all turns so far (Steps ①&ndash;②), highlights the most recent answer's score and weak/strong verdict (Step ③), and lists allowed categories (Step ④).</li>
+                                <li><code>_ask_llm(self, memory, available)</code> &amp; <code>_parse_reply(content, available)</code>: Makes a single tool-free chat completion call (Step ①) and extracts <code>(category, reason)</code> from JSON or text while validating that the chosen category is genuinely available (Step ②).</li>
+                                <li><code>_rule_based(memory, available)</code>: Deterministic fallback that opens with <code>Behavioral</code> (Step ①), stays in the same family after a score below <code>60</code> or switches family after <code>&gt;= 60</code> (Step ②), and generates a human-readable explanation labeled <code>source="rules"</code> (Step ③).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Deterministic Diagnostic Tools (<code>tools.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>FILLER_PATTERNS</code> &amp; <code>detect_filler_words(answer: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><code>FILLER_PATTERNS</code> defines 12 word-boundary regexes for conversational crutches (<code>"you know"</code>, <code>"sort of"</code>, <code>"kind of"</code>, <code>"i mean"</code>, <code>"um"</code>, <code>"uh"</code>, <code>"like"</code>, <code>"basically"</code>, <code>"actually"</code>, <code>"literally"</code>, <code>"honestly"</code>, <code>"right"</code>).</li>
+                                <li><strong>Steps ①&ndash;⑥:</strong> Rejects empty answers (Step ①), lowercases text (Step ②), counts matches per pattern with <code>re.findall()</code> (Step ③), computes total word count and <code>filler_density_per_100_words = round((total_count / max(word_count, 1)) * 100, 1)</code> (Step ④), formats a diagnostic message (Step ⑤), and returns the structured metrics dict (Step ⑥).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>STAR_PATTERNS</code> &amp; <code>check_star_structure(answer: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><code>STAR_PATTERNS</code> maps each of the 4 STAR pillars (<code>Situation</code>, <code>Task</code>, <code>Action</code>, <code>Result</code>) to regex lists matching contextual openers, ownership verbs, and quantifiable outcomes (e.g., <code>\d+%</code>, <code>\$\d+</code>).</li>
+                                <li><strong>Steps ①&ndash;⑥:</strong> Handles empty input (Step ①), normalizes text (Step ②), checks whether each pillar matches at least one pattern (Step ③), computes <code>star_score = round((len(covered) / 4) * 100, 1)</code> and <code>is_star_complete</code> (Step ④), builds a coaching tip naming any <code>missing_components</code> (Step ⑤), and returns the full breakdown dict (Step ⑥).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>_build_keyword_pattern(kw_clean: str) -&gt; str</code> &amp; <code>score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><code>_build_keyword_pattern()</code> constructs inflection-tolerant regexes: handles multi-word/hyphenated terms (Step ①) and expands <code>-tion</code> (Step ②), <code>-ment</code> (Step ③), <code>-e</code> (Step ④), <code>-y</code> (Step ⑤), and standard plural/verb suffixes (Step ⑥) so <em>"resolved"</em> matches <code>"resolution"</code> and <em>"caching"</em> matches <code>"cache"</code>.</li>
+                                <li><code>score_relevance()</code> handles empty answers (Step ①) or empty rubrics (Step ②), normalizes text (Step ③), tests each expected keyword with <code>_build_keyword_pattern()</code> (Step ④), computes <code>coverage_ratio = total_matched / max(total_expected, 1)</code> (Step ⑤), maps coverage onto a calibrated 4-tier curve (<code>&gt;=70%</code> &rarr; 90&ndash;100, <code>&gt;=45%</code> &rarr; 75&ndash;89, <code>&gt;=25%</code> &rarr; 50&ndash;74, <code>&lt;25%</code> &rarr; 5&ndash;49) (Step ⑥), writes a summary message listing top missed keywords (Step ⑦), and returns the structured score dict (Step ⑧).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. Question Bank, Config, Web Server &amp; Multi-Agent CLI (<code>interview_bank.py</code>, <code>config.py</code>, <code>app.py</code>, <code>run_multi_agent.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>interview_bank.py</code>:</strong> Defines <code>QUESTIONS</code> (5 items across <code>Behavioral</code>, <code>Technical</code>, <code>Problem-Solving</code>, <code>Leadership</code>, and <code>System Design</code>, each with <code>id</code>, <code>category</code>, <code>question</code>, <code>expected_keywords</code>, <code>sample_strong_answer</code>, and <code>sample_weak_answer</code>) plus helpers <code>get_all_questions()</code>, <code>get_question_by_id(question_id)</code> (Steps ①&ndash;③), and <code>get_question_categories()</code>.</li>
+                        <li><strong><code>config.py</code>:</strong> Calls <code>load_dotenv()</code> at import time and provides <code>get_openai_client()</code> (Steps ①&ndash;④), which returns <code>(OpenAI(base_url="https://api.groq.com/openai/v1"), "openai/gpt-oss-20b")</code> when <code>GROQ_API_KEY</code> is set, falls back to <code>(OpenAI(), "gpt-4o-mini")</code> when <code>OPENAI_API_KEY</code> is set, or returns <code>(None, None)</code> for offline deterministic mode.</li>
+                        <li><strong><code>app.py</code>:</strong> Initializes shared singletons <code>_memory = InterviewSessionMemory()</code>, <code>_agent = EvaluatorAgent(memory=_memory)</code>, and <code>_interviewer = InterviewerAgent()</code>, enforces 30 POSTs/hour in <code>enforce_rate_limit()</code> (Steps ①&ndash;③), and serves:
+                            <ul>
+                                <li><code>GET /</code> (<code>index</code>): Injects <code>PATH_PREFIX</code> into <code>data-api-base</code> (Steps ①&ndash;③).</li>
+                                <li><code>GET /questions</code>: Returns <code>get_all_questions()</code>.</li>
+                                <li><code>POST /evaluate</code>: Validates <code>question_id</code> and non-empty <code>answer</code> (Steps ①&ndash;③), calls <code>_agent.evaluate_answer(q, answer)</code> (Step ④), and returns the evaluation JSON (Step ⑤).</li>
+                                <li><code>POST /coach</code>: Validates non-empty <code>query</code> (Steps ①&ndash;②) and calls <code>_agent.ask_agent(message)</code> (Steps ③&ndash;④).</li>
+                                <li><code>GET /next-question</code>: Calls <code>_interviewer.choose_next(_memory)</code> (Steps ①&ndash;④) to pick the next category and question ID.</li>
+                                <li><code>GET /scorecard</code>, <code>GET /report</code>, <code>POST /reset</code>: Return live scorecard rows, full Markdown/JSON report (<code>_memory.generate_final_report_dict()</code>), or clear session memory (<code>_agent.reset()</code>).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>run_multi_agent.py</code>:</strong> CLI runner with <code>pick_sample_answer(question, mode, turn)</code> (alternating strong/weak in <code>--auto mixed</code> mode), <code>read_answer()</code>, and <code>main()</code> (Steps ①&ndash;④) which loops through <code>interviewer.choose_next(memory)</code> &rarr; candidate answer &rarr; <code>evaluator.evaluate_answer(q, answer)</code> &rarr; <code>evaluator.generate_final_report()</code>.</li>
+                    </ul>
+
+                    <p><strong>5. End-to-End Connection Flow</strong></p>
+                    <ol>
+                        <li>When the browser loads <code>GET /</code>, <code>app.py</code> injects <code>PATH_PREFIX</code> and the frontend fetches all 5 questions from <code>GET /questions</code> (backed by <code>interview_bank.py</code>).</li>
+                        <li>When the user submits an answer (or clicks <strong>Interviewer: Pick Next</strong> via <code>GET /next-question</code>), the browser sends <code>POST /evaluate</code> with <code>{"question_id": ..., "answer": ...}</code>.</li>
+                        <li><code>evaluate()</code> in <code>app.py</code> looks up the question record via <code>get_question_by_id()</code> and calls <code>_agent.evaluate_answer(q, answer)</code> in <code>agent.py</code>.</li>
+                        <li><code>EvaluatorAgent._run_loop()</code> sends the prompt and <code>TOOLS_SCHEMA</code> to Groq/OpenAI (configured by <code>config.py</code>). The LLM requests tool calls for <code>detect_filler_words</code>, <code>check_star_structure</code>, and <code>score_relevance</code>.</li>
+                        <li><code>agent.py</code> executes each deterministic function in <code>tools.py</code>, captures their returned dicts in <code>results</code>, and feeds the JSON observations back to the LLM, which synthesizes concise coaching feedback.</li>
+                        <li><code>evaluate_answer()</code> appends the turn and raw tool dicts to <code>InterviewSessionMemory</code> via <code>self.memory.add_turn(...)</code> and returns the feedback and tool metrics to the browser, which refreshes the live scorecard via <code>GET /scorecard</code>.</li>
+                        <li>At any point mid-session, asking a question in the Coach panel sends <code>POST /coach</code> &rarr; <code>_agent.ask_agent()</code> &rarr; <code>_run_loop()</code>, where the LLM calls <code>generate_final_report</code> to read <code>self.memory.get_weakest_area()</code> (computed via the anti-recency 3-key sort) and answer with globally accurate session insights.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 9 -->
 
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
+                        <span class="topic-badge">9</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -629,13 +762,13 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 9 -->
+<!-- ============================================================ 10 -->
 
             <section class="topic-section is-collapsed" id="sec-source-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-agent-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">9</span>
+                        <span class="topic-badge">10</span>
                         <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink"
                                 href="#source-agent-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1315,13 +1448,13 @@ class EvaluatorAgent:
                 </div>
             </section>
 
-            <!-- ============================================================ 10 -->
+<!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interviewer-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interviewer-agent-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">10</span>
+                        <span class="topic-badge">11</span>
                         <h2 id="source-interviewer-agent-py" class="topic-title is-file">interviewer_agent.py<a
                                 class="headerlink" href="#source-interviewer-agent-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1556,13 +1689,13 @@ class InterviewerAgent:
                 </div>
             </section>
 
-            <!-- ============================================================ 11 -->
+<!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">11</span>
+                        <span class="topic-badge">12</span>
                         <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink"
                                 href="#source-tools-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1888,13 +2021,13 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
                 </div>
             </section>
 
-            <!-- ============================================================ 12 -->
+<!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interview-bank-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interview-bank-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">12</span>
+                        <span class="topic-badge">13</span>
                         <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a
                                 class="headerlink" href="#source-interview-bank-py" title="Permanent link">#</a></h2>
                     </div>
@@ -2071,13 +2204,13 @@ def get_question_categories() -&gt; list[str]:
                 </div>
             </section>
 
-            <!-- ============================================================ 13 -->
+<!-- ============================================================ 14 -->
 
             <section class="topic-section is-collapsed" id="sec-source-config-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-config-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">13</span>
+                        <span class="topic-badge">14</span>
                         <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink"
                                 href="#source-config-py" title="Permanent link">#</a></h2>
                     </div>
@@ -2159,13 +2292,13 @@ def get_openai_client():
                 </div>
             </section>
 
-            <!-- ============================================================ 14 -->
+<!-- ============================================================ 15 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">14</span>
+                        <span class="topic-badge">15</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink"
                                 href="#source-app-py" title="Permanent link">#</a></h2>
                     </div>
@@ -2447,13 +2580,13 @@ if __name__ == &quot;__main__&quot;:
                 </div>
             </section>
 
-            <!-- ============================================================ 15 -->
+<!-- ============================================================ 16 -->
 
             <section class="topic-section is-collapsed" id="sec-source-run-multi-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-run-multi-agent-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">15</span>
+                        <span class="topic-badge">16</span>
                         <h2 id="source-run-multi-agent-py" class="topic-title is-file">run_multi_agent.py<a
                                 class="headerlink" href="#source-run-multi-agent-py" title="Permanent link">#</a></h2>
                     </div>
@@ -2571,7 +2704,49 @@ if __name__ == "__main__":
     main()</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-4">
+                <div class="unit-divider-badge">Unit 4</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-4"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 17 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">17</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use these key architectural and AI engineering takeaways for quick revision of InterviewIQ:</p>
+                    <ol>
+                        <li><strong>Autonomous ReAct Tool-Calling Loop (<code>_run_loop</code>):</strong> Instead of a rigid single-shot prompt, <code>EvaluatorAgent</code> exposes <code>TOOLS_SCHEMA</code> with <code>tool_choice="auto"</code> and loops up to <code>MAX_TOOL_ROUNDS = 5</code> turns &mdash; allowing the LLM to decide which diagnostic tools to call, inspect their structured outputs, and synthesize grounded feedback.</li>
+                        <li><strong>Deterministic NLP vs. Probabilistic Synthesis Boundary:</strong> LLMs are unreliable at exact word counting and arithmetic. InterviewIQ delegates exact counting and scoring to deterministic Python functions in <code>tools.py</code> and uses the LLM strictly for empathetic natural-language synthesis and tool orchestration.</li>
+                        <li><strong>Word-Boundary Regex Filler Detection (<code>detect_filler_words</code>):</strong> Scans answers against 12 compiled word-boundary patterns (<code>...</code>) so substrings inside normal words are never false-flagged, and normalizes counts into <code>filler_density_per_100_words</code>.</li>
+                        <li><strong>Heuristic STAR Structural Parsing (<code>check_star_structure</code>):</strong> Evaluates behavioral answers across Situation, Task, Action, and Result using contextual phrase patterns, first-person ownership verbs, and quantifiable impact regexes (percentages, dollar amounts, time durations) to compute a 0&ndash;100% completion score and pinpoint missing stages.</li>
+                        <li><strong>Inflection-Aware Keyword Relevance &amp; Tiered Curve (<code>score_relevance</code>):</strong> <code>_build_keyword_pattern()</code> expands nominalizations and suffixes (<code>-tion</code>, <code>-ment</code>, <code>-e</code>, <code>-y</code>) into regex stems so grammatical variations match fairly, then maps raw coverage ratio onto a calibrated 0&ndash;100 scoring curve.</li>
+                        <li><strong>Anti-Recency-Bias Session Memory (<code>InterviewSessionMemory</code>):</strong> Passing raw chat history to an LLM causes recency bias where the model forgets early weak turns. Storing structured tool outputs in <code>self._turns</code> and ranking them with a deterministic composite key <code>(relevance_score, star_score, -filler_count)</code> via <code>min(self._turns, key=sort_key)</code> guarantees the true globally weakest area is identified.</li>
+                        <li><strong>Mid-Session Meta-Tool Invocation (<code>generate_final_report</code>):</strong> By exposing <code>generate_final_report</code> as a callable tool in <code>TOOLS_SCHEMA</code>, the same <code>_run_loop()</code> engine handles both per-answer evaluation and mid-session meta-questions (<em>"How am I doing so far?"</em>) without separate routing code.</li>
+                        <li><strong>Orchestrator + Specialized Multi-Agent Pattern (Ask 4):</strong> <code>InterviewerAgent</code> (category selection) and <code>EvaluatorAgent</code> (answer scoring) have separate system prompts and responsibilities and coordinate through shared state (<code>InterviewSessionMemory</code>) &mdash; the Evaluator writes turns, and the Interviewer reads them to stay in the same skill family after weak answers (<code>&lt; 60</code>) or switch families after strong answers.</li>
+                        <li><strong>Multi-Tier Provider Resilience &amp; Offline Fallback:</strong> <code>config.py</code> prioritizes Groq (<code>openai/gpt-oss-20b</code>), falls back to OpenAI (<code>gpt-4o-mini</code>), and degrades gracefully to deterministic-only mode (<code>_deterministic_evaluate</code> and <code>_rule_based</code>) when no API key is present, while <code>_create_with_retry()</code> recovers from transient <code>tool_use_failed</code> model glitches.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">InterviewIQ &mdash; 🎯 InterviewIQ &middot; How it works</footer>

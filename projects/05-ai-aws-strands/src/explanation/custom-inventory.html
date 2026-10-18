@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-06-custom-tool-inventory-py">06_custom_tool_inventory.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -209,11 +211,81 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/06_custom_tool_inventory.py</code>:</strong> Defines the custom domain tool <code>@tool check_inventory(product_id: str) -&gt; str</code> backed by a mock SKU dictionary and exposes <code>run_custom_inventory_agent(question)</code>.</li>
+                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>06_custom_tool_inventory.py</code> as <code>s_inv</code> and exposes <code>POST /api/custom-inventory</code> via <code>custom_inventory_route()</code>.</li>
+                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's inventory question (e.g., <code>"Is PROD-123 in stock?"</code>) in <code>{ "question": "..." }</code> to <code>POST /api/custom-inventory</code> and renders the agent's answer and tool call trace.</li>
+                    </ul>
+
+                    <p><strong>2. Classes, Mock Inventory Data, <code>@tool</code> Function, and Service Logic in <code>06_custom_tool_inventory.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
+                        <li><strong><code>CustomInventoryRequest(BaseModel)</code> &amp; <code>CustomInventoryResponse(BaseModel)</code>:</strong> Pydantic schemas documenting the input <code>question: str = "Is PROD-123 in stock?"</code> and output dictionary fields (<code>question: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from environment variables, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong><code>@tool def check_inventory(product_id: str) -&gt; str</code>:</strong>
+                            <ul>
+                                <li><strong>Docstring &amp; Example Format:</strong> The <code>Args:</code> block specifies <code>product_id: The product ID to check (e.g., "PROD-123")</code>, giving the LLM a concrete pattern so it formats SKU identifiers accurately.</li>
+                                <li><strong>Mock Inventory Dictionary:</strong> Defines <code>inventory = {"PROD-123": 15, "PROD-456": 0, "PROD-789": 8}</code> representing an internal enterprise database table.</li>
+                                <li><strong>Safe Lookup &amp; Status Formatting:</strong> Uses <code>quantity = inventory.get(product_id, 0)</code> so unknown SKUs safely default to <code>0</code> without raising a <code>KeyError</code>. Returns <code>f"Product {product_id} is in stock. We have {quantity} units available."</code> when <code>quantity &gt; 0</code>, or <code>f"Product {product_id} is currently out of stock."</code> otherwise.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>run_custom_inventory_agent(question: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step <code>③</code>:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[check_inventory])</code>.</li>
+                                <li><strong>Step <code>④</code>:</strong> Executes <code>response = agent(question)</code> through the Strands agent loop.</li>
+                                <li><strong>Step <code>⑤</code>:</strong> Extracts every <code>"toolUse"</code> block from <code>agent.messages</code> into <code>tool_calls</code> and returns <code>{"question": question, "response": str(response), "tool_calls": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>custom_inventory_route()</code> (<code>POST /api/custom-inventory</code>):</strong>
+                            <ul>
+                                <li><strong>Step <code>①</code>:</strong> Parses <code>question</code> (or fallback key <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_inv.run_custom_inventory_agent(question)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <ol>
+                        <li>The user asks <code>"Is PROD-123 in stock?"</code> in the browser; <code>main.js</code> sends <code>POST /api/custom-inventory</code>.</li>
+                        <li><code>custom_inventory_route()</code> in <code>app.py</code> validates the question and calls <code>s_inv.run_custom_inventory_agent(question)</code>.</li>
+                        <li><code>run_custom_inventory_agent()</code> creates a fresh Strands <code>Agent</code> registered with <code>check_inventory</code> and calls <code>agent(question)</code>.</li>
+                        <li>On Turn 1, Bedrock Nova Lite inspects the tool schema, extracts <code>product_id="PROD-123"</code>, and emits a <code>toolUse</code> block.</li>
+                        <li>Strands invokes <code>check_inventory("PROD-123")</code> in Python, which looks up <code>"PROD-123"</code> in <code>inventory</code>, finds <code>15</code>, and returns <code>"Product PROD-123 is in stock. We have 15 units available."</code> in a <code>toolResult</code> block.</li>
+                        <li>On Turn 2, Bedrock reads the tool output and writes a natural-language reply confirming 15 units are available.</li>
+                        <li>Step <code>⑤</code> records <code>check_inventory({'product_id': 'PROD-123'})</code> in <code>tool_calls</code>, and <code>app.py</code> returns the JSON payload to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -260,13 +332,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-06-custom-tool-inventory-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-06-custom-tool-inventory-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-06-custom-tool-inventory-py" class="topic-title is-file">06_custom_tool_inventory.py<a class="headerlink" href="#source-06-custom-tool-inventory-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -363,13 +435,13 @@ def run_custom_inventory_agent(question: str = &quot;Is PROD-123 in stock?&quot;
     return {&quot;question&quot;: question, &quot;response&quot;: str(response), &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -682,6 +754,48 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+                    <p>Use these takeaways to review how custom Strands tools connect foundation models to proprietary enterprise data:</p>
+                    <ol>
+                        <li><strong>Overcoming Pretraining Knowledge Boundaries:</strong> Public LLMs have zero visibility into private SKU catalogs or real-time warehouse counts; custom <code>@tool</code> functions give the model on-demand, read-only access to authoritative internal records.</li>
+                        <li><strong>Format Examples in Parameter Docstrings:</strong> Including <code>(e.g., "PROD-123")</code> inside the <code>Args:</code> docstring for <code>product_id</code> guides the LLM to normalize user queries into the exact identifier format expected by the database.</li>
+                        <li><strong>Defensive Lookups with <code>dict.get()</code>:</strong> Using <code>inventory.get(product_id, 0)</code> prevents unhandled <code>KeyError</code> exceptions when a user asks about an unknown or mistyped SKU.</li>
+                        <li><strong>Clear Domain Status Strings:</strong> Returning explicit natural-language status messages (<code>"Product PROD-123 is in stock. We have 15 units available."</code> vs. <code>"...currently out of stock."</code>) eliminates ambiguity during the LLM's observation step.</li>
+                        <li><strong>Clean Separation of Interface and Storage:</strong> Because the agent only sees the signature and docstring of <code>check_inventory(product_id: str) -&gt; str</code>, replacing the mock dictionary with a live SQL or ERP API call requires zero changes to the agent configuration.</li>
+                        <li><strong>Multi-SKU Fan-Out Support:</strong> If a user asks about two products in one question (e.g., <em>"Check PROD-123 and PROD-456"</em>), the agent automatically invokes <code>check_inventory</code> twice and compares both results in its reply.</li>
+                        <li><strong>Complete Tool-Use Audit Trail:</strong> Extracting <code>toolUse</code> blocks from <code>agent.messages</code> lets the API caller verify which SKUs were queried during the turn.</li>
+                    </ol>
                 </div>
             </section>
 

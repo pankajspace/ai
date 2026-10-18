@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-01-langchain-summarizer-py">01_langchain_summarizer.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -218,11 +220,83 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>Purpose of Each File</strong></p>
+                    <ul>
+                        <li><code>src/python/01_langchain_summarizer.py</code> &mdash; Implements a declarative text summarization pipeline using LangChain Expression Language (LCEL). It defines a default sample paragraph (<code>TEXT_LANGCHAIN</code>), Pydantic request/response schemas (<code>SummarizerRequest</code>, <code>SummarizerResponse</code>), the three-stage LCEL chain (<code>prompt | model | parser</code>), and the <code>summarize()</code> service function.</li>
+                        <li><code>src/python/app.py</code> &mdash; The Flask server and Blueprint router for <code>02-langchain-agents</code>. It dynamically loads all five numbered service files via <code>_load_service()</code>, enforces rate limits on POST endpoints, serves static assets, and exposes <code>POST /api/summarize</code> through <code>summarizer_service()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; The browser UI. In <code>main.js</code>, <code>bindPresetChips("card-summarizer", "summarizerInput")</code> wires the preset passage buttons, and <code>setupCard()</code> binds <code>#summarizerInput</code> and <code>#summarizerBtn</code> so clicking submit invokes <code>callApi()</code> to send <code>POST /api/summarize</code> with <code>{ "text": value }</code> and renders the resulting summary inside <code>#summarizerResult</code>.</li>
+                    </ul>
+
+                    <p><strong>Constants, Schemas, LCEL Chain, and Service Function in <code>src/python/01_langchain_summarizer.py</code></strong></p>
+                    <ul>
+                        <li><code>TEXT_LANGCHAIN: str</code>: A multi-sentence default paragraph describing LangChain's capabilities, used as the default value for <code>SummarizerRequest.text</code> and <code>summarize(long_text=...)</code>.</li>
+                        <li><code>class SummarizerRequest(BaseModel)</code> &amp; <code>class SummarizerResponse(BaseModel)</code>: Pydantic models documenting the input contract (<code>text: str = TEXT_LANGCHAIN</code>) and output contract (<code>text: str</code>, <code>summary: str</code>).</li>
+                        <li><strong>Module-Level LCEL Chain Construction:</strong>
+                            <ul>
+                                <li><strong>Step ① (Create reusable prompt template):</strong> Calls <code>prompt = ChatPromptTemplate.from_template("Give a short, friendly summary of this long text:\n\n{data}")</code>, defining a template runnable expecting a <code>{data}</code> input variable.</li>
+                                <li><strong>Step ② (Initialize <code>ChatOpenAI</code> wrapper):</strong> Instantiates <code>model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), api_key=os.getenv("OPENAI_API_KEY") or "missing-key", base_url=os.getenv("OPENAI_BASE_URL") or None, temperature=0.3, timeout=20.0)</code>. Setting <code>temperature=0.3</code> keeps summaries grounded and faithful to the input passage.</li>
+                                <li><strong>Step ③ (Initialize output parser):</strong> Creates <code>parser = StrOutputParser()</code>, which extracts the plain text <code>.content</code> string from the model's <code>AIMessage</code> response object.</li>
+                                <li><strong>Step ④ (Compose pipeline with <code>|</code>):</strong> Chains <code>chain = prompt | model | parser</code> into a single <code>RunnableSequence</code> where each component's output feeds automatically into the next component's input.</li>
+                            </ul>
+                        </li>
+                        <li><code>summarize(long_text: str = TEXT_LANGCHAIN) -&gt; str</code>: The core service function that accepts <code>long_text</code> and returns the summarized string:
+                            <ul>
+                                <li><strong>Step ⑤ (Invoke the chain):</strong> Calls <code>return chain.invoke({"data": long_text})</code>, which binds <code>long_text</code> to <code>{data}</code> in the prompt template, executes the OpenAI call, parses the output into a <code>str</code>, and returns it.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>Helpers, Middleware, and Route Handlers in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><code>_load_service(filename: str, alias: str)</code>: Loads <code>01_langchain_summarizer.py</code> into <code>mod_summarize</code> via <code>importlib.util.spec_from_file_location()</code> (Step ①) and <code>spec.loader.exec_module()</code> (Step ②).</li>
+                        <li><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>): Filters for <code>POST</code> requests (Step ①), checks the 30-requests-per-hour quota via <code>check_rate_limit()</code> (Step ②), and returns HTTP <code>429</code> with <code>Retry-After</code> when exceeded (Step ③).</li>
+                        <li><code>index()</code> &amp; Static Asset Routes: Injects <code>PATH_PREFIX</code> into <code>index.html</code> (Steps ①–②) and serves CSS, JS, explanation, and theory files.</li>
+                        <li><code>summarizer_service()</code> (<code>POST /api/summarize</code>): The route handler for the Text Summarizer card:
+                            <ul>
+                                <li><strong>Step ① (Parse &amp; validate input text):</strong> Reads <code>data = request.get_json(force=True, silent=True) or {}</code>, normalizes <code>text = (data.get("text") or data.get("message") or "").strip()</code>, and returns HTTP <code>400</code> with <code>{"error": "Text cannot be empty"}</code> if blank.</li>
+                                <li><strong>Step ② (Run summarizer chain &amp; return JSON):</strong> Calls <code>summary = mod_summarize.summarize(text)</code> inside a <code>try/except</code> block and returns <code>jsonify({"result": summary, "summary": summary})</code> (or HTTP <code>500</code> on exception).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>End-to-End Execution Flow</strong></p>
+                    <ol>
+                        <li>The user clicks a preset passage chip or pastes long text into <code>#summarizerInput</code> and clicks <code>#summarizerBtn</code> in <code>src/index.html</code>.</li>
+                        <li><code>setupCard()</code> in <code>src/js/main.js</code> verifies the input is non-empty and calls <code>callApi()</code>, which sends <code>POST ${API}/api/summarize</code> with JSON payload <code>{"text": "..."}</code>.</li>
+                        <li>Flask's Blueprint runs <code>enforce_rate_limit()</code> and routes the request to <code>summarizer_service()</code> in <code>src/python/app.py</code>.</li>
+                        <li><code>summarizer_service()</code> extracts and strips <code>text</code>, ensures it is not empty, and calls <code>mod_summarize.summarize(text)</code>.</li>
+                        <li><code>summarize()</code> in <code>src/python/01_langchain_summarizer.py</code> executes <code>chain.invoke({"data": long_text})</code>.</li>
+                        <li>Inside the LCEL sequence, <code>ChatPromptTemplate</code> formats the prompt with <code>{data}</code>, <code>ChatOpenAI</code> sends the request to OpenAI (<code>gpt-4o-mini</code> at <code>temperature=0.3</code>) and receives an <code>AIMessage</code>, and <code>StrOutputParser</code> unwraps <code>AIMessage.content</code> into a plain Python string.</li>
+                        <li><code>summarizer_service()</code> returns <code>{"result": summary, "summary": summary}</code> as HTTP <code>200</code> JSON, and <code>main.js</code> renders the concise summary inside <code>#summarizerResult</code>.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -265,13 +339,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-01-langchain-summarizer-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-01-langchain-summarizer-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-01-langchain-summarizer-py" class="topic-title is-file">01_langchain_summarizer.py<a class="headerlink" href="#source-01-langchain-summarizer-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -379,13 +453,13 @@ def summarize(long_text: str = TEXT_LANGCHAIN) -&gt; str:
     return chain.invoke({&quot;data&quot;: long_text})</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -584,7 +658,47 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use this checklist to review the core LangChain and LLM engineering concepts demonstrated by the <strong>Text Summarizer</strong> service:</p>
+                    <ol>
+                        <li><strong>LangChain Expression Language (LCEL):</strong> The pipe operator (<code>chain = prompt | model | parser</code>) declaratively composes modular objects into a single <code>RunnableSequence</code> where each step's output feeds into the next step's input.</li>
+                        <li><strong>The Unified <code>Runnable</code> Interface:</strong> Every LCEL component (prompts, chat models, output parsers) exposes standard execution methods (<code>.invoke()</code>, <code>.batch()</code>, <code>.stream()</code>, <code>.ainvoke()</code>) for synchronous, parallel, or streaming execution.</li>
+                        <li><strong>Parameterized Prompt Templates:</strong> <code>ChatPromptTemplate.from_template("...{data}")</code> separates static prompt instructions from runtime user text and safely substitutes variables by dictionary key without raw Python f-string brace-escaping bugs.</li>
+                        <li><strong>Low Temperature for Convergent Tasks:</strong> Setting <code>temperature=0.3</code> on <code>ChatOpenAI</code> sharpens token probabilities so the model favors faithful compression of source facts rather than creative speculation.</li>
+                        <li><strong>Unwrapping Responses with <code>StrOutputParser</code>:</strong> Instead of manually indexing <code>response.choices[0].message.content</code>, <code>StrOutputParser()</code> automatically converts the model's <code>AIMessage</code> envelope into a clean Python <code>str</code>.</li>
+                        <li><strong>Import-Safe API Key Fallback:</strong> Supplying <code>api_key=os.getenv("OPENAI_API_KEY") or "missing-key"</code> lets Flask import the service module at startup even before a key is configured, deferring authentication checks until <code>chain.invoke()</code> is called.</li>
+                        <li><strong>Pydantic Request/Response Contracts:</strong> <code>SummarizerRequest</code> and <code>SummarizerResponse</code> document the expected JSON structure and provide a ready-to-run default passage (<code>TEXT_LANGCHAIN</code>).</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">LangChain &amp; Agents &mdash; 📝 Text Summarizer &middot; How it works</footer>

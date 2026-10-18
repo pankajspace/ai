@@ -295,10 +295,12 @@ Every container project must keep all its educational materials self-contained i
 1. **Purpose**: Tile-level "how this works" deep dives for each interactive demo on the project's dashboard.
 2. **Trigger**: Every interactive demo card title in `src/index.html` has an ⓘ info icon (`<a class="info-link" href="explanation/<demo>.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>`) inside its `<h2>`.
 3. **Contents**:
-   - The underlying architectural concept and intuition.
-   - Request flow diagram (Mermaid sequence diagram).
+   - The underlying architectural concept, intuition, and theory.
+   - Request flow diagram.
+   - Code explanation section (before code flow) explaining the purpose of each file, class, function, or code block and how they connect end-to-end.
    - Code flow diagram (Mermaid flowchart/graph).
    - Complete, unedited Python source code with numbered comment annotations (`# ①`, `# ②`, etc.).
+   - Quick revision section at the end summarizing the AI concepts and patterns used in the demo in numbered bullet-points format (`<ol>`).
 4. **Assets & Styling**: Uses `src/css/info.css` and `src/js/info.js` (copied verbatim from `projects/template/src/`). Header back link points to `../` (`Back to App`).
 5. **Backend Route**: Served via `@bp.route("/explanation/<path:filename>")` (with backwards-compatible `@bp.route("/info/<path:filename>")` alias).
 6. **Detailed Guide**: Follow [explainer-pages.md](explainer-pages.md).

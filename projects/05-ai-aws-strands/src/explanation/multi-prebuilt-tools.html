@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-08-multi-prebuilt-tools-py">08_multi_prebuilt_tools.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -212,11 +214,82 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>1. Purpose of Each File</strong></p>
+                    <ul>
+                        <li><code>src/python/08_multi_prebuilt_tools.py</code> &mdash; Defines the <strong>Multi-Prebuilt Tools Agent</strong> service: imports both <code>http_request</code> and <code>calculator</code> from <code>strands_tools</code>, initializes a Strands <code>Agent</code> for data analysis, runs a multi-step fetch &rarr; compute &rarr; summarize pipeline, and records the ordered <code>tool_sequence</code>.</li>
+                        <li><code>src/python/app.py</code> &mdash; Loads <code>08_multi_prebuilt_tools.py</code> as <code>s_multi_pre</code>, enforces hourly rate limits, and exposes <code>POST /api/multi-prebuilt-tools</code> via <code>multi_prebuilt_tools_route()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🔗 Multi-Prebuilt Tools</strong> card, sends the user's multi-step data analysis task to <code>POST /api/multi-prebuilt-tools</code> with <code>{ task }</code>, and displays the summary alongside the ordered chain of tool calls.</li>
+                    </ul>
+
+                    <p><strong>2. Pydantic Schemas, Prebuilt Tools &amp; Agent Setup in <code>08_multi_prebuilt_tools.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
+                        <li><strong><code>MultiPrebuiltToolsRequest(BaseModel)</code> &amp; <code>MultiPrebuiltToolsResponse(BaseModel)</code>:</strong> Define the default stock-fetching task (fetching 5-day AAPL chart JSON from Yahoo Finance, extracting closing prices, calculating the average, and summarizing) and the response structure (<code>task</code>, <code>response</code>, and <code>tool_sequence: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves <code>BEDROCK_MODEL_ID</code> from environment variables with fallback <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Prebuilt Tools (<code>http_request</code> &amp; <code>calculator</code>):</strong>
+                            <ul>
+                                <li><code>http_request</code> performs live HTTP/HTTPS requests (allowing read-only <code>GET</code> calls automatically in headless servers) and returns status codes, headers, and response bodies.</li>
+                                <li><code>calculator</code> evaluates mathematical expressions via SymPy so the mean closing price is computed accurately.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Service Entry Point &mdash; <code>run_multi_prebuilt_tools_agent(task: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step ③:</strong> Creates <code>Agent(model=BedrockModel(model_id=model_id), tools=[http_request, calculator], system_prompt="You help with data analysis tasks.")</code>.</li>
+                                <li><strong>Step ④:</strong> Invokes <code>response = agent(task)</code>, letting the agent autonomously chain <code>http_request</code> (to fetch the JSON payload) and <code>calculator</code> (to average the extracted closing prices) before writing the summary.</li>
+                                <li><strong>Step ⑤:</strong> Extracts every <code>"toolUse"</code> block from <code>agent.messages</code> in chronological order as <code>tool_calls</code> and returns <code>{"task": task, "response": str(response), "tool_sequence": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>multi_prebuilt_tools_route()</code> (<code>POST /api/multi-prebuilt-tools</code>):</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Reads <code>task</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step ②:</strong> Calls <code>s_multi_pre.run_multi_prebuilt_tools_agent(task)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload to the frontend.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <ol>
+                        <li>The user clicks <strong>Run</strong> on the <strong>🔗 Multi-Prebuilt Tools</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/multi-prebuilt-tools</code> with <code>{"task": "Fetch stock data from https://query1.finance.yahoo.com/..."}</code>.</li>
+                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> checks the client's request rate and routes the call to <code>multi_prebuilt_tools_route()</code>.</li>
+                        <li><code>multi_prebuilt_tools_route()</code> validates the non-empty <code>task</code> and calls <code>s_multi_pre.run_multi_prebuilt_tools_agent(task)</code> in <code>08_multi_prebuilt_tools.py</code>.</li>
+                        <li><code>run_multi_prebuilt_tools_agent()</code> initializes a Strands <code>Agent</code> with <code>BedrockModel</code>, <code>tools=[http_request, calculator]</code>, and <code>system_prompt="You help with data analysis tasks."</code>.</li>
+                        <li>On <strong>Converse Turn 1</strong>, Bedrock inspects the prompt and emits a <code>toolUse</code> block for <code>http_request(method="GET", url="https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d")</code>.</li>
+                        <li>Strands executes <code>http_request</code>, fetches the live JSON payload from Yahoo Finance, and appends it as a <code>toolResult</code> block in <code>agent.messages</code>.</li>
+                        <li>On <strong>Converse Turn 2</strong>, Bedrock parses the nested JSON in the conversation context, extracts the array of daily closing prices, and emits a second <code>toolUse</code> block calling <code>calculator</code> with the arithmetic mean expression.</li>
+                        <li>Strands runs <code>calculator</code> via SymPy and returns the exact average in a second <code>toolResult</code>; on <strong>Converse Turn 3</strong>, Bedrock synthesizes the final summary report and <code>app.py</code> returns <code>response</code> and <code>tool_sequence</code> to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -266,13 +339,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-08-multi-prebuilt-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-08-multi-prebuilt-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-08-multi-prebuilt-tools-py" class="topic-title is-file">08_multi_prebuilt_tools.py<a class="headerlink" href="#source-08-multi-prebuilt-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -355,13 +428,13 @@ def run_multi_prebuilt_tools_agent(task: str) -&gt; dict:
     return {&quot;task&quot;: task, &quot;response&quot;: str(response), &quot;tool_sequence&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -676,7 +749,49 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use this numbered checklist to review the core concepts, multi-tool chaining patterns, and safety boundaries in the <strong>🔗 Multi-Prebuilt Tools</strong> demo:</p>
+                    <ol>
+                        <li><strong>Cross-Domain Prebuilt Tool Chaining:</strong> By registering <code>tools=[http_request, calculator]</code> on a single Strands <code>Agent</code>, you create a complete fetch &rarr; parse &rarr; compute &rarr; summarize pipeline without writing any custom HTTP or math code.</li>
+                        <li><strong>LLM as the Semantic Glue Between Tools:</strong> <code>http_request</code> returns raw, deeply nested JSON from Yahoo Finance, while <code>calculator</code> expects a clean mathematical expression; the LLM acts as the adapter that extracts the closing price numbers from the JSON and formats the formula.</li>
+                        <li><strong>Multi-Turn ReAct Loop Execution:</strong> A single <code>agent(task)</code> call orchestrates three sequential Bedrock Converse turns: Turn 1 calls <code>http_request</code>, Turn 2 reads the HTTP response and calls <code>calculator</code>, and Turn 3 writes the human-readable summary.</li>
+                        <li><strong>Built-In Tool Consent for Mutating Verbs:</strong> In <code>strands_tools</code>, <code>http_request</code> executes read-only <code>GET</code> requests automatically, whereas state-changing HTTP methods (<code>POST</code>, <code>PUT</code>, <code>DELETE</code>) or tools like <code>file_write</code> require human confirmation.</li>
+                        <li><strong>Server-Safe Web Adaptation:</strong> While a local CLI script might include <code>file_write</code> to save the summary to disk, this web service omits <code>file_write</code> and returns the summary in the JSON response so unauthenticated web callers cannot write files onto the server container.</li>
+                        <li><strong>Eliminating Arithmetic Drift on Live Data:</strong> Even after successfully fetching real-time financial numbers via <code>http_request</code>, delegating the average calculation to <code>calculator</code> guarantees exact decimal arithmetic rather than approximate token prediction.</li>
+                        <li><strong>Execution Trace via <code>tool_sequence</code>:</strong> Iterating through <code>agent.messages</code> in order collects <code>tool_sequence = ["http_request(...)", "calculator(...)"]</code>, providing verifiable proof of the order in which tools were invoked.</li>
+                        <li><strong>Focused Data-Analysis Persona:</strong> Setting <code>system_prompt="You help with data analysis tasks."</code> primes the model to extract structured metrics from raw API responses and present concise statistical summaries.</li>
+                        <li><strong>Stateless Per-Request Agent Instantiation:</strong> Creating a fresh <code>Agent(...)</code> inside <code>run_multi_prebuilt_tools_agent()</code> ensures large HTTP response payloads in <code>agent.messages</code> are garbage-collected after each request rather than accumulating across users.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AWS Strands Agents &mdash; 🔗 Multi-Prebuilt Tools &middot; How it works</footer>

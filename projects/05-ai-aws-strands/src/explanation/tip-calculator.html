@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-04-tip-calculator-py">04_tip_calculator.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -215,11 +217,81 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/04_tip_calculator.py</code>:</strong> Defines the multi-parameter <code>@tool calculate_tip(bill_amount, tip_percentage, num_people=1)</code> function and the Strands agent runner <code>run_tip_calculator_agent(query)</code>.</li>
+                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>04_tip_calculator.py</code> as <code>s_tip</code> and exposes <code>POST /api/tip-calculator</code> via <code>tip_calculator_route()</code>.</li>
+                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's natural-language bill question in <code>{ "query": "..." }</code> to <code>POST /api/tip-calculator</code> and displays the computed breakdown and extracted tool arguments.</li>
+                    </ul>
+
+                    <p><strong>2. Classes, <code>@tool</code> Function, and Service Logic in <code>04_tip_calculator.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
+                        <li><strong><code>TipCalculatorRequest(BaseModel)</code> &amp; <code>TipCalculatorResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input <code>query: str</code> and output dictionary fields (<code>query: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves <code>BEDROCK_MODEL_ID</code> from environment variables, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong><code>@tool def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Parameters &amp; Schema Generation:</strong> Strands inspects the three typed parameters. Because <code>bill_amount: float</code> and <code>tip_percentage: float</code> have no default values, they are marked <code>required</code> in the Bedrock JSON Schema, while <code>num_people: int = 1</code> is marked optional with a default of <code>1</code>.</li>
+                                <li><strong>Deterministic Math:</strong> Computes <code>tip = bill_amount * (tip_percentage / 100)</code>, <code>total = bill_amount + tip</code>, and <code>per_person = total / num_people</code>.</li>
+                                <li><strong>Return Value:</strong> Returns a dictionary with rounded cent values: <code>{"bill": bill_amount, "tip": round(tip, 2), "total": round(total, 2), "per_person": round(per_person, 2)}</code>.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>run_tip_calculator_agent(query: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step <code>③</code>:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[calculate_tip])</code>.</li>
+                                <li><strong>Step <code>④</code>:</strong> Calls <code>response = agent(query)</code> so the LLM extracts the numeric parameters from plain English and executes <code>calculate_tip</code>.</li>
+                                <li><strong>Step <code>⑤</code>:</strong> Extracts every <code>"toolUse"</code> block from <code>agent.messages</code> into <code>tool_calls</code> and returns <code>{"query": query, "response": str(response), "tool_calls": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>tip_calculator_route()</code> (<code>POST /api/tip-calculator</code>):</strong>
+                            <ul>
+                                <li><strong>Step <code>①</code>:</strong> Parses <code>query</code> (or fallback key <code>message</code>) from the request JSON and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_tip.run_tip_calculator_agent(query)</code>, populates <code>res["result"]</code>, and returns the JSON response.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <ol>
+                        <li>The user submits <code>"The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"</code>; <code>main.js</code> sends <code>POST /api/tip-calculator</code>.</li>
+                        <li><code>tip_calculator_route()</code> in <code>app.py</code> validates the non-empty query and calls <code>s_tip.run_tip_calculator_agent(query)</code>.</li>
+                        <li><code>run_tip_calculator_agent()</code> creates a fresh Strands <code>Agent</code> bound to <code>calculate_tip</code> and calls <code>agent(query)</code>.</li>
+                        <li>On Turn 1, Bedrock Nova Lite parses the natural-language sentence and emits a <code>toolUse</code> block: <code>calculate_tip({"bill_amount": 85.0, "tip_percentage": 20.0, "num_people": 4})</code>.</li>
+                        <li>Strands invokes <code>calculate_tip(85.0, 20.0, 4)</code> locally in Python, which returns <code>{"bill": 85.0, "tip": 17.0, "total": 102.0, "per_person": 25.5}</code> as a <code>toolResult</code> block.</li>
+                        <li>On Turn 2, Bedrock formats those exact numbers into a friendly breakdown ($17.00 tip, $102.00 total, $25.50 per person).</li>
+                        <li>Step <code>⑤</code> records the tool call in <code>tool_calls</code>, and <code>app.py</code> sends the JSON response back to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -266,13 +338,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-04-tip-calculator-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-04-tip-calculator-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-04-tip-calculator-py" class="topic-title is-file">04_tip_calculator.py<a class="headerlink" href="#source-04-tip-calculator-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -371,13 +443,13 @@ def run_tip_calculator_agent(
     return {&quot;query&quot;: query, &quot;response&quot;: str(response), &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -690,6 +762,48 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+                    <p>Use these takeaways to review multi-parameter extraction and deterministic computation in Strands tools:</p>
+                    <ol>
+                        <li><strong>Semantic Entity Extraction Over Regex:</strong> The LLM translates varied natural-language phrasings (<em>"splitting it 4 ways"</em>, <em>"for 3 of us"</em>, <em>"20% tip"</em>) into typed numerical arguments without brittle regular expressions.</li>
+                        <li><strong>Required vs. Optional Schema Fields:</strong> In <code>calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1)</code>, parameters without default values become <code>required</code> in the Bedrock JSON Schema, while <code>num_people: int = 1</code> is optional.</li>
+                        <li><strong>Deterministic Arithmetic in Python:</strong> Language models predict tokens probabilistically and can miscalculate decimals; delegating floating-point math and <code>round(..., 2)</code> to Python guarantees cent-level accuracy.</li>
+                        <li><strong>Self-Describing Dictionary Returns:</strong> Returning <code>{"bill": ..., "tip": ..., "total": ..., "per_person": ...}</code> labels every computed number so the LLM never confuses the total bill with the per-person split.</li>
+                        <li><strong>Google-Style <code>Args:</code> Docstring Parsing:</strong> Strands extracts each parameter's description from the <code>Args:</code> block and embeds it into the JSON Schema property description sent to Bedrock.</li>
+                        <li><strong>Single-Round-Trip Tool Execution:</strong> Because all three parameters can be extracted from the initial prompt at once, the agent completes the tool call in a single Reason &rarr; Act &rarr; Observe cycle.</li>
+                        <li><strong>Auditing Extracted Arguments:</strong> Inspecting <code>block['toolUse']['input']</code> inside <code>agent.messages</code> lets you verify the exact numeric values the model parsed from the user's sentence.</li>
+                    </ol>
                 </div>
             </section>
 

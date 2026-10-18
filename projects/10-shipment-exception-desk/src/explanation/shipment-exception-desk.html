@@ -35,6 +35,7 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-pipeline-py">pipeline.py</a></li>
                     <li><a href="#source-chains-py">chains.py</a></li>
@@ -44,6 +45,7 @@
                     <li><a href="#source-app-py">app.py</a></li>
                     <li><a href="#source-main-py">main.py</a></li>
                     <li><a href="#source-triage-check-py">triage_check.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -58,9 +60,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>16 Topics</span>
+                    <span>18 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>8 Explainers</span>
+                    <span>10 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>8 Python Files in Full</span>
                 </div>
@@ -90,7 +92,7 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 1 -->
+<!-- ============================================================ 1 -->
 
             <section class="topic-section is-collapsed" id="sec-problem">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -129,7 +131,7 @@
                     </p>
                 </div>
             </section>
-            <!-- ============================================================ 2 -->
+<!-- ============================================================ 2 -->
 
             <section class="topic-section is-collapsed" id="sec-asks">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-asks">
@@ -180,7 +182,7 @@
                         demo &mdash; not optional, and not just a CLI print loop.</p>
                 </div>
             </section>
-            <!-- ============================================================ 3 -->
+<!-- ============================================================ 3 -->
 
             <section class="topic-section is-collapsed" id="sec-approach">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -216,7 +218,7 @@
                     </ol>
                 </div>
             </section>
-            <!-- ============================================================ 4 -->
+<!-- ============================================================ 4 -->
 
             <section class="topic-section is-collapsed" id="sec-milestones">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -267,7 +269,7 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 5 -->
+<!-- ============================================================ 5 -->
 
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -308,7 +310,7 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 6 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -361,7 +363,7 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 7 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -427,13 +429,126 @@
 
                 </div>
             </section>
-            <!-- ============================================================ 8 -->
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p>Shipment Exception Desk is structured across eight modular Python files that combine LangChain Expression Language (LCEL) chains with deterministic compensation policies, tier-aware escalation rules, and session-level operational KPI aggregation:</p>
+                    <ul>
+                        <li><code>pipeline.py</code> &mdash; The central orchestrator implementing <code>evaluate_escalation()</code> and <code>process_exception()</code> to coordinate classification, compensation calculation, escalation gating, communication drafting, and session logging.</li>
+                        <li><code>chains.py</code> &mdash; Defines three LCEL chains (<code>prompt | llm | StrOutputParser()</code>): <code>classify_chain</code> (with output sanitizer <code>_clean_category</code>), <code>escalate_chain</code>, and <code>draft_email_chain</code>.</li>
+                        <li><code>llm.py</code> &mdash; Locates <code>.env</code> and initializes the shared <code>ChatOpenAI</code> client instance (<code>temperature=0.0</code>) used by all chains.</li>
+                        <li><code>tools.py</code> &mdash; Implements four deterministic compensation calculators: <code>calculate_delay_compensation</code>, <code>calculate_damage_compensation</code>, <code>calculate_lost_compensation</code>, and <code>calculate_unknown_compensation</code>.</li>
+                        <li><code>session.py</code> &mdash; Manages the in-memory session ledger (<code>_SESSION_RECORDS</code>) and implements <code>generate_daily_summary()</code> to compute total payout, escalation rate, and the costliest category by cumulative dollars.</li>
+                        <li><code>app.py</code> &mdash; The Flask Blueprint web server exposing REST endpoints (<code>/api/triage</code>, <code>/api/log</code>, <code>/api/summary</code>, <code>/api/reset</code>, <code>/api/health</code>) with input validation and rate limiting.</li>
+                        <li><code>main.py</code> &mdash; An interactive and flag-driven CLI runner for testing single exception reports or built-in demo presets from the terminal.</li>
+                        <li><code>triage_check.py</code> &mdash; An automated verification test harness that runs four canonical exception scenarios and validates both per-case routing and session-wide KPI aggregation.</li>
+                    </ul>
+
+                    <p><strong>1. Triage Orchestration Pipeline (<code>pipeline.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>ESCALATION_THRESHOLDS = {"standard": 100.0, "premium": 50.0}</code> (Step ①):</strong> Sets the maximum auto-approval payout per customer tier. Premium customers get human manager intervention at half the dollar threshold (<code>$50</code>) of standard customers (<code>$100</code>).</li>
+                        <li><strong><code>def evaluate_escalation(category: str, compensation_amount: float, customer_tier: str) -&gt; tuple[bool, str]</code>:</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Normalizes <code>customer_tier.strip().lower()</code> and looks up its dollar threshold in <code>ESCALATION_THRESHOLDS</code> (defaulting to <code>100.0</code>).</li>
+                                <li><strong>Step ②:</strong> Auto-escalates any report where <code>category == "unknown"</code> regardless of dollar value, returning <code>(True, "Unclassifiable or garbled report requires manual operations review.")</code>.</li>
+                                <li><strong>Step ③:</strong> If <code>compensation_amount &gt; threshold</code>, returns <code>(True, ...)</code> explaining that the payout exceeds the tier limit.</li>
+                                <li><strong>Step ④:</strong> Otherwise returns <code>(False, ...)</code> confirming the payout is within the tier's auto-approval limit.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>def process_exception(report_text: str, shipment_value: float, customer_tier: str = "standard", log_to_session: bool = True) -&gt; Dict[str, Any]</code>:</strong>
+                            <ul>
+                                <li><strong>Step ① &mdash; Initialize Trail &amp; Normalize Inputs:</strong> Creates <code>steps: List[str] = []</code>, normalizes <code>customer_tier</code>, and casts <code>shipment_value</code> to <code>float</code>.</li>
+                                <li><strong>Step ② &mdash; Step 1 [Classify]:</strong> Calls <code>category = classify_chain.invoke({"report_text": report_text})</code> and appends the classification step to <code>steps</code>.</li>
+                                <li><strong>Step ③ &mdash; Step 2 [Compensate]:</strong> Routes by <code>category</code> (<code>"delayed"</code>, <code>"damaged"</code>, <code>"lost"</code>, or <code>else</code>) to the matching calculator in <code>tools.py</code>, extracts <code>comp_amount</code> and <code>comp_reason</code>, and records Step 2 in <code>steps</code>.</li>
+                                <li><strong>Step ④ &mdash; Step 3 [Escalation Check]:</strong> Calls <code>evaluate_escalation(category, comp_amount, customer_tier)</code>, sets <code>action_taken</code> to <code>"Escalated to Manager"</code> or <code>"Auto-Resolved"</code>, and appends Step 3 to <code>steps</code>.</li>
+                                <li><strong>Step ⑤ &mdash; Step 4 [Draft]:</strong> Branches on <code>escalated</code>: invokes <code>escalate_chain.invoke(...)</code> to draft an internal manager briefing when escalated, or <code>draft_email_chain.invoke(...)</code> to draft a customer resolution email when auto-resolved, recording Step 4 in <code>steps</code>.</li>
+                                <li><strong>Step ⑥ &mdash; Package Result Dict:</strong> Assembles all inputs, intermediate decisions, <code>draft</code>, and <code>steps</code> into <code>result</code>.</li>
+                                <li><strong>Step ⑦ &mdash; Step 5 [Session]:</strong> When <code>log_to_session=True</code>, calls <code>log_exception(result)</code> in <code>session.py</code> and appends Step 5 to <code>steps</code> before returning <code>result</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>2. LangChain LCEL Chains &amp; Model Client (<code>chains.py</code> &amp; <code>llm.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>llm.py</code> (Steps ①&ndash;④):</strong> Locates <code>.env</code> in the current or parent directory via <code>find_dotenv(usecwd=True)</code> (Steps ①&ndash;③) and initializes <code>llm = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), temperature=0.0, api_key=os.getenv("OPENAI_API_KEY"))</code> (Step ④).</li>
+                        <li><strong>Classification Chain (<code>_classify_prompt</code>, <code>_clean_category</code>, <code>classify_chain</code> in <code>chains.py</code>):</strong>
+                            <ul>
+                                <li><code>_classify_prompt</code> (Step ①) instructs the model to classify <code>{report_text}</code> into one of four lowercase labels: <code>delayed</code>, <code>damaged</code>, <code>lost</code>, or <code>unknown</code>.</li>
+                                <li><code>_clean_category(raw_output: str) -&gt; str</code> strips quotes and whitespace (Step ①), checks whether any valid category token appears in the output (Step ②), and safely defaults to <code>"unknown"</code> if the LLM output is unexpected (Step ③).</li>
+                                <li><code>classify_chain = _classify_prompt | llm | StrOutputParser() | RunnableLambda(_clean_category)</code> (Step ②) pipes the prompt, model, string parser, and deterministic validator into a single runnable.</li>
+                            </ul>
+                        </li>
+                        <li><strong>Manager Escalation Chain (<code>_escalate_prompt</code> &amp; <code>escalate_chain</code>):</strong> Takes <code>customer_tier</code>, <code>shipment_value</code>, <code>category</code>, <code>compensation_amount</code>, <code>escalation_reason</code>, and <code>report_text</code> (Step ①) and pipes <code>_escalate_prompt | llm | StrOutputParser()</code> (Step ②) to generate a structured `[ESCALATION REQUIRED]` manager briefing.</li>
+                        <li><strong>Customer Resolution Email Chain (<code>_draft_email_prompt</code> &amp; <code>draft_email_chain</code>):</strong> Takes the claim details and <code>compensation_reason</code> (Step ①) and pipes <code>_draft_email_prompt | llm | StrOutputParser()</code> (Step ②) to draft an empathetic apology and compensation confirmation email.</li>
+                    </ul>
+
+                    <p><strong>3. Deterministic Policy Calculators (<code>tools.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>calculate_delay_compensation(shipment_value: float, days_delayed: int = 1) -&gt; Dict[str, Any]</code>:</strong> Rejects negative values with <code>ValueError</code> (Step ①); returns <code>$0.00</code> when <code>shipment_value == 0</code> (Step ②); calculates <code>20%</code> of shipment value with a <code>$15.00</code> minimum courtesy credit capped at <code>100%</code> of <code>shipment_value</code> via <code>min(max(shipment_value * 0.20, 15.0), shipment_value)</code> (Step ③); returns <code>{"category": "delayed", "amount": ..., "currency": "USD", "reason": ...}</code> (Step ④).</li>
+                        <li><strong><code>calculate_damage_compensation(shipment_value: float, damage_severity: str = "partial") -&gt; Dict[str, Any]</code>:</strong> Rejects negative values (Step ①); applies a <code>100%</code> rate for <code>"total"</code>/<code>"severe"</code>/<code>"complete"</code> damage or <code>50%</code> for partial damage (Step ②); returns the structured payout dict (Step ③).</li>
+                        <li><strong><code>calculate_lost_compensation(shipment_value: float) -&gt; Dict[str, Any]</code>:</strong> Rejects negative values (Step ①) and returns <code>100%</code> full replacement value (Step ②).</li>
+                        <li><strong><code>calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]</code>:</strong> Returns <code>amount: 0.0</code> (Step ①) because unclassifiable reports cannot be auto-compensated and must be reviewed manually.</li>
+                    </ul>
+
+                    <p><strong>4. Session Ledger, Web API &amp; CLI Runners (<code>session.py</code>, <code>app.py</code>, <code>main.py</code>, <code>triage_check.py</code>)</strong></p>
+                    <ul>
+                        <li><strong><code>session.py</code>:</strong>
+                            <ul>
+                                <li><code>log_exception(record)</code> copies the result dict (Step ①), injects a <code>YYYY-MM-DD HH:MM:SS</code> timestamp if missing (Step ②), and appends it to <code>_SESSION_RECORDS</code> (Step ③). <code>get_triage_log()</code> returns a list copy, and <code>clear_session()</code> empties the ledger.</li>
+                                <li><code>generate_daily_summary() -&gt; Dict[str, Any]</code>: Counts total records (Step ①) and returns a zeroed summary if empty (Step ②); sums <code>total_compensation</code>, <code>escalated_count</code>, <code>resolved_count</code>, and <code>escalation_rate</code> (Step ③); aggregates claim count, payout, and escalations for each category (Step ④); identifies <code>costliest_category</code> by maximum cumulative payout <code>max(payout_per_category, key=...)</code> so many small payouts can outrank a single large claim (Step ⑤); formats a Markdown summary (Steps ⑥&ndash;⑦); and returns the complete KPI dict (Step ⑧).</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>app.py</code>:</strong> Enforces 30 POSTs/hour in <code>enforce_rate_limit()</code> (Steps ①&ndash;③), injects <code>PATH_PREFIX</code> in <code>index()</code> (Steps ①&ndash;③), and exposes:
+                            <ul>
+                                <li><code>POST /api/triage</code> (<code>triage_report</code>): Parses JSON fields (Step ①), validates non-empty <code>report_text</code> (Step ②), numeric non-negative <code>shipment_value</code> (Steps ③&ndash;④), and allowed <code>customer_tier</code> in <code>{"standard", "premium"}</code> (Step ⑤), then calls <code>process_exception(...)</code> and returns JSON (Steps ⑥&ndash;⑦).</li>
+                                <li><code>GET /api/log</code>, <code>GET /api/summary</code>, <code>POST /api/reset</code>, <code>GET /api/health</code>: Return `get_triage_log()`, `generate_daily_summary()`, clear the session (`clear_session()`), or return service health status.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>main.py</code> &amp; <code>triage_check.py</code>:</strong>
+                            <ul>
+                                <li><code>main.py</code> defines <code>print_result(res)</code> (Steps ①&ndash;⑤) to display the formatted decision trail and draft in the terminal, and <code>main()</code> (Steps ①&ndash;⑦) to parse <code>--report</code>, <code>--value</code>, <code>--tier</code>, and <code>--demo</code> CLI flags or prompt interactively before calling <code>process_exception()</code>.</li>
+                                <li><code>triage_check.py</code> defines 4 canonical <code>SCENARIOS</code> (mild delay $50 &rarr; auto-resolved; high-value loss $500 &rarr; escalated; minor damage $60 &rarr; auto-resolved; garbled report $10 &rarr; auto-escalated) and runs <code>run_checks()</code> (Steps ①&ndash;⑧) to assert that every scenario's category, escalation boolean, total count (4), escalation rate (50.0%), and costliest category (<code>lost</code>) match expectations.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>5. End-to-End Connection Flow</strong></p>
+                    <ol>
+                        <li>An operations analyst submits an exception report, shipment value, and customer tier in the browser UI (or via <code>main.py</code> / <code>triage_check.py</code>), sending <code>POST /api/triage</code> to <code>app.py</code>.</li>
+                        <li><code>triage_report()</code> in <code>app.py</code> validates all three inputs and invokes <code>process_exception(report_text, shipment_value, customer_tier, log_to_session=True)</code> in <code>pipeline.py</code>.</li>
+                        <li><code>process_exception()</code> invokes <code>classify_chain</code> in <code>chains.py</code> (using the shared <code>ChatOpenAI</code> client from <code>llm.py</code> and <code>_clean_category()</code>) to classify the issue into <code>delayed</code>, <code>damaged</code>, <code>lost</code>, or <code>unknown</code>.</li>
+                        <li>Based on that category, <code>process_exception()</code> calls the corresponding deterministic calculator in <code>tools.py</code> to compute the exact USD compensation amount and policy reason.</li>
+                        <li>Next, <code>evaluate_escalation()</code> checks whether <code>category == "unknown"</code> or whether <code>compensation_amount</code> exceeds the customer tier's threshold (<code>$50</code> for premium, <code>$100</code> for standard).</li>
+                        <li>Depending on the escalation boolean, <code>process_exception()</code> runs either <code>escalate_chain</code> (manager briefing) or <code>draft_email_chain</code> (customer resolution email) in <code>chains.py</code>.</li>
+                        <li>Finally, <code>log_exception()</code> in <code>session.py</code> records the timestamped result in <code>_SESSION_RECORDS</code>, and <code>app.py</code> returns the full decision trail and draft to the browser, which then refreshes the triage log (<code>GET /api/log</code>) and daily KPI summary (<code>GET /api/summary</code>).</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 9 -->
 
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">8</span>
+                        <span class="topic-badge">9</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -490,13 +605,13 @@
                 </div>
             </div>
 
-            <!-- ============================================================ 9 -->
+<!-- ============================================================ 10 -->
 
             <section class="topic-section is-collapsed" id="sec-source-pipeline-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-pipeline-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">9</span>
+                        <span class="topic-badge">10</span>
                         <h2 id="source-pipeline-py" class="topic-title is-file">pipeline.py<a class="headerlink"
                                 href="#source-pipeline-py" title="Permanent link">#</a></h2>
                     </div>
@@ -675,13 +790,13 @@ def process_exception(
     return result</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 10 -->
+<!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-chains-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-chains-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">10</span>
+                        <span class="topic-badge">11</span>
                         <h2 id="source-chains-py" class="topic-title is-file">chains.py<a class="headerlink"
                                 href="#source-chains-py" title="Permanent link">#</a></h2>
                     </div>
@@ -821,13 +936,13 @@ _draft_email_prompt = ChatPromptTemplate.from_messages(
 draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 11 -->
+<!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-llm-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-llm-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">11</span>
+                        <span class="topic-badge">12</span>
                         <h2 id="source-llm-py" class="topic-title is-file">llm.py<a class="headerlink"
                                 href="#source-llm-py" title="Permanent link">#</a></h2>
                     </div>
@@ -867,13 +982,13 @@ llm = ChatOpenAI(
 )</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 12 -->
+<!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">12</span>
+                        <span class="topic-badge">13</span>
                         <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink"
                                 href="#source-tools-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1004,13 +1119,13 @@ def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
     }</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 13 -->
+<!-- ============================================================ 14 -->
 
             <section class="topic-section is-collapsed" id="sec-source-session-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-session-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">13</span>
+                        <span class="topic-badge">14</span>
                         <h2 id="source-session-py" class="topic-title is-file">session.py<a class="headerlink"
                                 href="#source-session-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1182,13 +1297,13 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
     }</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 14 -->
+<!-- ============================================================ 15 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">14</span>
+                        <span class="topic-badge">15</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink"
                                 href="#source-app-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1350,13 +1465,13 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 15 -->
+<!-- ============================================================ 16 -->
 
             <section class="topic-section is-collapsed" id="sec-source-main-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-main-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">15</span>
+                        <span class="topic-badge">16</span>
                         <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink"
                                 href="#source-main-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1494,13 +1609,13 @@ if __name__ == "__main__":
     main()</code></pre>
                 </div>
             </section>
-            <!-- ============================================================ 16 -->
+<!-- ============================================================ 17 -->
 
             <section class="topic-section is-collapsed" id="sec-source-triage-check-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-triage-check-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">16</span>
+                        <span class="topic-badge">17</span>
                         <h2 id="source-triage-check-py" class="topic-title is-file">triage_check.py<a class="headerlink"
                                 href="#source-triage-check-py" title="Permanent link">#</a></h2>
                     </div>
@@ -1670,7 +1785,50 @@ if __name__ == "__main__":
     sys.exit(0 if success else 1)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-4">
+                <div class="unit-divider-badge">Unit 4</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-4"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 18 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">18</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use these core architectural and LangChain takeaways for quick revision of the Shipment Exception Desk pipeline:</p>
+                    <ol>
+                        <li><strong>Hybrid Neuro-Symbolic Pipeline Architecture:</strong> Combines probabilistic LLM chains (for unstructured text classification and empathetic communication drafting) with deterministic Python functions (for monetary compensation calculations and tier-threshold escalation gating).</li>
+                        <li><strong>LangChain Expression Language (LCEL) Pipe Pattern (<code>prompt | llm | parser</code>):</strong> All three LLM workflows in <code>chains.py</code> use declarative LCEL composition, piping a <code>ChatPromptTemplate</code> into a shared <code>ChatOpenAI(temperature=0.0)</code> instance and a <code>StrOutputParser()</code>.</li>
+                        <li><strong>Defensive Output Sanitization with <code>RunnableLambda</code>:</strong> Appending <code>RunnableLambda(_clean_category)</code> to <code>classify_chain</code> strips quotes/whitespace and guarantees the output is strictly one of <code>{"delayed", "damaged", "lost", "unknown"}</code> &mdash; preventing unexpected model prose from breaking downstream <code>if/elif</code> routing.</li>
+                        <li><strong>Structured Dict Returns from Policy Tools:</strong> The calculators in <code>tools.py</code> return structured dictionaries (<code>{"category", "amount", "currency", "reason"}</code>) rather than pre-formatted strings so <code>pipeline.py</code> and <code>session.py</code> can compare and sum <code>amount</code> numerically without regex-parsing text.</li>
+                        <li><strong>Floor-and-Cap Delay Compensation Math:</strong> <code>calculate_delay_compensation()</code> computes <code>20%</code> of shipment value, enforces a <code>$15.00</code> courtesy floor via <code>max(base, 15.0)</code>, and caps payout at <code>100%</code> of shipment value via <code>min(compensation, shipment_value)</code> so a $10 package never receives a $15 credit.</li>
+                        <li><strong>Tier-Aware Escalation Gating:</strong> <code>evaluate_escalation()</code> applies a stricter threshold for <code>premium</code> customers (<code>$50.00</code>) than <code>standard</code> customers (<code>$100.00</code>), ensuring high-touch human manager review earlier for VIP accounts.</li>
+                        <li><strong>Fail-Safe Escalation for Unclassifiable Inputs (<code>unknown</code>):</strong> Any garbled or ambiguous report classified as <code>unknown</code> receives <code>$0.00</code> automatic payout and escalates unconditionally (<code>escalated = True</code>), even if the declared shipment value is tiny (e.g., $10).</li>
+                        <li><strong>Cumulative Costliest-Category Aggregation:</strong> In <code>session.py</code>, <code>generate_daily_summary()</code> computes <code>costliest_category</code> by summing total compensation dollars per category across the entire session rather than picking the single largest claim &mdash; so ten $60 damage claims ($600) outrank one $500 lost claim.</li>
+                        <li><strong>Auditable Decision Trail (<code>steps</code>):</strong> Recording each pipeline stage (`Step 1 [Classify]` through `Step 5 [Session]`) in a `steps` list provides full operational explainability in both the web dashboard and CLI output.</li>
+                        <li><strong>End-to-End Behavioral Verification (<code>triage_check.py</code>):</strong> Testing all four canonical paths (mild delay, high-value loss, minor damage, and garbled unknown report) plus session-level KPI assertions verifies both LLM classification and deterministic policy branching in one command.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">Shipment Exception Desk &mdash; 🚚 Shipment Exception Desk &middot; How it works</footer>

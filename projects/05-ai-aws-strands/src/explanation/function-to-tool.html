@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-03-function-to-tool-py">03_function_to_tool.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -216,11 +218,81 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/03_function_to_tool.py</code>:</strong> Turns a standard Python HTTP health-check function (<code>check_server_status</code>) into a Strands agent tool using <code>@tool</code>, registers it with a Bedrock-backed <code>Agent</code>, and exposes <code>run_function_to_tool_agent(question)</code>.</li>
+                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>03_function_to_tool.py</code> as <code>s_fn_tool</code> and maps <code>POST /api/function-to-tool</code> to <code>function_to_tool_route()</code>.</li>
+                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's server health question (e.g., <code>"Is the staging server running? Check https://httpbin.org/get"</code>) to <code>POST /api/function-to-tool</code> and displays both the agent's status report and the recorded tool call.</li>
+                    </ul>
+
+                    <p><strong>2. Classes, <code>@tool</code> Function, and Service Logic in <code>03_function_to_tool.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and configuration from <code>.env</code>.</li>
+                        <li><strong><code>FunctionToToolRequest(BaseModel)</code> &amp; <code>FunctionToToolResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input <code>question: str</code> and output dictionary fields (<code>question: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from environment variables, falling back to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong><code>@tool def check_server_status(server_url: str) -&gt; str</code>:</strong> Demonstrates the three building blocks that Strands inspects to generate a Bedrock Converse <code>toolSpec</code>:
+                            <ol>
+                                <li><strong>Decorator (<code>@tool</code>):</strong> Attaches tool specification metadata to the function object.</li>
+                                <li><strong>Type Hints (<code>server_url: str</code> &rarr; <code>str</code>):</strong> Tells Strands that <code>server_url</code> is a required string property in the JSON Schema.</li>
+                                <li><strong>Docstring (<code>Args:</code> &amp; <code>Returns:</code>):</strong> Explains to the LLM what the tool does and what <code>server_url</code> means. Inside the body, a <code>try/except requests.exceptions.RequestException</code> block performs <code>requests.get(server_url, timeout=5)</code> and returns either <code>f"Server is up. Status code: {response.status_code}"</code> or <code>"Server is down or unreachable"</code> so network errors never crash the agent loop.</li>
+                            </ol>
+                        </li>
+                        <li><strong><code>run_function_to_tool_agent(question: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step <code>③</code>:</strong> Creates a fresh <code>Agent(model=BedrockModel(model_id=model_id), tools=[check_server_status])</code>.</li>
+                                <li><strong>Step <code>④</code>:</strong> Calls <code>response = agent(question)</code>, running the full Converse tool-use cycle.</li>
+                                <li><strong>Step <code>⑤</code>:</strong> Iterates over every message in <code>agent.messages</code> and every content block in <code>message["content"]</code>, formatting any <code>"toolUse"</code> block as <code>f"{block['toolUse']['name']}({block['toolUse']['input']})"</code> and returning <code>{"question": question, "response": str(response), "tool_calls": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>function_to_tool_route()</code> (<code>POST /api/function-to-tool</code>):</strong>
+                            <ul>
+                                <li><strong>Step <code>①</code>:</strong> Extracts <code>question</code> (or fallback key <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_fn_tool.run_function_to_tool_agent(question)</code>, copies <code>res["response"]</code> into <code>res["result"]</code>, and returns the JSON payload.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <ol>
+                        <li>The user submits <code>"Is the staging server running? Check https://httpbin.org/get"</code> in the UI; <code>main.js</code> sends <code>POST /api/function-to-tool</code>.</li>
+                        <li><code>function_to_tool_route()</code> in <code>app.py</code> validates the question and calls <code>s_fn_tool.run_function_to_tool_agent(question)</code>.</li>
+                        <li><code>run_function_to_tool_agent()</code> instantiates <code>Agent</code> with <code>tools=[check_server_status]</code>. Strands introspects the function's signature and docstring to build the Bedrock <code>toolSpec</code>.</li>
+                        <li>On Turn 1, Bedrock Nova Lite reads the user question and tool spec, extracts <code>"https://httpbin.org/get"</code>, and returns an assistant message containing a <code>toolUse</code> block for <code>check_server_status</code>.</li>
+                        <li>Strands intercepts the <code>toolUse</code> block, calls <code>check_server_status(server_url="https://httpbin.org/get")</code> in Python, receives <code>"Server is up. Status code: 200"</code> from <code>requests.get()</code>, and sends a <code>toolResult</code> block back to Bedrock.</li>
+                        <li>On Turn 2, Bedrock reads the status code result and generates a natural-language confirmation.</li>
+                        <li>Step <code>⑤</code> extracts the <code>toolUse</code> record from <code>agent.messages</code>, and <code>app.py</code> returns the JSON response and tool call trace to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -267,13 +339,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-03-function-to-tool-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-03-function-to-tool-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-03-function-to-tool-py" class="topic-title is-file">03_function_to_tool.py<a class="headerlink" href="#source-03-function-to-tool-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -374,13 +446,13 @@ def run_function_to_tool_agent(question: str = &quot;Is the staging server runni
 # to decide whether your tool is relevant. Vague docstring = unreliable agent.</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -693,6 +765,49 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+                    <p>Keep these essential principles in mind when converting Python functions into AWS Strands agent tools:</p>
+                    <ol>
+                        <li><strong>The Three Pillars of <code>@tool</code>:</strong> Strands builds a Bedrock Converse <code>toolSpec</code> from (1) the <code>@tool</code> decorator, (2) Python type annotations (<code>server_url: str -&gt; str</code>), and (3) the function docstring.</li>
+                        <li><strong>Docstrings Are Model Prompts:</strong> The LLM never sees your function's Python implementation; it relies entirely on the docstring and parameter descriptions to decide <em>when</em> and <em>how</em> to invoke the tool. Vague docstrings (like <code>"Does a thing."</code>) cause tool-calling failures.</li>
+                        <li><strong>LLMs Do Not Execute Code Directly:</strong> When Bedrock decides to use <code>check_server_status</code>, it only emits a structured JSON <code>toolUse</code> request. The Strands <code>Agent</code> runtime executes the actual Python function locally and sends the output back in a <code>toolResult</code> block.</li>
+                        <li><strong>Always Set Timeouts on External I/O:</strong> Calling <code>requests.get(server_url, timeout=5)</code> prevents an unresponsive upstream server from hanging the agent loop and blocking the Flask worker indefinitely.</li>
+                        <li><strong>Return Diagnostic Strings Instead of Raising Exceptions:</strong> Catching <code>requests.exceptions.RequestException</code> and returning <code>"Server is down or unreachable"</code> gives the LLM a clear observation it can report to the user rather than crashing the request.</li>
+                        <li><strong>Automatic URL Extraction from Natural Language:</strong> Even when the URL is embedded inside a conversational question (<em>"Is the staging server running? Check https://httpbin.org/get"</em>), the model isolates the exact URL string to pass as <code>server_url</code>.</li>
+                        <li><strong>Auditing Tool Calls via <code>agent.messages</code>:</strong> Scanning content blocks in <code>agent.messages</code> for <code>"toolUse"</code> keys provides a complete, ordered audit trail of every tool name and input dictionary the agent invoked.</li>
+                        <li><strong>Per-Request Agent Isolation:</strong> Instantiating <code>Agent(model=..., tools=[check_server_status])</code> inside <code>run_function_to_tool_agent()</code> guarantees that each API call has an isolated message history.</li>
+                    </ol>
                 </div>
             </section>
 

@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-02-hello-world-langgraph-py">02_hello_world_langgraph.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -212,11 +214,76 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/02_hello_world_langgraph.py</code>:</strong> Implements a tool-calling ReAct agent using <strong>LangChain</strong> and <strong>LangGraph</strong> backed by Amazon Bedrock's Converse API. It defines the <code>@tool greet(name)</code> function, constructs the state graph via <code>create_react_agent()</code>, and exposes <code>run_langgraph_agent(prompt)</code>.</li>
+                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically imports <code>02_hello_world_langgraph.py</code> as <code>s_langgraph</code> at startup and exposes the <code>POST /api/langgraph-agent</code> endpoint via <code>langgraph_route()</code>.</li>
+                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's prompt (e.g., <code>"Please greet Alice and Bob."</code>) to <code>POST /api/langgraph-agent</code> and renders both the assistant's final answer and the list of observed tool messages.</li>
+                    </ul>
+
+                    <p><strong>2. Classes, Tools, Graph Setup, and Functions in <code>02_hello_world_langgraph.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and region settings from <code>.env</code> so LangChain's Bedrock provider can authenticate via <code>boto3</code>.</li>
+                        <li><strong><code>LangGraphAgentRequest(BaseModel)</code> &amp; <code>LangGraphAgentResponse(BaseModel)</code>:</strong> Pydantic models documenting the input payload (<code>prompt: str = "Please greet Alice and Bob."</code>) and the output payload (<code>prompt: str</code>, <code>response: str</code>, and <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong><code>@tool def greet(name: str) -&gt; str</code>:</strong> Decorated with LangChain's <code>@tool</code> decorator (<code>from langchain.tools import tool</code>). Accepts a person's <code>name: str</code> and returns <code>f"Hello, {name}! Welcome to the world of AI agents."</code>. Its docstring (<code>"Greet someone by name."</code>) and type annotation form the tool schema sent to Bedrock.</li>
+                        <li><strong>Step <code>③</code> Chat Model Initialization (<code>llm = init_chat_model(model_id, model_provider="bedrock_converse")</code>):</strong> Instantiates a LangChain chat model using the unified <code>bedrock_converse</code> provider, which translates LangChain messages and tool definitions into Amazon Bedrock Converse API calls.</li>
+                        <li><strong>Step <code>④</code> ReAct Graph Compilation (<code>agent = create_react_agent(model=llm, tools=[greet])</code>):</strong> Uses LangGraph's prebuilt factory to compile a cyclic state graph with an LLM reasoning node and a tool execution node. Unlike Strands' stateful <code>Agent</code>, a compiled LangGraph graph is stateless across invocations unless a checkpointer is attached, so each <code>agent.invoke(...)</code> call starts with a fresh message list.</li>
+                        <li><strong><code>run_langgraph_agent(prompt: str) -&gt; dict</code>:</strong> Executes the compiled graph and formats the result:
+                            <ul>
+                                <li><strong>Step <code>⑤</code> (<code>response = agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code>):</strong> Seeds the graph state with the user message and runs the Reason &rarr; Act &rarr; Observe cycle until the model emits a final response with no further tool calls. Extracts the full message history via <code>messages = response["messages"]</code>.</li>
+                                <li><strong>Step <code>⑥</code> (<code>tool_calls = [f"{m.name} -&gt; {m.content}" for m in messages if m.type == "tool"]</code>):</strong> Filters the conversation history for <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to capture each tool execution and its returned greeting string, and returns <code>{"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>langgraph_route()</code> (<code>POST /api/langgraph-agent</code>):</strong>
+                            <ul>
+                                <li><strong>Step <code>①</code>:</strong> Parses the request JSON, extracts and strips <code>prompt</code> (or <code>message</code>), and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step <code>②</code>:</strong> Invokes <code>s_langgraph.run_langgraph_agent(prompt)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload (including <code>tool_calls</code>) to the client.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <ol>
+                        <li>The browser sends <code>POST /api/langgraph-agent</code> with <code>{ "prompt": "Please greet Alice and Bob." }</code>.</li>
+                        <li><code>langgraph_route()</code> in <code>app.py</code> validates the prompt and calls <code>s_langgraph.run_langgraph_agent(prompt)</code>.</li>
+                        <li><code>run_langgraph_agent()</code> calls <code>agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code> on the compiled LangGraph ReAct graph.</li>
+                        <li>On Turn 1, the LangGraph agent node calls Amazon Bedrock via <code>bedrock_converse</code>. Nova Lite inspects the <code>greet</code> tool schema and emits tool calls for <code>greet(name="Alice")</code> and <code>greet(name="Bob")</code>.</li>
+                        <li>LangGraph's tool node executes <code>greet("Alice")</code> and <code>greet("Bob")</code>, appends two <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to <code>state["messages"]</code>, and routes back to the agent node.</li>
+                        <li>On Turn 2, Bedrock reads the tool outputs and produces the final assistant message (<code>messages[-1].text</code>).</li>
+                        <li><code>run_langgraph_agent()</code> collects the <code>tool</code> messages into <code>tool_calls</code> and returns the dictionary to <code>app.py</code>, which sends the JSON response back to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -263,13 +330,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-02-hello-world-langgraph-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-02-hello-world-langgraph-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-02-hello-world-langgraph-py" class="topic-title is-file">02_hello_world_langgraph.py<a class="headerlink" href="#source-02-hello-world-langgraph-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -350,13 +417,13 @@ def run_langgraph_agent(prompt: str = &quot;Please greet Alice and Bob.&quot;) -
     return {&quot;prompt&quot;: prompt, &quot;response&quot;: messages[-1].text, &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -669,6 +736,49 @@ app.register_blueprint(bp, url_prefix=PATH_PREFIX)
 
 if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+                    <p>Review these core concepts comparing LangGraph's ReAct agent architecture with AWS Strands on Amazon Bedrock:</p>
+                    <ol>
+                        <li><strong>Framework-Agnostic ReAct Loop:</strong> The Reason &rarr; Act &rarr; Observe cycle is a fundamental AI agent pattern, not a library-specific feature; both LangGraph and AWS Strands drive the exact same Bedrock Converse tool-calling protocol underneath.</li>
+                        <li><strong>LangChain's Unified Model Loader (<code>init_chat_model</code>):</strong> Calling <code>init_chat_model(model_id, model_provider="bedrock_converse")</code> connects LangChain/LangGraph to Amazon Bedrock's Converse API using the same <code>amazon.nova-lite-v1:0</code> model ID as Strands.</li>
+                        <li><strong>Prebuilt ReAct State Graph (<code>create_react_agent</code>):</strong> <code>langgraph.prebuilt.create_react_agent(model=llm, tools=[greet])</code> compiles a cyclic state graph containing an agent node (LLM call), a conditional router (checking for <code>tool_calls</code>), and a tool execution node.</li>
+                        <li><strong>Tool Definition Parity (<code>@tool</code>):</strong> Just like Strands, LangChain's <code>@tool</code> decorator inspects the Python function name (<code>greet</code>), parameter type hints (<code>name: str</code>), and docstring (<code>"Greet someone by name."</code>) to generate the JSON Schema sent to the model.</li>
+                        <li><strong>Multi-Entity Tool Fan-Out:</strong> When prompted with <em>"Please greet Alice and Bob"</em>, the model recognizes two target entities and invokes <code>greet("Alice")</code> and <code>greet("Bob")</code> before synthesizing its final reply.</li>
+                        <li><strong>Stateless Compiled Graph Invocation:</strong> Because <code>create_react_agent</code> is compiled without a persistent checkpointer here, <code>agent</code> can be instantiated once at module level and safely invoked concurrently via <code>agent.invoke({"messages": [...]})</code>.</li>
+                        <li><strong>Observing Tool Execution via <code>ToolMessage</code>:</strong> In LangGraph, every tool return value is appended to <code>response["messages"]</code> as a message with <code>m.type == "tool"</code>, allowing <code>[f"{m.name} -&gt; {m.content}" for m in messages if m.type == "tool"]</code> to capture the full execution trace.</li>
+                        <li><strong>Boilerplate Comparison (LangGraph vs. Strands):</strong> While LangGraph offers fine-grained graph node and edge customization for complex state machines, AWS Strands reduces standard tool-calling agents to a more concise <code>Agent(model=..., tools=[...])(prompt)</code> call.</li>
+                    </ol>
                 </div>
             </section>
 

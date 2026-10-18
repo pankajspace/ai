@@ -31,9 +31,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-02-chromadb-py">02_chromadb.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -46,9 +48,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -78,6 +80,8 @@
                     <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
                 </div>
             </div>
+
+<!-- ============================================================ 1 -->
 
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -115,6 +119,8 @@
                     </p>
                 </div>
             </section>
+
+<!-- ============================================================ 2 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -169,6 +175,8 @@
                 </div>
             </section>
 
+<!-- ============================================================ 3 -->
+
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-request-flow">
@@ -211,11 +219,73 @@
                 </div>
             </section>
 
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p>This demo is built across two backend Python files in <code>src/python/</code>, a corpus directory of study notes (<code>docs/</code>), and an optional external ChromaDB Docker container to demonstrate production-style RAG with persistent vector storage and source citations.</p>
+                    <p><strong>1. Purpose of each file</strong></p>
+                    <ul>
+                        <li><strong><code>src/python/02_chromadb.py</code></strong>: Connects to the ChromaDB server (or falls back to an in-process <code>EphemeralClient</code>), lazily ingests all <code>.txt</code> and <code>.md</code> files from <code>docs/</code> using OpenAI&apos;s <code>text-embedding-3-small</code> embedding function, retrieves the top-3 matching notes for a user question, and generates a cited answer with <code>gpt-4o-mini</code>.</li>
+                        <li><strong><code>src/python/app.py</code></strong>: The Flask server and <code>/api</code> Blueprint that checks <code>OPENAI_API_KEY</code>, validates the question, and routes <code>POST /api/chromadb</code> to <code>02_chromadb.py</code>.</li>
+                    </ul>
+                    <p><strong>2. Key entities in <code>src/python/02_chromadb.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>DOCS_DIR</code> &amp; <code>_chroma_client</code></strong>: <code>DOCS_DIR</code> locates the project&apos;s <code>docs/</code> folder containing study notes; <code>_chroma_client</code> caches the active Chroma client across requests.</li>
+                        <li><strong><code>ChromaDbRequest</code>, <code>ChromaDbSource</code>, &amp; <code>ChromaDbResponse</code></strong>: Pydantic models defining the input question and output payload (<code>answer</code>, list of <code>ChromaDbSource(id, preview)</code> objects, and <code>backend</code> mode string).</li>
+                        <li><strong><code>_get_collection()</code></strong>:
+                            <ul>
+                                <li><strong>Step ① — Connect to ChromaDB</strong>: If <code>CHROMA_HOST</code> is set (e.g., in <code>docker-compose.yml</code>), connects to the remote container via <code>chromadb.HttpClient(host, port)</code> and verifies liveness with <code>heartbeat()</code>; if unreachable or unset, seamlessly falls back to <code>chromadb.EphemeralClient()</code>.</li>
+                                <li><strong>Step ② — Bind OpenAI Embedding Function</strong>: Attaches <code>OpenAIEmbeddingFunction(model_name="text-embedding-3-small")</code> to the <code>study_notes</code> collection via <code>get_or_create_collection()</code>.</li>
+                                <li><strong>Step ③ — Lazy Document Ingestion</strong>: Checks <code>collection.count() == 0</code>; on the first call, reads every <code>.txt</code> and <code>.md</code> file in <code>DOCS_DIR</code> and calls <code>collection.upsert(documents=docs, ids=ids)</code> so Chroma embeds and indexes them once.</li>
+                            </ul>
+                        </li>
+                        <li><strong><code>ask_chromadb_notes(question: str) -&gt; ChromaDbResponse</code></strong>:
+                            <ul>
+                                <li><strong>Step ④ — Retrieve top-3 relevant notes</strong>: Calls <code>collection.query(query_texts=[question], n_results=3)</code> to embed the question and fetch the 3 closest documents and their filenames (<code>ids</code>).</li>
+                                <li><strong>Step ⑤ — Augment the prompt</strong>: Formats the retrieved documents with <code>[Source: &lt;filename&gt;]</code> headers into a single context block.</li>
+                                <li><strong>Step ⑥ — Generate grounded answer</strong>: Calls <code>OpenAI().chat.completions.create(model="gpt-4o-mini", temperature=0.2, ...)</code> with the <code>ScalerGPT</code> system prompt instructing the model to answer using only the context and cite source filenames.</li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>chromadb_service()</code> (<code>POST /api/chromadb</code>)</strong>: Verifies <code>OPENAI_API_KEY</code> via <code>require_openai_key()</code>, extracts <code>question</code> via <code>read_json_field()</code>, calls <code>mod.ask_chromadb_notes(question)</code>, and returns <code>result.model_dump()</code> as JSON.</li>
+                    </ul>
+                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <ol>
+                        <li>The user types a study question in the browser UI and clicks Ask, triggering <code>POST /api/chromadb</code>.</li>
+                        <li><code>chromadb_service()</code> in <code>app.py</code> validates the request and invokes <code>ask_chromadb_notes(question)</code> in <code>02_chromadb.py</code>.</li>
+                        <li><code>_get_collection()</code> connects to the ChromaDB service (or in-memory fallback) and ensures the <code>study_notes</code> collection is populated with embeddings from <code>docs/*.txt</code> and <code>docs/*.md</code>.</li>
+                        <li><code>collection.query()</code> embeds the user&apos;s question with <code>text-embedding-3-small</code> and returns the top-3 matching study notes and their document IDs.</li>
+                        <li><code>ask_chromadb_notes()</code> injects those notes into the <code>ScalerGPT</code> prompt, calls <code>gpt-4o-mini</code>, and returns the cited answer, source previews, and active backend label to the browser.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -257,13 +327,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-02-chromadb-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-02-chromadb-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-02-chromadb-py" class="topic-title is-file">02_chromadb.py<a class="headerlink" href="#source-02-chromadb-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -429,13 +499,13 @@ def ask_chromadb_notes(question: str) -&gt; dict:
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -601,7 +671,47 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use these numbered takeaways to revise persistent ChromaDB collections, graceful service fallback, and cited RAG:</p>
+                    <ol>
+                        <li><strong>Client-Server vs. Embedded Vector Store:</strong> ChromaDB supports both a standalone server mode (<code>chromadb.HttpClient</code> talking to a Docker container over HTTP) and an in-process mode (<code>chromadb.EphemeralClient</code>), using the exact same Python collection API.</li>
+                        <li><strong>Graceful Infrastructure Fallback:</strong> Probing <code>_chroma_client.heartbeat()</code> inside a <code>try/except</code> block allows the app to use the dedicated Chroma container when running under Docker Compose and automatically fall back to in-memory storage during standalone local development.</li>
+                        <li><strong>Collection-Bound Embedding Functions:</strong> Passing <code>OpenAIEmbeddingFunction(model_name="text-embedding-3-small")</code> into <code>get_or_create_collection()</code> delegates vectorization to the collection itself—calling <code>upsert(documents=...)</code> or <code>query(query_texts=...)</code> automatically embeds texts with the same model.</li>
+                        <li><strong>Idempotent Upsert &amp; Lazy Seeding:</strong> Guarding ingestion with <code>if collection.count() == 0:</code> and using <code>collection.upsert(documents=docs, ids=ids)</code> ensures study notes are embedded only once when the collection is empty and never duplicated if re-run with the same filename IDs.</li>
+                        <li><strong>Source Attribution via Document IDs:</strong> Using each file&apos;s name (e.g., <code>docker_notes.md</code>) as its Chroma <code>id</code> and prefixing each context block with <code>[Source: {sid}]</code> enables the LLM to cite exact filenames in its answer.</li>
+                        <li><strong>Embedding Dimension Consistency:</strong> Every query against a collection must use the exact same embedding model (<code>text-embedding-3-small</code>, 1536 dimensions) that was used to index the documents; binding the embedding function to the collection enforces this invariant automatically.</li>
+                        <li><strong>Observability in the UI Response:</strong> Returning both the <code>backend</code> string (<code>http://...</code> vs. <code>in-memory (ephemeral)</code>) and the <code>sources</code> preview list lets the user see where vectors are stored and which files answered their question.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AI Model Training & ChromaDB &mdash; 🗄️ ChromaDB Notes Q&amp;A &middot; How it works</footer>

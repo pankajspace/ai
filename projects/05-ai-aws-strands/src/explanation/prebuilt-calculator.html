@@ -32,9 +32,11 @@
                     <li><a href="#concept">Concept</a></li>
                     <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-explanation">Code explanation</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-07-prebuilt-tools-py">07_prebuilt_tools.py</a></li>
                     <li><a href="#source-app-py">app.py</a></li>
+                    <li><a href="#quick-revision">Quick revision</a></li>
                 </ol>
             </details>
         </nav>
@@ -47,9 +49,9 @@
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>6 Topics</span>
+                    <span>8 Topics</span>
                     <span class="dot">&bull;</span>
-                    <span>4 Explainers</span>
+                    <span>6 Explainers</span>
                     <span class="dot">&bull;</span>
                     <span>2 Python Files in Full</span>
                 </div>
@@ -209,11 +211,77 @@
             </section>
 <!-- ============================================================ 4 -->
 
+            <section class="topic-section is-collapsed" id="sec-code-explanation">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-explanation">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-explanation" class="topic-title">Code explanation<a class="headerlink" href="#code-explanation"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-explanation">
+<p><strong>1. Purpose of Each File</strong></p>
+                    <ul>
+                        <li><code>src/python/07_prebuilt_tools.py</code> &mdash; Defines the <strong>Prebuilt Calculator Agent</strong> service: imports the off-the-shelf <code>calculator</code> tool from <code>strands_tools</code>, configures the <code>Agent</code> with a standing math-assistant system prompt, runs the user's mathematical query, and extracts every tool call from <code>agent.messages</code>.</li>
+                        <li><code>src/python/app.py</code> &mdash; Loads <code>07_prebuilt_tools.py</code> dynamically as <code>s_calc</code> via <code>_load_service()</code>, enforces rate limiting (30 POSTs/hour), and exposes <code>POST /api/prebuilt-calculator</code> via <code>prebuilt_calculator_route()</code>.</li>
+                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🧮 Math Assistant</strong> interactive demo card, reads the mathematical expression or word problem from the input box, sends <code>POST /api/prebuilt-calculator</code> with <code>{ query }</code>, and displays both the natural-language answer and the exact <code>calculator(...)</code> invocation.</li>
+                    </ul>
+
+                    <p><strong>2. Pydantic Schemas, Prebuilt Tool &amp; Agent Setup in <code>07_prebuilt_tools.py</code></strong></p>
+                    <ul>
+                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and optional Bedrock configuration from the nearest <code>.env</code> file into environment variables.</li>
+                        <li><strong><code>PrebuiltCalculatorRequest(BaseModel)</code> &amp; <code>PrebuiltCalculatorResponse(BaseModel)</code>:</strong> Document the expected input payload (<code>query: str</code> defaulting to <code>"What's 42 raised to the power of 9?"</code>) and the structured output dictionary (<code>query</code>, <code>response</code>, and <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Prebuilt Tool (<code>from strands_tools import calculator</code>):</strong> Imports the SymPy-backed <code>calculator</code> tool directly from the <code>strands_tools</code> package &mdash; providing symbolic and numerical expression evaluation, equation solving, differentiation, integration, and matrix operations with zero custom <code>@tool</code> code.</li>
+                        <li><strong>Service Entry Point &mdash; <code>run_prebuilt_calculator_agent(query: str) -&gt; dict</code>:</strong>
+                            <ul>
+                                <li><strong>Step ③:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[calculator], system_prompt="You are a helpful math assistant.")</code> so the standing system instruction primes Bedrock to delegate arithmetic and symbolic math to <code>calculator</code>.</li>
+                                <li><strong>Step ④:</strong> Calls <code>response = agent(query)</code>, triggering the Strands tool-use loop where Bedrock emits a <code>toolUse</code> block for <code>calculator</code>, Strands evaluates the expression via SymPy, and returns the exact result in a <code>toolResult</code> block.</li>
+                                <li><strong>Step ⑤:</strong> Iterates over <code>agent.messages</code> and formats every <code>"toolUse"</code> block as <code>f"{block['toolUse']['name']}({block['toolUse']['input']})"</code> into <code>tool_calls</code>, returning <code>{"query": query, "response": str(response), "tool_calls": tool_calls}</code>.</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
+                    <ul>
+                        <li><strong><code>prebuilt_calculator_route()</code> (<code>POST /api/prebuilt-calculator</code>):</strong>
+                            <ul>
+                                <li><strong>Step ①:</strong> Parses the JSON request body with <code>request.get_json(force=True, silent=True)</code>, extracts <code>query</code> (or fallback <code>message</code>), and returns HTTP <code>400</code> if empty.</li>
+                                <li><strong>Step ②:</strong> Calls <code>s_calc.run_prebuilt_calculator_agent(query)</code>, copies <code>res["response"]</code> into <code>res["result"]</code> for the unified frontend renderer, and returns the JSON payload (or HTTP <code>500</code> if an exception occurs).</li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <ol>
+                        <li>The user clicks <strong>Run</strong> on the <strong>🧮 Math Assistant</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/prebuilt-calculator</code> with <code>{"query": "What's 42 raised to the power of 9?"}</code>.</li>
+                        <li>Flask's <code>@bp.before_request</code> hook (<code>enforce_rate_limit()</code>) verifies the client is within the 30-requests/hour quota and forwards the request to <code>prebuilt_calculator_route()</code>.</li>
+                        <li><code>prebuilt_calculator_route()</code> validates the non-empty <code>query</code> and calls <code>s_calc.run_prebuilt_calculator_agent(query)</code> in <code>07_prebuilt_tools.py</code>.</li>
+                        <li><code>run_prebuilt_calculator_agent()</code> creates a <code>BedrockModel</code> and a Strands <code>Agent</code> configured with <code>tools=[calculator]</code> and <code>system_prompt="You are a helpful math assistant."</code>.</li>
+                        <li>Calling <code>agent(query)</code> sends the user prompt, the system prompt, and the <code>calculator</code> JSON Schema to Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>) via the Converse API.</li>
+                        <li>Bedrock responds with <code>stopReason="tool_use"</code> and a <code>toolUse</code> block specifying <code>name="calculator"</code> and input <code>{"expression": "42**9"}</code> (or equivalent).</li>
+                        <li>The Strands runtime invokes <code>strands_tools.calculator</code> locally, which uses SymPy to compute <code>406,671,383,849,472</code> with arbitrary-precision integer arithmetic and sends it back to Bedrock inside a <code>toolResult</code> message.</li>
+                        <li>Bedrock generates the final natural-language answer, <code>run_prebuilt_calculator_agent()</code> extracts the <code>tool_calls</code> trace from <code>agent.messages</code>, and <code>app.py</code> returns the JSON response to the browser card.</li>
+                    </ol>
+                </div>
+            </section>
+
+<!-- ============================================================ 5 -->
+
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-code-flow">
                     <div class="topic-header-main">
-                        <span class="topic-badge">4</span>
+                        <span class="topic-badge">5</span>
                         <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -260,13 +328,13 @@ flowchart TD
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+<!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-source-07-prebuilt-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-07-prebuilt-tools-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">5</span>
+                        <span class="topic-badge">6</span>
                         <h2 id="source-07-prebuilt-tools-py" class="topic-title is-file">07_prebuilt_tools.py<a class="headerlink" href="#source-07-prebuilt-tools-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -344,13 +412,13 @@ def run_prebuilt_calculator_agent(query: str = &quot;What&#x27;s 42 raised to th
     return {&quot;query&quot;: query, &quot;response&quot;: str(response), &quot;tool_calls&quot;: tool_calls}</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+<!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
-                        <span class="topic-badge">6</span>
+                        <span class="topic-badge">7</span>
                         <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
                                 title="Permanent link">#</a></h2>
                     </div>
@@ -665,7 +733,49 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
+            <div class="unit-divider" id="unit-3">
+                <div class="unit-divider-badge">Unit 3</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Quick Revision<a class="headerlink" href="#unit-3"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Key AI concepts, architectural patterns, and practical takeaways from this demo.</p>
+                </div>
+            </div>
 
+<!-- ============================================================ 8 -->
+
+            <section class="topic-section is-collapsed" id="sec-quick-revision">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-quick-revision">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 id="quick-revision" class="topic-title">Quick revision<a class="headerlink" href="#quick-revision"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-quick-revision">
+<p>Use this numbered checklist to review the core concepts, Strands primitives, and engineering choices in the <strong>🧮 Math Assistant</strong> demo:</p>
+                    <ol>
+                        <li><strong>Why LLMs Need a Calculator Tool:</strong> Autoregressive language models predict subword tokens probabilistically rather than executing hardware ALU instructions, making multi-digit exponentiation (like <code>42<sup>9</sup></code>) or symbolic calculus prone to hallucinated digits without an external math engine.</li>
+                        <li><strong>Zero-Boilerplate Prebuilt Tools (<code>strands_tools</code>):</strong> Importing <code>from strands_tools import calculator</code> and passing <code>tools=[calculator]</code> gives an agent production-tested mathematical capabilities without writing a single custom <code>@tool</code> function or docstring schema.</li>
+                        <li><strong>SymPy Symbolic &amp; Numerical Engine:</strong> Under the hood, <code>strands_tools.calculator</code> uses SymPy to support exact arithmetic evaluation, algebraic equation solving, symbolic derivatives and integrals, and matrix operations.</li>
+                        <li><strong>Standing Instructions via <code>system_prompt</code>:</strong> Passing <code>system_prompt="You are a helpful math assistant."</code> to <code>Agent(...)</code> attaches a persistent system prompt to every Bedrock Converse call, steering the model to use the calculator tool and explain mathematical results clearly.</li>
+                        <li><strong>Automatic Tool Spec Registration:</strong> Even for prebuilt tools imported from external packages, <code>Agent(tools=[calculator])</code> automatically attaches the tool's name, description, and input JSON Schema (<code>expression</code>, <code>mode</code>, etc.) to the Bedrock Converse request.</li>
+                        <li><strong>Two-Turn Converse Loop:</strong> A single call to <code>agent(query)</code> transparently executes two Bedrock Converse round-trips: Turn 1 translates English into a formal <code>calculator</code> tool call, and Turn 2 formats the exact SymPy output into a human-friendly response.</li>
+                        <li><strong>Inspecting <code>agent.messages</code> for Observability:</strong> Scanning <code>message["content"]</code> for <code>"toolUse"</code> blocks after <code>agent(query)</code> completes yields an exact audit log of the expressions passed to <code>calculator</code>.</li>
+                        <li><strong>Arbitrary-Precision Accuracy:</strong> Because Python and SymPy support arbitrary-precision integers, evaluating <code>42**9</code> returns the exact 15-digit integer (<code>406671383849472</code>) without floating-point overflow or token-prediction drift.</li>
+                        <li><strong>Dynamic Module Loading in <code>app.py</code>:</strong> Because Python filenames starting with digits (<code>07_prebuilt_tools.py</code>) cannot be imported with standard <code>import</code> syntax, <code>app.py</code> uses <code>importlib.util.spec_from_file_location()</code> in <code>_load_service()</code> to load each numbered demo cleanly.</li>
+                    </ol>
+                </div>
+            </section>
         </article>
     </main>
     <footer class="study-footer">AWS Strands Agents &mdash; 🧮 Math Assistant &middot; How it works</footer>
