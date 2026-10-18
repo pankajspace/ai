@@ -129,7 +129,6 @@ projects/techtoday/
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
 ├── info/
-│   ├── ai-reliability.html      ← AI Reliability Lab deep-dive explanation
 │   ├── interviewiq.html         ← InterviewIQ deep-dive explanation
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
@@ -158,7 +157,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200), with blue (`#90caf9`) accents and borders on homepage course tiles.
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 23 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, AI POCs, AI Demos, Forward Deployed Engineer). Thirteen are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 23 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, AI POCs, AI Projects, Forward Deployed Engineer). Thirteen are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 
@@ -169,4 +168,4 @@ projects/techtoday/
 1. Open `study/ai-demos/ai-demos.html`.
 2. Inside the `<div class="grid">` section, copy an existing `<div class="card">` block.
 3. Update the icon, heading, description, link `href`, and theory/explanation link.
-4. Update `index.html` under the **AI Demos** tile's `.hub-bullet-list` to include the new project shortcut.
+4. Update `index.html` under the **AI Projects** tile's `.hub-bullet-list` to include the new project shortcut.

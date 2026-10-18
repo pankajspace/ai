@@ -15,7 +15,7 @@
 14. MERN
 15. Software Projects
 16. AI Engineering // done
-17. AI Demos // done
+17. AI Projects // done
 18. Web Performance
 19. Web Security
 20. FDE // done

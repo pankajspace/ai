@@ -6,7 +6,7 @@ Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-demos.css
 Scripts: ../dsa/dsa-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)
+Navigation: [TechToday](../../index.html) · [← AI Projects](ai-demos.html)
 
 Applied AI · Case study · Agentic system design
 

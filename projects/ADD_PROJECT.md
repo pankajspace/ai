@@ -207,7 +207,7 @@ Public project catalog card update:
 3. Copy an existing project card.
 4. Update the title, description, link, icon or visual marker, and theory/explanation link.
 5. Use a live status only after the production URL works.
-6. If the project is featured on the homepage, update the AI Demos tile in `projects/techtoday/index.html`.
+6. If the project is featured on the homepage, update the AI Projects tile in `projects/techtoday/index.html`.
 7. Preview `projects/techtoday/index.html` and `projects/techtoday/study/ai-demos/ai-demos.html` locally before committing.
 
 After this, routine work follows the new project's `README.md`. Verify that it
