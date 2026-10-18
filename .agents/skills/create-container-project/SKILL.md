@@ -1,14 +1,14 @@
 ---
-description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-projects/*.html) into the DSA-course design in plain, simple language (removing Gradio, agenda, LinkedIn content, class numbers and interactive sims, which become static examples) and regenerating its .md"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding explanation (ⓘ) pages ('how this works': concept, request flow, code flow, source code) under src/explanation/ for demo cards; adding or adapting theory notes (HTML + Markdown) under src/theory/ to keep all project theory self-contained; or simplifying a TechToday AI class-notes HTML page into the DSA-course design in plain, simple language and regenerating its .md"
 name: "create-container-project"
-argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-projects/*.html class-notes page to simplify"
+argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a theory/class-notes page to add or simplify"
 ---
 
-This skill covers a container project and its two kinds of companion teaching page. Pick the task, then read only the file it needs:
+This skill covers a container project and its two kinds of companion teaching pages:
 
-1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**. This always includes one ⓘ explainer page per demo tile (Workflow step 8, built with task 2).
-2. **Add ⓘ explainer pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
-3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-projects/*.html` into the DSA-course design, rewrite it in plain language, replace its interactive examples with static information, and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
+1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**. This includes self-contained explanation pages (`src/explanation/<demo>.html`) for each demo tile and theory class notes (`src/theory/<topic>.html` and `.md`) keeping all project content self-contained.
+2. **Add ⓘ explanation pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards under `src/explanation/<demo>.html`, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
+3. **Add or simplify theory pages** under `projects/<project-name>/src/theory/` (`<topic>.html` and `<topic>.md`) formatted in the DSA-course design, written in plain language with static examples, and served via `/theory/<path:filename>` — read [class-notes-page.md](class-notes-page.md).
 
 When a new public project needs its catalog ⓘ link (Workflow step 12), build the target page with task 2 (§7) or 3.
 
@@ -40,13 +40,13 @@ Proceed without extra questions if you have enough information.
 1. Confirm the next-port allocation from `ADD_PROJECT.md`. Local `8090` is taken by `projects/template` itself, so skip it when allocating or advancing local ports.
 2. Create `projects/<project-name>/` by copying `projects/template/` if it does not exist.
 3. Set the `web` service to publish `<local-port>:5000` in `docker-compose.yml`.
-4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/css/info.css`, `src/js/main.js`, `src/js/info.js`, `src/explanation/<demo>.html` (one per tile), `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
+4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/css/info.css`, `src/js/main.js`, `src/js/info.js`, `src/explanation/<demo>.html` (one per tile), `src/theory/<theory>.html` and `.md` (theory class notes), `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
 5. Integrate user-provided Python files under `src/python/`.
 6. Expose new feature routes through the Blueprint in `app.py`, preserving:
    - `PATH_PREFIX = os.environ.get("PATH_PREFIX", "")`
    - `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
    - the `index()` route injecting `data-api-base="<PATH_PREFIX>"`
-   - static routes for `/css/<path:filename>`, `/js/<path:filename>`, and `/explanation/<path:filename>` (the explainer pages, with `/info/<path:filename>` as fallback alias)
+   - static routes for `/css/<path:filename>`, `/js/<path:filename>`, `/explanation/<path:filename>` (the explainer pages, with `/info/<path:filename>` as fallback alias), and `/theory/<path:filename>` (the theory notes)
    - one `POST` route per feature that validates a non-empty input (→ `400`), validates any dropdown choices against an allowlist (→ `400`, see **Dropdowns for Choices**), wraps the feature call in `try/except` (→ `500`), and returns `{"result": ...}`.
 7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card — with a dropdown for every discrete choice in the feature code.
 8. **Add one ⓘ explainer page per demo tile** — mandatory, not optional polish: every tile's `<h2>` carries the green ⓘ `info-link` to `explanation/<demo>.html`, and each page explains the concept, theory, request flow and code flow and embeds every Python file the demo runs, complete and unedited. Follow [explainer-pages.md](explainer-pages.md) §1–§6 (the `.info-link` CSS block, the `/explanation/<path:filename>` route, the shared `info.css`/`info.js`, numbered step comments in the real source files, one page per tile, verification, README). A project is not done while any tile lacks its ⓘ page.
@@ -61,7 +61,7 @@ Proceed without extra questions if you have enough information.
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
 12. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add the root `README.md` runbook entry under `## Project Runbooks` (`N. [<Display Name>](projects/<project-name>/README.md)`, above *Container App Template*). If the project should be public, follow `ADD_PROJECT.md` § 8 *Public project catalog card update*:
     1. Add a card to `projects/techtoday/study/ai-projects/ai-projects.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-projects.md`.
-    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-projects/` (built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../explanation/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
+    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the project's theory page (e.g. `https://app.techtoday.click/<project-name>/theory/<topic>.html`, built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../explanation/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
     3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Projects** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
 
 ## README Requirements
@@ -70,7 +70,7 @@ Proceed without extra questions if you have enough information.
 
 Include all applicable sections:
 
-1. **Overview and features** — purpose, behavior, architecture, project structure (including `src/explanation/` with one ⓘ explainer page per tile, `src/css/info.css`, and `src/js/info.js`).
+1. **Overview and features** — purpose, behavior, architecture, project structure (including `src/explanation/` with one ⓘ explainer page per tile, `src/theory/` with companion theory class notes, `src/css/info.css`, and `src/js/info.js`).
 2. **Project details** — type/folder, local and production URLs, local/container/EC2 ports, ECR repository, production service name, `PATH_PREFIX`, routes, workflow filename, trigger path.
 3. **Environment variables** — each required/optional variable, which feature uses it, where to obtain it, and that `.env` is never committed.
 4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
@@ -113,7 +113,7 @@ Each feature is one interactive card with this exact shape (no extra widgets, no
 
 Rules for cards:
 
-1. Use consistent ID naming per card: `<name>Input`, `<name>Validation`, `<name>Btn`, `<name>Result`, and name its explainer `info/<name>.html`.
+1. Use consistent ID naming per card: `<name>Input`, `<name>Validation`, `<name>Btn`, `<name>Result`, and name its explainer `explanation/<name>.html`.
 2. Start every button `disabled`; `main.js` enables it once the input has a value.
 3. Order cards simplest → most complex, matching the study source and the README.
 4. The template `.grid` has **four** columns (`repeat(4, minmax(0, 1fr))`), so a bare `class="card"` is only a quarter-width tile — too narrow for a dropdown row, a text input, and a multi-line result. Give every interactive demo tile `class="card card-half"` (2 of 4 columns) by default, so tiles sit two per row at equal width. Use a bare `.card` only for four compact tiles that share a row, and `card-wide` (full width via `grid-column: 1 / -1`) only for a genuine capstone that needs more room, placed last. Make the spans in each row add up to four columns; never make a lone tile `card-wide` just to fill a row.
@@ -285,6 +285,36 @@ function bindPresetSelects() {
 ### Working-demo requirement
 
 A tile is only "done" when clicking its button calls a live backend route and renders a real response, and its ⓘ icon opens a working explainer page (Workflow step 8). Do not ship placeholder tiles, cards that only display static text or source code, or buttons wired to nothing. Only build tiles the study HTML/PDF source supports (see Constraints); each tile maps to one backend route and one exercise or capability in the source. If a capability is unsafe to expose to public input (e.g. arbitrary cloud API calls, file writes), omit the tile rather than shipping a fake or unsafe one, and note the omission.
+
+## Theory and Explanation Pages Architecture
+
+Every container project must keep all its educational materials self-contained inside its project repository under `src/explanation/` and `src/theory/`. Because containers mount and package `/app/src/`, all documentation, styles, scripts, and media must be self-contained so that pages load reliably in production Docker containers.
+
+### 1. Explanation Pages (`src/explanation/<demo>.html`)
+
+1. **Purpose**: Tile-level "how this works" deep dives for each interactive demo on the project's dashboard.
+2. **Trigger**: Every interactive demo card title in `src/index.html` has an ⓘ info icon (`<a class="info-link" href="explanation/<demo>.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>`) inside its `<h2>`.
+3. **Contents**:
+   - The underlying architectural concept and intuition.
+   - Request flow diagram (Mermaid sequence diagram).
+   - Code flow diagram (Mermaid flowchart/graph).
+   - Complete, unedited Python source code with numbered comment annotations (`# ①`, `# ②`, etc.).
+4. **Assets & Styling**: Uses `src/css/info.css` and `src/js/info.js` (copied verbatim from `projects/template/src/`). Header back link points to `../` (`Back to App`).
+5. **Backend Route**: Served via `@bp.route("/explanation/<path:filename>")` (with backwards-compatible `@bp.route("/info/<path:filename>")` alias).
+6. **Detailed Guide**: Follow [explainer-pages.md](explainer-pages.md).
+
+### 2. Theory Pages (`src/theory/<topic>.html` and `<topic>.md`)
+
+1. **Purpose**: Project-level in-depth course and lecture notes covering foundational concepts, mathematical derivations, algorithms, and benchmarks.
+2. **Trigger**: The project catalog card in `projects/techtoday/study/ai-projects/ai-projects.html` links to the theory page via its corner ⓘ link (`https://app.techtoday.click/<project-name>/theory/<topic>.html`, with `data-tooltip="Theory"`).
+3. **Contents**:
+   - Systematic units and collapsible topic accordions based on the DSA-course structure.
+   - Written in plain, clear language without filler or hype, and with all Gradio/interactive UI wrappers replaced by static data panels.
+   - Static visualizations, probability bars, token chips, and worked data examples.
+   - Companion Markdown file (`<topic>.md`) with full `# My Notes` and `# Quick Review of Concepts` sections.
+4. **Assets & Styling**: Completely self-contained within each project folder: `src/css/dsa-study.css`, `src/css/site-header.css`, `src/css/ai-projects.css`, and `src/js/dsa-study.js`. Linked relatively as `../css/*` and `../js/*`. Header back link points to `../` (`Back to App`).
+5. **Backend Route**: Served via `@bp.route("/theory/<path:filename>")`.
+6. **Detailed Guide**: Follow [class-notes-page.md](class-notes-page.md).
 
 ## Complex Projects — Standalone Example Sub-Projects
 

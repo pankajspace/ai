@@ -98,6 +98,12 @@ def explanation(filename):
     return app.send_static_file(os.path.join("explanation", filename))
 
 
+@bp.route("/theory/<path:filename>")
+def theory_pages(filename):
+    """Serve the theory documentation pages from src/theory."""
+    return app.send_static_file(os.path.join("theory", filename))
+
+
 @bp.route("/echo", methods=["POST"])
 def echo_route():
     """Echo back the posted message — the starter feature.

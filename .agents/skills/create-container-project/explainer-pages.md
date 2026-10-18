@@ -1,10 +1,10 @@
-# Demo Explainer Pages (ⓘ)
+# Demo Explanation Pages (ⓘ)
 
 Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/template`) and which card(s)/demo(s) to explain; defaults to all cards.
 
-Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explainer per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on.
+Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explanation page per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on. (For project-level course/theory notes, see `src/theory/` and [class-notes-page.md](class-notes-page.md)).
 
-Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explainer page under `src/explanation/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
+Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explanation page under `src/explanation/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
 
 This assumes the project already follows the standard template layout (`src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py` with a Flask Blueprint serving `/css/<f>` and `/js/<f>`). See [SKILL.md](SKILL.md) for that layout.
 

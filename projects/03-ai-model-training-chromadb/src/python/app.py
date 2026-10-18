@@ -75,6 +75,12 @@ def explanation_pages(filename):
     return app.send_static_file(os.path.join("explanation", filename))
 
 
+@bp.route("/theory/<path:filename>")
+def theory_pages(filename):
+    """Serve the theory documentation pages from src/theory."""
+    return app.send_static_file(os.path.join("theory", filename))
+
+
 @bp.route("/api/model-training", methods=["POST"])
 def model_training_service():
     data = request.get_json(force=True, silent=True) or {}

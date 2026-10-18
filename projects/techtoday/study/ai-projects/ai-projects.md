@@ -27,7 +27,7 @@ Sorts shipment problems by urgency. Applies compensation policies, escalates iss
 
 [Open project →](https://app.techtoday.click/shipment-exception-desk/)
 
-[ⓘ](llms-prompting.html)
+[ⓘ](https://app.techtoday.click/01-ai-basics/theory/llms-prompting.html)
 
 ### AI Basics
 
@@ -35,7 +35,7 @@ Direct LLM chat, memory, tool use, and multi-tool agent workflows with OpenAI an
 
 [Open project →](https://app.techtoday.click/01-ai-basics/)
 
-[ⓘ](rag-embeddings.html)
+[ⓘ](https://app.techtoday.click/02-ai-rag-chroma/theory/rag-embeddings.html)
 
 ### AI RAG & Chroma
 
@@ -43,7 +43,7 @@ Recursive character chunking, semantic sentence embeddings, and vector RAG retri
 
 [Open project →](https://app.techtoday.click/02-ai-rag-chroma/)
 
-[ⓘ](docker.html)
+[ⓘ](https://app.techtoday.click/03-ai-model-training-chromadb/theory/docker.html)
 
 ### AI Model Training & ChromaDB
 
@@ -51,7 +51,7 @@ Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session
 
 [Open project →](https://app.techtoday.click/03-ai-model-training-chromadb/)
 
-[ⓘ](aws-strands.html)
+[ⓘ](https://app.techtoday.click/04-ai-aws-strands/theory/aws-strands.html)
 
 ### AWS Strands Agents
 
@@ -59,7 +59,7 @@ Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session
 
 [Open project →](https://app.techtoday.click/04-ai-aws-strands/)
 
-[ⓘ](ai-systems.html)
+[ⓘ](https://app.techtoday.click/05-ai-systems/theory/ai-systems.html)
 
 ### AI Systems
 
@@ -67,7 +67,7 @@ Prompting strategies (Direct, Zero-Shot CoT, Few-Shot CoT), sycophancy trap benc
 
 [Open project →](https://app.techtoday.click/05-ai-systems/)
 
-[ⓘ](ai-systems.html)
+[ⓘ](https://app.techtoday.click/06-ai-reliability/theory/ai-systems.html)
 
 ### AI Reliability
 
@@ -75,7 +75,7 @@ Chain-of-thought vs direct reasoning, JSON determinism, tool schema calibration,
 
 [Open project →](https://app.techtoday.click/06-ai-reliability/)
 
-[ⓘ](mcp-evals.html)
+[ⓘ](https://app.techtoday.click/07-ai-mcp-evals/theory/mcp-evals.html)
 
 ### AI MCP & Evals
 
