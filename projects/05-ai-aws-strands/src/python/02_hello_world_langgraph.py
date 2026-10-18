@@ -18,6 +18,12 @@ from pydantic import BaseModel
 # ① Load AWS credentials and Bedrock configuration from .env
 load_dotenv(find_dotenv())
 
+# Ensure default AWS region is configured if not provided in environment
+if "AWS_REGION" not in os.environ:
+    os.environ["AWS_REGION"] = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+if "AWS_DEFAULT_REGION" not in os.environ:
+    os.environ["AWS_DEFAULT_REGION"] = os.environ["AWS_REGION"]
+
 
 class LangGraphAgentRequest(BaseModel):
     """Input payload for LangGraph Hello World Agent."""
@@ -43,15 +49,22 @@ def greet(name: str) -> str:
     return f"Hello, {name}! Welcome to the world of AI agents."
 
 
-# ③ Initialize the LLM via the Amazon Bedrock Converse provider
-llm = init_chat_model(model_id, model_provider="bedrock_converse")
+_agent = None
 
-# ④ Create a LangGraph ReAct agent bound to the greet tool
-agent = create_react_agent(model=llm, tools=[greet])
+
+def _get_agent():
+    """Lazily initialize the Bedrock Converse chat model and LangGraph ReAct agent."""
+    global _agent
+    if _agent is None:
+        region = os.getenv("AWS_REGION") or os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+        llm = init_chat_model(model_id, model_provider="bedrock_converse", region_name=region)
+        _agent = create_react_agent(model=llm, tools=[greet])
+    return _agent
 
 
 def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
     """Run the LangGraph tool-enabled ReAct agent."""
+    agent = _get_agent()
     # ⑤ Invoke the ReAct agent loop (Reason -> Act -> Observe)
     response = agent.invoke({"messages": [{"role": "user", "content": prompt}]})
     messages = response["messages"]
@@ -60,3 +73,4 @@ def run_langgraph_agent(prompt: str = "Please greet Alice and Bob.") -> dict:
     tool_calls = [f"{m.name} -> {m.content}" for m in messages if m.type == "tool"]
 
     return {"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}
+

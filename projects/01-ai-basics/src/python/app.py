@@ -87,6 +87,12 @@ def theory_pages(filename):
     return app.send_static_file(os.path.join("theory", filename))
 
 
+@bp.route("/logo.svg")
+def logo():
+    """Serve logo.svg for favicons and site branding."""
+    return app.send_static_file("logo.svg")
+
+
 @bp.route("/api/travel", methods=["POST"])
 def travel_suggestion():
     # ① Parse city from JSON payload and reject empty values

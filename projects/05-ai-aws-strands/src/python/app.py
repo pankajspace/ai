@@ -13,6 +13,12 @@ from rate_limiter import check_rate_limit
 
 load_dotenv(find_dotenv())
 
+# Ensure default AWS region is configured if not provided in environment
+if "AWS_REGION" not in os.environ:
+    os.environ["AWS_REGION"] = os.getenv("AWS_DEFAULT_REGION", "us-east-1")
+if "AWS_DEFAULT_REGION" not in os.environ:
+    os.environ["AWS_DEFAULT_REGION"] = os.environ["AWS_REGION"]
+
 PATH_PREFIX = os.environ.get("PATH_PREFIX", "")
 STATIC_DIR = Path(__file__).resolve().parents[1]
 app = Flask(__name__, static_folder=str(STATIC_DIR))
