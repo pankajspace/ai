@@ -11,22 +11,6 @@ Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
 Small projects that show big AI ideas
 
-[ⓘ](../../explanation/interviewiq.html)
-
-### InterviewIQ
-
-An AI coach for mock interviews. A ReAct agent checks each answer for STAR structure, relevance, and filler words. It remembers the session and gives tips. Uses OpenAI.
-
-[Open project →](https://app.techtoday.click/interviewiq/)
-
-[ⓘ](../../explanation/shipment-exception-desk.html)
-
-### Shipment Exception Desk
-
-Sorts shipment problems by urgency. Applies compensation policies, escalates issues, and drafts messages. Keeps a live daily ledger with KPI totals.
-
-[Open project →](https://app.techtoday.click/shipment-exception-desk/)
-
 [ⓘ](https://app.techtoday.click/01-ai-basics/theory/llms-prompting.html)
 
 ### AI Basics
@@ -82,3 +66,20 @@ Chain-of-thought vs direct reasoning, JSON determinism, tool schema calibration,
 Direct Model Context Protocol client, MCP agent loop, and automated tool evaluation suite over stdio.
 
 [Open project →](https://app.techtoday.click/07-ai-mcp-evals/)
+
+[ⓘ](../../explanation/interviewiq.html)
+
+### InterviewIQ
+
+An AI coach for mock interviews. A ReAct agent checks each answer for STAR structure, relevance, and filler words. It remembers the session and gives tips. Uses OpenAI.
+
+[Open project →](https://app.techtoday.click/08-interviewiq/)
+
+[ⓘ](../../explanation/shipment-exception-desk.html)
+
+### Shipment Exception Desk
+
+Sorts shipment problems by urgency. Applies compensation policies, escalates issues, and drafts messages. Keeps a live daily ledger with KPI totals.
+
+[Open project →](https://app.techtoday.click/09-shipment-exception-desk/)
+

@@ -268,7 +268,7 @@ jobs:
 
             # --- Clean up legacy renamed stacks (migration) ---
             RELOAD_NGINX=0
-            for legacy in basic rag docker aws-strands ai-systems ai-reliability mcp-evals ai-pocs; do
+            for legacy in basic rag docker aws-strands ai-systems ai-reliability mcp-evals ai-pocs interviewiq shipment-exception-desk; do
               if [ -d "$HOME/apps/$legacy" ]; then
                 docker compose -f "$HOME/apps/$legacy/docker-compose.yml" down 2>/dev/null || true
                 rm -rf "$HOME/apps/$legacy" 2>/dev/null || true
@@ -284,8 +284,7 @@ jobs:
 
             # --- Ensure legacy backward compatibility redirects ---
             REDIRECTS_DEST=/etc/nginx/conf.d/app-locations/00-legacy-redirects.conf
-            if [ ! -f "$REDIRECTS_DEST" ]; then
-              sudo tee "$REDIRECTS_DEST" > /dev/null <<'REDIRECTS'
+            sudo tee "$REDIRECTS_DEST" > /dev/null <<'REDIRECTS'
             location ^~ /ai-pocs {
                 return 301 https://app.techtoday.click/ai-projects/ai-projects.html;
             }
@@ -301,9 +300,16 @@ jobs:
             location ^~ /ai-projects {
                 return 301 https://techtoday.click/study/ai-projects/ai-projects.html;
             }
+
+            location ^~ /interviewiq {
+                return 301 https://app.techtoday.click/08-interviewiq/;
+            }
+
+            location ^~ /shipment-exception-desk {
+                return 301 https://app.techtoday.click/09-shipment-exception-desk/;
+            }
             REDIRECTS
-              sudo nginx -t && sudo systemctl reload nginx || true
-            fi
+            sudo nginx -t && sudo systemctl reload nginx || true
 
             # --- Ensure port 5004 is free from any conflicting or legacy container ---
             OCCUPIED=$(docker ps -a -q --filter "publish=5004")

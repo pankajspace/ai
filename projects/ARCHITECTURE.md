@@ -505,36 +505,36 @@ To prevent port collision across applications on both local development machines
    - EC2 Host Port: `5004:5000`
    - ECR Repository: `techtoday/04-ai-aws-strands`
    - Technologies: Flask, AWS Bedrock, LangGraph, 12 tool-calling services
-5. **`interviewiq` (AI Mock Interview Coach):**
-   - Path Prefix: `/interviewiq`
-   - Local Development Port: `8085:5000`
-   - EC2 Host Port: `5005:5000`
-   - ECR Repository: `techtoday/interviewiq`
-   - Technologies: Flask, Groq API (Llama 3, Whisper), ReAct tool-calling agent
-6. **`shipment-exception-desk` (Logistics Exception Agent):**
-   - Path Prefix: `/shipment-exception-desk`
-   - Local Development Port: `8086:5000`
-   - EC2 Host Port: `5006:5000`
-   - ECR Repository: `techtoday/shipment-exception-desk`
-   - Technologies: Flask, OpenAI API, Structured exception triage engine
-7. **`05-ai-systems` (AI Systems & Prompting Suite):**
+5. **`05-ai-systems` (AI Systems & Prompting Suite):**
    - Path Prefix: `/05-ai-systems`
    - Local Development Port: `8087:5000`
    - EC2 Host Port: `5007:5000`
    - ECR Repository: `techtoday/05-ai-systems`
    - Technologies: Flask, OpenAI API, Groq, Gemini, 3 systems evaluation services
-8. **`06-ai-reliability` (AI Reliability & Testing):**
+6. **`06-ai-reliability` (AI Reliability & Testing):**
    - Path Prefix: `/06-ai-reliability`
    - Local Development Port: `8088:5000`
    - EC2 Host Port: `5008:5000`
    - ECR Repository: `techtoday/06-ai-reliability`
    - Technologies: Flask, OpenAI API, 4 reliability benchmark services
-9. **`07-ai-mcp-evals` (Model Context Protocol & Evals):**
+7. **`07-ai-mcp-evals` (Model Context Protocol & Evals):**
    - Path Prefix: `/07-ai-mcp-evals`
    - Local Development Port: `8089:5000`
    - EC2 Host Port: `5009:5000`
    - ECR Repository: `techtoday/07-ai-mcp-evals`
    - Technologies: Flask, FastMCP / stdio MCP server, 3 MCP evaluation services
+8. **`08-interviewiq` (AI Mock Interview Coach):**
+   - Path Prefix: `/08-interviewiq` (legacy `/interviewiq` 301-redirects here)
+   - Local Development Port: `8085:5000`
+   - EC2 Host Port: `5005:5000`
+   - ECR Repository: `techtoday/08-interviewiq`
+   - Technologies: Flask, Groq API (Llama 3, Whisper), ReAct tool-calling agent
+9. **`09-shipment-exception-desk` (Logistics Exception Agent):**
+   - Path Prefix: `/09-shipment-exception-desk` (legacy `/shipment-exception-desk` 301-redirects here)
+   - Local Development Port: `8086:5000`
+   - EC2 Host Port: `5006:5000`
+   - ECR Repository: `techtoday/09-shipment-exception-desk`
+   - Technologies: Flask, OpenAI API, Structured exception triage engine
 10. **`template` (Starter Reference Implementation):**
     - Path Prefix: `/<project-name>`
     - Starter Local Port: `8090:5000`
@@ -636,7 +636,7 @@ Static assets are served through the same Blueprint (`/css/<path:filename>` and 
 
 #### 5.4.1. Single-Container Topology (Standard Unified Model)
 
-Used by all production AI applications (`01-ai-basics` through `07-ai-mcp-evals`, `interviewiq`, `shipment-exception-desk`, and `template`):
+Used by all production AI applications (`01-ai-basics` through `09-shipment-exception-desk`, and `template`):
 1. **Self-Contained Image:** A single Docker image built from the project's root `Dockerfile`.
 2. **Integrated Full-Stack Runtime:** Encapsulates Python 3.11+, dependencies (`requirements.txt`), vanilla HTML/CSS/JS frontend assets (`src/`, `src/css`, `src/js`, `src/explanation`), and backend feature modules (`src/python`).
 3. **Stateless Compute:** Purely stateless compute; persistent state is either stored in memory during an active session or delegated to cloud APIs and external stores (e.g., ChromaDB, Redis).
@@ -779,9 +779,9 @@ Deployments are entirely automated using GitHub Actions. Pipelines are idempoten
 All workflows reside under `.github/workflows/`. Every one of them triggers on pushes to any branch that touch its own project path, runs in a per-workflow `concurrency` group so deploys of the same project never overlap, and also exposes a manual `workflow_dispatch` trigger for deploying any branch without a code change:
 
 1. **`deploy-techtoday.yml`:** Static site pipeline. Syncs `projects/techtoday/` to `/var/www/techtoday/` via `rsync` over SSH.
-2. **`deploy-interviewiq.yml`:** Self-provisioning container pipeline for Mock Interview Coach (port 5005). Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `interviewiq`.
-3. **`deploy-shipment-exception-desk.yml`:** Self-provisioning container pipeline for Logistics Exception Desk (port 5006). Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `shipment-exception-desk`.
-4. **`deploy-01-ai-basics.yml` through `deploy-07-ai-mcp-evals.yml`:** Seven self-provisioning container pipelines for AI domain applications (ports 5001–5004, 5007–5009). Each builds its dedicated image with Buildx cache, auto-provisions its ECR repository, configures per-project Nginx location routing with rate limiting, and restarts its Docker Compose stack.
+2. **`deploy-01-ai-basics.yml` through `deploy-07-ai-mcp-evals.yml`:** Seven self-provisioning container pipelines for AI domain applications (ports 5001–5004, 5007–5009). Each builds its dedicated image with Buildx cache, auto-provisions its ECR repository, configures per-project Nginx location routing with rate limiting, and restarts its Docker Compose stack.
+3. **`deploy-08-interviewiq.yml`:** Self-provisioning container pipeline for Mock Interview Coach (port 5005). Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `08-interviewiq`.
+4. **`deploy-09-shipment-exception-desk.yml`:** Self-provisioning container pipeline for Logistics Exception Desk (port 5006). Auto-provisions ECR, Nginx include/location with rate limiting, per-project Compose, and restarts `09-shipment-exception-desk`.
 
 ### 7.2. Shared GitHub Actions Secrets
 
@@ -795,7 +795,7 @@ Only five shared secrets are required in GitHub (**Settings → Secrets and vari
 
 ### 7.3. The Self-Provisioning Deployment Architecture
 
-Modern container applications (`interviewiq`, `shipment-exception-desk`, and projects created from `template`) use a self-provisioning CI/CD pattern. On the very first git push of a new project, the pipeline automatically creates every required server-side resource without requiring manual SSH sessions or AWS CLI setup.
+Modern container applications (`01-ai-basics` through `09-shipment-exception-desk`, and projects created from `template`) use a self-provisioning CI/CD pattern. On the very first git push of a new project, the pipeline automatically creates every required server-side resource without requiring manual SSH sessions or AWS CLI setup.
 
 ```mermaid
 sequenceDiagram
@@ -870,7 +870,7 @@ Self-Provisioning Execution Steps:
 
 ### 7.4. Unified Self-Provisioning Compose Model
 
-All container applications (`01-ai-basics` through `07-ai-mcp-evals`, `interviewiq`, and `shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
+All container applications (`01-ai-basics` through `09-shipment-exception-desk`) operate under the unified, self-provisioning per-project compose model:
 
 1. **Per-Project Isolation (`~/apps/<project>/`):** Each project owns its own `docker-compose.yml`, mapped to its assigned loopback port (`5001`–`5009`), running with isolated secrets (`~/secrets/<project>.env`).
 2. **Automated Location Routing & Rate Limiting:** Each deploy workflow auto-ensures `/etc/nginx/conf.d/00-rate-limit.conf`, prunes legacy inline definitions, and maintains `/etc/nginx/conf.d/app-locations/<project>.conf` with POST rate limiting (`limit_req zone=ai_inputs burst=29 nodelay;`).

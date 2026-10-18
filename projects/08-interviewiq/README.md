@@ -38,16 +38,16 @@ Built from the best parts of two study implementations:
 ## Project Details
 
 1. **Project type**: Container app (Flask + Docker).
-2. **Project folder**: `projects/interviewiq/`.
+2. **Project folder**: `projects/08-interviewiq/`.
 3. **Local URL**: http://localhost:8085
-4. **Production URL**: https://app.techtoday.click/interviewiq/
+4. **Production URL**: https://app.techtoday.click/08-interviewiq/
 5. **Local port**: `8085` → container `5000`.
 6. **EC2 host port**: `5005` → container `5000`.
-7. **ECR repository**: `techtoday/interviewiq`.
-8. **Production service name**: `interviewiq`.
-9. **PATH_PREFIX**: `/interviewiq`.
-10. **Workflow filename**: `deploy-interviewiq.yml`.
-11. **Trigger path**: `projects/interviewiq/**`.
+7. **ECR repository**: `techtoday/08-interviewiq`.
+8. **Production service name**: `08-interviewiq`.
+9. **PATH_PREFIX**: `/08-interviewiq`.
+10. **Workflow filename**: `deploy-08-interviewiq.yml`.
+11. **Trigger path**: `projects/08-interviewiq/**`.
 
 ### Routes
 
@@ -69,7 +69,7 @@ Built from the best parts of two study implementations:
 ## Project Structure
 
 ```
-projects/interviewiq/
+projects/08-interviewiq/
 ├── Dockerfile              # Python 3.12 image; installs deps, copies src/
 ├── docker-compose.yml      # web service on 8085:5000
 ├── requirements.txt        # flask, flask-cors, python-dotenv, requests, openai
@@ -112,7 +112,7 @@ start Docker and verify it with `docker info`.  On Linux, use
 `sudo systemctl start docker`; on macOS or Windows, start Docker Desktop.
 
 ```bash
-cd projects/interviewiq
+cd projects/08-interviewiq
 cp .env.example .env
 # Edit .env and add your GROQ_API_KEY
 docker compose build web
@@ -157,8 +157,8 @@ docker compose run --rm web python src/python/run_multi_agent.py --auto mixed --
 ## Production Setup
 
 The self-provisioning deploy workflow creates the ECR repository, seeds the
-image, writes `~/secrets/interviewiq.env`, adds the Nginx
-`/interviewiq/` location file under `/etc/nginx/conf.d/app-locations/`,
+image, writes `~/secrets/08-interviewiq.env`, adds the Nginx
+`/08-interviewiq/` location file under `/etc/nginx/conf.d/app-locations/`,
 auto-ensures the `app-locations/*.conf` include in the `app.techtoday.click`
 SSL server block, and creates the per-project Compose service automatically
 on every push.
@@ -178,30 +178,30 @@ aws secretsmanager put-secret-value --secret-id techtoday/secrets --secret-strin
 
 ```bash
 git checkout main
-git add projects/interviewiq .github/workflows/deploy-interviewiq.yml
-git commit -m "Add interviewiq project"
+git add projects/08-interviewiq .github/workflows/deploy-08-interviewiq.yml
+git commit -m "Add 08-interviewiq project"
 git push origin main
 ```
 
-The push under `projects/interviewiq/**` triggers `deploy-interviewiq.yml`,
-which builds, pushes to `techtoday/interviewiq` on ECR, and restarts only
-the `interviewiq` service on EC2.
+The push under `projects/08-interviewiq/**` triggers `deploy-08-interviewiq.yml`,
+which builds, pushes to `techtoday/08-interviewiq` on ECR, and restarts only
+the `08-interviewiq` service on EC2.
 
 ---
 
 ## Production Verification and Troubleshooting
 
 ```bash
-curl -I https://app.techtoday.click/interviewiq/
+curl -I https://app.techtoday.click/08-interviewiq/
 ```
 
 If the response is not `200`, check the service:
 
 ```bash
 # SSH into EC2
-docker compose -f ~/apps/interviewiq/docker-compose.yml logs --tail 50
-docker compose -f ~/apps/interviewiq/docker-compose.yml ps
-docker compose -f ~/apps/interviewiq/docker-compose.yml restart
+docker compose -f ~/apps/08-interviewiq/docker-compose.yml logs --tail 50
+docker compose -f ~/apps/08-interviewiq/docker-compose.yml ps
+docker compose -f ~/apps/08-interviewiq/docker-compose.yml restart
 ```
 
 ---
@@ -210,17 +210,17 @@ docker compose -f ~/apps/interviewiq/docker-compose.yml restart
 
 1. Find the desired image tag in the ECR console or via CLI:
    ```bash
-   aws ecr describe-images --repository-name techtoday/interviewiq \
+   aws ecr describe-images --repository-name techtoday/08-interviewiq \
      --region us-east-1 --query 'imageDetails[*].imageTags' --output table
    ```
 2. On EC2, update the image tag and restart:
    ```bash
-   cd ~/apps/interviewiq
+   cd ~/apps/08-interviewiq
    # Edit docker-compose.yml: change :latest to the rollback tag
    docker compose pull
    docker compose up -d
    ```
-3. Verify: `curl -I https://app.techtoday.click/interviewiq/`
+3. Verify: `curl -I https://app.techtoday.click/08-interviewiq/`
 
 ---
 
@@ -230,20 +230,20 @@ If the workflow fails, deploy manually:
 
 ```bash
 # Build from the project directory (linux/amd64 for EC2)
-cd projects/interviewiq
-docker build --platform linux/amd64 -t interviewiq .
+cd projects/08-interviewiq
+docker build --platform linux/amd64 -t 08-interviewiq .
 
 # Tag and push to ECR
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 REGION=us-east-1
 ECR=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com
 aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR
-docker tag interviewiq $ECR/techtoday/interviewiq:latest
-docker push $ECR/techtoday/interviewiq:latest
+docker tag 08-interviewiq $ECR/techtoday/08-interviewiq:latest
+docker push $ECR/techtoday/08-interviewiq:latest
 
 # On EC2: pull and restart
-docker compose -f ~/apps/interviewiq/docker-compose.yml pull
-docker compose -f ~/apps/interviewiq/docker-compose.yml up -d
+docker compose -f ~/apps/08-interviewiq/docker-compose.yml pull
+docker compose -f ~/apps/08-interviewiq/docker-compose.yml up -d
 
 # Recover disk space
 docker image prune -af
@@ -254,5 +254,5 @@ docker image prune -af
 ## Deployment Status
 
 Deployment automation is ready.  The self-provisioning workflow
-(`deploy-interviewiq.yml`) handles all AWS and EC2 provisioning on the
+(`deploy-08-interviewiq.yml`) handles all AWS and EC2 provisioning on the
 first push.

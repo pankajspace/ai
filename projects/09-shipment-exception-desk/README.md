@@ -19,16 +19,16 @@ the shared Flask plus Docker container architecture used by this repository.
 ## Project Details
 
 1. Project type: Container app (Flask + Docker).
-2. Project folder: projects/shipment-exception-desk/.
+2. Project folder: projects/09-shipment-exception-desk/.
 3. Local URL: http://localhost:8086
-4. Production URL: https://app.techtoday.click/shipment-exception-desk/
+4. Production URL: https://app.techtoday.click/09-shipment-exception-desk/
 5. Local port: 8086 maps to container 5000.
 6. EC2 host port: 5006 maps to container 5000.
-7. ECR repository: techtoday/shipment-exception-desk.
-8. Production service name: shipment-exception-desk.
-9. PATH_PREFIX: /shipment-exception-desk.
-10. Workflow filename: deploy-shipment-exception-desk.yml.
-11. Trigger path: projects/shipment-exception-desk/**.
+7. ECR repository: techtoday/09-shipment-exception-desk.
+8. Production service name: 09-shipment-exception-desk.
+9. PATH_PREFIX: /09-shipment-exception-desk.
+10. Workflow filename: deploy-09-shipment-exception-desk.yml.
+11. Trigger path: projects/09-shipment-exception-desk/**.
 
 ### Routes
 
@@ -41,7 +41,7 @@ the shared Flask plus Docker container architecture used by this repository.
 
 ## Project Structure
 
-projects/shipment-exception-desk/
+projects/09-shipment-exception-desk/
 |- Dockerfile
 |- docker-compose.yml
 |- requirements.txt
@@ -76,7 +76,7 @@ projects/shipment-exception-desk/
 Complete one-time setup in projects/SETUP.md, then ensure Docker is running and
 verify with docker info.
 
-1. cd projects/shipment-exception-desk
+1. cd projects/09-shipment-exception-desk
 2. cp .env.example .env
 3. Edit .env and add OPENAI_API_KEY
 4. docker compose build web
@@ -100,7 +100,7 @@ rebuilds. Rebuild after Dockerfile or requirements.txt changes.
 ## Production Setup
 
 The deploy workflow provisions and updates this project automatically: ECR repo,
-seed image, EC2 env file at ~/secrets/shipment-exception-desk.env, Nginx path
+seed image, EC2 env file at ~/secrets/09-shipment-exception-desk.env, Nginx path
 location file, and project compose service.
 
 Only one manual action can remain: if OPENAI_API_KEY is not already present in
@@ -113,43 +113,43 @@ techtoday/secrets, add it before first deploy as IAM user techtoday.
 ## Commit and Automatic Deployment
 
 1. git checkout main
-2. git add projects/shipment-exception-desk .github/workflows/deploy-shipment-exception-desk.yml
-3. git commit -m "Add shipment-exception-desk project"
+2. git add projects/09-shipment-exception-desk .github/workflows/deploy-09-shipment-exception-desk.yml
+3. git commit -m "Add 09-shipment-exception-desk project"
 4. git push origin main
 
-The push under projects/shipment-exception-desk/** triggers workflow
-deploy-shipment-exception-desk.yml.
+The push under projects/09-shipment-exception-desk/** triggers workflow
+deploy-09-shipment-exception-desk.yml.
 
 ## Production Verification and Troubleshooting
 
-1. curl -I https://app.techtoday.click/shipment-exception-desk/
-2. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml ps
-3. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml logs --tail 100
-4. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml restart
+1. curl -I https://app.techtoday.click/09-shipment-exception-desk/
+2. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml ps
+3. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml logs --tail 100
+4. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml restart
 
 ## Rollback
 
-1. aws ecr describe-images --repository-name techtoday/shipment-exception-desk --region us-east-1 --query 'imageDetails[*].imageTags' --output table
-2. On EC2, set the desired image tag in ~/apps/shipment-exception-desk/docker-compose.yml.
-3. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml pull
-4. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml up -d
-5. Verify: curl -I https://app.techtoday.click/shipment-exception-desk/
+1. aws ecr describe-images --repository-name techtoday/09-shipment-exception-desk --region us-east-1 --query 'imageDetails[*].imageTags' --output table
+2. On EC2, set the desired image tag in ~/apps/09-shipment-exception-desk/docker-compose.yml.
+3. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml pull
+4. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml up -d
+5. Verify: curl -I https://app.techtoday.click/09-shipment-exception-desk/
 
 ## Manual Deployment
 
-1. cd projects/shipment-exception-desk
-2. docker build --platform linux/amd64 -t shipment-exception-desk .
+1. cd projects/09-shipment-exception-desk
+2. docker build --platform linux/amd64 -t 09-shipment-exception-desk .
 3. ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 4. REGION=us-east-1
 5. ECR=$ACCOUNT.dkr.ecr.$REGION.amazonaws.com
 6. aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin $ECR
-7. docker tag shipment-exception-desk $ECR/techtoday/shipment-exception-desk:latest
-8. docker push $ECR/techtoday/shipment-exception-desk:latest
-9. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml pull
-10. On EC2: docker compose -f ~/apps/shipment-exception-desk/docker-compose.yml up -d
+7. docker tag 09-shipment-exception-desk $ECR/techtoday/09-shipment-exception-desk:latest
+8. docker push $ECR/techtoday/09-shipment-exception-desk:latest
+9. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml pull
+10. On EC2: docker compose -f ~/apps/09-shipment-exception-desk/docker-compose.yml up -d
 11. Optional disk cleanup: docker image prune -af
 
 ## Deployment Status
 
-Deployment automation is ready once .github/workflows/deploy-shipment-exception-desk.yml
+Deployment automation is ready once .github/workflows/deploy-09-shipment-exception-desk.yml
 exists and contains no template placeholder strings.
