@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Document Chunking &middot; AI RAG & Chroma</title>
+    <meta name="description"
+        content="🧩 Document Chunking splits your text into overlapping pieces with LangChain&#x27;s RecursiveCharacterTextSplitter &amp;mdash; the first step of every RAG pipeline. No API key or model is used." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI RAG & Chroma</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI RAG & Chroma</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-08-chunking-py">01_chunking.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🧩 Document Chunking<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🧩 Document Chunking</strong> splits your text into overlapping pieces with LangChain's <code>RecursiveCharacterTextSplitter</code> &mdash; the first step of every RAG pipeline. No API key or model is used.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Document Chunking</strong> is the foundational preprocessing stage of every
+                        Retrieval-Augmented Generation (RAG) system. Before a long document, manual, or book can be
+                        indexed in a vector database, it must be broken into smaller, self-contained passages called
+                        <strong>chunks</strong> so that embedding models can represent each idea accurately and only the
+                        relevant passages are sent to the LLM.
+                    </p>
+                    <p>
+                        This demo uses LangChain's <code>RecursiveCharacterTextSplitter</code> with configurable
+                        <code>chunk_size</code> (default <code>250</code> characters) and <code>chunk_overlap</code>
+                        (default <code>40</code> characters). Rather than slicing text blindly every <em>N</em>
+                        characters &mdash; which cuts words and sentences in half &mdash; the recursive splitter walks a
+                        hierarchy of natural boundaries (paragraphs &rarr; lines &rarr; words &rarr; characters) and
+                        carries a sliding window of shared text across adjacent chunks.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why Chunking Is Necessary for RAG</strong></p>
+                    <p>
+                        Embedding an entire 50-page document into a single vector averages hundreds of distinct topics
+                        into one blurry point in vector space, making retrieval imprecise. Conversely, feeding whole
+                        documents into an LLM prompt wastes tokens, increases latency, and triggers the <em>"lost in the
+                        middle"</em> phenomenon where models overlook facts buried inside huge contexts.
+                    </p>
+                    <p><strong>2. How <code>RecursiveCharacterTextSplitter</code> Preserves Meaning</strong></p>
+                    <p>
+                        The splitter attempts to divide text using an ordered list of separators:
+                        <code>["\n\n", "\n", " ", ""]</code>:
+                    </p>
+                    <ol>
+                        <li>First, it splits on double newlines (<code>"\n\n"</code>) to keep whole paragraphs intact.</li>
+                        <li>If a paragraph still exceeds <code>chunk_size</code>, it recursively splits that paragraph
+                            on single newlines (<code>"\n"</code>).</li>
+                        <li>If a line is still too long, it splits on spaces (<code>" "</code>) so words stay whole,
+                            falling back to individual characters only as a last resort.</li>
+                    </ol>
+                    <p><strong>3. The Chunk Size Trade-Off (Precision vs. Context)</strong></p>
+                    <ul>
+                        <li><strong>Too Small (e.g., &lt;100 chars):</strong> Chunks become isolated sentence fragments
+                            missing their subject or antecedents (e.g., <em>"It expires after 30 days"</em> without
+                            saying what <em>"It"</em> is).</li>
+                        <li><strong>Too Large (e.g., &gt;2,000 chars):</strong> Multiple unrelated topics get merged into
+                            one chunk, diluting the embedding vector and adding noise to the LLM prompt.</li>
+                    </ul>
+                    <p><strong>4. Context Continuity via <code>chunk_overlap</code></strong></p>
+                    <p>
+                        When an important thought straddles the boundary between Chunk <em>i</em> and Chunk
+                        <em>i + 1</em>, a hard cut would split the premise from its conclusion. Setting
+                        <code>chunk_overlap=40</code> repeats the trailing ~40 characters of Chunk <em>i</em> at the
+                        start of Chunk <em>i + 1</em>, acting as semantic glue across split boundaries.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>ChunkingCard.tsx</code> sends <code>POST /api/chunk</code> with <code>{ text, chunk_size, chunk_overlap }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>chunking_service(req)</code> calls <code>chunk_text()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>01_chunking.py</code>)</span>
+                            <span class="flow-detail">Builds the splitter and calls <code>split_text(text)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows each chunk and the total count.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["ChunkingCard.tsx<br/>POST /api/chunk"]:::entry -->|"text, size, overlap"| R["main.py<br/>chunking_service()"]:::fn
+    R -->|"text, size, overlap"| S["01_chunking.py<br/>chunk_text()"]:::fn
+    S -->|"text"| T["RecursiveCharacterTextSplitter<br/>split_text()"]:::fn
+    T -->|"list of chunks"| S
+    S -->|"chunks"| R
+    R -->|"JSON { total_chunks, chunks }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-08-chunking-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-08-chunking-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-08-chunking-py" class="topic-title is-file">01_chunking.py<a class="headerlink" href="#source-08-chunking-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">64 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-08-chunking-py">
+                    <p class="file-label">Text Chunking Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Text Chunking Service.
+
+This service splits long documents into smaller, overlapping chunks suitable
+for vector embeddings and retrieval (RAG).
+&quot;&quot;&quot;
+
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+from pydantic import BaseModel
+
+TEXT_RAG = (
+    &quot;Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. &quot;
+    &quot;Before documents can be searched efficiently, they must be broken down into smaller pieces. &quot;
+    &quot;This process is called chunking. &quot;
+    &quot;RecursiveCharacterTextSplitter splits documents on paragraph breaks, line breaks, and spaces &quot;
+    &quot;to keep semantically related sentences together. &quot;
+    &quot;Chunk overlap ensures that context across boundaries is not lost between adjacent chunks. &quot;
+    &quot;These chunks are then converted into numerical vectors using embedding models, allowing &quot;
+    &quot;similarity search to locate the most relevant sections when answering a user question.&quot;
+)
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class ChunkingRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for text chunking.&quot;&quot;&quot;
+
+    text: str = TEXT_RAG
+    chunk_size: int = 250
+    chunk_overlap: int = 40
+
+
+class ChunkingResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing generated chunks and configuration.&quot;&quot;&quot;
+
+    total_chunks: int
+    chunk_size: int
+    chunk_overlap: int
+    chunks: list[str]
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def chunk_text(text: str = TEXT_RAG, chunk_size: int = 250, chunk_overlap: int = 40) -&gt; list[str]:
+    &quot;&quot;&quot;Split text into overlapping chunks using RecursiveCharacterTextSplitter.
+
+    Args:
+        text: Input text document.
+        chunk_size: Target characters per chunk.
+        chunk_overlap: Shared characters between adjacent chunks.
+
+    Returns:
+        List of text chunks.
+    &quot;&quot;&quot;
+    # ① Configure RecursiveCharacterTextSplitter with target chunk size and overlap.
+    #   It tries to split on paragraphs (\n\n), then lines (\n), then spaces, so related
+    #   sentences stay together while keeping each chunk under chunk_size.
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,        # aim for target chars per chunk
+        chunk_overlap=chunk_overlap,  # adjacent chunks share chars (context glue)
+    )
+    # ② Split the document text into overlapping chunks preserving natural boundaries
+    return splitter.split_text(text)</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">40 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <p class="file-label">FastAPI route handler for <code>POST /api/chunk</code> (chunking_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    ChunkingRequest,
+    ChunkingResponse,
+    chunk_text,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI RAG & Chroma API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/chunk&quot;, response_model=ChunkingResponse)
+def chunking_service(req: ChunkingRequest):
+    # ① Validate text and split into overlapping chunks
+    if not req.text.strip():
+        raise HTTPException(status_code=400, detail=&quot;Text cannot be empty&quot;)
+    try:
+        chunks = chunk_text(req.text, req.chunk_size, req.chunk_overlap)
+        return ChunkingResponse(
+            total_chunks=len(chunks),
+            chunk_size=req.chunk_size,
+            chunk_overlap=req.chunk_overlap,
+            chunks=chunks,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI RAG & Chroma &mdash; 🧩 Document Chunking &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Joke Generator &middot; AI Basics</title>
+    <meta name="description"
+        content="😂 Joke Generator reuses the same OpenAI SDK but points it at Groq&#x27;s OpenAI-compatible endpoint, so a different provider and model answer with only a new base_url and API key." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Basics</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Basics</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-02-chat-groq-py">02_chat_groq.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">😂 Joke Generator<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>😂 Joke Generator</strong> reuses the same OpenAI SDK but points it at Groq's OpenAI-compatible endpoint, so a different provider and model answer with only a new <code>base_url</code> and API key.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Joke Generator</strong> demonstrates one of the most practical architectural patterns in
+                        modern AI engineering: <strong>provider portability via OpenAI-compatible APIs</strong>. Instead
+                        of installing a proprietary SDK for every model host, this demo reuses the exact same
+                        <code>openai.OpenAI</code> client from the Travel Guide demo but points its
+                        <code>base_url</code> at <strong>Groq's</strong> high-speed inference cloud
+                        (<code>https://api.groq.com/openai/v1</code>).
+                    </p>
+                    <p>
+                        By swapping only three configuration values &mdash; <code>api_key</code>
+                        (<code>GROQ_API_KEY</code>), <code>base_url</code> (<code>GROQ_BASE_URL</code>), and
+                        <code>model</code> (<code>llama-3.3-70b-versatile</code>) &mdash; the service routes requests to
+                        an open-weights LLaMA 3.3 70B model running on Groq's LPU (Language Processing Unit) hardware,
+                        generating topical jokes with sub-second latency.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The OpenAI Chat Completions Standard as a Universal Contract</strong></p>
+                    <p>
+                        The OpenAI <code>/v1/chat/completions</code> JSON request/response specification has become the
+                        <em>de facto</em> industry wire protocol. Providers such as Groq, Google Gemini, Together AI,
+                        Fireworks, OpenRouter, Ollama, and vLLM all expose OpenAI-compatible endpoints. Writing against
+                        this single client interface prevents vendor lock-in and lets teams benchmark or fail over
+                        between cloud providers without rewriting application logic.
+                    </p>
+                    <p><strong>2. Open-Weights Models on Specialized Inference Hardware</strong></p>
+                    <p>
+                        While proprietary models (like GPT-4o) are tied to a single vendor, open-weights models (such as
+                        Meta's <code>llama-3.3-70b-versatile</code> or OpenAI's <code>gpt-oss</code> series) can be
+                        hosted by multiple competing inference providers. Groq runs these models on deterministic SRAM
+                        LPU chips, delivering hundreds of tokens per second &mdash; ideal for interactive user-facing
+                        features.
+                    </p>
+                    <p><strong>3. Decoupling Code from Provider Credentials</strong></p>
+                    <p>
+                        Notice that the message construction (<code>system</code> persona + <code>user</code> topic),
+                        the <code>client.chat.completions.create()</code> call, and the response extraction
+                        (<code>response.choices[0].message.content</code>) are line-for-line identical to the OpenAI
+                        Travel Guide service. Only the client initialization parameters change, loaded cleanly from
+                        <code>.env</code>.
+                    </p>
+                    <p><strong>4. Boundary Validation with Pydantic</strong></p>
+                    <p>
+                        The service defines <code>JokeRequest</code> and <code>JokeResponse</code> Pydantic schemas so
+                        FastAPI automatically validates incoming JSON payloads, supplies sensible defaults
+                        (<code>topic="programming"</code>), and documents the exact response contract in OpenAPI/Swagger.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>JokeGeneratorCard.tsx</code> sends <code>POST /api/joke</code> with <code>{ topic }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>joke_generator(req)</code> calls <code>get_groq_joke(topic)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>02_chat_groq.py</code>)</span>
+                            <span class="flow-detail">Creates <code>OpenAI(api_key=GROQ_API_KEY, base_url=GROQ_BASE_URL)</code> and sends the persona + topic prompt.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Groq API</span>
+                            <span class="flow-detail">Returns the joke text.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows <code>{ topic, joke }</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["JokeGeneratorCard.tsx<br/>POST /api/joke"]:::entry -->|"topic"| R["main.py<br/>joke_generator()"]:::fn
+    R -->|"topic"| S["02_chat_groq.py<br/>get_groq_joke()"]:::fn
+    S -->|"persona + topic prompt"| G[("Groq API<br/>OpenAI-compatible")]:::ext
+    G -->|"joke text"| S
+    S -->|"joke text"| R
+    R -->|"JSON { topic, joke }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-02-chat-groq-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-02-chat-groq-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-02-chat-groq-py" class="topic-title is-file">02_chat_groq.py<a class="headerlink" href="#source-02-chat-groq-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">71 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-02-chat-groq-py">
+                    <p class="file-label">Groq Chat Completion Service - Joke Generator.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Groq Chat Completion Service - Joke Generator.
+
+This service demonstrates using an alternative high-speed LLM provider (Groq)
+via the OpenAI-compatible client interface:
+1. Groq hosts open-weights models (such as LLaMA 3.3 70B) with high inference speed.
+2. The standard `openai.OpenAI` client is reused by setting `base_url` to Groq&#x27;s endpoint
+   and authenticating with `GROQ_API_KEY`.
+3. Pydantic models (JokeRequest, JokeResponse) validate and serialize API payloads.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+# ---------------------------------------------------------------------------
+# Configuration &amp; Environment Setup
+# ---------------------------------------------------------------------------
+# Automatically locate and load the nearest .env file (e.g. at the repo or project root)
+load_dotenv(find_dotenv())
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class JokeRequest(BaseModel):
+    &quot;&quot;&quot;Input payload specifying the joke topic.&quot;&quot;&quot;
+
+    topic: str = &quot;programming&quot;
+
+
+class JokeResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing the topic and generated joke.&quot;&quot;&quot;
+
+    topic: str
+    joke: str
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def get_groq_joke(topic: str = &quot;programming&quot;) -&gt; str:
+    &quot;&quot;&quot;Tell a funny joke on a topic using Groq.
+
+    Args:
+        topic: Topic for the joke (defaults to &quot;programming&quot;).
+
+    Returns:
+        A humorous joke generated by the Groq model.
+    &quot;&quot;&quot;
+    # ① Initialize the OpenAI SDK client configured for Groq&#x27;s base URL
+    #   Read endpoint and model configuration (falling back to sensible defaults)
+    client = OpenAI(
+        api_key=os.getenv(&quot;GROQ_API_KEY&quot;),
+        base_url=os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;),
+        timeout=15.0,
+    )
+    model = os.getenv(&quot;GROQ_MODEL&quot;, &quot;llama-3.3-70b-versatile&quot;)
+
+    # ② Build the messages (system = persona, user = topic request)
+    messages = [
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a funny joke teller.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;Tell me a joke about {topic}.&quot;},
+    ]
+
+    # ③ Call the chat completions endpoint with system persona and user topic
+    response = client.chat.completions.create(model=model, messages=messages)
+
+    # ④ Extract and return the joke text
+    return response.choices[0].message.content or &quot;&quot;</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <p class="file-label">FastAPI route handler for <code>POST /api/joke</code> (joke_generator) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    JokeRequest,
+    JokeResponse,
+    get_groq_joke,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI Basics API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/joke&quot;, response_model=JokeResponse)
+def joke_generator(req: JokeRequest):
+    # ① Validate topic and call Groq joke generator service
+    if not req.topic.strip():
+        raise HTTPException(status_code=400, detail=&quot;Topic cannot be empty&quot;)
+    try:
+        return JokeResponse(topic=req.topic, joke=get_groq_joke(req.topic))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Basics &mdash; 😂 Joke Generator &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

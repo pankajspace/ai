@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Reliability &middot; TechToday</title>
+    <meta name="description"
+        content="CoT vs Direct reasoning, JSON determinism, tool schema calibration, and error injection benchmarks." />
+    <link rel="icon" href="logo.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>AI Reliability</h1>
+                <p class="subtitle">Chain-of-thought, determinism, schema calibration, and error resilience</p>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="container">
+                <div class="grid">
+
+                    <!-- 1. CoT vs Direct -->
+                    <div class="card card-half" id="card-cot">
+                        <h2>
+                            <span class="card-title">🧠 CoT vs Direct Reasoning</span>
+                            <a class="info-link" href="info/cot-vs-direct.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Direct answers vs Chain-of-Thought on spatial navigation &amp; relational logic.</p>
+                        <p>See why step-by-step reasoning is required for high-accuracy reasoning pipelines.</p>
+                        <div class="options">
+                            <label class="option">Logic Puzzle
+                                <select id="cotProblem">
+                                    <option value="Spatial Navigation (Grid)" selected>Spatial Navigation (Grid Coordinates)</option>
+                                    <option value="Relational Logic (Family Tree)">Relational Logic (Family Tree)</option>
+                                    <option value="Temporal Scheduling (Calendar)">Temporal Scheduling (Calendar)</option>
+                                </select>
+                            </label>
+                        </div>
+                        <span class="validation" id="cotValidation"></span>
+                        <button id="cotBtn">Run Logic Benchmark</button>
+                        <div class="result" id="cotResult"></div>
+                    </div>
+
+                    <!-- 2. Variance & Determinism -->
+                    <div class="card card-half" id="card-variance">
+                        <h2>
+                            <span class="card-title">🎲 Structured Output Determinism</span>
+                            <a class="info-link" href="info/variance-determinism.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Unconstrained vs Prompt-Constrained vs Schema-Enforced JSON extraction.</p>
+                        <p>Evaluate how schema enforcement eliminates downstream parser crashes.</p>
+                        <textarea id="varianceInput" rows="3" placeholder="Review text…">The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars.</textarea>
+                        <span class="validation" id="varianceValidation"></span>
+                        <button id="varianceBtn">Compare Determinism</button>
+                        <div class="result" id="varianceResult"></div>
+                    </div>
+
+                    <!-- 3. Tool Schema Calibration -->
+                    <div class="card card-half" id="card-calib">
+                        <h2>
+                            <span class="card-title">🎯 Tool Schema Routing Calibration</span>
+                            <a class="info-link" href="info/tool-schema-calibration.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">2x2 matrix: Descriptive vs Opaque names &times; Loose vs Tight descriptions.</p>
+                        <p>Determines whether models route on tool name keywords or deep semantic docstrings.</p>
+                        <input type="text" id="calibInput" placeholder="User intent query…" value="What is the current hourly precipitation forecast for Seattle?" />
+                        <div class="preset-row">
+                            <span class="preset-label">Quick pick:</span>
+                            <button type="button" class="preset-chip active" data-q="What is the current hourly precipitation forecast for Seattle?">Precipitation (Specific)</button>
+                            <button type="button" class="preset-chip" data-q="What is the general temperature in Seattle?">General Weather</button>
+                        </div>
+                        <span class="validation" id="calibValidation"></span>
+                        <button id="calibBtn">Calibrate Routing</button>
+                        <div class="result" id="calibResult"></div>
+                    </div>
+
+                    <!-- 4. Tool Error Injection -->
+                    <div class="card card-half" id="card-errorInj">
+                        <h2>
+                            <span class="card-title">🛡️ Tool Error Injection &amp; Scoring</span>
+                            <a class="info-link" href="info/tool-error-injection.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Simulates upstream HTTP 503 outages and scores hallucination vs honesty.</p>
+                        <p>Injects an upstream outage on Paris weather and checks whether model reports error or invents fake temperature.</p>
+                        <input type="text" id="errorInjInput" placeholder="Query mentioning Paris…" value="Compare the weather in Tokyo and Paris today." />
+                        <span class="validation" id="errorInjValidation"></span>
+                        <button id="errorInjBtn">Inject Outage &amp; Score</button>
+                        <div class="result" id="errorInjResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>TechToday &middot; 06-ai-reliability &middot; Port 8088 (Local) / 5008 (EC2)</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

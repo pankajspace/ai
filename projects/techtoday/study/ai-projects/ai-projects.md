@@ -26,3 +26,59 @@ An AI coach for mock interviews. A ReAct agent checks each answer for STAR struc
 Sorts shipment problems by urgency. Applies compensation policies, escalates issues, and drafts messages. Keeps a live daily ledger with KPI totals.
 
 [Open project →](https://app.techtoday.click/shipment-exception-desk/)
+
+[ⓘ](llms-prompting.html)
+
+### AI Basics
+
+Direct LLM chat, memory, tool use, and multi-tool agent workflows with OpenAI and Groq.
+
+[Open project →](https://app.techtoday.click/01-ai-basics/)
+
+[ⓘ](rag-embeddings.html)
+
+### AI RAG & Chroma
+
+Recursive character chunking, semantic sentence embeddings, and vector RAG retrieval with Chroma.
+
+[Open project →](https://app.techtoday.click/02-ai-rag-chroma/)
+
+[ⓘ](docker.html)
+
+### AI Model Training & ChromaDB
+
+Supervised ML delivery ETA training, ChromaDB notes RAG, and Redis agent session memory.
+
+[Open project →](https://app.techtoday.click/03-ai-model-training-chromadb/)
+
+[ⓘ](aws-strands.html)
+
+### AWS Strands Agents
+
+12 Bedrock and LangGraph agent patterns: custom tools, prebuilt tools, class-based state, and async pipelines.
+
+[Open project →](https://app.techtoday.click/04-ai-aws-strands/)
+
+[ⓘ](ai-systems.html)
+
+### AI Systems
+
+Prompting strategies (Direct, Zero-Shot CoT, Few-Shot CoT), sycophancy trap benchmarks, and multi-judge refund arbitration.
+
+[Open project →](https://app.techtoday.click/05-ai-systems/)
+
+[ⓘ](ai-systems.html)
+
+### AI Reliability
+
+Chain-of-thought vs direct reasoning, JSON determinism, tool schema calibration, and error injection benchmarks.
+
+[Open project →](https://app.techtoday.click/06-ai-reliability/)
+
+[ⓘ](mcp-evals.html)
+
+### AI MCP & Evals
+
+Direct Model Context Protocol client, MCP agent loop, and automated tool evaluation suite over stdio.
+
+[Open project →](https://app.techtoday.click/07-ai-mcp-evals/)

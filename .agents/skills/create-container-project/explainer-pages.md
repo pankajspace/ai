@@ -84,7 +84,7 @@ def info(filename):
 
 ## 3. Shared assets
 
-Create once per project (not once per demo) by copying these two files verbatim from `projects/ai-pocs/client/public/`:
+Create once per project (not once per demo) by copying these two files verbatim from `projects/template/src/` (or `projects/01-ai-basics/src/`):
 
 - `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
 - `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
@@ -93,7 +93,7 @@ Projects carry byte-identical copies, and `projects/techtoday/js/info.js` is ide
 
 ## 4. One page per demo — `src/info/<demo>.html`
 
-Copy the shell of an existing page (e.g. `projects/ai-pocs/client/public/info/travel-guide.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
+Copy the shell of an existing page (e.g. `projects/01-ai-basics/src/info/joke.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
 
 - **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a `&larr; <Project>` `nav-back-link`.
 - **`<h1 id="how-it-works">`** — the card's emoji + title (CSS adds the "How it works" eyebrow), then a `p.lede` with the models/providers used.

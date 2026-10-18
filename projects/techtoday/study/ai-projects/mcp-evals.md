@@ -360,7 +360,7 @@ Always test on the transport you will deploy on.
 
 ### What the demo builds
 
-> 🔑 **Runnable version.** A live version is at <https://app.techtoday.click/ai-pocs/>: MCP Plumbing, Cricket Agent with tools on/off, and Eval Suite.
+> 🔑 **Runnable version.** A live version is at <https://app.techtoday.click/07-ai-mcp-evals/>: MCP Plumbing, Cricket Agent with tools on/off, and Eval Suite.
 
 1. An MCP server with `get_live_score` and `get_player_stats`.
 2. A plain MCP client with no AI.

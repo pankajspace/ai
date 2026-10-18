@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWS Strands Agents &middot; TechToday</title>
+    <meta name="description"
+        content="12 Bedrock and LangGraph agent patterns: custom tools, prebuilt tools, class-based state, and async pipelines." />
+    <link rel="icon" href="logo.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>AWS Strands Agents</h1>
+                <p class="subtitle">12 Bedrock, LangGraph, and async tool-calling agent patterns</p>
+            </div>
+        </section>
+
+        <section id="tools">
+            <div class="container">
+                <div class="grid">
+
+                    <!-- 1. Hello World Agent -->
+                    <div class="card card-half" id="card-hello">
+                        <h2>
+                            <span class="card-title">👋 Hello World Agent</span>
+                            <a class="info-link" href="info/hello-world-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Minimal single-turn Bedrock agent invocation via Strands Agent SDK.</p>
+                        <p>Ask a greeting or question to inspect agent messages structure.</p>
+                        <input type="text" id="helloInput" placeholder="Enter prompt…" value="Hello! What are you capable of?" />
+                        <span class="validation" id="helloValidation"></span>
+                        <button id="helloBtn">Run Hello Agent</button>
+                        <div class="result" id="helloResult"></div>
+                    </div>
+
+                    <!-- 2. LangGraph Agent -->
+                    <div class="card card-half" id="card-langgraph">
+                        <h2>
+                            <span class="card-title">🕸️ LangGraph Agent</span>
+                            <a class="info-link" href="info/langgraph-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">StateGraph ReAct cycle running Bedrock models.</p>
+                        <p>Evaluate state machine transitions with cyclic execution.</p>
+                        <input type="text" id="langgraphInput" placeholder="Enter prompt…" value="Hi, can you introduce yourself and state your model?" />
+                        <span class="validation" id="langgraphValidation"></span>
+                        <button id="langgraphBtn">Run LangGraph</button>
+                        <div class="result" id="langgraphResult"></div>
+                    </div>
+
+                    <!-- 3. Function to Tool -->
+                    <div class="card card-half" id="card-fnTool">
+                        <h2>
+                            <span class="card-title">⚙️ Function-to-Tool Reflection</span>
+                            <a class="info-link" href="info/function-to-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Automatic type-hint parsing into Bedrock function schemas.</p>
+                        <p>Queries health-check endpoint using converted Python function.</p>
+                        <input type="text" id="fnToolInput" placeholder="Enter question…" value="Check if https://techtoday.click is currently healthy and reachable." />
+                        <span class="validation" id="fnToolValidation"></span>
+                        <button id="fnToolBtn">Run Health Tool</button>
+                        <div class="result" id="fnToolResult"></div>
+                    </div>
+
+                    <!-- 4. Tip Calculator -->
+                    <div class="card card-half" id="card-tip">
+                        <h2>
+                            <span class="card-title">💳 Tip &amp; Split Agent</span>
+                            <a class="info-link" href="info/tip-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Structured tool invocation for arithmetic billing and party splits.</p>
+                        <p>Calculate total with gratuity and split among diners.</p>
+                        <input type="text" id="tipInput" placeholder="Enter billing query…" value="Our bill was $120. Calculate an 18% tip and split it between 4 people." />
+                        <span class="validation" id="tipValidation"></span>
+                        <button id="tipBtn">Calculate Tip</button>
+                        <div class="result" id="tipResult"></div>
+                    </div>
+
+                    <!-- 5. Multi-Tool Sales -->
+                    <div class="card card-half" id="card-sales">
+                        <h2>
+                            <span class="card-title">🏷️ Multi-Tool Sales Pipeline</span>
+                            <a class="info-link" href="info/multi-tool-sales.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Sequential tool chaining: discount &rarr; tax &rarr; invoice formatting.</p>
+                        <p>Compute final total on retail purchases across multi-step calculation.</p>
+                        <input type="text" id="salesInput" placeholder="Sales task…" value="Apply a 15% discount to an item costing $240, then add 8.5% state sales tax." />
+                        <span class="validation" id="salesValidation"></span>
+                        <button id="salesBtn">Run Sales Chain</button>
+                        <div class="result" id="salesResult"></div>
+                    </div>
+
+                    <!-- 6. Custom Inventory -->
+                    <div class="card card-half" id="card-inv">
+                        <h2>
+                            <span class="card-title">📦 Custom Inventory Tool</span>
+                            <a class="info-link" href="info/custom-inventory.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Safe inventory query tool with SKU and location parameters.</p>
+                        <p>Ask for stock levels on tracked items (PROD-101, PROD-102, PROD-103).</p>
+                        <input type="text" id="invInput" placeholder="Inventory question…" value="How many units of PROD-101 and PROD-102 are available in the warehouse?" />
+                        <span class="validation" id="invValidation"></span>
+                        <button id="invBtn">Query Stock</button>
+                        <div class="result" id="invResult"></div>
+                    </div>
+
+                    <!-- 7. Prebuilt Calculator -->
+                    <div class="card card-half" id="card-calc">
+                        <h2>
+                            <span class="card-title">🧮 Prebuilt Calculator Tool</span>
+                            <a class="info-link" href="info/prebuilt-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Safe AST-evaluated calculator tool from strands-agents-tools.</p>
+                        <p>Solve compound algebraic expressions without eval() vulnerabilities.</p>
+                        <input type="text" id="calcInput" placeholder="Math problem…" value="What is (34 * 89) / (12 + 5) rounded to 2 decimal places?" />
+                        <span class="validation" id="calcValidation"></span>
+                        <button id="calcBtn">Compute Expression</button>
+                        <div class="result" id="calcResult"></div>
+                    </div>
+
+                    <!-- 8. Multi Prebuilt Tools -->
+                    <div class="card card-half" id="card-multiPre">
+                        <h2>
+                            <span class="card-title">🧰 Multi-Prebuilt Suite</span>
+                            <a class="info-link" href="info/multi-prebuilt-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Orchestrating prebuilt calculator, datetime, and string utilities.</p>
+                        <p>Solve mixed queries requiring current date, time math, and string formatting.</p>
+                        <input type="text" id="multiPreInput" placeholder="Multi-tool query…" value="What day of the week is it today, and what is 2 to the power of 16?" />
+                        <span class="validation" id="multiPreValidation"></span>
+                        <button id="multiPreBtn">Run Suite</button>
+                        <div class="result" id="multiPreResult"></div>
+                    </div>
+
+                    <!-- 9. Use AWS -->
+                    <div class="card card-half" id="card-aws">
+                        <h2>
+                            <span class="card-title">☁️ AWS Cloud Assistant</span>
+                            <a class="info-link" href="info/use-aws.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Bedrock Nova assistant specialized in AWS cloud architectures.</p>
+                        <p>Ask architectural questions regarding ECS, ECR, and IAM roles.</p>
+                        <input type="text" id="awsInput" placeholder="AWS architecture question…" value="What are the best practices for containerizing Flask on AWS EC2 behind Nginx?" />
+                        <span class="validation" id="awsValidation"></span>
+                        <button id="awsBtn">Ask Cloud Advisor</button>
+                        <div class="result" id="awsResult"></div>
+                    </div>
+
+                    <!-- 10. Class-Based Tools -->
+                    <div class="card card-half" id="card-clsTool">
+                        <h2>
+                            <span class="card-title">🏛️ Stateful Class-Based Tools</span>
+                            <a class="info-link" href="info/class-based-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Object-oriented tool definitions encapsulating state and connection pools.</p>
+                        <p>Perform stateful adjustments to an active inventory tracker.</p>
+                        <input type="text" id="clsToolInput" placeholder="Class tool query…" value="Deduct 5 items of SKU-ALPHA and check remaining quantity." />
+                        <span class="validation" id="clsToolValidation"></span>
+                        <button id="clsToolBtn">Execute Class Tool</button>
+                        <div class="result" id="clsToolResult"></div>
+                    </div>
+
+                    <!-- 11. Async Tools -->
+                    <div class="card card-half" id="card-asyncTool">
+                        <h2>
+                            <span class="card-title">⚡ Async Parallel Tools</span>
+                            <a class="info-link" href="info/async-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Non-blocking parallel tool lookups executing concurrently via asyncio.</p>
+                        <p>Queries 3 warehouse depots concurrently (~2s total instead of 6s sequential).</p>
+                        <input type="text" id="asyncToolInput" placeholder="Async query…" value="Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central." />
+                        <span class="validation" id="asyncToolValidation"></span>
+                        <button id="asyncToolBtn">Run Async Parallel</button>
+                        <div class="result" id="asyncToolResult"></div>
+                    </div>
+
+                    <!-- 12. Travel Assistant (Capstone) -->
+                    <div class="card card-wide" id="card-travel">
+                        <h2>
+                            <span class="card-title">🌍 Travel Planner Capstone</span>
+                            <a class="info-link" href="info/travel-assistant.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Comprehensive 5-tool coordinator: weather, currency converter, flights, lodging, and itinerary.</p>
+                        <p>Plan a multi-destination vacation with budget conversions and packing advice.</p>
+                        <input type="text" id="travelInput" placeholder="Travel query…" value="Plan a 3-day trip to Tokyo with budget 2000 USD converted to JPY and check weather." />
+                        <span class="validation" id="travelValidation"></span>
+                        <button id="travelBtn">Plan Entire Trip</button>
+                        <div class="result" id="travelResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>TechToday &middot; 04-ai-aws-strands &middot; Port 8084 (Local) / 5004 (EC2)</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

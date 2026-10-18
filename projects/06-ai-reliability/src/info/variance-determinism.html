@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Structured Output Determinism &middot; AI Reliability</title>
+    <meta name="description"
+        content="📐 Structured Output Determinism extracts the same review fields with three OpenAI strategies &amp;mdash; free-form, JSON by instruction, and API-enforced JSON mode &amp;mdash; and checks which outputs actually parse as JSON." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Reliability</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Reliability</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-27-variance-determinism-py">02_variance_determinism.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">📐 Structured Output Determinism<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>📐 Structured Output Determinism</strong> extracts the same review fields with three OpenAI strategies &mdash; free-form, JSON by instruction, and API-enforced JSON mode &mdash; and checks which outputs actually parse as JSON.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Structured Output Variance &amp; Determinism</strong> shows how to turn a stochastic
+                        text generator into a deterministic software component whose output can be safely parsed by
+                        downstream code. Given a free-text product review, the service asks the LLM to extract three
+                        fields (<code>sentiment</code>, <code>rating</code>, and <code>pros_and_cons</code>) under three
+                        progressively stricter strategies at <code>temperature=0.7</code>:
+                    </p>
+                    <ul>
+                        <li><strong>Strategy A (Unconstrained Freeform):</strong> Asks for the three fields in plain
+                            English with no format constraint &mdash; producing conversational prose or bullet points
+                            that immediately crash a downstream <code>json.loads()</code> parser.</li>
+                        <li><strong>Strategy B (Prompt-Constrained JSON):</strong> Instructs the model in the prompt to
+                            <em>"Respond in JSON format with keys..."</em> &mdash; often works, but frequently wraps the
+                            JSON in <code>```json ... ```</code> markdown fences or adds conversational preamble.</li>
+                        <li><strong>Strategy C (API Schema-Enforced JSON Mode):</strong> Sets
+                            <code>response_format={"type": "json_object"}</code> in the API request so the inference
+                            engine constrains token sampling at the logit level, guaranteeing valid, parseable JSON.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. A Semantically Correct Answer Can Still Crash Your Pipeline</strong></p>
+                    <p>
+                        To a human reader, <em>"Sentiment: Positive (4/5). Pros: great camera, sleek design. Cons: weak
+                        battery."</em> is a great summary. To a backend microservice that calls
+                        <code>json.loads(raw_output)</code> to insert rows into PostgreSQL, it is an unhandled
+                        <code>JSONDecodeError: Expecting value: line 1 column 1</code>. Software pipelines require
+                        <strong>syntactic determinism</strong>, not just semantic understanding.
+                    </p>
+                    <p><strong>2. Prompt Persuasion (Strategy B) vs. Constrained Decoding (Strategy C)</strong></p>
+                    <p>
+                        Asking for JSON in the prompt (Strategy B) merely nudges token probabilities; at
+                        <code>temperature=0.7</code>, the model may still emit markdown code fences
+                        (<code>```json</code>) or trailing commentary, requiring defensive regex stripping
+                        (<code>re.sub(r"^```(?:json)?\s*|\s*```$", "", raw_b)</code>). Passing
+                        <code>response_format={"type": "json_object"}</code> (or a strict JSON Schema) in Strategy C
+                        masks out invalid tokens during decoding so the model is mathematically prevented from emitting
+                        non-JSON syntax.
+                    </p>
+                    <p><strong>3. Why Temperature Is Kept at <code>0.7</code> Across All Three Strategies</strong></p>
+                    <p>
+                        Holding <code>temperature=0.7</code> constant proves that Strategy C's reliability comes from
+                        <strong>structural API enforcement</strong> rather than greedy decoding. Even when the model has
+                        sampling freedom over word choice, its output structure remains 100% valid JSON.
+                    </p>
+                    <p><strong>4. Inspecting Parser Failures with <code>check_json()</code></strong></p>
+                    <p>
+                        The helper <code>check_json(strategy_name, raw_output, text_to_parse)</code> runs
+                        <code>json.loads()</code> inside a <code>try/except json.JSONDecodeError</code> block and
+                        captures both <code>parsed_data</code> on success and the exact parser exception message
+                        (<code>parse_error</code>) on failure for side-by-side inspection.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>VarianceDeterminismCard.tsx</code> sends <code>POST /api/variance-determinism</code> with <code>{ review_text }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>variance_determinism_service(req)</code> calls <code>run_variance_determinism_benchmark()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>02_variance_determinism.py</code>)</span>
+                            <span class="flow-detail">Three OpenAI calls (A, B, C), then <code>check_json()</code> on each output.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows raw output, valid / invalid JSON and parsed fields per strategy.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["VarianceDeterminismCard.tsx<br/>POST /api/variance-determinism"]:::entry -->|"review_text"| R["main.py<br/>variance_determinism_service()"]:::fn
+    R -->|"review_text"| S["02_variance_determinism.py<br/>run_variance_determinism_benchmark()"]:::fn
+    S -->|"A: free-form prompt"| O[("OpenAI API")]:::ext
+    S -->|"B: JSON instructions"| O
+    S -->|"C: json_object mode"| O
+    O -->|"3 raw outputs"| S
+    S -->|"raw text"| J["check_json()"]:::fn
+    J -->|"parsed data or error"| S
+    S -->|"strategies"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-27-variance-determinism-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-27-variance-determinism-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-27-variance-determinism-py" class="topic-title is-file">02_variance_determinism.py<a class="headerlink" href="#source-27-variance-determinism-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">96 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-27-variance-determinism-py">
+                    <p class="file-label">Structured Output Variance &amp; Determinism Benchmark Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Structured Output Variance &amp; Determinism Benchmark Service.
+
+Evaluates how output constraints transform stochastic models into deterministic pipeline components:
+1. Strategy A (Unconstrained): Model asked for review summary freeform (high variance, brittle to parse).
+2. Strategy B (Prompt-Constrained): Prompt instructs JSON format (occasionally wraps markdown code blocks or violates schema).
+3. Strategy C (Schema-Enforced): Uses OpenAI Structured Outputs (`response_format: {&quot;type&quot;: &quot;json_object&quot;}` or schema) guaranteeing valid parseable JSON.
+&quot;&quot;&quot;
+
+import json
+import os
+from typing import Any, Dict, List, Optional
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+
+class VarianceDeterminismRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Variance &amp; Determinism Benchmark.&quot;&quot;&quot;
+
+    review_text: str = &quot;The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars.&quot;
+
+
+class StrategyOutput(BaseModel):
+    strategy_name: str
+    raw_output: str
+    is_valid_json: bool
+    parsed_data: Optional[Dict[str, Any]] = None
+    parse_error: Optional[str] = None
+
+
+class VarianceDeterminismResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Variance &amp; Determinism Benchmark.&quot;&quot;&quot;
+
+    strategies: List[StrategyOutput]
+
+
+def check_json(strategy_name: str, raw_output: str, text_to_parse: str) -&gt; dict:
+    &quot;&quot;&quot;Try to parse a model output as JSON and record whether it worked.&quot;&quot;&quot;
+    try:
+        return {&quot;strategy_name&quot;: strategy_name, &quot;raw_output&quot;: raw_output, &quot;is_valid_json&quot;: True,
+                &quot;parsed_data&quot;: json.loads(text_to_parse), &quot;parse_error&quot;: None}
+    except json.JSONDecodeError as exc:
+        return {&quot;strategy_name&quot;: strategy_name, &quot;raw_output&quot;: raw_output, &quot;is_valid_json&quot;: False,
+                &quot;parsed_data&quot;: None, &quot;parse_error&quot;: str(exc)}
+
+
+def run_variance_determinism_benchmark(
+    review_text: str = &quot;The new smartphone is amazing, the camera quality is top-notch but the battery life is a bit disappointing. I love the sleek design though! Rating: 4 out of 5 stars.&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run extraction across the three determinism strategies.&quot;&quot;&quot;
+    # ① Initialize OpenAI client
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    # ② Strategy A: Unconstrained freeform prompt (high variance, usually fails JSON parsing)
+    prompt_a = f&quot;Extract product, sentiment, pros, cons, and rating from this review:\n\n{review_text}&quot;
+    resp_a = client.chat.completions.create(model=model, messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt_a}])
+    text_a = resp_a.choices[0].message.content or &quot;&quot;
+
+    # ③ Strategy B: Prompt-constrained JSON instructions (may still need markdown fence stripping)
+    prompt_b = (
+        f&quot;Extract product, sentiment (positive/negative/mixed), pros (list), cons (list), and rating (number) &quot;
+        f&quot;from this review as JSON with keys &#x27;product&#x27;, &#x27;sentiment&#x27;, &#x27;pros&#x27;, &#x27;cons&#x27;, &#x27;rating&#x27;. &quot;
+        f&quot;Do not include markdown ticks or commentary:\n\n{review_text}&quot;
+    )
+    resp_b = client.chat.completions.create(model=model, messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt_b}])
+    text_b = resp_b.choices[0].message.content or &quot;&quot;
+
+    # ④ Strategy C: API Schema-Enforced JSON mode (response_format={&quot;type&quot;: &quot;json_object&quot;})
+    prompt_c = (
+        f&quot;Extract review metadata into JSON with keys &#x27;product&#x27;, &#x27;sentiment&#x27;, &#x27;pros&#x27;, &#x27;cons&#x27;, &#x27;rating&#x27;:\n\n{review_text}&quot;
+    )
+    resp_c = client.chat.completions.create(
+        model=model,
+        messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt_c}],
+        response_format={&quot;type&quot;: &quot;json_object&quot;},
+    )
+    text_c = resp_c.choices[0].message.content or &quot;&quot;
+
+    # ⑤ Check which outputs parse as JSON and return all three side by side
+    return {
+        &quot;strategies&quot;: [
+            check_json(&quot;Strategy A: Unconstrained (Freeform Prompt)&quot;, text_a, text_a),
+            check_json(
+                &quot;Strategy B: Prompt-Constrained (Instructional JSON)&quot;,
+                text_b,
+                text_b.replace(&quot;```json&quot;, &quot;&quot;).replace(&quot;```&quot;, &quot;&quot;).strip(),
+            ),
+            check_json(&quot;Strategy C: Schema-Enforced (API Guaranteed JSON)&quot;, text_c, text_c),
+        ],
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <p class="file-label">FastAPI route handler for <code>POST /api/variance-determinism</code> (variance_determinism_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    VarianceDeterminismRequest,
+    VarianceDeterminismResponse,
+    run_variance_determinism_benchmark,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AI Reliability API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/variance-determinism&quot;, response_model=VarianceDeterminismResponse)
+def variance_determinism_service(req: VarianceDeterminismRequest):
+    # ① Run Structured Output determinism benchmark across 3 JSON strategies
+    if not req.review_text.strip():
+        raise HTTPException(status_code=400, detail=&quot;Review text cannot be empty&quot;)
+    try:
+        return VarianceDeterminismResponse(**run_variance_determinism_benchmark(req.review_text))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Reliability &mdash; 📐 Structured Output Determinism &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

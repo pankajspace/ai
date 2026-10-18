@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Sales Pipeline Agent &middot; AWS Strands Agents</title>
+    <meta name="description"
+        content="📈 Sales Pipeline Agent gives a Strands agent three small tools &amp;mdash; get_sales_data, analyze_sales, send_email &amp;mdash; with no order, and the agent plans the chain itself." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AWS Strands Agents</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AWS Strands Agents</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-15-multi-tool-sales-py">05_multi_tool_sales.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">📈 Sales Pipeline Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>📈 Sales Pipeline Agent</strong> gives a Strands agent three small tools &mdash; <code>get_sales_data</code>, <code>analyze_sales</code>, <code>send_email</code> &mdash; with no order, and the agent plans the chain itself.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Multi-Tool Sales Pipeline Agent</strong> demonstrates <strong>autonomous multi-step
+                        planning and data dependency chaining</strong> across three specialized tools:
+                        <code>get_sales_data(quarter)</code>, <code>analyze_sales(revenue, deals)</code>, and
+                        <code>send_email(to, subject, body)</code>.
+                    </p>
+                    <p>
+                        When given a high-level goal like <em>"Get Q1 sales data, analyze it, and email the summary to
+                        boss@company.com"</em>, no Python code specifies the execution order. Instead, the agent inspects
+                        the tool signatures, deduces that <code>analyze_sales</code> requires <code>revenue</code> and
+                        <code>deals</code> numbers that only <code>get_sales_data</code> can provide, and chains all
+                        three tools across sequential turns until the email is dispatched.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Implicit Dependency Resolution via Tool Signatures</strong></p>
+                    <p>
+                        How does the agent know which tool to call first? Look at the input parameters:
+                    </p>
+                    <ol>
+                        <li><code>get_sales_data(quarter: str)</code> only needs <code>"Q1"</code>, which is already
+                            present in the user's prompt &mdash; so the agent calls it on Turn 1.</li>
+                        <li><code>analyze_sales(revenue: float, deals: int)</code> needs numerical metrics that were
+                            unknown until <code>get_sales_data</code> returned <code>{"revenue": 125000, "deals":
+                            42}</code> &mdash; so the agent calls it on Turn 2 using Turn 1's output.</li>
+                        <li><code>send_email(to: str, subject: str, body: str)</code> needs the analysis summary text
+                            from Turn 2 &mdash; so the agent calls it on Turn 3.</li>
+                    </ol>
+                    <p><strong>2. Single-Responsibility Principle for Agent Tools</strong></p>
+                    <p>
+                        A common anti-pattern is building a monolithic tool like
+                        <code>fetch_analyze_and_email_sales(quarter, recipient)</code>. While that works for one rigid
+                        workflow, it cannot answer <em>"Just compare Q1 and Q2 sales"</em> without sending an unwanted
+                        email. Keeping <code>get_sales_data</code>, <code>analyze_sales</code>, and
+                        <code>send_email</code> atomic lets the agent recombine them for any ad-hoc query.
+                    </p>
+                    <p><strong>3. Mocking External Side Effects During Development</strong></p>
+                    <p>
+                        By returning deterministic mock data in <code>get_sales_data</code> and simulating SMTP delivery
+                        in <code>send_email</code>, you can test and verify the agent's multi-step planning sequence
+                        (via <code>tool_sequence</code> in the response) safely before wiring real CRM or email APIs.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>MultiToolSalesCard.tsx</code> sends <code>POST /api/multi-tool-sales</code> with <code>{ task }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>multi_tool_sales_service(req)</code> calls <code>run_multi_tool_sales_agent(task)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Agent (<code>05_multi_tool_sales.py</code>)</span>
+                            <span class="flow-detail">Bedrock calls <code>get_sales_data</code> &rarr; <code>analyze_sales</code> &rarr; <code>send_email</code>, one result feeding the next.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the summary and the tool calls in the order they ran.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["MultiToolSalesCard.tsx<br/>POST /api/multi-tool-sales"]:::entry -->|"task"| R["main.py<br/>multi_tool_sales_service()"]:::fn
+    R -->|"task"| S["05_multi_tool_sales.py<br/>run_multi_tool_sales_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages + tool specs"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"toolUse: get_sales_data"| A
+    A -->|"quarter"| T0["get_sales_data()"]:::fn
+    T0 -->|"revenue, deals"| A
+    B -->|"toolUse: analyze_sales"| A
+    A -->|"revenue, deals, quarter"| T1["analyze_sales()"]:::fn
+    T1 -->|"summary line"| A
+    B -->|"toolUse: send_email"| A
+    A -->|"to, subject, body"| T2["send_email()"]:::fn
+    T2 -->|"Email sent"| A
+    A -->|"toolResult"| B
+    B -->|"final text"| A
+    A -->|"reply + agent.messages"| S
+    S -->|"reply + tool_calls"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-15-multi-tool-sales-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-15-multi-tool-sales-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-15-multi-tool-sales-py" class="topic-title is-file">05_multi_tool_sales.py<a class="headerlink" href="#source-15-multi-tool-sales-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">89 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-15-multi-tool-sales-py">
+                    <p class="file-label">Multi-Tool Sales Pipeline Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Multi-Tool Sales Pipeline Agent Service.
+
+Demonstrates autonomous multi-tool planning and chained orchestration:
+1. Three tools provided without explicit execution order:
+   - `get_sales_data(quarter: str)`
+   - `analyze_sales(revenue: int, deals: int, quarter: str)`
+   - `send_email(to: str, subject: str, body: str)`
+2. The agent plans the workflow: Fetch Data -&gt; Compute Analysis -&gt; Dispatch Email.
+3. Passes the output of each tool directly as inputs into the next step of the agentic loop.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+
+class MultiToolSalesRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Multi-Tool Sales Agent.&quot;&quot;&quot;
+
+    task: str = &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;
+
+
+class MultiToolSalesResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Multi-Tool Sales Agent.&quot;&quot;&quot;
+
+    task: str
+    response: str
+    tool_calls: list[str]
+
+
+# ② Resolve the target Bedrock model identifier
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+
+
+@tool
+def get_sales_data(quarter: str) -&gt; dict:
+    &quot;&quot;&quot;Retrieve sales data for a specific quarter.&quot;&quot;&quot;
+    # Return mock quarterly revenue and closed deal count
+    return {&quot;revenue&quot;: 1250000, &quot;deals&quot;: 47, &quot;quarter&quot;: quarter}
+
+
+@tool
+def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str:
+    &quot;&quot;&quot;Calculate key metrics from sales data.&quot;&quot;&quot;
+    # Compute average deal size and format the executive summary string
+    avg_deal = revenue / deals
+    return f&quot;Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size&quot;
+
+
+@tool
+def send_email(to: str, subject: str, body: str) -&gt; str:
+    &quot;&quot;&quot;Send an email message.&quot;&quot;&quot;
+    # Simulate dispatching the summary email to the target recipient
+    return f&quot;Email sent to {to}&quot;
+
+
+def run_multi_tool_sales_agent(
+    task: str = &quot;Pull last quarter&#x27;s sales data and email a summary to the team&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run the Multi-Tool Sales Agent.&quot;&quot;&quot;
+    # ③ Initialize the Strands Agent with all three sales pipeline tools (no order given)
+    agent = Agent(
+        model=BedrockModel(model_id=model_id),
+        tools=[get_sales_data, analyze_sales, send_email],
+    )
+
+    # ④ Execute the multi-step task (get_sales_data -&gt; analyze_sales -&gt; send_email)
+    response = agent(task)
+
+    # ⑤ Collect the tool calls in the order the agent made them
+    tool_calls = [
+        f&quot;{block[&#x27;toolUse&#x27;][&#x27;name&#x27;]}({block[&#x27;toolUse&#x27;][&#x27;input&#x27;]})&quot;
+        for message in agent.messages
+        for block in message[&quot;content&quot;]
+        if &quot;toolUse&quot; in block
+    ]
+
+    return {&quot;task&quot;: task, &quot;response&quot;: str(response), &quot;tool_calls&quot;: tool_calls}
+
+
+# RULE OF THUMB: build focused, single-purpose tools.
+# One mega-tool that does everything is harder to maintain, harder for the
+# agent to reason about, and impossible to reuse elsewhere.</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <p class="file-label">FastAPI route handler for <code>POST /api/multi-tool-sales</code> (multi_tool_sales_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    MultiToolSalesRequest,
+    MultiToolSalesResponse,
+    run_multi_tool_sales_agent,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;AWS Strands Agents API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/multi-tool-sales&quot;, response_model=MultiToolSalesResponse)
+def multi_tool_sales_service(req: MultiToolSalesRequest):
+    # ① Validate task and execute chained 3-tool sales pipeline agent
+    if not req.task.strip():
+        raise HTTPException(status_code=400, detail=&quot;Task cannot be empty&quot;)
+    try:
+        return MultiToolSalesResponse(**run_multi_tool_sales_agent(req.task))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AWS Strands Agents &mdash; 📈 Sales Pipeline Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
