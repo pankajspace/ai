@@ -92,7 +92,7 @@ Copy `projects/template/src/css/style.css` unchanged into the new project. The o
 
 ### index.html — keep the shell, swap the cards
 
-Keep the template's `<head>`, `<header>`/`nav`, `.hero`, and `<footer>` structure and the `<body data-api-base="">` attribute exactly. Change only: `<title>`, `<meta name="description">`, the favicon emoji, the hero `<h1>` and `<p class="subtitle">`, and the feature cards inside `<div class="grid">`. The hero puts the `<h1>` and subtitle on one flex row and the subtitle is `white-space: nowrap`, so a long subtitle squeezes the `<h1>` into one word per line: keep the subtitle to one short phrase (about 70 characters at most, like the sibling projects) and move any extra notes (e.g. "demo data is made up") into a card's text.
+Keep the template's `<head>`, `<header>`/`nav`, `<main class="project-page">`, `<section class="project-shell" id="tools">`, `.app-header` banner card, and `<footer>` structure and the `<body data-api-base="">` attribute exactly. Change only: `<title>`, `<meta name="description">`, the favicon emoji, the `.brand-icon` emoji, the `.brand-title` `<h1>`, `.brand-tagline` `<p>`, the `.header-status` badge, and the feature cards inside `<div class="grid">`. The `.app-header` card provides a modern branded banner with an icon square, project title, tagline, and live status badge. Keep the tagline to one clean phrase (about 70 characters at most, like sibling projects) and place any extra operational notes in a card's description.
 
 Each feature is one interactive card with this exact shape (no extra widgets, no source-code toggles):
 

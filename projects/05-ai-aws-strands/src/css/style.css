@@ -12,6 +12,10 @@
     --primary: #1565c0;
     --primary-hover: #1976d2;
     --danger: #ef9a9a;
+    --success: #4caf50;
+    --radius-sm: 8px;
+    --radius-md: 12px;
+    --radius-lg: 18px;
 }
 
 * {
@@ -101,34 +105,94 @@ header {
     color: var(--text);
 }
 
-/* Hero */
-.hero {
-    border-bottom: 1px solid var(--border);
-    padding: 1.25rem 0;
+/* Project Shell & App Header */
+.project-shell {
+    padding: 1rem 0 2rem;
 }
 
-.hero .container {
+.app-header {
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 20px 24px;
+    margin-bottom: 24px;
     display: flex;
-    align-items: baseline;
     justify-content: space-between;
-    gap: 1.5rem;
+    align-items: center;
 }
 
-.hero h1 {
-    font-size: 1.75rem;
-    font-weight: 500;
-    letter-spacing: -0.01em;
+.brand-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 16px;
 }
 
-.subtitle {
-    font-size: 0.875rem;
+.brand-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-md);
+    background: rgba(144, 202, 249, 0.12);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    flex-shrink: 0;
+}
+
+.brand-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+    color: var(--accent);
+    margin: 0;
+}
+
+.brand-tagline {
     color: var(--text-muted);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.status-badge {
+    background: rgba(76, 175, 80, 0.12);
+    color: #a5d6a7;
+    border: 1px solid rgba(76, 175, 80, 0.25);
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.825rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     white-space: nowrap;
 }
 
-/* Tools Grid */
-#tools {
-    padding: 1.5rem 0 2rem;
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--success);
+    box-shadow: 0 0 10px rgba(76, 175, 80, 0.7);
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    50% {
+        opacity: 0.4;
+        transform: scale(0.85);
+    }
 }
 
 .grid {
@@ -480,18 +544,34 @@ footer {
     }
 }
 
+@media (max-width: 992px) {
+    .app-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .header-status {
+        width: 100%;
+    }
+}
+
 @media (max-width: 768px) {
     .container {
         width: 100%;
         padding: 0 0.5rem;
     }
-    .hero .container {
-        flex-direction: column;
+    .brand-wrapper {
         align-items: flex-start;
-        gap: 0.25rem;
+        gap: 12px;
     }
-    .subtitle {
-        white-space: normal;
+    .brand-tagline {
+        font-size: 0.85rem;
+    }
+    .brand-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 20px;
     }
     .grid {
         grid-template-columns: 1fr;
