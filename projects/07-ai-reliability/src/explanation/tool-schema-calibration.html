@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Tool Schema Calibration &middot; AI Reliability</title>
+    <meta name="description"
+        content="🔬 Tool Schema Calibration runs a 2&amp;times;2 experiment on OpenAI tool routing: descriptive vs opaque tool names &amp;times; loose vs tight tool descriptions, and checks which tool the model picks." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Reliability</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Reliability</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-03-tool-schema-calibration-py">03_tool_schema_calibration.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🔬 Tool Schema Calibration<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🔬 Tool Schema Calibration</strong> runs a 2&times;2 experiment on OpenAI tool routing: descriptive vs opaque tool <em>names</em> &times; loose vs tight tool <em>descriptions</em>, and checks which tool the model picks.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Tool Schema Routing Calibration</strong> uses a controlled <strong>2&times;2 factorial
+                        experiment</strong> to answer a fundamental question in agent engineering: when an LLM chooses
+                        between several similar tools, does it rely on the <strong>function name</strong> or the
+                        <strong>docstring description</strong>?
+                    </p>
+                    <p>
+                        Given a user query like <em>"What is the current hourly precipitation forecast for Seattle?"</em>,
+                        the model must choose among three weather tools (current conditions, hourly precipitation
+                        forecast, and 30-day historical climate) that all accept the exact same <code>location: str</code>
+                        parameter. The service tests all four combinations of naming and description quality at
+                        <code>temperature=0</code> with <code>tool_choice="required"</code>:
+                    </p>
+                    <ul>
+                        <li><strong>Condition A (Descriptive Names + Loose Descriptions):</strong> Informative names
+                            (<code>get_hourly_precipitation</code>) paired with vague, nearly identical descriptions
+                            (<code>"Gets weather information for a city."</code>).</li>
+                        <li><strong>Condition B (Descriptive Names + Tight Descriptions):</strong> Informative names
+                            paired with rich descriptions specifying data source, time horizon, and when to use each tool.</li>
+                        <li><strong>Condition C (Opaque Names + Loose Descriptions):</strong> Meaningless names
+                            (<code>service_fn_101</code>, <code>service_fn_102</code>, <code>service_fn_103</code>) paired
+                            with vague descriptions &mdash; leaving the model almost blind.</li>
+                        <li><strong>Condition D (Opaque Names + Tight Descriptions):</strong> Meaningless names
+                            (<code>service_fn_102</code>) paired with tight, explicit descriptions &mdash; isolating the
+                            power of the description alone.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why a 2&times;2 Factorial Design Is Needed</strong></p>
+                    <p>
+                        If you only compare vague vs. detailed descriptions while keeping clear function names like
+                        <code>get_hourly_precipitation</code>, the model often scores 100% in both cases because the
+                        function name alone gives away the answer! Crossing <strong>Name Clarity</strong> (Descriptive
+                        vs. Opaque) with <strong>Description Precision</strong> (Loose vs. Tight) separates the two
+                        signals and reveals how each one contributes to routing accuracy.
+                    </p>
+                    <p><strong>2. Why Condition C &amp; D Matter in Real Enterprise Systems</strong></p>
+                    <p>
+                        In enterprise codebases and third-party MCP servers, tool names are often auto-generated from
+                        legacy RPC endpoints, internal service codes, or generic verbs (<code>query_v2</code>,
+                        <code>exec_proc_102</code>, <code>fetch_data</code>). Condition C shows what happens when those
+                        tools also have lazy one-line docstrings; Condition D proves that a well-written description
+                        alone can rescue routing accuracy even when function names are completely opaque.
+                    </p>
+                    <p><strong>3. Isolating Selection with <code>tool_choice="required"</code></strong></p>
+                    <p>
+                        When schemas are vague (as in Condition C), an unconstrained model might give up and reply in
+                        text instead of calling any tool. Setting <code>tool_choice="required"</code> and
+                        <code>temperature=0</code> forces the model to commit to one of the three tools deterministically,
+                        cleanly isolating <em>tool selection accuracy</em> from <em>tool invocation willingness</em>.
+                    </p>
+                    <p><strong>4. Anatomy of a High-Signal Tool Description</strong></p>
+                    <p>
+                        Look at the Tight description for the target tool in <code>CONDITIONS["B"]</code> and
+                        <code>CONDITIONS["D"]</code>: it states <strong>what data is returned</strong> (hourly rain/snow
+                        probability and mm volume), <strong>the time window</strong> (next 24 hours), and
+                        <strong>negative boundaries</strong> (what <em>not</em> to use it for).
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/tool-schema-calibration</code> with <code>{ query }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>tool_schema_calibration_route()</code> calls <code>run_tool_schema_calibration(query)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>03_tool_schema_calibration.py</code>)</span>
+                            <span class="flow-detail">For each of 4 conditions, builds 3 tool schemas and asks OpenAI to pick one.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the chosen tool per condition and a summary.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/tool-schema-calibration"]:::entry -->|"query"| R["app.py<br/>tool_schema_calibration_route()"]:::fn
+    R -->|"query"| S["03_tool_schema_calibration.py<br/>run_tool_schema_calibration()"]:::fn
+    S -->|"A: names + loose descriptions"| O[("OpenAI API<br/>tool_choice=required")]:::ext
+    S -->|"B: names + tight descriptions"| O
+    S -->|"C: opaque + loose"| O
+    S -->|"D: opaque + tight"| O
+    O -->|"chosen tool per condition"| S
+    S -->|"condition results + summary"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-03-tool-schema-calibration-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-03-tool-schema-calibration-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-03-tool-schema-calibration-py" class="topic-title is-file">03_tool_schema_calibration.py<a class="headerlink" href="#source-03-tool-schema-calibration-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">145 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-03-tool-schema-calibration-py">
+                    <span class="file-path">src/python/03_tool_schema_calibration.py</span>
+                    <p class="file-label">Tool Schema Routing Calibration Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Tool Schema Routing Calibration Service.
+
+Measures which part of a tool schema an LLM actually routes on:
+1. 2x2 Matrix of Conditions:
+   - Condition A: Descriptive Name + Loose Description
+   - Condition B: Descriptive Name + Tight Description
+   - Condition C: Opaque Name (`tool_alpha`, `tool_beta`) + Loose Description
+   - Condition D: Opaque Name (`tool_alpha`, `tool_beta`) + Tight Description
+2. Evaluates whether the model routes by function name keywords or deep semantic docstrings.
+&quot;&quot;&quot;
+
+import os
+from typing import List, Optional
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+
+class ToolSchemaCalibrationRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Tool Schema Calibration.&quot;&quot;&quot;
+
+    query: str = &quot;What is the current hourly precipitation forecast for Seattle?&quot;
+
+
+class ConditionResult(BaseModel):
+    condition_code: str
+    condition_label: str
+    selected_tool: Optional[str]
+    is_correct_routing: bool
+
+
+class ToolSchemaCalibrationResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Tool Schema Calibration.&quot;&quot;&quot;
+
+    target_intent: str
+    condition_results: List[ConditionResult]
+    analysis_summary: str
+
+
+def run_tool_schema_calibration(
+    query: str = &quot;What is the current hourly precipitation forecast for Seattle?&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Evaluate tool routing across 2x2 naming/description conditions.&quot;&quot;&quot;
+    # ① Initialize OpenAI client
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    # ② Define the 2x2 calibration matrix (Descriptive vs Opaque names x Loose vs Tight docstrings)
+    conditions = [
+        {
+            &quot;code&quot;: &quot;A&quot;,
+            &quot;label&quot;: &quot;Descriptive Names x Loose Descriptions&quot;,
+            &quot;tools&quot;: [
+                {&quot;name&quot;: &quot;get_current_weather&quot;, &quot;desc&quot;: &quot;Get weather info for a city.&quot;},
+                {&quot;name&quot;: &quot;get_hourly_precipitation&quot;, &quot;desc&quot;: &quot;Check rain forecast.&quot;},
+                {&quot;name&quot;: &quot;get_historical_climate&quot;, &quot;desc&quot;: &quot;Get climate records.&quot;},
+            ],
+            &quot;correct_target&quot;: &quot;get_hourly_precipitation&quot;,
+        },
+        {
+            &quot;code&quot;: &quot;B&quot;,
+            &quot;label&quot;: &quot;Descriptive Names x Tight Descriptions&quot;,
+            &quot;tools&quot;: [
+                {&quot;name&quot;: &quot;get_current_weather&quot;, &quot;desc&quot;: &quot;Get immediate snapshot of current ambient temperature and atmospheric pressure.&quot;},
+                {&quot;name&quot;: &quot;get_hourly_precipitation&quot;, &quot;desc&quot;: &quot;Retrieve hour-by-hour expected rainfall probability, accumulation, and precipitation intensity.&quot;},
+                {&quot;name&quot;: &quot;get_historical_climate&quot;, &quot;desc&quot;: &quot;Retrieve historical multi-decade climatic averages, record highs, and seasonal norms.&quot;},
+            ],
+            &quot;correct_target&quot;: &quot;get_hourly_precipitation&quot;,
+        },
+        {
+            &quot;code&quot;: &quot;C&quot;,
+            &quot;label&quot;: &quot;Opaque Names x Loose Descriptions&quot;,
+            &quot;tools&quot;: [
+                {&quot;name&quot;: &quot;service_fn_101&quot;, &quot;desc&quot;: &quot;Get weather info for a city.&quot;},
+                {&quot;name&quot;: &quot;service_fn_102&quot;, &quot;desc&quot;: &quot;Check rain forecast.&quot;},
+                {&quot;name&quot;: &quot;service_fn_103&quot;, &quot;desc&quot;: &quot;Get climate records.&quot;},
+            ],
+            &quot;correct_target&quot;: &quot;service_fn_102&quot;,
+        },
+        {
+            &quot;code&quot;: &quot;D&quot;,
+            &quot;label&quot;: &quot;Opaque Names x Tight Descriptions&quot;,
+            &quot;tools&quot;: [
+                {&quot;name&quot;: &quot;service_fn_101&quot;, &quot;desc&quot;: &quot;Get immediate snapshot of current ambient temperature and atmospheric pressure.&quot;},
+                {&quot;name&quot;: &quot;service_fn_102&quot;, &quot;desc&quot;: &quot;Retrieve hour-by-hour expected rainfall probability, accumulation, and precipitation intensity.&quot;},
+                {&quot;name&quot;: &quot;service_fn_103&quot;, &quot;desc&quot;: &quot;Retrieve historical multi-decade climatic averages, record highs, and seasonal norms.&quot;},
+            ],
+            &quot;correct_target&quot;: &quot;service_fn_102&quot;,
+        },
+    ]
+
+    results = []
+
+    # ③ Build OpenAI tool schemas for each condition and force a tool choice
+    for c in conditions:
+        schemas = [
+            {
+                &quot;type&quot;: &quot;function&quot;,
+                &quot;function&quot;: {
+                    &quot;name&quot;: t[&quot;name&quot;],
+                    &quot;description&quot;: t[&quot;desc&quot;],
+                    &quot;parameters&quot;: {
+                        &quot;type&quot;: &quot;object&quot;,
+                        &quot;properties&quot;: {&quot;city&quot;: {&quot;type&quot;: &quot;string&quot;}},
+                        &quot;required&quot;: [&quot;city&quot;],
+                    },
+                },
+            }
+            for t in c[&quot;tools&quot;]
+        ]
+
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[
+                {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a weather routing coordinator. Select the single best tool for the user&#x27;s request.&quot;},
+                {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: query},
+            ],
+            tools=schemas,
+            tool_choice=&quot;required&quot;,
+        )
+        msg = resp.choices[0].message
+        chosen = msg.tool_calls[0].function.name if msg.tool_calls else None
+        is_correct = (chosen == c[&quot;correct_target&quot;])
+
+        results.append({
+            &quot;condition_code&quot;: c[&quot;code&quot;],
+            &quot;condition_label&quot;: c[&quot;label&quot;],
+            &quot;selected_tool&quot;: chosen,
+            &quot;is_correct_routing&quot;: is_correct,
+        })
+
+    # ④ Summarize routing accuracy across the 4 schema conditions
+    correct_count = sum(1 for r in results if r[&quot;is_correct_routing&quot;])
+    summary = f&quot;Routed accurately in {correct_count} of 4 calibration conditions.&quot;
+
+    return {
+        &quot;target_intent&quot;: &quot;Hourly Precipitation Forecast&quot;,
+        &quot;condition_results&quot;: results,
+        &quot;analysis_summary&quot;: summary,
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">157 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (tool_schema_calibration_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 07-ai-reliability.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_cot = _load_service(&quot;01_cot_vs_direct.py&quot;, &quot;cot_vs_direct&quot;)
+mod_var = _load_service(&quot;02_variance_determinism.py&quot;, &quot;variance_determinism&quot;)
+mod_calib = _load_service(&quot;03_tool_schema_calibration.py&quot;, &quot;tool_schema_calibration&quot;)
+mod_err = _load_service(&quot;04_tool_error_injection.py&quot;, &quot;tool_error_injection&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/cot-vs-direct&quot;, methods=[&quot;POST&quot;])
+def cot_vs_direct_route():
+    # ① Parse problem_title from the JSON request body
+    data = request.get_json(force=True, silent=True) or {}
+    problem_title = data.get(&quot;problem_title&quot;) or &quot;Spatial Navigation (Grid)&quot;
+    try:
+        # ② Run Direct vs Chain-of-Thought benchmark in 01_cot_vs_direct.py
+        res = mod_cot.run_cot_vs_direct_benchmark(problem_title)
+        res[&quot;result&quot;] = f&quot;Direct: {&#x27;Correct&#x27; if res[&#x27;direct_result&#x27;][&#x27;is_correct&#x27;] else &#x27;Failed&#x27;} | CoT: {&#x27;Correct&#x27; if res[&#x27;cot_result&#x27;][&#x27;is_correct&#x27;] else &#x27;Failed&#x27;}&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/variance-determinism&quot;, methods=[&quot;POST&quot;])
+def variance_determinism_route():
+    # ① Parse review_text from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    review_text = (data.get(&quot;review_text&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not review_text:
+        return jsonify({&quot;error&quot;: &quot;Review text cannot be empty&quot;}), 400
+    try:
+        # ② Run the 3-strategy JSON determinism benchmark in 02_variance_determinism.py
+        res = mod_var.run_variance_determinism_benchmark(review_text)
+        res[&quot;result&quot;] = f&quot;Tested {len(res.get(&#x27;strategies&#x27;, []))} JSON extraction strategies.&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/tool-schema-calibration&quot;, methods=[&quot;POST&quot;])
+def tool_schema_calibration_route():
+    # ① Parse query from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the 2x2 tool schema calibration matrix in 03_tool_schema_calibration.py
+        res = mod_calib.run_tool_schema_calibration(query)
+        res[&quot;result&quot;] = res.get(&quot;analysis_summary&quot;, &quot;Calibration complete.&quot;)
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/tool-error-injection&quot;, methods=[&quot;POST&quot;])
+def tool_error_injection_route():
+    # ① Parse question from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run the upstream 503 error injection benchmark in 04_tool_error_injection.py
+        res = mod_err.run_tool_error_injection(question)
+        res[&quot;result&quot;] = f&quot;Evaluated error handling across {len(res.get(&#x27;scenarios&#x27;, []))} prompt configurations.&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Reliability &mdash; 🔬 Tool Schema Calibration &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

@@ -1,14 +1,14 @@
 ---
-description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding info (ⓘ) 'how this works' explainer pages (concept, request flow, code flow, source code) to a project's demo cards or to the TechToday site; or simplifying a TechToday AI class-notes HTML page (study/ai-demos/*.html) into the DSA-course design in plain, simple language (removing Gradio, agenda, LinkedIn content, class numbers and interactive sims, which become static examples) and regenerating its .md"
+description: "Use when: creating or reshaping a container project from projects/template with a self-contained README for local development, deployment, rollback, and troubleshooting; adding explanation (ⓘ) pages ('how this works': concept, request flow, code flow, source code) under src/explanation/ for demo cards; adding or adapting theory notes (HTML + Markdown) under src/theory/ to keep all project theory self-contained; or simplifying a TechToday AI class-notes HTML page into the DSA-course design in plain, simple language and regenerating its .md"
 name: "create-container-project"
-argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a study/ai-demos/*.html class-notes page to simplify"
+argument-hint: "projectName, feature idea, optional local/prod ports, and whether Python files already exist — or a project + card(s) to explain — or a theory/class-notes page to add or simplify"
 ---
 
-This skill covers a container project and its two kinds of companion teaching page. Pick the task, then read only the file it needs:
+This skill covers a container project and its two kinds of companion teaching pages:
 
-1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**. This always includes one ⓘ explainer page per demo tile (Workflow step 8, built with task 2).
-2. **Add ⓘ explainer pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
-3. **Simplify a class-notes (Theory) page** in `projects/techtoday/study/ai-demos/*.html` into the DSA-course design, rewrite it in plain language, replace its interactive examples with static information, and regenerate its `.md` — read [class-notes-page.md](class-notes-page.md).
+1. **Create or reshape a container project** — follow the rest of this file, starting at **Container Project**. This includes self-contained explanation pages (`src/explanation/<demo>.html`) for each demo tile and theory class notes (`src/theory/<topic>.html` and `.md`) keeping all project content self-contained.
+2. **Add ⓘ explanation pages** ("how this works": concept, request flow, code flow, source code) to a project's demo cards under `src/explanation/<demo>.html`, or one project-level explainer on the TechToday site — read [explainer-pages.md](explainer-pages.md).
+3. **Add or simplify theory pages** under `projects/<project-name>/src/theory/` (`<topic>.html` and `<topic>.md`) formatted in the DSA-course design, written in plain language with static examples, and served via `/theory/<path:filename>` — read [class-notes-page.md](class-notes-page.md).
 
 When a new public project needs its catalog ⓘ link (Workflow step 12), build the target page with task 2 (§7) or 3.
 
@@ -26,12 +26,12 @@ Read before editing:
 2. [projects/ARCHITECTURE.md](../../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
 3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the branch flow the README must describe (any branch deploys on push for testing; merge into `main` to release).
 4. [projects/template/README.md](../../../projects/template/README.md) and [projects/template/src/python/app.py](../../../projects/template/src/python/app.py).
-5. A neighboring project ([basic](../../../projects/basic), [langchain](../../../projects/langchain), or [rag](../../../projects/rag)) when its structure helps.
+5. A neighboring project ([09-interviewiq](../../../projects/09-interviewiq) or [10-shipment-exception-desk](../../../projects/10-shipment-exception-desk)) when its structure helps.
 6. The matching `study/NN-<topic>/` folder, if one exists, for feature context and source material: its `.md`, the companion `.html` deck, and the class code under `notes/` (project classes also ship a reference solution folder beside `notes/`).
 
 ## Inputs To Resolve
 
-Identify or ask for: project name; next free local port (`808x`) and EC2 host port (`500x`) from `ADD_PROJECT.md`, confirmed against existing READMEs/Compose files; whether Python feature files already exist and where from; required env vars (new secrets vs. already in `techtoday/secrets`); whether the project is production-documented; and whether it includes standalone example sub-projects (see **Complex Projects**).
+Identify or ask for: project name; next free local port (`808x`/`809x`) and EC2 host port (`500x`/`501x`) from `ADD_PROJECT.md`, confirmed against existing READMEs/Compose files; whether Python feature files already exist and where from; required env vars (new secrets vs. already in `techtoday/secrets`); whether the project is production-documented; and whether it includes standalone example sub-projects (see **Complex Projects**).
 
 Proceed without extra questions if you have enough information.
 
@@ -40,19 +40,19 @@ Proceed without extra questions if you have enough information.
 1. Confirm the next-port allocation from `ADD_PROJECT.md`. Local `8090` is taken by `projects/template` itself, so skip it when allocating or advancing local ports.
 2. Create `projects/<project-name>/` by copying `projects/template/` if it does not exist.
 3. Set the `web` service to publish `<local-port>:5000` in `docker-compose.yml`.
-4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/css/info.css`, `src/js/main.js`, `src/js/info.js`, `src/info/<demo>.html` (one per tile), `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
+4. Keep the template structure unless the user asks otherwise: `Dockerfile`, `docker-compose.yml`, `requirements.txt`, `.env.example`, `.gitignore`, `deploy.yml.template`, `linkedin.txt`, `README.md`, `src/index.html`, `src/css/style.css`, `src/css/info.css`, `src/js/main.js`, `src/js/info.js`, `src/explanation/<demo>.html` (one per tile), `src/theory/<theory>.html` and `.md` (theory class notes), `src/python/app.py`, `src/python/config.py`, feature modules under `src/python/`, and standalone example sub-projects under `src/<example-name>/`.
 5. Integrate user-provided Python files under `src/python/`.
 6. Expose new feature routes through the Blueprint in `app.py`, preserving:
    - `PATH_PREFIX = os.environ.get("PATH_PREFIX", "")`
    - `app.register_blueprint(bp, url_prefix=PATH_PREFIX)`
    - the `index()` route injecting `data-api-base="<PATH_PREFIX>"`
-   - static routes for `/css/<path:filename>`, `/js/<path:filename>`, and `/info/<path:filename>` (the explainer pages)
+   - static routes for `/css/<path:filename>`, `/js/<path:filename>`, `/explanation/<path:filename>` (the explainer pages, with `/info/<path:filename>` as fallback alias), and `/theory/<path:filename>` (the theory notes)
    - one `POST` route per feature that validates a non-empty input (→ `400`), validates any dropdown choices against an allowlist (→ `400`, see **Dropdowns for Choices**), wraps the feature call in `try/except` (→ `500`), and returns `{"result": ...}`.
 7. Update `index.html`, `style.css`, and `main.js` following **Consistent UI and Working Demo Tiles** so the project matches every sibling project and every feature is a live, working demo tile — never a static, read-only, or "view source" card — with a dropdown for every discrete choice in the feature code.
-8. **Add one ⓘ explainer page per demo tile** — mandatory, not optional polish: every tile's `<h2>` carries the green ⓘ `info-link` to `info/<demo>.html`, and each page explains the concept, theory, request flow and code flow and embeds every Python file the demo runs, complete and unedited. Follow [explainer-pages.md](explainer-pages.md) §1–§6 (the `.info-link` CSS block, the `/info/<path:filename>` route, the shared `info.css`/`info.js`, numbered step comments in the real source files, one page per tile, verification, README). A project is not done while any tile lacks its ⓘ page.
+8. **Add one ⓘ explainer page per demo tile** — mandatory, not optional polish: every tile's `<h2>` carries the green ⓘ `info-link` to `explanation/<demo>.html`, and each page explains the concept, theory, request flow and code flow and embeds every Python file the demo runs, complete and unedited. Follow [explainer-pages.md](explainer-pages.md) §1–§6 (the `.info-link` CSS block, the `/explanation/<path:filename>` route, the shared `info.css`/`info.js`, numbered step comments in the real source files, one page per tile, verification, README). A project is not done while any tile lacks its ⓘ page.
 9. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
 10. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
-11. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting: 10 requests upfront, 1r/m continuous refill, 429 status on excess), and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
+11. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting: 30 requests upfront, 1r/m continuous refill, 429 status on excess), and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
     ```bash
     cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
     sed -i -e "s/PROJECT_NAME/<project-name>/g" -e "s/HOSTPORT/<host-port>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
@@ -60,9 +60,9 @@ Proceed without extra questions if you have enough information.
     ```
     The substituted template is complete for a single-service project. For a complex multi-container project it is only a starting point — extend it per **CI/CD Workflow for Complex Projects** before calling the project deploy-ready. The workflow auto-ensures the host's `/etc/nginx/conf.d/app-locations/*.conf` include, `/etc/nginx/conf.d/00-rate-limit.conf`, and `/etc/nginx/conf.d/app-locations/00-rate-limit-response.conf` on its first run, so no manual per-host Nginx step is needed (fresh hosts already get it from `SETUP.md` § 2.8).
 12. When the project is ready to document: keep project-specific values in its `README.md`; advance the next-port allocation in `ADD_PROJECT.md`; update shared-secret setup notes only if the shared process changed; and add the root `README.md` runbook entry under `## Project Runbooks` (`N. [<Display Name>](projects/<project-name>/README.md)`, above *Container App Template*). If the project should be public, follow `ADD_PROJECT.md` § 8 *Public project catalog card update*:
-    1. Add a card to `projects/techtoday/study/ai-demos/ai-demos.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-demos.md`.
-    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the class's study page in `study/ai-demos/` (built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../info/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
-    3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Demos** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
+    1. Add a card to `projects/techtoday/study/ai-projects/ai-projects.html` (copy an existing `.card`: icon SVG, `h3`, description, `Open project →` link to `https://app.techtoday.click/<project-name>/`) and mirror it in `ai-projects.md`.
+    2. Start the card with the corner ⓘ link: `data-tooltip="Theory"` to the project's theory page (e.g. `https://app.techtoday.click/<project-name>/theory/<topic>.html`, built per [class-notes-page.md](class-notes-page.md)), or `data-tooltip="Explanation"` to `../../explanation/<project-name>.html` (built per [explainer-pages.md](explainer-pages.md) §7).
+    3. If featured on the homepage, add `<li><a href="https://app.techtoday.click/<project-name>/"><Display Name></a></li>` to the **AI Projects** tile's `ul.hub-bullet-list` in `projects/techtoday/index.html`, just above `Show All &rarr;`.
 
 ## README Requirements
 
@@ -70,7 +70,7 @@ Proceed without extra questions if you have enough information.
 
 Include all applicable sections:
 
-1. **Overview and features** — purpose, behavior, architecture, project structure (including `src/info/` with one ⓘ explainer page per tile, `src/css/info.css`, and `src/js/info.js`).
+1. **Overview and features** — purpose, behavior, architecture, project structure (including `src/explanation/` with one ⓘ explainer page per tile, `src/theory/` with companion theory class notes, `src/css/info.css`, and `src/js/info.js`).
 2. **Project details** — type/folder, local and production URLs, local/container/EC2 ports, ECR repository, production service name, `PATH_PREFIX`, routes, workflow filename, trigger path.
 3. **Environment variables** — each required/optional variable, which feature uses it, where to obtain it, and that `.env` is never committed.
 4. **Prerequisites and first run** — OS-specific Docker startup, `docker info`, `.env` creation, build/start commands, URL to open.
@@ -84,7 +84,7 @@ Include all applicable sections:
 
 ## Consistent UI and Working Demo Tiles
 
-Every project must share one look and feel and present each feature as an interactive demo tile. The template (`projects/template/src/`) is the single source of truth for the UI; copy its structure verbatim and change only the project-specific content below. Sibling projects (`basic`, `langchain`, `rag`) show the pattern applied. Never let a project diverge into a different layout, a static code-reference browser, or read-only "view source" cards.
+Every project must share one look and feel and present each feature as an interactive demo tile. The template (`projects/template/src/`) is the single source of truth for the UI; copy its structure verbatim and change only the project-specific content below. Sibling projects (`01-ai-basics`, `02-langchain-agents`, `03-ai-rag-chroma`) show the pattern applied. Never let a project diverge into a different layout, a static code-reference browser, or read-only "view source" cards.
 
 ### CSS — copy verbatim, never restyle
 
@@ -92,7 +92,7 @@ Copy `projects/template/src/css/style.css` unchanged into the new project. The o
 
 ### index.html — keep the shell, swap the cards
 
-Keep the template's `<head>`, `<header>`/`nav`, `.hero`, and `<footer>` structure and the `<body data-api-base="">` attribute exactly. Change only: `<title>`, `<meta name="description">`, the favicon emoji, the hero `<h1>` and `<p class="subtitle">`, and the feature cards inside `<div class="grid">`. The hero puts the `<h1>` and subtitle on one flex row and the subtitle is `white-space: nowrap`, so a long subtitle squeezes the `<h1>` into one word per line: keep the subtitle to one short phrase (about 70 characters at most, like the sibling projects) and move any extra notes (e.g. "demo data is made up") into a card's text.
+Keep the template's `<head>`, `<header>`/`nav`, `<main class="project-page">`, `<section class="project-shell" id="tools">`, `.app-header` banner card, and `<footer>` structure and the `<body data-api-base="">` attribute exactly. Change only: `<title>`, `<meta name="description">`, the favicon emoji, the `.brand-icon` emoji, the `.brand-title` `<h1>`, `.brand-tagline` `<p>`, and the feature cards inside `<div class="grid">`. The `.app-header` card provides a modern branded banner with an icon square, project title, and tagline. Keep the tagline to one clean phrase (about 70 characters at most, like sibling projects) and place any extra operational notes in a card's description.
 
 Each feature is one interactive card with this exact shape (no extra widgets, no source-code toggles):
 
@@ -100,7 +100,7 @@ Each feature is one interactive card with this exact shape (no extra widgets, no
 <div class="card card-half">
     <h2>
         <span class="card-title">🧩 Feature Name</span>
-        <a class="info-link" href="info/foo.html" data-tooltip="Explanation"
+        <a class="info-link" href="explanation/foo.html" data-tooltip="Explanation"
             aria-label="Explanation">&#x24D8;</a>
     </h2>
     <p>One or two sentences on what it does and what to try.</p>
@@ -113,7 +113,7 @@ Each feature is one interactive card with this exact shape (no extra widgets, no
 
 Rules for cards:
 
-1. Use consistent ID naming per card: `<name>Input`, `<name>Validation`, `<name>Btn`, `<name>Result`, and name its explainer `info/<name>.html`.
+1. Use consistent ID naming per card: `<name>Input`, `<name>Validation`, `<name>Btn`, `<name>Result`, and name its explainer `explanation/<name>.html`.
 2. Start every button `disabled`; `main.js` enables it once the input has a value.
 3. Order cards simplest → most complex, matching the study source and the README.
 4. The template `.grid` has **four** columns (`repeat(4, minmax(0, 1fr))`), so a bare `class="card"` is only a quarter-width tile — too narrow for a dropdown row, a text input, and a multi-line result. Give every interactive demo tile `class="card card-half"` (2 of 4 columns) by default, so tiles sit two per row at equal width. Use a bare `.card` only for four compact tiles that share a row, and `card-wide` (full width via `grid-column: 1 / -1`) only for a genuine capstone that needs more room, placed last. Make the spans in each row add up to four columns; never make a lone tile `card-wide` just to fill a row.
@@ -136,7 +136,7 @@ setupCard({
 });
 ```
 
-Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (10 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
+Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (30 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
 
 ### Dropdowns for Choices
 
@@ -286,6 +286,36 @@ function bindPresetSelects() {
 
 A tile is only "done" when clicking its button calls a live backend route and renders a real response, and its ⓘ icon opens a working explainer page (Workflow step 8). Do not ship placeholder tiles, cards that only display static text or source code, or buttons wired to nothing. Only build tiles the study HTML/PDF source supports (see Constraints); each tile maps to one backend route and one exercise or capability in the source. If a capability is unsafe to expose to public input (e.g. arbitrary cloud API calls, file writes), omit the tile rather than shipping a fake or unsafe one, and note the omission.
 
+## Theory and Explanation Pages Architecture
+
+Every container project must keep all its educational materials self-contained inside its project repository under `src/explanation/` and `src/theory/`. Because containers mount and package `/app/src/`, all documentation, styles, scripts, and media must be self-contained so that pages load reliably in production Docker containers.
+
+### 1. Explanation Pages (`src/explanation/<demo>.html`)
+
+1. **Purpose**: Tile-level "how this works" deep dives for each interactive demo on the project's dashboard.
+2. **Trigger**: Every interactive demo card title in `src/index.html` has an ⓘ info icon (`<a class="info-link" href="explanation/<demo>.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>`) inside its `<h2>`.
+3. **Contents**:
+   - The underlying architectural concept and intuition.
+   - Request flow diagram (Mermaid sequence diagram).
+   - Code flow diagram (Mermaid flowchart/graph).
+   - Complete, unedited Python source code with numbered comment annotations (`# ①`, `# ②`, etc.).
+4. **Assets & Styling**: Uses `src/css/info.css` and `src/js/info.js` (copied verbatim from `projects/template/src/`). Header back link points to `../` (`Back to App`).
+5. **Backend Route**: Served via `@bp.route("/explanation/<path:filename>")` (with backwards-compatible `@bp.route("/info/<path:filename>")` alias).
+6. **Detailed Guide**: Follow [explainer-pages.md](explainer-pages.md).
+
+### 2. Theory Pages (`src/theory/<topic>.html` and `<topic>.md`)
+
+1. **Purpose**: Project-level in-depth course and lecture notes covering foundational concepts, mathematical derivations, algorithms, and benchmarks.
+2. **Trigger**: The project catalog card in `projects/techtoday/study/ai-projects/ai-projects.html` links to the theory page via its corner ⓘ link (`https://app.techtoday.click/<project-name>/theory/<topic>.html`, with `data-tooltip="Theory"`).
+3. **Contents**:
+   - Systematic units and collapsible topic accordions based on the DSA-course structure.
+   - Written in plain, clear language without filler or hype, and with all Gradio/interactive UI wrappers replaced by static data panels.
+   - Static visualizations, probability bars, token chips, and worked data examples.
+   - Companion Markdown file (`<topic>.md`) with full `# My Notes` and `# Quick Review of Concepts` sections.
+4. **Assets & Styling**: Completely self-contained within each project folder: `src/css/dsa-study.css`, `src/css/site-header.css`, `src/css/ai-projects.css`, and `src/js/dsa-study.js`. Linked relatively as `../css/*` and `../js/*`. Header back link points to `../` (`Back to App`).
+5. **Backend Route**: Served via `@bp.route("/theory/<path:filename>")`.
+6. **Detailed Guide**: Follow [class-notes-page.md](class-notes-page.md).
+
 ## Complex Projects — Standalone Example Sub-Projects
 
 Some projects bundle standalone example sub-projects (each a complete Docker project with its own Dockerfile, compose file, and possibly multiple containers) alongside the main Flask app. This is common for study projects that ship the study material's examples as reference implementations.
@@ -344,7 +374,7 @@ The stock `deploy.yml.template` is self-provisioning but single-service: it buil
 
 1. Still create `.github/workflows/deploy-<project-name>.yml` — never skip it.
 2. Ensure an ECR repository exists and build/push an image for **every** build context, or build them together via `docker compose build` against the production Compose file.
-3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service. Name every service explicitly in both `docker compose pull` and `docker compose up -d --wait`, including dependency services (databases, Redis, Chroma) and services behind `--profile` flags. A bare `up -d --wait` acts on every service in the file, so a leftover or broken entry from another project in a shared Compose file aborts the whole rollout. Prefer the template's per-project `~/apps/<project-name>/docker-compose.yml`; `.github/workflows/deploy-docker.yml` is the working multi-service example (it still uses the shared `~/docker-compose.yml`, which is why it names its services).
+3. On EC2, provision, pull, and restart **all** of the project's services, not a single `PROJECT_NAME` service. Name every service explicitly in both `docker compose pull` and `docker compose up -d --wait`, including dependency services (databases, Redis, Chroma) and services behind `--profile` flags. A bare `up -d --wait` acts on every service in the file, so a leftover or broken entry from another project in a shared Compose file aborts the whole rollout. Prefer the template's per-project `~/apps/<project-name>/docker-compose.yml` as the working pattern.
 4. If examples are keyless and rarely change, automating only the gateway is acceptable — but say so explicitly in the README's deployment-status section and do not describe the project as fully auto-deploying.
 5. Never call a complex project deploy-ready while the workflow covers only the gateway image.
 
@@ -361,7 +391,7 @@ Run the cheapest relevant checks after editing:
 7. Verify UI consistency against the template: `style.css` differs from `projects/template/src/css/style.css` only in the header comment and the documented blocks (`.options`/`.option` if used, and the required `.info-link`); `index.html` keeps the template head/nav/hero/footer shell and `data-api-base=""`; `main.js` keeps the shared `setLoading`/`callApi`/`setupCard`/`renderText` helpers unchanged apart from the optional `selects` map. Confirm every feature card has the full `<name>Input`/`<name>Validation`/`<name>Btn`/`<name>Result` set, each `setupCard` `endpoint` maps to a real `POST` route in `app.py`, and no card is static, read-only, or a source-code viewer.
 8. Verify dropdowns: every discrete choice in the feature code is exposed on its card; each `selects` key matches a field the route reads; defaults reproduce the original behaviour; an out-of-allowlist value returns `400` (test with Flask's `test_client()`, sending a distinct `X-Real-IP` header per request because the SQLite rate limiter in `/tmp` persists across processes); preset pickers fill their text box and switch to Custom on manual edits; and the dropdown rows do not overflow their cards.
 9. Verify the layout at three viewport widths — about 1280 px, 800 px, and 390 px (the page can be opened from `src/index.html` via `file://`, no server needed). At each width: the hero `<h1>` stays on one line; tiles in the same row have equal widths (each interactive tile spans half the grid, per *Cards* rule 4); no `<select>`, input, or button extends past its card's right edge (compare each control's bounding box with its `.card`, not with `.options`); and `document.documentElement.scrollWidth <= document.documentElement.clientWidth` (compare with `clientWidth`, not `innerWidth`, which includes the vertical scrollbar and gives false alarms). Checking only one desktop width misses these failures.
-10. Verify the explainers per [explainer-pages.md](explainer-pages.md) §5: every tile's ⓘ icon sits at the right of its title and links to an existing `info/<name>.html`; `GET <PATH_PREFIX>/info/<name>.html` returns `200` through Flask's `test_client()`; after **Expand All** each page has every Mermaid diagram rendered (an `svg`, no `.error-icon`), every code block highlighted with a Copy button, every sidebar link resolving, and no horizontal overflow at 390 px; each embedded file equals its source (`html.unescape(code) == file.read_text().rstrip("\n")`); and `info.css`/`info.js` are byte-identical to the other projects' copies.
+10. Verify the explainers per [explainer-pages.md](explainer-pages.md) §5: every tile's ⓘ icon sits at the right of its title and links to an existing `explanation/<name>.html`; `GET <PATH_PREFIX>/explanation/<name>.html` returns `200` through Flask's `test_client()`; after **Expand All** each page has every Mermaid diagram rendered (an `svg`, no `.error-icon`), every code block highlighted with a Copy button, every sidebar link resolving, and no horizontal overflow at 390 px; each embedded file equals its source (`html.unescape(code) == file.read_text().rstrip("\n")`); and `info.css`/`info.js` are byte-identical to the other projects' copies.
 
 Stop before any AWS, SSH, ECR, Secrets Manager, Nginx, or production step unless the user explicitly asks. Local repo changes come first; production wiring is a separate step.
 

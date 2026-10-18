@@ -51,11 +51,14 @@ bp = Blueprint("main", __name__)
 @bp.before_request
 def enforce_rate_limit():
     """Enforce strict 30 requests per hour limit on all POST endpoints."""
+    # ① Only rate-limit mutating API requests
     if request.method == "POST":
+        # ② Check whether this client has exceeded the hourly window
         blocked, msg, retry_after = check_rate_limit(
             request, max_requests=30, window_seconds=3600
         )
         if blocked:
+            # ③ Return HTTP 429 with a Retry-After header when rate-limited
             resp = jsonify({"error": msg})
             resp.status_code = 429
             resp.headers["Retry-After"] = str(retry_after)
@@ -70,12 +73,15 @@ def enforce_rate_limit():
 @bp.route("/")
 def index():
     """Serve index.html, injecting the correct API base URL for the environment."""
+    # ① Read the frontend HTML template from the static folder
     with open(os.path.join(app.static_folder, "index.html"), encoding="utf-8") as f:
         html = f.read()
+    # ② Replace the empty data-api-base with the deployment path prefix
     # The HTML file ships with 'data-api-base=""' (empty = relative URL, works
     # locally). For production we replace it with the actual path prefix so
     # all fetch() calls in the browser target the right endpoint.
     html = html.replace('data-api-base=""', f'data-api-base="{PATH_PREFIX}"')
+    # ③ Return the patched HTML response to the browser
     return app.response_class(html, mimetype="text/html")
 
 
@@ -91,6 +97,26 @@ def js(filename):
     return app.send_static_file(os.path.join("js", filename))
 
 
+@bp.route("/explanation/<path:filename>")
+@bp.route("/info/<path:filename>")
+def explanation(filename):
+    """Serve the "how this demo works" explainer pages from src/explanation."""
+    return app.send_static_file(os.path.join("explanation", filename))
+
+
+@bp.route("/theory/<path:filename>")
+def theory_pages(filename):
+    """Serve the theory documentation pages from src/theory."""
+    return app.send_static_file(os.path.join("theory", filename))
+
+
+@bp.route("/logo.svg")
+def logo():
+    """Serve logo.svg for favicons and site branding."""
+    return app.send_static_file("logo.svg")
+
+
+
 @bp.route("/echo", methods=["POST"])
 def echo_route():
     """Echo back the posted message — the starter feature.
@@ -100,12 +126,14 @@ def echo_route():
     Error response:      ``{ "error": "<message>" }`` with HTTP 400 (missing
                          message).
     """
+    # ① Parse the JSON payload and normalize the message string
     data = request.get_json(force=True)
     message = (data.get("message") or "").strip()
-    # Validate at the boundary — return 400 immediately rather than processing
+    # ② Validate at the boundary — return 400 immediately rather than processing
     # an empty message.
     if not message:
         return jsonify({"error": "A message is required."}), 400
+    # ③ Delegate to the echo feature function and return JSON
     return jsonify({"result": echo(message)})
 
 

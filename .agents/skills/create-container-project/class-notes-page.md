@@ -1,14 +1,14 @@
 # Class Notes (Theory) Page
 
-Part of the `create-container-project` skill. This is the "Theory" page a project's card links to from the AI Demos catalog.
+Part of the `create-container-project` skill. This is the "Theory" page a project's card links to from the AI Projects catalog, housed inside each container project under `src/theory/`.
 
 Rewrite one class-notes HTML page into the same simple design as the DSA courses, in plain, simple language, without losing teaching content. Replace every interactive example with static information, then regenerate the companion Markdown file.
 
-**Input:** the HTML file path, e.g. `projects/techtoday/study/ai-demos/rag-embeddings.html`. If none was given, ask for it.
+**Input:** the HTML file path, e.g. `projects/<project-name>/src/theory/<topic>.html` (or legacy `projects/techtoday/study/ai-projects/<topic>.html`). If none was given, ask for it.
 
-**Reference implementation:** `projects/techtoday/study/ai-demos/llms-prompting.html` (and its `.md`). It is the finished result of this workflow. Copy its `<head>` styles, topic/part markup, accordion script and static-example patterns (`.viz` panels that hold tables, token chips and worked examples) instead of inventing new ones.
+**Reference implementation:** `projects/01-ai-basics/src/theory/llms-prompting.html` and `projects/02-langchain-agents/src/theory/langchain-agents.html` (and their `.md` companions). They are the finished results of this workflow. Copy their `<head>` styles, topic/part markup, accordion script and static-example patterns (`.viz` panels that hold tables, token chips and worked examples) instead of inventing new ones.
 
-**Design source:** `projects/techtoday/study/dsa/dsa-study.css`, `projects/techtoday/study/ai-demos/ai-demos.css`, and `dsa-study.js`. The page links them directly; do not copy them.
+**Design source:** For container projects (`projects/<project-name>/src/theory/`), styles and scripts are self-contained in `src/css/` (`dsa-study.css`, `site-header.css`, `ai-projects.css`) and `src/js/` (`dsa-study.js`), linked as `../css/*` and `../js/*` so the container serves them without external dependencies. For legacy TechToday study paths, `projects/techtoday/study/dsa/dsa-study.css`, `projects/techtoday/study/ai-projects/ai-projects.css`, and `dsa-study.js`.
 
 ## 1. Prepare
 
@@ -49,10 +49,10 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 
 ## 3. Rebuild the page structure
 
-1. **Head:** keep the meta tags, title and icon (`../../logo.svg`). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Demos page. Link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-demos.css` (which provides the slick course styling, responsive data cards, and layout matching the main homepage courses). Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Create and link a companion `<name>.css` file, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Do not use inline `<style>` tags. Delete styles that only served removed interactive widgets.
+1. **Head:** keep the meta tags, title and icon (`../css/logo.svg` in container projects, `../../logo.svg` in legacy paths). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Projects page. In container projects (`projects/<project-name>/src/theory/`), link `../css/dsa-study.css`, `../css/site-header.css`, and `../css/ai-projects.css`. In legacy TechToday study paths, link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-projects.css`. Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Create and link a companion `<name>.css` file, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Do not use inline `<style>` tags. Delete styles that only served removed interactive widgets.
 2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow inside your `<name>.css` file using `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
-   - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../../index.html` and `<a href="ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`
+   - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../` and `<a href="../" class="nav-back-link">&larr; Back to App</a>` (or `<a href="ai-projects.html" class="nav-back-link">&larr; AI Projects</a>` in the root study catalog)
    - `.progress`
    - `main.study-layout`, containing:
      - `nav.topic-menu` with a numbered `ol.table-of-contents`. Its links point at the topic `h2` ids.
@@ -102,19 +102,19 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 3. Carry over all the information the widget held: preset data, every possible outcome or answer, hints, notes and feedback text. Data that lived only in the script (arrays, answers, explanations) must appear in the static version.
 4. Reuse styles already in the reference `<style>` (token chips, `.prob-row` bars) for static output; set bar widths inline. Recolour light pastel inline colours for the dark theme.
 5. Delete the widget's script and any styles used only by it. Extract any remaining page-specific scripts (like the accordion script and the `topic-menu-panel` opener) into a single external `<name>.js` file. Link your scripts at the end of the body in this order:
-   1. `<script src="../dsa/dsa-study.js">`
+   1. `<script src="../js/dsa-study.js">` (or `<script src="../dsa/dsa-study.js">` in legacy paths)
    2. `<script src="<name>.js">`
 
    Do not redeclare `dsa-study.js` globals (`progress`, `esc`, `copyText`, `VIZ`, …).
 6. Reword the text around the widget. "Type anything", "drag the slider", "click Play" and "try it" become "Here is an example" or "The cards show".
-7. Add `<footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>` and the `.back-to-top` button.
+7. Add `<footer class="study-footer">TechToday Study Library &mdash; AI Projects</footer>` and the `.back-to-top` button.
 
 ## 6. Write the files
 
 1. Create `<name>.new.html` with the full rewritten page, then `mv` it over the original. Use the terminal only for the move.
 2. Regenerate the companion `<name>.md` the same way (`.new.md` → `mv`). Mirror the new HTML exactly:
-   - header comment with Source, Title, Theme-color, `Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-demos.css` and `Scripts: ../dsa/dsa-study.js`
-   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Demos](ai-demos.html)`, eyebrow, `# h1`, lede, chips, Table of Contents
+   - header comment with Source, Title, Theme-color, `Stylesheets: ../css/dsa-study.css, ../css/site-header.css, ../css/ai-projects.css, <name>.css` and `Scripts: ../js/dsa-study.js, <name>.js` (or `../dsa/dsa-study.css, ../../site-header.css, ai-projects.css` and `../dsa/dsa-study.js` in legacy paths)
+   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)` (or `Navigation: [<Project>](../) · [← Back to App](../)` in container projects), eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
    - fenced code with the same language tag as the HTML `data-lang` (```` ```bash ````, ```` ```yaml ````, ```` ```python ````, ```` ```text ```` only for output/prompts/diagrams); diagrams as ```` ```mermaid ```` blocks
@@ -136,7 +136,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 4. `grep -c '<table' <file>` returns 0 (tables are converted to `.data-cards` or `ul.card-grid` components for responsive layout on all devices).
 5. Check the content inventory from step 1: every non-removed item is present, including the facts each removed widget taught.
 6. Read the rewritten prose against §2a: short sentences, plain words, no hype or filler, and no fact, number or example lost.
-7. `grep -c 'base.href' <file>` returns 0, and the page's card in `ai-demos.html` has a corner ⓘ `data-tooltip="Theory"` link that resolves to it (add one, mirrored in `ai-demos.md`, if the card lacks it).
+7. `grep -c 'base.href' <file>` returns 0, and the page's card in `ai-projects.html` has a corner ⓘ `data-tooltip="Theory"` link that resolves to it (add one, mirrored in `ai-projects.md`, if the card lacks it).
 
 ## 8. Report
 

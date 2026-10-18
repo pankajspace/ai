@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AWS Strands Agents &middot; TechToday</title>
+    <meta name="description"
+        content="12 Bedrock and LangGraph agent patterns: custom tools, prebuilt tools, class-based state, and async pipelines." />
+    <link rel="icon" href="logo.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main class="project-page">
+        <section class="project-shell" id="tools">
+            <div class="container">
+                <div class="app-header">
+                    <div class="brand-wrapper">
+                        <div class="brand-icon">☁️</div>
+                        <div>
+                            <h1 class="brand-title">AWS Strands Agents</h1>
+                            <p class="brand-tagline">12 Bedrock, LangGraph, and async tool-calling agent patterns</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+
+                    <!-- 1. Hello World Agent -->
+                    <div class="card card-half" id="card-hello">
+                        <h2>
+                            <span class="card-title">👋 Hello World Agent</span>
+                            <a class="info-link" href="explanation/hello-world-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Minimal single-turn Amazon Nova Lite agent invocation via the AWS Strands Agents SDK.</p>
+                        <p>Send a prompt to a zero-tool Strands Agent(model=BedrockModel(&quot;amazon.nova-lite-v1:0&quot;)) and inspect its response.</p>
+                        <input type="text" id="helloInput" placeholder="Enter prompt…" value="Hello! What can you do?" />
+                        <span class="validation" id="helloValidation"></span>
+                        <button id="helloBtn">Run Hello Agent</button>
+                        <div class="result" id="helloResult"></div>
+                    </div>
+
+                    <!-- 2. LangGraph Agent -->
+                    <div class="card card-half" id="card-langgraph">
+                        <h2>
+                            <span class="card-title">🕸️ LangGraph ReAct Agent</span>
+                            <a class="info-link" href="explanation/langgraph-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">LangGraph create_react_agent with ChatBedrockConverse (Nova Lite) and a @tool greet(name) function.</p>
+                        <p>Compare Strands with LangGraph's explicit StateGraph cycle as the agent calls greet(name) for each person and synthesizes a reply.</p>
+                        <input type="text" id="langgraphInput" placeholder="Enter prompt…" value="Please greet Alice and Bob." />
+                        <span class="validation" id="langgraphValidation"></span>
+                        <button id="langgraphBtn">Run LangGraph</button>
+                        <div class="result" id="langgraphResult"></div>
+                    </div>
+
+                    <!-- 3. Function to Tool -->
+                    <div class="card card-half" id="card-fnTool">
+                        <h2>
+                            <span class="card-title">⚙️ Function-to-Tool Health Check</span>
+                            <a class="info-link" href="explanation/function-to-tool.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">@tool decorator reflection turning check_server_status(server_url: str) into a Bedrock tool schema.</p>
+                        <p>Ask the agent to verify whether an HTTP endpoint is live; it executes a real requests.get() health check with a 5s timeout.</p>
+                        <input type="text" id="fnToolInput" placeholder="Enter question…" value="Is the staging server running? Check https://httpbin.org/get" />
+                        <span class="validation" id="fnToolValidation"></span>
+                        <button id="fnToolBtn">Run Health Tool</button>
+                        <div class="result" id="fnToolResult"></div>
+                    </div>
+
+                    <!-- 4. Tip Calculator -->
+                    <div class="card card-half" id="card-tip">
+                        <h2>
+                            <span class="card-title">💳 Multi-Parameter Tip &amp; Split Agent</span>
+                            <a class="info-link" href="explanation/tip-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Multi-parameter @tool calculate_tip(bill_amount: float, tip_percentage: float = 15.0, num_people: int = 1).</p>
+                        <p>Extracts typed numeric arguments and defaults from natural language to compute tip, total bill, and per-person split.</p>
+                        <input type="text" id="tipInput" placeholder="Enter billing query…" value="The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?" />
+                        <span class="validation" id="tipValidation"></span>
+                        <button id="tipBtn">Calculate Tip</button>
+                        <div class="result" id="tipResult"></div>
+                    </div>
+
+                    <!-- 5. Multi-Tool Sales -->
+                    <div class="card card-half" id="card-sales">
+                        <h2>
+                            <span class="card-title">🏷️ Multi-Tool Sales Pipeline</span>
+                            <a class="info-link" href="explanation/multi-tool-sales.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Sequential 3-tool chain: get_sales_data(quarter) &rarr; analyze_sales(revenue, deals, quarter) &rarr; send_email(to, subject, body).</p>
+                        <p>Fetches quarterly sales metrics ($125,000 across 42 deals in Q4), computes average deal size, and emails a summary report.</p>
+                        <input type="text" id="salesInput" placeholder="Sales task…" value="Pull last quarter's sales data and email a summary to the team" />
+                        <span class="validation" id="salesValidation"></span>
+                        <button id="salesBtn">Run Sales Chain</button>
+                        <div class="result" id="salesResult"></div>
+                    </div>
+
+                    <!-- 6. Custom Inventory -->
+                    <div class="card card-half" id="card-inv">
+                        <h2>
+                            <span class="card-title">📦 Custom Inventory Lookup Tool</span>
+                            <a class="info-link" href="explanation/custom-inventory.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Domain-specific @tool check_inventory(product_id: str) querying an in-memory warehouse catalog.</p>
+                        <p>Check stock status and unit counts for tracked catalog SKUs: PROD-123 (15 in stock), PROD-456 (out of stock), and PROD-789 (8 low stock).</p>
+                        <input type="text" id="invInput" placeholder="Inventory question…" value="Is PROD-123 in stock? Also check PROD-456." />
+                        <span class="validation" id="invValidation"></span>
+                        <button id="invBtn">Query Stock</button>
+                        <div class="result" id="invResult"></div>
+                    </div>
+
+                    <!-- 7. Prebuilt Calculator -->
+                    <div class="card card-half" id="card-calc">
+                        <h2>
+                            <span class="card-title">🧮 Prebuilt Calculator Tool</span>
+                            <a class="info-link" href="explanation/prebuilt-calculator.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Off-the-shelf calculator tool from strands_tools paired with a math assistant system prompt.</p>
+                        <p>Delegates exact exponentiation and arithmetic expressions to the prebuilt SymPy-backed calculator instead of token prediction.</p>
+                        <input type="text" id="calcInput" placeholder="Math problem…" value="What's 42 raised to the power of 9?" />
+                        <span class="validation" id="calcValidation"></span>
+                        <button id="calcBtn">Compute Expression</button>
+                        <div class="result" id="calcResult"></div>
+                    </div>
+
+                    <!-- 8. Multi Prebuilt Tools -->
+                    <div class="card card-half" id="card-multiPre">
+                        <h2>
+                            <span class="card-title">🧰 Multi-Prebuilt Tools (HTTP + Calculator)</span>
+                            <a class="info-link" href="explanation/multi-prebuilt-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Combining prebuilt http_request and calculator tools from strands_tools for live data analysis.</p>
+                        <p>Fetches live JSON data from an external URL via http_request and pipes the extracted numbers into calculator.</p>
+                        <input type="text" id="multiPreInput" placeholder="Multi-tool query…" value="Fetch https://httpbin.org/json and use the calculator to compute 1250 * 1.18" />
+                        <span class="validation" id="multiPreValidation"></span>
+                        <button id="multiPreBtn">Run Suite</button>
+                        <div class="result" id="multiPreResult"></div>
+                    </div>
+
+                    <!-- 9. Use AWS -->
+                    <div class="card card-half" id="card-aws">
+                        <h2>
+                            <span class="card-title">☁️ Natural-Language AWS CLI (use_aws)</span>
+                            <a class="info-link" href="explanation/use-aws.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Prebuilt use_aws tool from strands_tools translating natural language into live boto3 AWS SDK calls.</p>
+                        <p>Inspect AWS resources (such as S3 buckets, EC2 instances, or DynamoDB tables) in us-west-2 using IAM credentials.</p>
+                        <input type="text" id="awsInput" placeholder="AWS resource query…" value="List all S3 buckets in my account" />
+                        <span class="validation" id="awsValidation"></span>
+                        <button id="awsBtn">Run AWS Tool</button>
+                        <div class="result" id="awsResult"></div>
+                    </div>
+
+                    <!-- 10. Class-Based Tools -->
+                    <div class="card card-half" id="card-clsTool">
+                        <h2>
+                            <span class="card-title">🏛️ Stateful Class-Based Inventory Tools</span>
+                            <a class="info-link" href="explanation/class-based-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">InventoryTools class encapsulating shared self.inventory state across @tool check_stock and @tool update_stock methods.</p>
+                        <p>Mutate and verify live stock counts for PROD-123 (15), PROD-456 (0), or PROD-789 (8) within a stateful class instance.</p>
+                        <input type="text" id="clsToolInput" placeholder="Class tool query…" value="Update PROD-456 stock to 25 units, then confirm the new level" />
+                        <span class="validation" id="clsToolValidation"></span>
+                        <button id="clsToolBtn">Execute Class Tool</button>
+                        <div class="result" id="clsToolResult"></div>
+                    </div>
+
+                    <!-- 11. Async Tools -->
+                    <div class="card card-half" id="card-asyncTool">
+                        <h2>
+                            <span class="card-title">⚡ Async Parallel Warehouse Tools</span>
+                            <a class="info-link" href="explanation/async-tools.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Non-blocking async def check_warehouse_inventory(product_id, warehouse) via agent.invoke_async().</p>
+                        <p>Queries east (50 units), west (30 units), and central (75 units) warehouses concurrently (~2s parallel vs ~6s sequential).</p>
+                        <input type="text" id="asyncToolInput" placeholder="Async query…" value="Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central." />
+                        <span class="validation" id="asyncToolValidation"></span>
+                        <button id="asyncToolBtn">Run Async Parallel</button>
+                        <div class="result" id="asyncToolResult"></div>
+                    </div>
+
+                    <!-- 12. Travel Assistant (Capstone) -->
+                    <div class="card card-half" id="card-travel">
+                        <h2>
+                            <span class="card-title">🌍 Multi-Tool Travel Assistant Capstone</span>
+                            <a class="info-link" href="explanation/travel-assistant.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">4-tool coordinator combining get_weather_forecast, suggest_packing_list, estimate_trip_cost (INR), and prebuilt calculator.</p>
+                        <p>Plan a trip to Goa, Bangalore, Jaipur, or Manali with weather forecasts, packing checklists, INR cost breakdowns, and budget validation.</p>
+                        <input type="text" id="travelInput" placeholder="Travel query…" value="I'm going to Goa for 3 days with 2 friends. My budget is 20000 rupees. What should I pack, and does it fit my budget?" />
+                        <span class="validation" id="travelValidation"></span>
+                        <button id="travelBtn">Plan Entire Trip</button>
+                        <div class="result" id="travelResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>TechToday &middot; 05-ai-aws-strands &middot; Port 8084 (Local) / 5004 (EC2)</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

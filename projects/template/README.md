@@ -77,11 +77,16 @@ projects/template/
 ├── .gitignore              # ignores .env, caches, venvs
 ├── deploy.yml.template     # CI/CD workflow to copy into .github/workflows/
 └── src/
-   ├── python/
-   │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
-   │   ├── config.py       # loads .env; place to build API clients
-   │   └── echo.py         # starter feature (no API key needed)
+    ├── python/
+    │   ├── app.py          # Flask server: Blueprint + PATH_PREFIX routing
+    │   ├── config.py       # loads .env; place to build API clients
+    │   └── echo.py         # starter feature (no API key needed)
     ├── index.html          # single-page UI (served by Flask)
+    ├── explanation/        # ⓘ explainer pages (concept, flows, embedded code)
+    │   └── echo.html
+    ├── theory/             # companion theory class notes (HTML + Markdown)
+    │   ├── echo.html
+    │   └── echo.md
     ├── css/style.css       # dark theme (shares TechToday design tokens)
     └── js/main.js          # front-end behavior, no frameworks
 ```

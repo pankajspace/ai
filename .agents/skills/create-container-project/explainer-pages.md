@@ -1,10 +1,10 @@
-# Demo Explainer Pages (ⓘ)
+# Demo Explanation Pages (ⓘ)
 
-Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/basic`) and which card(s)/demo(s) to explain; defaults to all cards.
+Part of the `create-container-project` skill. **Input:** the project folder (e.g. `projects/template`) and which card(s)/demo(s) to explain; defaults to all cards.
 
-Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explainer per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on.
+Every container project needs these pages: [SKILL.md](SKILL.md) Workflow step 8 makes one ⓘ explanation page per demo tile mandatory, so run §1–§6 as part of creating a project, not as a later add-on. (For project-level course/theory notes, see `src/theory/` and [class-notes-page.md](class-notes-page.md)).
 
-Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explainer page under `src/info/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
+Add a green ⓘ info icon to one or more demo cards in `projects/<project>/src/index.html`. Clicking it opens a dedicated, self-contained explanation page under `src/explanation/<demo>.html` that teaches how the demo works: the concept, a request-flow diagram, a code-flow diagram, and the actual backend source code with comments.
 
 This assumes the project already follows the standard template layout (`src/index.html`, `src/css/style.css`, `src/js/main.js`, `src/python/app.py` with a Flask Blueprint serving `/css/<f>` and `/js/<f>`). See [SKILL.md](SKILL.md) for that layout.
 
@@ -15,14 +15,14 @@ In `index.html`, wrap each card's existing title text in a `<span class="card-ti
 ```html
 <h2>
     <span class="card-title">😂 Joke Generator</span>
-    <a class="info-link" href="info/joke.html"
+    <a class="info-link" href="explanation/joke.html"
         data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
 </h2>
 ```
 
 - Use `data-tooltip` (not `title`) — a custom CSS tooltip reads it via `content: attr(data-tooltip)`, avoiding a duplicate native browser tooltip.
 - Opens the explainer in the same tab (no `target="_blank"`), allowing users to navigate directly and return via the "&larr; Go Back" link.
-- One link per card, `href="info/<demo>.html"` — a relative path so it still resolves correctly in production behind an Nginx `PATH_PREFIX`.
+- One link per card, `href="explanation/<demo>.html"` — a relative path so it still resolves correctly in production behind an Nginx `PATH_PREFIX`.
 
 In `style.css`, add (the card `h2` must already be `display:flex` so `margin-left:auto` pushes the icon to the right):
 
@@ -73,27 +73,28 @@ In `style.css`, add (the card `h2` must already be `display:flex` so `margin-lef
 
 ## 2. Flask route to serve the explainer pages
 
-Add one route next to the existing `/css/<path:filename>` and `/js/<path:filename>` routes in `app.py`:
+Add routes next to the existing `/css/<path:filename>` and `/js/<path:filename>` routes in `app.py`:
 
 ```python
+@bp.route("/explanation/<path:filename>")
 @bp.route("/info/<path:filename>")
-def info(filename):
-    """Serve the "how this demo works" explainer pages from src/info."""
-    return app.send_static_file(os.path.join("info", filename))
+def explanation(filename):
+    """Serve the "how this demo works" explainer pages from src/explanation."""
+    return app.send_static_file(os.path.join("explanation", filename))
 ```
 
 ## 3. Shared assets
 
-Create once per project (not once per demo) by copying these two files verbatim from `projects/basic/src/`:
+Create once per project (not once per demo) by copying these two files verbatim from `projects/template/src/` (or `projects/01-ai-basics/src/`):
 
 - `src/css/info.css` — the TechToday course-page design, self-contained (projects can't reach `techtoday/site-header.css`): `.tt-site-header`, `.progress`, `.study-layout` with sticky `.topic-menu`, `.course-toolbar`, `.unit-divider`, collapsible `.topic-section` accordions, code blocks + `.tok-*` highlight colours, `.flow-diagram` and `.mermaid-wrap`.
 - `src/js/info.js` — topic-menu scroll-spy, progress bar, back-to-top, the built-in Python/JavaScript highlighter (no highlight.js), Copy buttons, accordions with Expand/Collapse All and hash deep-links, and Mermaid init. Mermaid diagrams render lazily when their topic opens (Mermaid can't measure text inside a collapsed topic).
 
-Every project (`ai-reliability`, `ai-systems`, `aws-strands`, `basic`, `docker`, `langchain`, `mcp-evals`, `rag`) carries byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
+Projects carry byte-identical copies, and `projects/techtoday/js/info.js` is identical too; only `projects/techtoday/css/info.css` differs, in its logo path (`../logo.svg`). If you change one copy, re-copy it to all of them. `info.css` loads the header logo from `src/css/logo.svg`, which the template already ships; copy it from `projects/template/src/css/` if it is missing.
 
-## 4. One page per demo — `src/info/<demo>.html`
+## 4. One page per demo — `src/explanation/<demo>.html`
 
-Copy the shell of an existing page (e.g. `projects/basic/src/info/joke.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
+Copy the shell of an existing page (e.g. `projects/01-ai-basics/src/explanation/joke-generator.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
 
 - **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a `&larr; <Project>` `nav-back-link`.
 - **`<h1 id="how-it-works">`** — the card's emoji + title (CSS adds the "How it works" eyebrow), then a `p.lede` with the models/providers used.
@@ -169,20 +170,20 @@ Load Mermaid with a plain script tag before `info.js`; `info.js` calls `mermaid.
 
 - Check for errors on every edited/created file.
 - Open `src/index.html` in the integrated browser, confirm each card shows the green ⓘ icon that turns orange on hover with a tooltip reading "Explanation".
-- Open each `src/info/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px (`document.documentElement.scrollWidth <= document.documentElement.clientWidth`; `innerWidth` includes the scrollbar and reports false overflow; code blocks and Mermaid SVGs scroll inside their own boxes and do not count), and the back link returns to the project index.
+- Open each `src/explanation/<demo>.html`, click **Expand All**, and confirm: every `.mermaid` holds an `svg` with no `.error-icon`, every `pre code` is highlighted (contains `span`s) with a working Copy button, there's no horizontal overflow at 390px (`document.documentElement.scrollWidth <= document.documentElement.clientWidth`; `innerWidth` includes the scrollbar and reports false overflow; code blocks and Mermaid SVGs scroll inside their own boxes and do not count), and the back link returns to the project index.
 - Diff each embedded file against its source (`html.unescape(code) == file.read_text().rstrip("\n")`) — the source topics must be complete and unedited.
 - Confirm the shared assets are still identical: `md5sum projects/*/src/css/info.css projects/*/src/js/info.js projects/techtoday/js/info.js` shows one hash per file type.
 
 ## 6. Docs
 
-Update the project's `README.md` project-structure listing and module-responsibilities section to mention `src/info/` (one page per demo), `src/css/info.css`, and `src/js/info.js`, and that each card's title has an ⓘ info icon linking to its explainer page.
+Update the project's `README.md` project-structure listing and module-responsibilities section to mention `src/explanation/` (one page per demo), `src/css/info.css`, and `src/js/info.js`, and that each card's title has an ⓘ info icon linking to its explainer page.
 
 ## 7. Project-level explainer on the TechToday site (optional)
 
-Some projects also get one "how the whole project works" page on the static site, linked from their card in the AI Demos catalog. Use this for projects without per-card explainers (`interviewiq`, `shipment-exception-desk`) or when the project needs an overview across all its demos (`ai-reliability`).
+Some projects also get one "how the whole project works" page on the static site, linked from their card in the AI Projects catalog. Use this for projects without per-card explainers (`09-interviewiq`, `10-shipment-exception-desk`) or when the project needs an overview across all its demos.
 
-1. **Location** — `projects/techtoday/info/<project-name>.html`, using the TechToday copies `../css/info.css` and `../js/info.js` (no Flask route needed; the site is static).
-2. **Shell** — same as a demo page (§4) except: the brand links to `../`, the back link is `<a href="../study/ai-demos/ai-demos.html" class="nav-back-link">&larr; AI Demos</a>`, the `<h1 id="how-it-works">` is the project's emoji + name, the lede lists the demos it covers, and the footer reads `TechToday &mdash; <emoji> <Project> &middot; How it works`.
-3. **Topics** — Unit 1 has the same four topics, covering the whole project (request and code flow for every demo, with Mermaid fan-outs where demos share modules). Unit 2 embeds every Python file the project runs, complete and unedited, with `span.file-path` written from the `projects/` root (`interviewiq/src/python/agent.py`).
-4. **Catalog link** — in `projects/techtoday/study/ai-demos/ai-demos.html`, the project's card starts with a corner icon `<a class="info-link corner-link" href="../../info/<project-name>.html" data-tooltip="Explanation" title="Explanation" aria-label="Explanation">&#x24D8;</a>` (class-notes cards use `data-tooltip="Theory"` pointing at their study page instead). Mirror it in `ai-demos.md` as `[ⓘ](../../info/<project-name>.html)` above the card's `###` title.
-5. **Docs** — add the page to the `info/` listing in `projects/techtoday/README.md` *Project Structure*.
+1. **Location** — `projects/techtoday/explanation/<project-name>.html`, using the TechToday copies `../css/info.css` and `../js/info.js` (no Flask route needed; the site is static).
+2. **Shell** — same as a demo page (§4) except: the brand links to `../`, the back link is `<a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>`, the `<h1 id="how-it-works">` is the project's emoji + name, the lede lists the demos it covers, and the footer reads `TechToday &mdash; <emoji> <Project> &middot; How it works`.
+3. **Topics** — Unit 1 has the same four topics, covering the whole project (request and code flow for every demo, with Mermaid fan-outs where demos share modules). Unit 2 embeds every Python file the project runs, complete and unedited, with `span.file-path` written from the `projects/` root (`09-interviewiq/src/python/agent.py`).
+4. **Catalog link** — in `projects/techtoday/study/ai-projects/ai-projects.html`, the project's card starts with a corner icon `<a class="info-link corner-link" href="../../explanation/<project-name>.html" data-tooltip="Explanation" title="Explanation" aria-label="Explanation">&#x24D8;</a>` (class-notes cards use `data-tooltip="Theory"` pointing at their study page instead). Mirror it in `ai-projects.md` as `[ⓘ](../../explanation/<project-name>.html)` above the card's `###` title.
+5. **Docs** — add the page to the `explanation/` listing in `projects/techtoday/README.md` *Project Structure*.

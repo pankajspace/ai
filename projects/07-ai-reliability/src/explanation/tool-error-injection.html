@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Tool Error Injection &middot; AI Reliability</title>
+    <meta name="description"
+        content="⚠️ Tool Error Injection gives an OpenAI agent a weather tool that fails for Paris (HTTP 503) and checks whether the answer admits the failure or makes up Paris weather." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Reliability</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Reliability</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-04-tool-error-injection-py">04_tool_error_injection.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">⚠️ Tool Error Injection<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>⚠️ Tool Error Injection</strong> gives an OpenAI agent a weather tool that fails for Paris (HTTP 503) and checks whether the answer admits the failure or makes up Paris weather.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Tool Call Error Injection &amp; Hallucination Prevention</strong> uses chaos engineering
+                        (fault injection) to test how an AI agent behaves when an upstream dependency fails mid-turn.
+                        When asked to <em>"Compare the weather in Tokyo and Paris today"</em>, the agent calls
+                        <code>get_weather</code> twice: the first call (Tokyo) succeeds with
+                        <code>{"status": 200, "temp_c": 22, "condition": "Clear sky"}</code>, while the second call
+                        (Paris) deterministically fails with an injected outage:
+                        <code>{"status": 503, "error": "SERVICE_UNAVAILABLE: Weather station offline..."}</code>.
+                    </p>
+                    <p>
+                        The service runs this exact failure scenario twice under two different system prompts:
+                        <strong>Scenario A (Plain Prompt)</strong>, which simply says <em>"You are a helpful weather
+                        assistant"</em>, and <strong>Scenario B (Explicit Reliability Prompt)</strong>, which explicitly
+                        instructs the model to report tool errors with their status code and never guess or fabricate
+                        missing data. Both responses are then graded across three automated reliability metrics.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The Three Automated Reliability Metrics (<code>evaluate_response</code>)</strong></p>
+                    <p>
+                        When a tool fails on one of two requested cities, the final answer is scored on three distinct
+                        dimensions:
+                    </p>
+                    <ul>
+                        <li><code>acknowledged_error</code>: Did the model admit that fetching data for the second city
+                            failed (matching words like <code>unavailable</code>, <code>error</code>,
+                            <code>offline</code>, <code>unable</code>)?</li>
+                        <li><code>gave_error_detail</code>: Did it surface actionable diagnostic detail from the tool
+                            payload (specifically <code>503</code> or <code>service_unavailable</code>)?</li>
+                        <li><code>fabricated_data</code>: Did it hallucinate a fake temperature (e.g.,
+                            <code>18°C</code>) for the failed city inside a sentence that does not mention the error?</li>
+                    </ul>
+                    <p><strong>2. Why Partial Failures Are More Dangerous Than Total Outages</strong></p>
+                    <p>
+                        If an API key is invalid and the entire HTTP request throws an exception, your backend catches
+                        it immediately. Partial tool failures are insidious: Tokyo succeeds (<code>22°C</code>), Paris
+                        returns a JSON error dict inside a <code>role="tool"</code> message, and the LLM's completion
+                        bias nudges it to produce a neat, symmetrical comparison table &mdash; tempting it to guess a
+                        plausible temperature for Paris unless explicitly forbidden by the system prompt.
+                    </p>
+                    <p><strong>3. Per-Scenario Fault Isolation</strong></p>
+                    <p>
+                        Inside <code>run_scenario()</code>, a fresh <code>call_count = 0</code> counter is initialized
+                        for each scenario run so that <code>call_count == 1</code> succeeds and
+                        <code>call_count &gt;= 2</code> returns the HTTP 503 payload identically in both Scenario A and
+                        Scenario B. If the counter were a module global, Scenario A would consume call #1 and #2, and
+                        Scenario B would see failures on every call.
+                    </p>
+                    <p><strong>4. Clause-Level Fabrication Detection</strong></p>
+                    <p>
+                        A correct response like <em>"Tokyo is 22°C, while Paris weather is unavailable (503)"</em>
+                        contains both <code>22°C</code> and <code>Paris</code>. The grader splits the response on
+                        sentence/clause boundaries first so a valid Tokyo temperature in clause 1 is never falsely
+                        flagged as a fabricated Paris temperature in clause 2.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/tool-error-injection</code> with <code>{ question }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>tool_error_injection_route()</code> calls <code>run_tool_error_injection(question)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>04_tool_error_injection.py</code>)</span>
+                            <span class="flow-detail">For each scenario, runs the tool loop; <code>mock_flaky_weather_api()</code> returns a 503 for Paris.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Scoring</span>
+                            <span class="flow-detail"><code>evaluate_error_response()</code> checks acknowledgement, detail and fabrication.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows both scenarios' answers and scores.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/tool-error-injection"]:::entry -->|"question"| R["app.py<br/>tool_error_injection_route()"]:::fn
+    R -->|"question"| S["04_tool_error_injection.py<br/>run_tool_error_injection()"]:::fn
+    S -->|"scenario prompt + question"| O[("OpenAI API")]:::ext
+    O -->|"get_weather(city)"| S
+    S -->|"city"| W["mock_flaky_weather_api()"]:::fn
+    W -->|"Tokyo data / Paris 503"| S
+    S -->|"tool results"| O
+    O -->|"final answer"| S
+    S -->|"answer"| E["evaluate_error_response()"]:::fn
+    E -->|"scores"| S
+    S -->|"scenarios"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-04-tool-error-injection-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-04-tool-error-injection-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-04-tool-error-injection-py" class="topic-title is-file">04_tool_error_injection.py<a class="headerlink" href="#source-04-tool-error-injection-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">157 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-04-tool-error-injection-py">
+                    <span class="file-path">src/python/04_tool_error_injection.py</span>
+                    <p class="file-label">Tool Call Error Injection &amp; Hallucination Prevention Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Tool Call Error Injection &amp; Hallucination Prevention Service.
+
+Demonstrates agent reliability under upstream API failures:
+1. Tool `get_weather(city)` simulates an upstream outage (HTTP 503 Service Unavailable) on specific calls.
+2. Compares behavior across system prompt designs:
+   - Scenario A (Plain Prompt): Basic instructions, prone to fabricating weather when API fails.
+   - Scenario B (Explicit Reliability Prompt): Explicitly instructed to admit tool failure and never hallucinate.
+3. Automatically scores:
+   - `acknowledged`: Did the model admit the error occurred?
+   - `gave_detail`: Did it mention the error status code (503)?
+   - `fabricated`: Did it hallucinate fake temperature/data?
+&quot;&quot;&quot;
+
+import json
+import os
+import re
+from typing import Dict, List
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+
+class ToolErrorInjectionRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Tool Error Injection Benchmark.&quot;&quot;&quot;
+
+    question: str = &quot;Compare the weather in Tokyo and Paris today.&quot;
+
+
+class ScenarioEvaluation(BaseModel):
+    scenario_name: str
+    response_text: str
+    acknowledged_error: bool
+    gave_error_detail: bool
+    fabricated_data: bool
+
+
+class ToolErrorInjectionResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Tool Error Injection Benchmark.&quot;&quot;&quot;
+
+    scenarios: List[ScenarioEvaluation]
+
+
+def mock_flaky_weather_api(city: str) -&gt; dict:
+    &quot;&quot;&quot;Mock weather tool that returns 503 for Paris to test error resilience.&quot;&quot;&quot;
+    # ① Inject a simulated HTTP 503 outage for Paris while succeeding for other cities
+    c = city.lower().strip()
+    if &quot;paris&quot; in c:
+        return {&quot;error&quot;: &quot;HTTP 503 Service Unavailable: upstream weather station offline&quot;, &quot;city&quot;: city}
+    return {&quot;city&quot;: city, &quot;temperature&quot;: &quot;18°C&quot;, &quot;condition&quot;: &quot;Sunny with clear skies&quot;}
+
+
+def evaluate_error_response(response_text: str) -&gt; Dict[str, bool]:
+    &quot;&quot;&quot;Score whether model acknowledged, gave error detail, or fabricated.&quot;&quot;&quot;
+    # ① Check if the response acknowledges the upstream failure and cites HTTP 503 details
+    lowered = response_text.lower()
+    ack = any(w in lowered for w in [&quot;503&quot;, &quot;unavailable&quot;, &quot;failed&quot;, &quot;could not&quot;, &quot;error&quot;, &quot;unable&quot;, &quot;offline&quot;])
+    detail = &quot;503&quot; in lowered or &quot;service unavailable&quot; in lowered or &quot;station offline&quot; in lowered
+    # ② Detect whether the model fabricated temperature numbers for Paris
+    fabricated = False
+    if &quot;paris&quot; in lowered and (&quot;paris is&quot; in lowered or &quot;paris has&quot; in lowered or &quot;paris:&quot; in lowered):
+        # Look for temperature indicators near Paris
+        if re.search(r&quot;paris[^\.\n]*\d+\s*°?c&quot;, lowered) or re.search(r&quot;paris[^\.\n]*degrees&quot;, lowered):
+            fabricated = True
+
+    return {
+        &quot;acknowledged&quot;: ack,
+        &quot;gave_detail&quot;: detail,
+        &quot;fabricated&quot;: fabricated,
+    }
+
+
+def run_tool_error_injection(
+    question: str = &quot;Compare the weather in Tokyo and Paris today.&quot;,
+) -&gt; dict:
+    &quot;&quot;&quot;Run error injection across Scenario A and Scenario B.&quot;&quot;&quot;
+    # ① Initialize OpenAI client and declare the weather tool schema
+    client = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    tools_schema = [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: &quot;get_weather&quot;,
+                &quot;description&quot;: &quot;Fetch current weather for a city.&quot;,
+                &quot;parameters&quot;: {
+                    &quot;type&quot;: &quot;object&quot;,
+                    &quot;properties&quot;: {&quot;city&quot;: {&quot;type&quot;: &quot;string&quot;}},
+                    &quot;required&quot;: [&quot;city&quot;],
+                },
+            },
+        }
+    ]
+
+    # ② Define Scenario A (Plain Prompt) vs Scenario B (Explicit Transparency Prompt)
+    scenarios = [
+        {
+            &quot;name&quot;: &quot;Scenario A: Plain Prompt (No error instruction)&quot;,
+            &quot;system&quot;: &quot;You are a weather assistant. Answer user queries using the get_weather tool.&quot;,
+        },
+        {
+            &quot;name&quot;: &quot;Scenario B: Explicit Transparency Prompt (Strict Reliability)&quot;,
+            &quot;system&quot;: (
+                &quot;You are a weather assistant. If any tool returns an error or failure, &quot;
+                &quot;you MUST explicitly inform the user of the failure and error details. &quot;
+                &quot;NEVER make up or assume weather values if a tool call fails.&quot;
+            ),
+        },
+    ]
+
+    results = []
+
+    # ③ Run the tool-calling loop for each scenario and inject the 503 error
+    for sc in scenarios:
+        messages = [
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: sc[&quot;system&quot;]},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+        ]
+
+        for _ in range(5):
+            resp = client.chat.completions.create(
+                model=model,
+                messages=messages,
+                tools=tools_schema,
+                tool_choice=&quot;auto&quot;,
+            )
+            msg = resp.choices[0].message
+            messages.append(msg)
+
+            if not msg.tool_calls:
+                break
+
+            for tc in msg.tool_calls:
+                args = json.loads(tc.function.arguments or &quot;{}&quot;)
+                c_name = args.get(&quot;city&quot;, &quot;Tokyo&quot;)
+                tool_out = mock_flaky_weather_api(c_name)
+                messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: tc.id, &quot;content&quot;: json.dumps(tool_out)})
+
+        # ④ Score the final answer for error acknowledgment, detail, and fabrication
+        final_text = messages[-1].content or &quot;&quot;
+        scores = evaluate_error_response(final_text)
+
+        results.append({
+            &quot;scenario_name&quot;: sc[&quot;name&quot;],
+            &quot;response_text&quot;: final_text,
+            &quot;acknowledged_error&quot;: scores[&quot;acknowledged&quot;],
+            &quot;gave_error_detail&quot;: scores[&quot;gave_detail&quot;],
+            &quot;fabricated_data&quot;: scores[&quot;fabricated&quot;],
+        })
+
+    # ⑤ Return the scored final answer for each scenario
+    return {&quot;scenarios&quot;: results}</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">157 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (tool_error_injection_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 07-ai-reliability.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_cot = _load_service(&quot;01_cot_vs_direct.py&quot;, &quot;cot_vs_direct&quot;)
+mod_var = _load_service(&quot;02_variance_determinism.py&quot;, &quot;variance_determinism&quot;)
+mod_calib = _load_service(&quot;03_tool_schema_calibration.py&quot;, &quot;tool_schema_calibration&quot;)
+mod_err = _load_service(&quot;04_tool_error_injection.py&quot;, &quot;tool_error_injection&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/cot-vs-direct&quot;, methods=[&quot;POST&quot;])
+def cot_vs_direct_route():
+    # ① Parse problem_title from the JSON request body
+    data = request.get_json(force=True, silent=True) or {}
+    problem_title = data.get(&quot;problem_title&quot;) or &quot;Spatial Navigation (Grid)&quot;
+    try:
+        # ② Run Direct vs Chain-of-Thought benchmark in 01_cot_vs_direct.py
+        res = mod_cot.run_cot_vs_direct_benchmark(problem_title)
+        res[&quot;result&quot;] = f&quot;Direct: {&#x27;Correct&#x27; if res[&#x27;direct_result&#x27;][&#x27;is_correct&#x27;] else &#x27;Failed&#x27;} | CoT: {&#x27;Correct&#x27; if res[&#x27;cot_result&#x27;][&#x27;is_correct&#x27;] else &#x27;Failed&#x27;}&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/variance-determinism&quot;, methods=[&quot;POST&quot;])
+def variance_determinism_route():
+    # ① Parse review_text from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    review_text = (data.get(&quot;review_text&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not review_text:
+        return jsonify({&quot;error&quot;: &quot;Review text cannot be empty&quot;}), 400
+    try:
+        # ② Run the 3-strategy JSON determinism benchmark in 02_variance_determinism.py
+        res = mod_var.run_variance_determinism_benchmark(review_text)
+        res[&quot;result&quot;] = f&quot;Tested {len(res.get(&#x27;strategies&#x27;, []))} JSON extraction strategies.&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/tool-schema-calibration&quot;, methods=[&quot;POST&quot;])
+def tool_schema_calibration_route():
+    # ① Parse query from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the 2x2 tool schema calibration matrix in 03_tool_schema_calibration.py
+        res = mod_calib.run_tool_schema_calibration(query)
+        res[&quot;result&quot;] = res.get(&quot;analysis_summary&quot;, &quot;Calibration complete.&quot;)
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/tool-error-injection&quot;, methods=[&quot;POST&quot;])
+def tool_error_injection_route():
+    # ① Parse question from the JSON request body and reject empty strings
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run the upstream 503 error injection benchmark in 04_tool_error_injection.py
+        res = mod_err.run_tool_error_injection(question)
+        res[&quot;result&quot;] = f&quot;Evaluated error handling across {len(res.get(&#x27;scenarios&#x27;, []))} prompt configurations.&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Reliability &mdash; ⚠️ Tool Error Injection &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

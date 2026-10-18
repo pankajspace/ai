@@ -123,7 +123,6 @@ If you need an instant container rollback on the server without waiting for a ne
    ```bash
    nano ~/apps/<project-name>/docker-compose.yml
    # Change image tag from :latest or <broken-sha> to <previous-working-sha>
-   # For the multi-service `docker` project the file is ~/docker-compose.yml
    ```
 4. Restart the service:
    ```bash

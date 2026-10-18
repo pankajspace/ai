@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI RAG &amp; Chroma &middot; TechToday</title>
+    <meta name="description"
+        content="Recursive text chunking, dense vector embeddings, and in-memory Chroma vector search." />
+    <link rel="icon" href="logo.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main class="project-page">
+        <section class="project-shell" id="tools">
+            <div class="container">
+                <div class="app-header">
+                    <div class="brand-wrapper">
+                        <div class="brand-icon">📚</div>
+                        <div>
+                            <h1 class="brand-title">AI RAG &amp; Chroma</h1>
+                            <p class="brand-tagline">Document chunking, vector embeddings, and retrieval-augmented generation</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+
+                    <!-- 1. Text Chunking -->
+                    <div class="card card-half" id="card-chunking">
+                        <h2>
+                            <span class="card-title">✂️ Text Chunking</span>
+                            <a class="info-link" href="explanation/chunking.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">RecursiveCharacterTextSplitter splitting on paragraph, line, word, and character boundaries.</p>
+                        <p>Break documents into overlapping chunks of configurable size and overlap to preserve semantic context across boundaries.</p>
+                        <div class="options">
+                            <label class="option">Chunk Size
+                                <select id="chunkSize">
+                                    <option value="150">150 chars</option>
+                                    <option value="250" selected>250 chars</option>
+                                    <option value="400">400 chars</option>
+                                </select>
+                            </label>
+                            <label class="option">Overlap
+                                <select id="chunkOverlap">
+                                    <option value="20">20 chars</option>
+                                    <option value="40" selected>40 chars</option>
+                                    <option value="80">80 chars</option>
+                                </select>
+                            </label>
+                        </div>
+                        <textarea id="chunkingInput" rows="4" placeholder="Enter text to split…">Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. Before documents can be searched efficiently, they must be broken down into smaller pieces. This process is called chunking. RecursiveCharacterTextSplitter splits documents on paragraph breaks, line breaks, and spaces to keep semantically related sentences together. Chunk overlap ensures that context across boundaries is not lost between adjacent chunks.</textarea>
+                        <div class="preset-row">
+                            <span class="preset-label">Quick pick:</span>
+                            <button type="button" class="preset-chip active" data-value="Retrieval-Augmented Generation (RAG) combines search retrieval with generative AI models. Before documents can be searched efficiently, they must be broken down into smaller pieces. This process is called chunking. RecursiveCharacterTextSplitter splits documents on paragraph breaks, line breaks, and spaces to keep semantically related sentences together. Chunk overlap ensures that context across boundaries is not lost between adjacent chunks.">RAG &amp; Chunking</button>
+                            <button type="button" class="preset-chip" data-value="Autonomous AI agents combine large language models with planning, memory, and external tools to accomplish multi-step objectives without constant human guidance. They observe their environment, reason about next actions, call external APIs, and iteratively refine their outputs. Memory allows them to remember past interactions and user preferences across conversation turns.">AI Agents</button>
+                        </div>
+                        <span class="validation" id="chunkingValidation"></span>
+                        <button id="chunkingBtn">Split into Chunks</button>
+                        <div class="result" id="chunkingResult"></div>
+                    </div>
+
+                    <!-- 2. Semantic Embeddings -->
+                    <div class="card card-half" id="card-embedding">
+                        <h2>
+                            <span class="card-title">📐 Semantic Embeddings</span>
+                            <a class="info-link" href="explanation/embedding.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">384-dimensional dense sentence embeddings (all-MiniLM-L6-v2) with cosine similarity.</p>
+                        <p>Encode two sentences into normalized vectors and compute their cosine similarity independent of exact keyword overlap.</p>
+                        <input type="text" id="embeddingText1" placeholder="First text…" value="A cat is sleeping on the couch" />
+                        <input type="text" id="embeddingText2" placeholder="Second text…" value="A kitten is napping on the sofa" />
+                        <div class="preset-row">
+                            <span class="preset-label">Quick pick:</span>
+                            <button type="button" class="preset-chip active" data-t1="A cat is sleeping on the couch" data-t2="A kitten is napping on the sofa">Cat vs Kitten (High)</button>
+                            <button type="button" class="preset-chip" data-t1="A cat is sleeping on the couch" data-t2="The stormy rain caused severe traffic delays">Cat vs Weather (Low)</button>
+                            <button type="button" class="preset-chip" data-t1="Software engineers write code to solve business problems" data-t2="Developers debug software and fix logic defects in programs">Coding vs Debugging (High)</button>
+                        </div>
+                        <span class="validation" id="embeddingValidation"></span>
+                        <button id="embeddingBtn">Compute Similarity</button>
+                        <div class="result" id="embeddingResult"></div>
+                    </div>
+
+                    <!-- 3. Paragraph RAG -->
+                    <div class="card card-wide" id="card-rag">
+                        <h2>
+                            <span class="card-title">🔍 Vector RAG QA</span>
+                            <a class="info-link" href="explanation/rag.html" data-tooltip="Explanation"
+                                aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">4-stage RAG pipeline: Split &rarr; Ephemeral Chroma Index &rarr; Top-k Retrieval &rarr; Grounded GPT-4o-mini Answer.</p>
+                        <p>Ask a question against the reference paragraph; the pipeline retrieves top-3 matching chunks and answers strictly from retrieved context.</p>
+                        <textarea id="ragParagraph" rows="4" placeholder="Reference knowledge paragraph…">TechToday Return Policy: Customers may return any eligible product within 30 days of the purchase date. All returned merchandise must be unworn, undamaged, and in its original packaging with all tags attached. Refunds are processed back to the original payment method within 5 to 7 business days after inspection. Standard shipping fees are non-refundable unless the return is due to our fulfillment error. International orders and clearance items marked as final sale cannot be returned or exchanged.</textarea>
+                        <input type="text" id="ragQuestion" placeholder="Enter question…" value="How long do I have to return something?" />
+                        <div class="preset-row">
+                            <span class="preset-label">Quick pick questions:</span>
+                            <button type="button" class="preset-chip active" data-q="How long do I have to return something?">Return Window</button>
+                            <button type="button" class="preset-chip" data-q="When will I receive my refund after inspection?">Refund Timing</button>
+                            <button type="button" class="preset-chip" data-q="Can clearance items be returned?">Clearance Policy</button>
+                        </div>
+                        <span class="validation" id="ragValidation"></span>
+                        <button id="ragBtn">Answer via RAG</button>
+                        <div class="result" id="ragResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>TechToday &middot; 03-ai-rag-chroma &middot; Port 8082 (Local) / 5002 (EC2)</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Hello World Agent &middot; AWS Strands Agents</title>
+    <meta name="description"
+        content="🌐 Hello World Agent is the smallest Strands agent: wrap an Amazon Bedrock model (Nova Lite) in Agent(model=...) and call it with your prompt." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AWS Strands Agents</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AWS Strands Agents</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-01-hello-world-agent-py">01_hello_world_agent.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🌐 Hello World Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🌐 Hello World Agent</strong> is the smallest Strands agent: wrap an Amazon Bedrock model (Nova Lite) in <code>Agent(model=...)</code> and call it with your prompt.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Hello World Strands Agent</strong> is the entry point to the <strong>AWS Strands Agents
+                        SDK</strong> series. It demonstrates the minimal code needed to instantiate an autonomous agent
+                        backed by <strong>Amazon Bedrock</strong> (defaulting to <code>amazon.nova-lite-v1:0</code> via
+                        <code>BEDROCK_MODEL_ID</code>) and run a natural-language prompt through its agentic loop.
+                    </p>
+                    <p>
+                        With no tools attached, <code>agent(prompt)</code> executes a single model turn and returns an
+                        <code>AgentResult</code> object. Crucially, the service creates a fresh <code>Agent(model=...)</code>
+                        instance inside the request handler rather than at module import time, ensuring that concurrent
+                        web users never share or leak conversation state.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Model vs. Agent in AWS Strands</strong></p>
+                    <p>
+                        A raw model client (like <code>boto3.client("bedrock-runtime")</code>) performs a single
+                        stateless text generation call. A Strands <code>Agent</code> wraps a <code>BedrockModel</code>
+                        with three higher-level capabilities that every subsequent demo in this module builds upon:
+                    </p>
+                    <ul>
+                        <li><strong>Conversation State (<code>agent.messages</code>):</strong> Automatically tracks
+                            user, assistant, tool-use, and tool-result blocks across turns.</li>
+                        <li><strong>Tool Registry (<code>tools=[...]</code>):</strong> Inspects decorated Python
+                            functions and exposes their schemas to Bedrock's Converse API.</li>
+                        <li><strong>Autonomous Execution Loop:</strong> Repeatedly cycles through model inference and
+                            local tool execution until the model produces a final answer.</li>
+                    </ul>
+                    <p><strong>2. Amazon Bedrock Converse API Integration</strong></p>
+                    <p>
+                        <code>BedrockModel(model_id=model_id)</code> authenticates using the standard AWS credential
+                        chain (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>,
+                        <code>AWS_DEFAULT_REGION</code> from <code>.env</code>, or an EC2/ECS IAM role) and communicates
+                        through Bedrock's unified Converse API, allowing you to swap between Amazon Nova Lite, Nova Pro,
+                        or Anthropic Claude models by changing only <code>BEDROCK_MODEL_ID</code>.
+                    </p>
+                    <p><strong>3. Request-Scoped Agent Instantiation (Multi-Tenant Safety)</strong></p>
+                    <p>
+                        Because a Strands <code>Agent</code> appends every prompt and reply to its internal
+                        <code>agent.messages</code> list, a global module-level <code>Agent</code> in a web server would
+                        mix User A's questions into User B's context. Instantiating <code>Agent(...)</code> per request
+                        guarantees clean isolation.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/hello-world-agent</code> with <code>{ prompt }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>hello_world_route()</code> calls <code>run_hello_world_agent(prompt)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>01_hello_world_agent.py</code>)</span>
+                            <span class="flow-detail"><code>Agent(model=BedrockModel(...))</code> runs <code>agent(prompt)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Amazon Bedrock</span>
+                            <span class="flow-detail">Nova Lite writes the reply.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows <code>{ prompt, response }</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/hello-world-agent"]:::entry -->|"prompt"| R["app.py<br/>hello_world_route()"]:::fn
+    R -->|"prompt"| S["01_hello_world_agent.py<br/>run_hello_world_agent()"]:::fn
+    S -->|"prompt"| A["Strands Agent<br/>agent(prompt)"]:::fn
+    A -->|"messages"| B[("Amazon Bedrock<br/>Nova Lite")]:::ext
+    B -->|"reply"| A
+    A -->|"AgentResult"| S
+    S -->|"reply text"| R
+    R -->|"JSON { prompt, response }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-01-hello-world-agent-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-01-hello-world-agent-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-01-hello-world-agent-py" class="topic-title is-file">01_hello_world_agent.py<a class="headerlink" href="#source-01-hello-world-agent-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">46 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-01-hello-world-agent-py">
+                    <span class="file-path">src/python/01_hello_world_agent.py</span>
+                    <p class="file-label">AWS Strands Hello World Agent Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;AWS Strands Hello World Agent Service.
+
+Demonstrates the simplest possible autonomous agent:
+1. Configures a foundation model (Amazon Nova Lite on Bedrock).
+2. Wraps the model in a Strands Agent instance (the agentic loop).
+3. Executes a natural language prompt and returns the reply.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from pydantic import BaseModel
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+
+# ① Load AWS credentials and Bedrock configuration from .env
+load_dotenv(find_dotenv())
+
+
+class HelloWorldAgentRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str = &quot;Hello! Tell me a fun fact about AI agents.&quot;
+
+
+class HelloWorldAgentResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Hello World Agent.&quot;&quot;&quot;
+
+    prompt: str
+    response: str
+
+
+# ② Configure the Bedrock foundation model (Amazon Nova Lite is fast and cost-effective)
+model_id = os.getenv(&quot;BEDROCK_NOVA_LITE&quot;, os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;))
+model = BedrockModel(model_id=model_id)
+
+
+def run_hello_world_agent(prompt: str = &quot;Hello! Tell me a fun fact about AI agents.&quot;) -&gt; dict:
+    &quot;&quot;&quot;Execute the Hello World Agent on Amazon Bedrock via Strands.&quot;&quot;&quot;
+    # ③ Wrap the foundation model in a Strands Agent instance
+    agent = Agent(model=model)
+
+    # ④ Execute the natural language prompt through the agentic loop
+    response = agent(prompt)
+
+    return {&quot;prompt&quot;: prompt, &quot;response&quot;: str(response)}</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">296 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (hello_world_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 05-ai-aws-strands.&quot;&quot;&quot;
+
+import asyncio
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+s_hello = _load_service(&quot;01_hello_world_agent.py&quot;, &quot;s_hello&quot;)
+s_langgraph = _load_service(&quot;02_hello_world_langgraph.py&quot;, &quot;s_langgraph&quot;)
+s_fn_tool = _load_service(&quot;03_function_to_tool.py&quot;, &quot;s_fn_tool&quot;)
+s_tip = _load_service(&quot;04_tip_calculator.py&quot;, &quot;s_tip&quot;)
+s_sales = _load_service(&quot;05_multi_tool_sales.py&quot;, &quot;s_sales&quot;)
+s_inv = _load_service(&quot;06_custom_tool_inventory.py&quot;, &quot;s_inv&quot;)
+s_calc = _load_service(&quot;07_prebuilt_tools.py&quot;, &quot;s_calc&quot;)
+s_multi_pre = _load_service(&quot;08_multi_prebuilt_tools.py&quot;, &quot;s_multi_pre&quot;)
+s_aws = _load_service(&quot;09_use_aws.py&quot;, &quot;s_aws&quot;)
+s_cls_tool = _load_service(&quot;10_class_based_tools.py&quot;, &quot;s_cls_tool&quot;)
+s_async_tool = _load_service(&quot;11_async_tools.py&quot;, &quot;s_async_tool&quot;)
+s_travel = _load_service(&quot;12_travel_assistant.py&quot;, &quot;s_travel&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/hello-world-agent&quot;, methods=[&quot;POST&quot;])
+def hello_world_route():
+    # ① Parse prompt from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    prompt = (data.get(&quot;prompt&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not prompt:
+        return jsonify({&quot;error&quot;: &quot;Prompt cannot be empty&quot;}), 400
+    try:
+        # ② Invoke the Strands Hello World Agent in 01_hello_world_agent.py
+        res = s_hello.run_hello_world_agent(prompt)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/langgraph-agent&quot;, methods=[&quot;POST&quot;])
+def langgraph_route():
+    # ① Parse prompt from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    prompt = (data.get(&quot;prompt&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not prompt:
+        return jsonify({&quot;error&quot;: &quot;Prompt cannot be empty&quot;}), 400
+    try:
+        # ② Invoke the LangGraph + Bedrock Converse agent in 02_hello_world_langgraph.py
+        res = s_langgraph.run_langgraph_agent(prompt)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/function-to-tool&quot;, methods=[&quot;POST&quot;])
+def function_to_tool_route():
+    # ① Parse question from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run the HTTP server health-check tool agent in 03_function_to_tool.py
+        res = s_fn_tool.run_function_to_tool_agent(question)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/tip-calculator&quot;, methods=[&quot;POST&quot;])
+def tip_calculator_route():
+    # ① Parse query from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the multi-parameter tip calculator agent in 04_tip_calculator.py
+        res = s_tip.run_tip_calculator_agent(query)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/multi-tool-sales&quot;, methods=[&quot;POST&quot;])
+def multi_tool_sales_route():
+    # ① Parse task from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    task = (data.get(&quot;task&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not task:
+        return jsonify({&quot;error&quot;: &quot;Task cannot be empty&quot;}), 400
+    try:
+        # ② Run the 3-tool sales pipeline agent in 05_multi_tool_sales.py
+        res = s_sales.run_multi_tool_sales_agent(task)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/custom-inventory&quot;, methods=[&quot;POST&quot;])
+def custom_inventory_route():
+    # ① Parse question from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run the custom inventory lookup agent in 06_custom_tool_inventory.py
+        res = s_inv.run_custom_inventory_agent(question)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/prebuilt-calculator&quot;, methods=[&quot;POST&quot;])
+def prebuilt_calculator_route():
+    # ① Parse math query from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the prebuilt calculator tool agent in 07_prebuilt_tools.py
+        res = s_calc.run_prebuilt_calculator_agent(query)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/multi-prebuilt-tools&quot;, methods=[&quot;POST&quot;])
+def multi_prebuilt_tools_route():
+    # ① Parse task from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    task = (data.get(&quot;task&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not task:
+        return jsonify({&quot;error&quot;: &quot;Task cannot be empty&quot;}), 400
+    try:
+        # ② Run the http_request + calculator agent in 08_multi_prebuilt_tools.py
+        res = s_multi_pre.run_multi_prebuilt_tools_agent(task)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/use-aws&quot;, methods=[&quot;POST&quot;])
+def use_aws_route():
+    # ① Parse natural-language AWS prompt from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    prompt = (data.get(&quot;prompt&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not prompt:
+        return jsonify({&quot;error&quot;: &quot;Prompt cannot be empty&quot;}), 400
+    try:
+        # ② Run the prebuilt use_aws (boto3) agent in 09_use_aws.py
+        res = s_aws.run_use_aws_agent(prompt)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/class-based-tools&quot;, methods=[&quot;POST&quot;])
+def class_based_tools_route():
+    # ① Parse query from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the stateful InventoryTools class agent in 10_class_based_tools.py
+        res = s_cls_tool.run_class_based_tools_agent(query)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/async-tools&quot;, methods=[&quot;POST&quot;])
+def async_tools_route():
+    # ① Parse query from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the async parallel warehouse tools agent in 11_async_tools.py
+        res = asyncio.run(s_async_tool.run_async_tools_agent(query))
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/travel-assistant&quot;, methods=[&quot;POST&quot;])
+def travel_assistant_route():
+    # ① Parse travel query from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    query = (data.get(&quot;query&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not query:
+        return jsonify({&quot;error&quot;: &quot;Query cannot be empty&quot;}), 400
+    try:
+        # ② Run the 4-tool travel assistant agent in 12_travel_assistant.py
+        res = s_travel.run_travel_assistant_agent(query)
+        res[&quot;result&quot;] = res.get(&quot;response&quot;) or res.get(&quot;answer&quot;) or &quot;&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AWS Strands Agents &mdash; 🌐 Hello World Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

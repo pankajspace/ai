@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Prompting Strategies Benchmark &middot; AI Systems</title>
+    <meta name="description"
+        content="🎯 Prompting Strategies Benchmark asks OpenAI the same word problem three ways &amp;mdash; Direct, Zero-Shot Chain-of-Thought and Few-Shot Chain-of-Thought &amp;mdash; and compares correctness, tokens and latency." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Systems</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Systems</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-01-prompting-strategies-py">01_prompting_strategies.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🎯 Prompting Strategies Benchmark<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🎯 Prompting Strategies Benchmark</strong> asks OpenAI the same word problem three ways &mdash; Direct, Zero-Shot Chain-of-Thought and Few-Shot Chain-of-Thought &mdash; and compares correctness, tokens and latency.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Prompting Strategies Benchmark</strong> runs a controlled head-to-head experiment
+                        comparing three foundational prompting techniques &mdash; <strong>Direct Prompting</strong>,
+                        <strong>Zero-Shot Chain-of-Thought (CoT)</strong>, and <strong>Few-Shot Chain-of-Thought</strong>
+                        &mdash; on the exact same multi-step arithmetic word problem (buying 7 pens at ₹15, returning 2
+                        for a ₹12 refund each, buying 4 more at ₹18, and paying with a ₹500 note, where the ground-truth
+                        change is <code>293</code>).
+                    </p>
+                    <p>
+                        All three strategies run against OpenAI at <code>temperature=0</code>. For each strategy, the
+                        service extracts the final <code>Answer: &lt;value&gt;</code> line using a regex parser, grades
+                        it against <code>expected_answer="293"</code>, and records both <code>prompt_tokens</code> and
+                        <code>completion_tokens</code> so you can see the exact accuracy vs. token-cost trade-off.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Why Autoregressive Models Need a Scratchpad for Multi-Step Math</strong></p>
+                    <p>
+                        An LLM generates text one token at a time, performing a fixed amount of computation (one forward
+                        pass through its transformer layers) per emitted token. Under <strong>Direct Prompting</strong>
+                        (<em>"Return ONLY the final answer... Do NOT include any reasoning"</em>), the model is forced
+                        to compute <code>(7 &times; 15) - (2 &times; 12) + (4 &times; 18)</code> and subtract from
+                        <code>500</code> inside a single token jump &mdash; where intermediate state errors frequently
+                        occur.
+                    </p>
+                    <p><strong>2. Zero-Shot Chain-of-Thought ("Think step-by-step")</strong></p>
+                    <p>
+                        Adding the instruction <em>"Think step-by-step before giving the final answer"</em> (Kojima et
+                        al., 2022) turns the output stream itself into an external working memory scratchpad. Because
+                        each subsequent token attends to all previously written intermediate totals, a 4-step problem is
+                        decomposed into 4 simple 1-step calculations.
+                    </p>
+                    <p><strong>3. Few-Shot Chain-of-Thought (In-Context Exemplars)</strong></p>
+                    <p>
+                        <strong>Few-Shot CoT</strong> (Wei et al., 2022) prepends two worked question-reasoning-answer
+                        examples before the target question. Beyond encouraging step-by-step reasoning, in-context
+                        exemplars calibrate <em>how</em> the model structures its equations and guarantee that it ends
+                        with the exact machine-parseable line <code>Answer: 293</code>.
+                    </p>
+                    <p><strong>4. The Token Economics of Reasoning</strong></p>
+                    <p>
+                        Reasoning is not free: Direct uses ~5 completion tokens, Zero-Shot CoT uses ~80–150 completion
+                        tokens (higher output latency and cost), and Few-Shot CoT increases <code>prompt_tokens</code> on
+                        every call. Tracking <code>prompt_tokens</code>, <code>completion_tokens</code>, and
+                        <code>total_tokens</code> per strategy quantifies the exact price of higher accuracy.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/prompting-strategies</code> with <code>{ question, expected_answer, model, temperature }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>prompting_strategies_route()</code> calls <code>run_prompting_strategies()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>01_prompting_strategies.py</code>)</span>
+                            <span class="flow-detail">Resolves the selected model/provider, builds 3 prompts, and calls the LLM once per strategy at the chosen temperature, timing each call and reading <code>usage</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Scoring</span>
+                            <span class="flow-detail"><code>extract_final_answer()</code> + <code>evaluate_accuracy()</code> mark each answer right or wrong.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows a side-by-side table of the three strategies.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/prompting-strategies"]:::entry -->|"question, expected_answer, model, temperature"| R["app.py<br/>prompting_strategies_route()"]:::fn
+    R -->|"question, expected, model, temperature"| S["01_prompting_strategies.py<br/>run_prompting_strategies()"]:::fn
+    S -->|"Direct prompt"| O[("LLM API")]:::ext
+    S -->|"Zero-Shot CoT prompt"| O
+    S -->|"Few-Shot CoT prompt"| O
+    O -->|"3 replies + token usage"| S
+    S -->|"reply"| X["extract_final_answer()<br/>evaluate_accuracy()"]:::fn
+    X -->|"answer, correct?"| S
+    S -->|"expected_answer + strategies"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-01-prompting-strategies-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-01-prompting-strategies-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-01-prompting-strategies-py" class="topic-title is-file">01_prompting_strategies.py<a class="headerlink" href="#source-01-prompting-strategies-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">181 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-01-prompting-strategies-py">
+                    <span class="file-path">src/python/01_prompting_strategies.py</span>
+                    <p class="file-label">Prompting Strategies Benchmark Service (Direct vs Zero-Shot CoT vs Few-Shot CoT).</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Prompting Strategies Benchmark Service (Direct vs Zero-Shot CoT vs Few-Shot CoT).
+
+Benchmarks three fundamental prompting strategies:
+1. Direct: &quot;Answer the question directly. Do not include working.&quot;
+2. Zero-Shot CoT: &quot;Think through the problem step by step...&quot;
+3. Few-Shot CoT: Provides explicit worked reasoning examples.
+
+Measures accuracy, prompt tokens, completion tokens, and latency trade-offs.
+&quot;&quot;&quot;
+
+import os
+import re
+import time
+from typing import List
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+
+class PromptingStrategiesRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for Prompting Strategies Benchmark.&quot;&quot;&quot;
+
+    question: str = &quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;
+    expected_answer: str = &quot;293&quot;
+    model: str = &quot;gpt-4o-mini&quot;
+    temperature: float = 0.7
+
+
+class StrategyResult(BaseModel):
+    name: str
+    response_text: str
+    extracted_answer: str
+    is_correct: bool
+    prompt_tokens: int
+    completion_tokens: int
+    total_tokens: int
+    latency_seconds: float
+
+
+class PromptingStrategiesResponse(BaseModel):
+    &quot;&quot;&quot;Output payload from Prompting Strategies Benchmark.&quot;&quot;&quot;
+
+    expected_answer: str
+    model: str = &quot;gpt-4o-mini&quot;
+    temperature: float = 0.7
+    strategies: List[StrategyResult]
+
+
+FEW_SHOT_EXAMPLES = &quot;&quot;&quot;
+Example 1:
+Question: If I have 3 apples and I give 2 to my friend, but then my friend gives me 1 back, how many apples do I have?
+Thought:
+1. Start with 3 apples.
+2. Give 2 away: 3 - 2 = 1 apple remaining.
+3. Friend gives 1 back: 1 + 1 = 2 apples.
+Answer: 2
+
+Example 2:
+Question: A worker makes 12 widgets an hour. How many widgets can 3 workers make in 4 hours?
+Thought:
+1. One worker makes 12 widgets in 1 hour.
+2. Three workers make 12 * 3 = 36 widgets in 1 hour.
+3. In 4 hours, they make 36 * 4 = 144 widgets.
+Answer: 144
+&quot;&quot;&quot;
+
+
+def _resolve_client_and_model(model_choice: str) -&gt; tuple[OpenAI, str]:
+    &quot;&quot;&quot;Resolve the OpenAI-compatible client and model identifier for the chosen model.&quot;&quot;&quot;
+    choice = (model_choice or &quot;&quot;).strip().lower()
+    if &quot;gemini&quot; in choice and os.getenv(&quot;GEMINI_API_KEY&quot;):
+        return (
+            OpenAI(
+                api_key=os.getenv(&quot;GEMINI_API_KEY&quot;),
+                base_url=os.getenv(&quot;GEMINI_BASE_URL&quot;, &quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;),
+            ),
+            os.getenv(&quot;GEMINI_MODEL&quot;, &quot;gemini-3.8-flash&quot;),
+        )
+    if (&quot;groq&quot; in choice or &quot;oss&quot; in choice or &quot;llama&quot; in choice) and os.getenv(&quot;GROQ_API_KEY&quot;):
+        return (
+            OpenAI(
+                api_key=os.getenv(&quot;GROQ_API_KEY&quot;),
+                base_url=os.getenv(&quot;GROQ_BASE_URL&quot;, &quot;https://api.groq.com/openai/v1&quot;),
+            ),
+            os.getenv(&quot;GROQ_MODEL&quot;, &quot;openai/gpt-oss-20b&quot;),
+        )
+    resolved_model = model_choice.strip() if choice in (&quot;gpt-4o&quot;, &quot;gpt-4o-mini&quot;) else os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    return (
+        OpenAI(
+            api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+            base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;, &quot;https://api.openai.com/v1&quot;),
+        ),
+        resolved_model,
+    )
+
+
+def extract_final_answer(response_text: str) -&gt; str:
+    &quot;&quot;&quot;Extract final answer clause from output.&quot;&quot;&quot;
+    # ① Look for explicit &#x27;Answer:&#x27; delimiter or fallback to the final line
+    text = response_text.strip()
+    matches = list(re.finditer(r&quot;answer\s*:&quot;, text, flags=re.IGNORECASE))
+    if matches:
+        segment = text[matches[-1].end() :]
+    else:
+        lines = [ln for ln in text.splitlines() if ln.strip()]
+        segment = lines[-1] if lines else &quot;&quot;
+
+    # ② Strip markdown formatting and normalize case
+    segment = segment.strip().splitlines()[0] if segment.strip() else &quot;&quot;
+    return segment.replace(&quot;*&quot;, &quot;&quot;).replace(&quot;`&quot;, &quot;&quot;).strip().lower()
+
+
+def evaluate_accuracy(extracted: str, expected: str) -&gt; bool:
+    &quot;&quot;&quot;Evaluate if extracted answer matches expected.&quot;&quot;&quot;
+    # ① Normalize both extracted and expected answers before checking containment
+    if not extracted or not expected:
+        return False
+    clean_extracted = re.sub(r&quot;[^\w\.\:\/]&quot;, &quot;&quot;, extracted)
+    clean_expected = re.sub(r&quot;[^\w\.\:\/]&quot;, &quot;&quot;, expected.lower())
+    return clean_expected in clean_extracted
+
+
+def run_prompting_strategies(
+    question: str = &quot;A shop sells pens at 23 rupees each. Ravi buys 7 pens, returns 2 of them, then buys 4 more. He pays the final bill with a 500 rupee note. How much change does he get? (Answer with the number only)&quot;,
+    expected_answer: str = &quot;293&quot;,
+    model: str = &quot;gpt-4o-mini&quot;,
+    temperature: float = 0.7,
+) -&gt; dict:
+    &quot;&quot;&quot;Execute all three prompting strategies and compare metrics.&quot;&quot;&quot;
+    # ① Initialize the LLM client and resolve model and temperature configuration
+    client, resolved_model = _resolve_client_and_model(model)
+    clamped_temp = max(0.0, min(2.0, float(temperature)))
+
+    # ② Construct Direct, Zero-Shot CoT, and Few-Shot CoT prompts
+    prompts = {
+        &quot;Direct&quot;: f&quot;{question}\n\nAnswer the question directly. State your final answer in the format: &#x27;Answer: &lt;your answer&gt;&#x27;. Do not include any explanations or working.&quot;,
+        &quot;Zero-Shot CoT&quot;: f&quot;{question}\n\nThink through the problem step by step to find the solution. After your reasoning, state your final answer on a new line in the format: &#x27;Answer: &lt;your answer&gt;&#x27;.&quot;,
+        &quot;Few-Shot CoT&quot;: f&quot;Solve the following reasoning problems step by step.\n\n{FEW_SHOT_EXAMPLES}\nQuestion: {question}\nThought:\n&quot;,
+    }
+
+    results = []
+
+    # ③ Run each strategy and measure latency and token usage
+    for name, p_text in prompts.items():
+        start_t = time.perf_counter()
+        resp = client.chat.completions.create(
+            model=resolved_model,
+            messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: p_text}],
+            temperature=clamped_temp,
+        )
+        dur = time.perf_counter() - start_t
+        text = resp.choices[0].message.content or &quot;&quot;
+        p_tok = resp.usage.prompt_tokens if resp.usage else 0
+        c_tok = resp.usage.completion_tokens if resp.usage else 0
+
+        # ④ Extract the final answer and score accuracy against ground truth
+        extracted = extract_final_answer(text)
+        correct = evaluate_accuracy(extracted, expected_answer)
+
+        results.append(
+            {
+                &quot;name&quot;: name,
+                &quot;response_text&quot;: text,
+                &quot;extracted_answer&quot;: extracted,
+                &quot;is_correct&quot;: correct,
+                &quot;prompt_tokens&quot;: p_tok,
+                &quot;completion_tokens&quot;: c_tok,
+                &quot;total_tokens&quot;: p_tok + c_tok,
+                &quot;latency_seconds&quot;: round(dur, 3),
+            }
+        )
+
+    # ⑤ Return comparative benchmark metrics across all three strategies
+    return {
+        &quot;expected_answer&quot;: expected_answer,
+        &quot;model&quot;: resolved_model,
+        &quot;temperature&quot;: clamped_temp,
+        &quot;strategies&quot;: results,
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">150 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (prompting_strategies_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 06-ai-systems.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_prompt = _load_service(&quot;01_prompting_strategies.py&quot;, &quot;prompting_strategies&quot;)
+mod_syco = _load_service(&quot;02_sycophancy_trap.py&quot;, &quot;sycophancy_trap&quot;)
+mod_refund = _load_service(&quot;03_refund_bench.py&quot;, &quot;refund_bench&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/prompting-strategies&quot;, methods=[&quot;POST&quot;])
+def prompting_strategies_route():
+    # ① Parse question, expected_answer, model, and temperature from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or &quot;&quot;).strip()
+    expected = (data.get(&quot;expected_answer&quot;) or &quot;&quot;).strip()
+    model = data.get(&quot;model&quot;) or &quot;gpt-4o-mini&quot;
+    temp = float(data.get(&quot;temperature&quot;, 0.7))
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Run Direct, Zero-Shot CoT, and Few-Shot CoT benchmark in 01_prompting_strategies.py
+        res = mod_prompt.run_prompting_strategies(question, expected, model, temp)
+        res[&quot;result&quot;] = f&quot;Benchmark evaluated across {len(res.get(&#x27;strategies&#x27;, []))} prompting strategies.&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/sycophancy-trap&quot;, methods=[&quot;POST&quot;])
+def sycophancy_trap_route():
+    # ① Parse case_type, model, and temperature from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    case_type = data.get(&quot;case_type&quot;) or &quot;Math Gaslight&quot;
+    model = data.get(&quot;model&quot;) or &quot;gpt-4o-mini&quot;
+    temp = float(data.get(&quot;temperature&quot;, 0.7))
+    try:
+        # ② Run the multi-turn sycophancy trap evaluation in 02_sycophancy_trap.py
+        res = mod_syco.run_sycophancy_trap(case_type, model, temp)
+        res[&quot;result&quot;] = f&quot;Final Verdict: {res.get(&#x27;final_verdict&#x27;)}&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/refund-bench&quot;, methods=[&quot;POST&quot;])
+def refund_bench_route():
+    # ① Parse complaint_text, judge bench layout, and auto-approval cap from JSON body
+    data = request.get_json(force=True, silent=True) or {}
+    complaint_text = (data.get(&quot;complaint_text&quot;) or &quot;&quot;).strip()
+    bench = data.get(&quot;bench&quot;) or &quot;mixed3&quot;
+    cap = float(data.get(&quot;cap&quot;, 2000.0))
+    if not complaint_text:
+        return jsonify({&quot;error&quot;: &quot;Complaint text cannot be empty&quot;}), 400
+    try:
+        # ② Execute the 4-stage multi-judge dispute adjudication pipeline in 03_refund_bench.py
+        res = mod_refund.run_refund_bench(complaint_text, bench, cap)
+        res[&quot;result&quot;] = (
+            f&quot;Approved Refund: ₹{res.get(&#x27;total_approved_refund&#x27;, 0):.0f} &quot;
+            f&quot;| Held for Review: ₹{res.get(&#x27;total_held_for_review&#x27;, 0):.0f}&quot;
+        )
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Systems &mdash; 🎯 Prompting Strategies Benchmark &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

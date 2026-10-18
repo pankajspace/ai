@@ -82,6 +82,39 @@ jobs:
             site/ \
             ec2-user@${{ secrets.EC2_HOST }}:/var/www/techtoday/
 
+      - name: Configure Nginx backward compatibility redirects
+        run: |
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ec2-user@${{ secrets.EC2_HOST }} '
+            sudo mkdir -p /etc/nginx/conf.d/app-locations
+            sudo tee /etc/nginx/conf.d/app-locations/00-legacy-redirects.conf > /dev/null << "EOF"
+            # Backward compatibility redirects for ai-pocs and ai-demos
+            location ^~ /ai-pocs {
+                return 301 https://app.techtoday.click/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /ai-demos {
+                return 301 https://app.techtoday.click/ai-projects/ai-projects.html;
+            }
+
+            location = /ai-projects/ai-projects.html {
+                return 301 https://techtoday.click/study/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /ai-projects {
+                return 301 https://techtoday.click/study/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /interviewiq {
+                return 301 https://app.techtoday.click/09-interviewiq/;
+            }
+
+            location ^~ /shipment-exception-desk {
+                return 301 https://app.techtoday.click/10-shipment-exception-desk/;
+            }
+            EOF
+            sudo nginx -t && sudo systemctl reload nginx
+          '
+
       - name: Record deploy in job summary
         run: |
           SHORT_SHA=$(git rev-parse --short HEAD)

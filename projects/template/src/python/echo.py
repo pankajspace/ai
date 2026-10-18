@@ -17,6 +17,7 @@ def echo(text: str) -> str:
         A formatted string echoing the input. Pure Python — no network or
         API keys — so it works offline and in CI.
     """
+    # ① clean and format the message
     cleaned = text.strip()
     return f"You said: {cleaned.upper()} ({len(cleaned)} characters)"
 

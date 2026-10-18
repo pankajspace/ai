@@ -45,6 +45,7 @@ on:
     paths:
       - 'projects/PROJECT_NAME/**'
       - '.github/workflows/deploy-PROJECT_NAME.yml'
+  workflow_dispatch:
 
 env:
   AWS_REGION: ${{ secrets.AWS_REGION }}
@@ -265,6 +266,58 @@ jobs:
               docker compose -f ~/docker-compose.yml rm -f PROJECT_NAME 2>/dev/null || true
             fi
 
+            # --- Clean up legacy renamed stacks (migration) ---
+            RELOAD_NGINX=0
+            for legacy in basic rag docker aws-strands ai-systems ai-reliability mcp-evals ai-pocs interviewiq shipment-exception-desk 02-ai-rag-chroma 03-ai-model-training-chromadb 04-ai-aws-strands 05-ai-systems 06-ai-reliability 07-ai-mcp-evals 08-interviewiq 09-shipment-exception-desk; do
+              if [ -d "$HOME/apps/$legacy" ]; then
+                docker compose -f "$HOME/apps/$legacy/docker-compose.yml" down 2>/dev/null || true
+                rm -rf "$HOME/apps/$legacy" 2>/dev/null || true
+              fi
+              if [ -f "/etc/nginx/conf.d/app-locations/$legacy.conf" ]; then
+                sudo rm -f "/etc/nginx/conf.d/app-locations/$legacy.conf"
+                RELOAD_NGINX=1
+              fi
+            done
+            if [ "$RELOAD_NGINX" -eq 1 ]; then
+              sudo nginx -t && sudo systemctl reload nginx || true
+            fi
+
+            # --- Ensure legacy backward compatibility redirects ---
+            REDIRECTS_DEST=/etc/nginx/conf.d/app-locations/00-legacy-redirects.conf
+            sudo tee "$REDIRECTS_DEST" > /dev/null <<'REDIRECTS'
+            location ^~ /ai-pocs {
+                return 301 https://app.techtoday.click/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /ai-demos {
+                return 301 https://app.techtoday.click/ai-projects/ai-projects.html;
+            }
+
+            location = /ai-projects/ai-projects.html {
+                return 301 https://techtoday.click/study/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /ai-projects {
+                return 301 https://techtoday.click/study/ai-projects/ai-projects.html;
+            }
+
+            location ^~ /interviewiq {
+                return 301 https://app.techtoday.click/09-interviewiq/;
+            }
+
+            location ^~ /shipment-exception-desk {
+                return 301 https://app.techtoday.click/10-shipment-exception-desk/;
+            }
+            REDIRECTS
+            sudo nginx -t && sudo systemctl reload nginx || true
+
+            # --- Ensure port HOSTPORT is free from any conflicting or legacy container ---
+            OCCUPIED=$(docker ps -a -q --filter "publish=HOSTPORT")
+            if [ -n "$OCCUPIED" ]; then
+              echo "Freeing port HOSTPORT held by container(s): $OCCUPIED"
+              docker rm -f $OCCUPIED 2>/dev/null || true
+            fi
+
             # --- Per-project Compose file (self-contained, no shared edits) ---
             mkdir -p ~/apps/PROJECT_NAME
             cat > ~/apps/PROJECT_NAME/docker-compose.yml <<COMPOSE
@@ -282,6 +335,6 @@ jobs:
             COMPOSE
 
             # --- Deploy: free disk, pull, restart just this project ---
-            docker image prune -af || true
+            docker system prune -af || true
             docker compose -f ~/apps/PROJECT_NAME/docker-compose.yml pull
             docker compose -f ~/apps/PROJECT_NAME/docker-compose.yml up -d

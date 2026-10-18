@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI MCP &amp; Evals &middot; TechToday</title>
+    <meta name="description"
+        content="FastMCP stdio client, LLM tool agent loop, and automated evaluation assertions." />
+    <link rel="icon" href="logo.svg" />
+    <link rel="stylesheet" href="css/style.css" />
+</head>
+
+<body data-api-base="">
+    <header>
+        <nav class="nav container">
+            <a href="https://techtoday.click" class="brand">
+                <span class="logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="https://techtoday.click/study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <main class="project-page">
+        <section class="project-shell" id="tools">
+            <div class="container">
+                <div class="app-header">
+                    <div class="brand-wrapper">
+                        <div class="brand-icon">🔌</div>
+                        <div>
+                            <h1 class="brand-title">AI MCP &amp; Evals</h1>
+                            <p class="brand-tagline">Direct Model Context Protocol client, MCP agent loop, and evaluation suite</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid">
+
+                    <!-- 1. MCP Client -->
+                    <div class="card card-half" id="card-mcpClient">
+                        <h2>
+                            <span class="card-title">🔌 FastMCP Direct Client</span>
+                            <a class="info-link" href="explanation/mcp-client.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Direct FastMCP Client spawning cricket_server.py over stdio for deterministic JSON-RPC tool calls.</p>
+                        <p>Handshake with the MCP server, list exposed tools, and invoke get_live_score or get_player_stats directly without an LLM.</p>
+                        <div class="options">
+                            <label class="option">Tool
+                                <select id="mcpToolSelect">
+                                    <option value="get_live_score" selected>get_live_score (Match Score)</option>
+                                    <option value="get_player_stats">get_player_stats (Player Stats)</option>
+                                </select>
+                            </label>
+                        </div>
+                        <input type="text" id="mcpArgInput" placeholder="Tool argument value…" value="India vs West Indies" />
+                        <span class="validation" id="mcpClientValidation"></span>
+                        <button id="mcpClientBtn">Invoke MCP Tool</button>
+                        <div class="result" id="mcpClientResult"></div>
+                    </div>
+
+                    <!-- 2. MCP Agent -->
+                    <div class="card card-half" id="card-mcpAgent">
+                        <h2>
+                            <span class="card-title">🤖 FastMCP Tool Agent</span>
+                            <a class="info-link" href="explanation/mcp-agent.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">OpenAI tool-calling agent discovering and invoking FastMCP server tools dynamically over stdio.</p>
+                        <p>Ask a cricket question; the agent converts MCP tool schemas to OpenAI function definitions, calls the matching tool, and synthesizes a grounded answer.</p>
+                        <input type="text" id="mcpAgentInput" placeholder="Cricket question…" value="What is the score in India vs West Indies?" />
+                        <div class="preset-row">
+                            <span class="preset-label">Quick pick:</span>
+                            <button type="button" class="preset-chip active" data-q="What is the score in India vs West Indies?">Live Score</button>
+                            <button type="button" class="preset-chip" data-q="How many runs has Shubman Gill scored this series?">Player Stats</button>
+                            <button type="button" class="preset-chip" data-q="What is 15 * 15?">No Tool (Direct Math)</button>
+                        </div>
+                        <span class="validation" id="mcpAgentValidation"></span>
+                        <button id="mcpAgentBtn">Run MCP Agent</button>
+                        <div class="result" id="mcpAgentResult"></div>
+                    </div>
+
+                    <!-- 3. MCP Evals -->
+                    <div class="card card-wide" id="card-mcpEvals">
+                        <h2>
+                            <span class="card-title">🧪 Automated Evaluation Suite</span>
+                            <a class="info-link" href="explanation/mcp-evals.html" data-tooltip="Explanation" aria-label="Explanation">&#x24D8;</a>
+                        </h2>
+                        <p class="card-concept">Automated 5-case evaluation harness asserting both MCP tool routing and ground-truth answer tokens.</p>
+                        <p>Runs 4 positive cricket queries and 1 negative math test case to verify tool selection accuracy and factual grounding.</p>
+                        <div class="preset-row">
+                            <span class="preset-label">Included Test Cases:</span>
+                            <span class="preset-chip">Live Score Assert</span>
+                            <span class="preset-chip">Target Runs Assert</span>
+                            <span class="preset-chip">Player Stat Token</span>
+                            <span class="preset-chip">High Score Token</span>
+                            <span class="preset-chip">Negative No-Tool Test</span>
+                        </div>
+                        <span class="validation" id="mcpEvalsValidation"></span>
+                        <button id="mcpEvalsBtn">Run Evaluation Suite</button>
+                        <div class="result" id="mcpEvalsResult"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>TechToday &middot; 08-ai-mcp-evals &middot; Port 8089 (Local) / 5009 (EC2)</p>
+        </div>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+
+</html>

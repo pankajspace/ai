@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — ChromaDB Notes Q&amp;A &middot; AI Model Training & ChromaDB</title>
+    <meta name="description"
+        content="🗄️ ChromaDB Notes Q&A chunks local markdown study notes, embeds them with OpenAI text-embedding-3-small, indexes into ChromaDB, and answers questions with citations." />
+    <link rel="icon" href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Model Training & ChromaDB</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Model Training & ChromaDB</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-02-chromadb-py">02_chromadb.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🗄️ ChromaDB Notes Q&amp;A<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🗄️ ChromaDB Notes Q&amp;A</strong> chunks markdown study notes in <code>docs/*.md</code>, embeds them with OpenAI <code>text-embedding-3-small</code>, indexes them into ChromaDB, and synthesizes a grounded answer with source citations.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>ScalerGPT (ChromaDB Document RAG)</strong> upgrades the single-paragraph RAG demo into a
+                        persistent, multi-document knowledge base over a folder of Markdown engineering notes
+                        (<code>docs/docker-basics.md</code>, <code>docs/compose-and-volumes.md</code>, and
+                        <code>docs/rag-notes.md</code>).
+                    </p>
+                    <p>
+                        Instead of rebuilding and deleting a vector store on every request, <code>_get_collection()</code>
+                        maintains a named <code>"notes"</code> collection in <strong>ChromaDB</strong> using OpenAI's
+                        <code>text-embedding-3-small</code> embedding function. On the first query, it reads all
+                        <code>.md</code> and <code>.txt</code> files from disk, splits them into paragraphs, attaches
+                        <code>{"source": filename}</code> metadata to each chunk, and performs an idempotent
+                        <code>collection.upsert()</code>. Subsequent questions immediately query the indexed collection,
+                        retrieve the top 3 chunks with their source filenames, and synthesize a grounded answer with
+                        <code>gpt-4o-mini</code>.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Hybrid Chroma Client Architecture (Container vs. Ephemeral)</strong></p>
+                    <p>
+                        In multi-container Docker deployments (where <code>CHROMA_HOST</code> is set), the service
+                        connects over HTTP via <code>chromadb.HttpClient(host=chroma_host, port=chroma_port)</code> to a
+                        dedicated ChromaDB container. When running standalone without a separate vector DB container, it
+                        transparently falls back to <code>chromadb.EphemeralClient()</code> in-process &mdash; allowing
+                        the exact same RAG code to run in both environments.
+                    </p>
+                    <p><strong>2. Idempotent Ingestion with Deterministic Chunk IDs</strong></p>
+                    <p>
+                        Calling <code>collection.add()</code> repeatedly with random UUIDs duplicates documents and
+                        pollutes top-<em>k</em> search results with identical chunks. ScalerGPT assigns each paragraph a
+                        deterministic composite key &mdash; <code>f"{path.name}::{i}"</code> (e.g.,
+                        <code>docker-basics.md::0</code>) &mdash; and calls <code>collection.upsert()</code>, which
+                        inserts new chunks or updates existing ones in place, and skips disk ingestion altogether once
+                        <code>collection.count() &gt; 0</code>.
+                    </p>
+                    <p><strong>3. Source Attribution via Vector Metadata</strong></p>
+                    <p>
+                        Every vector stored in ChromaDB carries a parallel metadata dictionary:
+                        <code>metadatas.append({"source": path.name})</code>. When <code>collection.query()</code>
+                        returns the top-3 nearest chunks, it returns both <code>hits["documents"]</code> and
+                        <code>hits["metadatas"]</code>, allowing the UI to display which exact Markdown file each
+                        retrieved passage came from.
+                    </p>
+                    <p><strong>4. Filtering Noise During Paragraph Splitting</strong></p>
+                    <p>
+                        Markdown files often contain short headings or blank lines that make poor standalone vectors.
+                        The comprehension <code>[c.strip() for c in text.split("\n\n") if len(c.strip()) &gt; 40]</code>
+                        discards tiny fragments under 40 characters so every indexed vector carries substantive
+                        explanatory content.
+                    </p>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/chromadb</code> with <code>{ question }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>chromadb_route()</code> calls <code>ask_chromadb_notes()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">ChromaDB Query (<code>02_chromadb.py</code>)</span>
+                            <span class="flow-detail">Embeds question with <code>text-embedding-3-small</code> &rarr; <code>collection.query()</code> returns top-K chunks + metadata.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows grounded answer and retrieved markdown chunks with file citations.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/chromadb"]:::entry -->|"question"| R["app.py<br/>chromadb_route()"]:::fn
+    R --> S["02_chromadb.py<br/>ask_chromadb_notes()"]:::fn
+    S --> I["_get_collection()<br/>docs/*.md -> ChromaDB"]:::ext
+    S -->|"query_embeddings"| I
+    I -->|"top-k chunks + metadata"| S
+    S -->|"context + question"| O[("OpenAI Chat Completions")]:::ext
+    O -->|"grounded answer"| R
+    R -->|"JSON"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-02-chromadb-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-02-chromadb-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-02-chromadb-py" class="topic-title is-file">02_chromadb.py<a class="headerlink" href="#source-02-chromadb-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">147 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-02-chromadb-py">
+                    <span class="file-path">src/python/02_chromadb.py</span>
+                    <p class="file-label">ScalerGPT — Document Ingestion &amp; RAG over Markdown Notes with ChromaDB.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;ScalerGPT — Document Ingestion &amp; RAG over Markdown Notes with ChromaDB.
+
+This service demonstrates a complete Retrieval-Augmented Generation (RAG) workflow over markdown notes:
+1. Connects to ChromaDB (`chromadb.HttpClient` when `CHROMA_HOST` is configured, or an in-memory
+   `chromadb.EphemeralClient` inside the Flask server).
+2. Reads `.md` and `.txt` notes from `docs/`, splits them into paragraph chunks, embeds them with OpenAI&#x27;s
+   `text-embedding-3-small`, and upserts them into the `&quot;notes&quot;` Chroma collection.
+3. Executes the 3-stage RAG pipeline (Retrieve -&gt; Augment -&gt; Generate): queries top-3 relevant chunks from
+   ChromaDB, injects them into a grounded system prompt, and generates a factual answer with `gpt-4o-mini`.
+&quot;&quot;&quot;
+
+import os
+from pathlib import Path
+
+import chromadb
+from chromadb.utils import embedding_functions
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+load_dotenv(find_dotenv())
+
+DOCS_DIR = Path(__file__).with_name(&quot;docs&quot;)
+_chroma_client = None
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class ChromaDbRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for ScalerGPT ChromaDB RAG query.&quot;&quot;&quot;
+
+    question: str = &quot;Why should I copy requirements.txt before the rest of my code?&quot;
+
+
+class ChromaDbSource(BaseModel):
+    &quot;&quot;&quot;A retrieved document chunk with its source filename.&quot;&quot;&quot;
+
+    source: str
+    content: str
+
+
+class ChromaDbResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing grounded answer, indexed chunk count, and retrieved sources.&quot;&quot;&quot;
+
+    question: str
+    answer: str
+    docs_indexed: int
+    sources: list[ChromaDbSource]
+
+
+# ---------------------------------------------------------------------------
+# ChromaDB Connection &amp; Markdown Note Ingestion
+# ---------------------------------------------------------------------------
+def _get_collection():
+    &quot;&quot;&quot;Return the &#x27;notes&#x27; Chroma collection, ingesting markdown files from docs/ if empty.&quot;&quot;&quot;
+    global _chroma_client
+    api_key = os.getenv(&quot;OPENAI_API_KEY&quot;, &quot;&quot;).strip()
+    if not api_key:
+        raise RuntimeError(&quot;OPENAI_API_KEY is not configured in environment.&quot;)
+
+    # ① Connect to Chroma server if CHROMA_HOST is set; otherwise use in-memory EphemeralClient
+    if _chroma_client is None:
+        chroma_host = os.getenv(&quot;CHROMA_HOST&quot;, &quot;&quot;).strip()
+        chroma_port = int(os.getenv(&quot;CHROMA_PORT&quot;, &quot;8000&quot;))
+        if chroma_host:
+            _chroma_client = chromadb.HttpClient(host=chroma_host, port=chroma_port)
+        else:
+            _chroma_client = chromadb.EphemeralClient()
+
+    # ② Configure OpenAI text-embedding-3-small for the collection
+    openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+        api_key=api_key,
+        model_name=&quot;text-embedding-3-small&quot;,
+    )
+    collection = _chroma_client.get_or_create_collection(
+        name=&quot;notes&quot;,
+        embedding_function=openai_ef,
+    )
+
+    # ③ Ingest markdown/text notes from docs/ on first query
+    if collection.count() == 0:
+        files = sorted(list(DOCS_DIR.glob(&quot;*.txt&quot;)) + list(DOCS_DIR.glob(&quot;*.md&quot;)))
+        ids, documents, metadatas = [], [], []
+        for path in files:
+            text = path.read_text(encoding=&quot;utf-8&quot;).strip()
+            chunks = [c.strip() for c in text.split(&quot;\n\n&quot;) if len(c.strip()) &gt; 40]
+            for i, chunk in enumerate(chunks):
+                ids.append(f&quot;{path.name}::{i}&quot;)
+                documents.append(chunk)
+                metadatas.append({&quot;source&quot;: path.name})
+        if documents:
+            collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+
+    return collection
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic (Retrieve -&gt; Augment -&gt; Generate)
+# ---------------------------------------------------------------------------
+def ask_chromadb_notes(question: str) -&gt; dict:
+    &quot;&quot;&quot;Query indexed markdown notes in ChromaDB and synthesize a grounded answer.&quot;&quot;&quot;
+    collection = _get_collection()
+
+    # ④ RETRIEVE: Find the top-3 most relevant chunks from ChromaDB
+    hits = collection.query(query_texts=[question], n_results=3)
+    retrieved_docs = (hits.get(&quot;documents&quot;) or [[]])[0]
+    retrieved_metas = (hits.get(&quot;metadatas&quot;) or [[]])[0]
+    context = &quot;\n\n---\n\n&quot;.join(retrieved_docs)
+
+    # ⑤ AUGMENT: Build the strictly grounded ScalerGPT system prompt
+    system_prompt = (
+        &quot;You are ScalerGPT, a helpful teaching assistant. &quot;
+        &quot;Answer the user&#x27;s question using ONLY the context below. &quot;
+        &quot;If the context does not contain the answer, say you don&#x27;t know.\n\n&quot;
+        f&quot;CONTEXT:\n{context}&quot;
+    )
+
+    # ⑥ GENERATE: Synthesize the final answer with OpenAI
+    llm = OpenAI(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+        timeout=20.0,
+    )
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    resp = llm.chat.completions.create(
+        model=model,
+        messages=[
+            {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: system_prompt},
+            {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+        ],
+    )
+
+    sources = [
+        {
+            &quot;source&quot;: (meta.get(&quot;source&quot;, &quot;notes&quot;) if isinstance(meta, dict) else &quot;notes&quot;),
+            &quot;content&quot;: doc,
+        }
+        for doc, meta in zip(retrieved_docs, retrieved_metas)
+    ]
+
+    return {
+        &quot;question&quot;: question,
+        &quot;answer&quot;: (resp.choices[0].message.content or &quot;&quot;).strip(),
+        &quot;docs_indexed&quot;: collection.count(),
+        &quot;sources&quot;: sources,
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">147 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (chromadb_route) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 04-ai-model-training-chromadb.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_ml = _load_service(&quot;01_model_training.py&quot;, &quot;model_training&quot;)
+mod_chroma = _load_service(&quot;02_chromadb.py&quot;, &quot;chromadb_rag&quot;)
+mod_redis = _load_service(&quot;03_redis.py&quot;, &quot;redis_agent&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/model-training&quot;, methods=[&quot;POST&quot;])
+def model_training_service():
+    # ① Parse delivery order features from the JSON request body
+    data = request.get_json(force=True, silent=True) or {}
+    try:
+        distance_km = float(data.get(&quot;distance_km&quot;, 4.5))
+        prep_time_min = float(data.get(&quot;prep_time_min&quot;, 15.0))
+        rider_available = int(data.get(&quot;rider_available&quot;, 1))
+        is_raining = int(data.get(&quot;is_raining&quot;, 1))
+        if distance_km &lt;= 0 or prep_time_min &lt;= 0:
+            return jsonify({&quot;error&quot;: &quot;Distance and prep time must be positive.&quot;}), 400
+        # ② Run RandomForestRegressor inference in 01_model_training.py and return ETA
+        res = mod_ml.predict_delivery_eta(distance_km, prep_time_min, rider_available, is_raining)
+        res[&quot;result&quot;] = f&quot;Predicted Arrival: {res[&#x27;eta_minutes&#x27;]} min 🍔&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/chromadb&quot;, methods=[&quot;POST&quot;])
+def chromadb_service():
+    # ① Parse student question from JSON payload and reject empty queries
+    data = request.get_json(force=True, silent=True) or {}
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not question:
+        return jsonify({&quot;error&quot;: &quot;Question cannot be empty&quot;}), 400
+    try:
+        # ② Query ChromaDB notes collection via 02_chromadb.py and return answer + sources
+        res = mod_chroma.ask_chromadb_notes(question)
+        res[&quot;result&quot;] = res[&quot;answer&quot;]
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/redis&quot;, methods=[&quot;POST&quot;])
+def redis_agent_service():
+    # ① Parse session_id, message, and optional reset flag from JSON payload
+    data = request.get_json(force=True, silent=True) or {}
+    session_id = (data.get(&quot;session_id&quot;) or &quot;demo&quot;).strip()
+    message = (data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    reset_session = bool(data.get(&quot;reset_session&quot;, False))
+    if not session_id or (not reset_session and not message):
+        return jsonify({&quot;error&quot;: &quot;Session ID and message are required&quot;}), 400
+    try:
+        # ② Run DeskBuddy agent turn (or session reset) backed by Redis in 03_redis.py
+        res = mod_redis.run_redis_agent(session_id, message, reset_session)
+        res[&quot;result&quot;] = res[&quot;answer&quot;]
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Model Training & ChromaDB &mdash; 🗄️ ChromaDB Notes Q&amp;A &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
+

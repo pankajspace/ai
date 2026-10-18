@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Sentence Embedding &middot; AI RAG & Chroma</title>
+    <meta name="description"
+        content="🔢 Sentence Embedding turns two sentences into 384-number vectors with the local all-MiniLM-L6-v2 model and measures how close their meanings are with cosine similarity. No API key is needed." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI RAG & Chroma</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI RAG & Chroma</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-02-embedding-py">02_embedding.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🔢 Sentence Embedding<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🔢 Sentence Embedding</strong> turns two sentences into 384-number vectors with the local <code>all-MiniLM-L6-v2</code> model and measures how close their meanings are with cosine similarity. No API key is needed.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Sentence Embeddings</strong> demonstrates how AI systems measure <strong>semantic
+                        similarity</strong> (meaning) rather than keyword overlap. Using the local HuggingFace
+                        <code>SentenceTransformer("all-MiniLM-L6-v2")</code> model, the service encodes two input
+                        sentences into <strong>384-dimensional dense floating-point vectors</strong> and computes their
+                        <strong>cosine similarity</strong>.
+                    </p>
+                    <p>
+                        Because the embedding model maps concepts with similar meanings to nearby directions in
+                        384-dimensional space, <em>"A cat is sleeping on the couch"</em> and <em>"A kitten is napping on
+                        the sofa"</em> produce a high similarity score (~0.75+) despite sharing almost no content words.
+                        The response returns the rounded similarity score, the vector dimensionality (<code>384</code>),
+                        and the first 5 coordinates of each vector so you can inspect the numerical representation.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. From Discrete Words to Dense Semantic Vectors</strong></p>
+                    <p>
+                        Traditional search engines (like BM25 or SQL <code>LIKE</code>) match exact tokens: searching
+                        for <em>"sofa"</em> misses documents that only say <em>"couch"</em>. An embedding model is a
+                        neural network trained on millions of sentence pairs to project text into a continuous
+                        384-dimensional geometric space (<code>R<sup>384</sup></code>) where distance corresponds to
+                        semantic relatedness.
+                    </p>
+                    <p><strong>2. Cosine Similarity Mathematics</strong></p>
+                    <p>
+                        To compare two embedding vectors <code>v1</code> and <code>v2</code>, the service computes the
+                        cosine of the angle between them using NumPy's <code>dot</code> and <code>norm</code>:
+                    </p>
+                    <p>
+                        <code>similarity(v1, v2) = dot(v1, v2) / (||v1|| &times; ||v2||)</code>
+                    </p>
+                    <ul>
+                        <li><strong>Near 1.0:</strong> Vectors point in the same direction (synonyms or paraphrases).</li>
+                        <li><strong>Near 0.0:</strong> Vectors are orthogonal (unrelated topics).</li>
+                        <li><strong>Below 0.0:</strong> Vectors point in opposite directions.</li>
+                    </ul>
+                    <p><strong>3. Polysemy and Context Awareness</strong></p>
+                    <p>
+                        Unlike static word tables, transformer encoders read the whole sentence before producing the
+                        vector. The word <em>"bank"</em> in <em>"deposit money at the bank"</em> vs. <em>"sit by the
+                        river bank"</em> yields very different 384-number vectors because surrounding words shift the
+                        attention representations.
+                    </p>
+                    <p><strong>4. Startup Model Caching for Low-Latency Inference</strong></p>
+                    <p>
+                        Loading transformer weights from disk takes several hundred milliseconds. By instantiating
+                        <code>model = SentenceTransformer("all-MiniLM-L6-v2")</code> once at module import time, every
+                        subsequent HTTP request encodes sentences in a few milliseconds on CPU with zero external API
+                        cost.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/embedding</code> with <code>{ text1, text2 }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>embedding_service()</code> calls <code>compute_similarity(text1, text2)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>02_embedding.py</code>)</span>
+                            <span class="flow-detail"><code>model.encode()</code> both sentences, then cosine similarity with NumPy.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows the score, the dimension count and 5-number previews of each vector.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/embedding"]:::entry -->|"text1, text2"| R["app.py<br/>embedding_service()"]:::fn
+    R -->|"text1, text2"| S["02_embedding.py<br/>compute_similarity()"]:::fn
+    S -->|"sentences"| M[("SentenceTransformer<br/>all-MiniLM-L6-v2 (local)")]:::ext
+    M -->|"two 384-d vectors"| S
+    S -->|"cosine similarity"| R
+    R -->|"JSON { similarity, dimensions, previews }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-02-embedding-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-02-embedding-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-02-embedding-py" class="topic-title is-file">02_embedding.py<a class="headerlink" href="#source-02-embedding-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">69 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-02-embedding-py">
+                    <span class="file-path">src/python/02_embedding.py</span>
+                    <p class="file-label">Sentence Embedding &amp; Similarity Service.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Sentence Embedding &amp; Similarity Service.
+
+This service demonstrates how text embeddings work:
+1. Encodes text into dense numeric vectors using SentenceTransformer (&quot;all-MiniLM-L6-v2&quot;, 384 dims).
+2. Computes cosine similarity between two sentences using dot product and vector norms.
+3. Provides dimension count and vector preview values.
+&quot;&quot;&quot;
+
+from numpy import dot
+from numpy.linalg import norm
+from pydantic import BaseModel
+from sentence_transformers import SentenceTransformer
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class EmbeddingRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for text embedding and similarity comparison.&quot;&quot;&quot;
+
+    text1: str = &quot;A cat is sleeping on the couch&quot;
+    text2: str = &quot;A kitten is napping on the sofa&quot;
+
+
+class EmbeddingResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing similarity score and vector previews.&quot;&quot;&quot;
+
+    text1: str
+    text2: str
+    similarity: float
+    dimensions: int
+    preview_text1: list[float]
+    preview_text2: list[float]
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+# ① Load the compact 384-dimensional SentenceTransformer embedding model once at startup
+model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+
+
+def compute_similarity(text1: str, text2: str) -&gt; dict:
+    &quot;&quot;&quot;Compute embeddings for two texts and calculate their cosine similarity.
+
+    Args:
+        text1: First input text.
+        text2: Second input text.
+
+    Returns:
+        Dictionary matching EmbeddingResponse fields.
+    &quot;&quot;&quot;
+    # ② Encode both texts into 384-dimensional dense vectors
+    v1 = model.encode(text1)
+    v2 = model.encode(text2)
+
+    # ③ Compute cosine similarity using dot product divided by the product of vector norms
+    #   similarity = dot(v1, v2) / (||v1|| * ||v2||)
+    similarity = float(dot(v1, v2) / (norm(v1) * norm(v2)))
+
+    # ④ Return similarity score, vector dimensionality, and 5-value vector previews
+    return {
+        &quot;text1&quot;: text1,
+        &quot;text2&quot;: text2,
+        &quot;similarity&quot;: round(similarity, 4),
+        &quot;dimensions&quot;: len(v1),
+        &quot;preview_text1&quot;: [round(float(x), 4) for x in v1[:5]],
+        &quot;preview_text2&quot;: [round(float(x), 4) for x in v2[:5]],
+    }</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">151 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (embedding_service) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 03-ai-rag-chroma.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_chunk = _load_service(&quot;01_chunking.py&quot;, &quot;chunking&quot;)
+mod_embed = _load_service(&quot;02_embedding.py&quot;, &quot;embedding&quot;)
+mod_rag = _load_service(&quot;03_rag.py&quot;, &quot;rag&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/chunk&quot;, methods=[&quot;POST&quot;])
+def chunking_service():
+    # ① Parse text, chunk_size, and chunk_overlap from the JSON request body
+    data = request.get_json(force=True, silent=True) or {}
+    text = (data.get(&quot;text&quot;) or &quot;&quot;).strip()
+    chunk_size = int(data.get(&quot;chunk_size&quot;) or 250)
+    chunk_overlap = int(data.get(&quot;chunk_overlap&quot;) or 40)
+    if not text:
+        return jsonify({&quot;error&quot;: &quot;Text cannot be empty&quot;}), 400
+    try:
+        # ② Split the text into overlapping chunks via 01_chunking.py and return JSON
+        chunks = mod_chunk.chunk_text(text, chunk_size, chunk_overlap)
+        return jsonify({
+            &quot;result&quot;: f&quot;Split document into {len(chunks)} chunks (size {chunk_size}, overlap {chunk_overlap}).&quot;,
+            &quot;total_chunks&quot;: len(chunks),
+            &quot;chunk_size&quot;: chunk_size,
+            &quot;chunk_overlap&quot;: chunk_overlap,
+            &quot;chunks&quot;: chunks,
+        })
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/embedding&quot;, methods=[&quot;POST&quot;])
+def embedding_service():
+    # ① Parse both input strings and validate that neither is empty
+    data = request.get_json(force=True, silent=True) or {}
+    text1 = (data.get(&quot;text1&quot;) or &quot;&quot;).strip()
+    text2 = (data.get(&quot;text2&quot;) or &quot;&quot;).strip()
+    if not text1 or not text2:
+        return jsonify({&quot;error&quot;: &quot;Both text1 and text2 are required&quot;}), 400
+    try:
+        # ② Compute vector embeddings and cosine similarity via 02_embedding.py
+        res = mod_embed.compute_similarity(text1, text2)
+        res[&quot;result&quot;] = f&quot;Cosine Similarity: {res[&#x27;similarity&#x27;]:.4f} (Dimension: {res[&#x27;dimensions&#x27;]})&quot;
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/rag&quot;, methods=[&quot;POST&quot;])
+def rag_service():
+    # ① Parse the source paragraph and user question from the JSON request body
+    data = request.get_json(force=True, silent=True) or {}
+    paragraph = (data.get(&quot;paragraph&quot;) or &quot;&quot;).strip()
+    question = (data.get(&quot;question&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not paragraph or not question:
+        return jsonify({&quot;error&quot;: &quot;Both paragraph and question are required&quot;}), 400
+    try:
+        # ② Execute the Chroma RAG pipeline in 03_rag.py and return answer + sources
+        res = mod_rag.answer_rag(paragraph, question)
+        res[&quot;result&quot;] = res[&quot;answer&quot;]
+        return jsonify(res)
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI RAG & Chroma &mdash; 🔢 Sentence Embedding &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>

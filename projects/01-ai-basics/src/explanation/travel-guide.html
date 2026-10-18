@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Travel Guide &middot; AI Basics</title>
+    <meta name="description"
+        content="✈️ Travel Guide sends one chat request to OpenAI (gpt-4o-mini) with a system persona and a user prompt, and returns the model&#x27;s single travel suggestion for the city you type." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>AI Basics</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to AI Basics</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-01-chat-openai-py">01_chat_openai.py</a></li>
+                    <li><a href="#source-app-py">app.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">✈️ Travel Guide<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>✈️ Travel Guide</strong> sends one chat request to OpenAI (<code>gpt-4o-mini</code>) with a system persona and a user prompt, and returns the model's single travel suggestion for the city you type.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Travel Guide</strong> is the foundational building block of every LLM application: a
+                        stateless, single-turn call to the <strong>OpenAI Chat Completions API</strong> using
+                        <code>gpt-4o-mini</code>. Given any city name (such as <em>"Bangalore"</em> or <em>"Kyoto"</em>),
+                        the service constructs a two-message conversation and returns a concise, witty travel
+                        recommendation.
+                    </p>
+                    <p>
+                        Even in this minimal example, the code separates <strong>who the model should be</strong> from
+                        <strong>what the user is asking</strong>:
+                    </p>
+                    <ul>
+                        <li><strong>System Message (Persona &amp; Guardrails):</strong> Sets the behavioral frame
+                            (<code>"You are a witty travel guide."</code>) so the tone remains consistent regardless of
+                            which city the user types.</li>
+                        <li><strong>User Message (Task Input):</strong> Injects the dynamic variable
+                            (<code>f"Suggest one thing to do in {city}."</code>) into a clear, scoped instruction.</li>
+                        <li><strong>Production Client Hygiene:</strong> Uses environment-driven configuration
+                            (<code>OPENAI_API_KEY</code> and <code>OPENAI_MODEL</code>) and enforces a strict 15-second
+                            network timeout so a stalled upstream call never hangs the Flask worker.</li>
+                    </ul>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. The Chat Completions Message Protocol</strong></p>
+                    <p>
+                        Modern instruction-tuned LLMs do not just complete raw text strings; they consume an ordered
+                        array of role-tagged messages (<code>messages=[...]</code>). Each message has a
+                        <code>role</code> and <code>content</code>:
+                    </p>
+                    <ul>
+                        <li><code>system</code> &mdash; high-priority instructions that establish persona, tone,
+                            constraints, and output expectations before the user speaks.</li>
+                        <li><code>user</code> &mdash; the prompt, question, or task payload supplied by the human or
+                            calling application.</li>
+                        <li><code>assistant</code> &mdash; responses generated by the model (used in multi-turn
+                            conversations and tool loops).</li>
+                    </ul>
+                    <p><strong>2. Stateless Inference by Design</strong></p>
+                    <p>
+                        Every call to <code>client.chat.completions.create()</code> is completely independent. The
+                        OpenAI API retains no memory of previous requests. If you ask for <em>"Bangalore"</em> and then
+                        immediately ask <em>"What about food there?"</em>, a stateless endpoint has no idea what
+                        <em>"there"</em> refers to unless earlier messages are re-sent (which the <strong>Memory
+                        Chat</strong> demo addresses).
+                    </p>
+                    <p><strong>3. Navigating the Response Envelope</strong></p>
+                    <p>
+                        The API returns a structured <code>ChatCompletion</code> object containing token usage metrics,
+                        model metadata, finish reasons, and a list of candidate <code>choices</code>. Because we request
+                        a single completion (<code>n=1</code> by default), the generated text is extracted from
+                        <code>response.choices[0].message.content</code>, with <code>or ""</code> guarding against
+                        <code>None</code> when a response contains only tool calls or refusal metadata.
+                    </p>
+                    <p><strong>4. Externalized Configuration &amp; Timeouts</strong></p>
+                    <p>
+                        Hardcoding API keys or model IDs inside application code makes key rotation and model upgrades
+                        risky. Loading <code>OPENAI_API_KEY</code> and <code>OPENAI_MODEL</code> via
+                        <code>python-dotenv</code> keeps secrets out of version control, while
+                        <code>OpenAI(timeout=15.0)</code> protects server threads from indefinite socket hangs.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>index.html</code> + <code>main.js</code> sends <code>POST /api/travel</code> with <code>{ city }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Flask route (<code>app.py</code>)</span>
+                            <span class="flow-detail"><code>travel_suggestion()</code> checks the city is not empty and calls <code>get_travel_suggestion(city)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Service (<code>01_chat_openai.py</code>)</span>
+                            <span class="flow-detail">Builds the system + user messages and calls <code>client.chat.completions.create()</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">OpenAI API</span>
+                            <span class="flow-detail">Returns one witty suggestion for the city.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows <code>{ city, suggestion }</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["index.html + main.js<br/>POST /api/travel"]:::entry -->|"city"| R["app.py<br/>travel_suggestion()"]:::fn
+    R -->|"city"| S["01_chat_openai.py<br/>get_travel_suggestion()"]:::fn
+    S -->|"system persona + user prompt"| O[("OpenAI API<br/>gpt-4o-mini")]:::ext
+    O -->|"suggestion text"| S
+    S -->|"suggestion text"| R
+    R -->|"JSON { city, suggestion }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the Flask Blueprint route handler (<code>app.py</code>) that exposes it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-01-chat-openai-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-01-chat-openai-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-01-chat-openai-py" class="topic-title is-file">01_chat_openai.py<a class="headerlink" href="#source-01-chat-openai-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">70 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-01-chat-openai-py">
+                    <span class="file-path">src/python/01_chat_openai.py</span>
+                    <p class="file-label">OpenAI Chat Completion Service - Travel Guide.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;OpenAI Chat Completion Service - Travel Guide.
+
+This service demonstrates direct LLM chat completion using the official OpenAI API:
+1. Loads API credentials and model configuration from environment variables (.env).
+2. Uses Pydantic models (TravelRequest, TravelResponse) for type validation and HTTP serialization.
+3. Formats system and user prompts to guide the LLM&#x27;s persona and task.
+4. Executes the OpenAI Chat Completion endpoint with a 15-second safety timeout.
+&quot;&quot;&quot;
+
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+# ---------------------------------------------------------------------------
+# Configuration &amp; Environment Setup
+# ---------------------------------------------------------------------------
+# Automatically locate and load the nearest .env file (e.g. at the repo or project root)
+load_dotenv(find_dotenv())
+
+
+# ---------------------------------------------------------------------------
+# Request &amp; Response Schemas (Pydantic)
+# ---------------------------------------------------------------------------
+class TravelRequest(BaseModel):
+    &quot;&quot;&quot;Input payload for travel suggestion queries.&quot;&quot;&quot;
+
+    city: str = &quot;Bangalore&quot;
+
+
+class TravelResponse(BaseModel):
+    &quot;&quot;&quot;Output payload containing the target city and generated suggestion.&quot;&quot;&quot;
+
+    city: str
+    suggestion: str
+
+
+# ---------------------------------------------------------------------------
+# Core Service Logic
+# ---------------------------------------------------------------------------
+def get_travel_suggestion(city: str = &quot;Bangalore&quot;) -&gt; str:
+    &quot;&quot;&quot;Suggest one thing to do in a given city using OpenAI.
+
+    Args:
+        city: Target city name (defaults to &quot;Bangalore&quot;).
+
+    Returns:
+        A witty travel recommendation generated by the OpenAI model.
+    &quot;&quot;&quot;
+    # ① Initialize the OpenAI client (reads OPENAI_API_KEY from environment)
+    #   with a 15-second safety timeout
+    client = OpenAI(timeout=15.0)
+
+    # ② Fetch model identifier configured in .env (defaults to gpt-4o-mini if unspecified)
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+    # ③ Build the conversation messages:
+    # - system message: assigns the persona/tone (&quot;witty travel guide&quot;)
+    # - user message: provides the specific prompt instruction
+    messages = [
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a witty travel guide.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: f&quot;Suggest one thing to do in {city}.&quot;},
+    ]
+
+    # ④ Call the Chat Completion endpoint
+    response = client.chat.completions.create(model=model, messages=messages)
+
+    # ⑤ Extract and return the assistant&#x27;s reply
+    return response.choices[0].message.content or &quot;&quot;</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-app-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-app-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">123 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-app-py">
+                    <span class="file-path">src/python/app.py</span>
+                    <p class="file-label">Flask Blueprint server and route handler (travel_suggestion) in src/python/app.py.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Flask server for 01-ai-basics.&quot;&quot;&quot;
+
+import importlib.util
+import os
+import sys
+from pathlib import Path
+
+from dotenv import find_dotenv, load_dotenv
+from flask import Blueprint, Flask, jsonify, request
+from flask_cors import CORS
+from rate_limiter import check_rate_limit
+
+load_dotenv(find_dotenv())
+
+PATH_PREFIX = os.environ.get(&quot;PATH_PREFIX&quot;, &quot;&quot;)
+STATIC_DIR = Path(__file__).resolve().parents[1]
+app = Flask(__name__, static_folder=str(STATIC_DIR))
+CORS(app)
+
+bp = Blueprint(&quot;main&quot;, __name__)
+
+_CUR_DIR = Path(__file__).resolve().parent
+
+
+def _load_service(filename: str, alias: str):
+    # ① Resolve the numbered service file path and create its import spec
+    file_path = _CUR_DIR / filename
+    spec = importlib.util.spec_from_file_location(f&quot;services.{alias}&quot;, file_path)
+    if spec is None or spec.loader is None:
+        raise ImportError(f&quot;Cannot load module from {file_path}&quot;)
+    # ② Register and execute the module so its functions can be called by routes
+    mod = importlib.util.module_from_spec(spec)
+    sys.modules[f&quot;services.{alias}&quot;] = mod
+    spec.loader.exec_module(mod)
+    return mod
+
+
+mod_travel = _load_service(&quot;01_chat_openai.py&quot;, &quot;chat_openai&quot;)
+mod_joke = _load_service(&quot;02_chat_groq.py&quot;, &quot;chat_groq&quot;)
+
+
+@bp.before_request
+def enforce_rate_limit():
+    # ① Only rate-limit mutating POST requests
+    if request.method == &quot;POST&quot;:
+        # ② Check whether this client has exceeded 30 requests per hour
+        blocked, msg, retry_after = check_rate_limit(
+            request, max_requests=30, window_seconds=3600
+        )
+        if blocked:
+            # ③ Return HTTP 429 with Retry-After header when rate-limited
+            resp = jsonify({&quot;error&quot;: msg})
+            resp.status_code = 429
+            resp.headers[&quot;Retry-After&quot;] = str(retry_after)
+            return resp
+
+
+@bp.route(&quot;/&quot;)
+def index():
+    # ① Read index.html and inject the runtime PATH_PREFIX into data-api-base
+    with open(os.path.join(app.static_folder, &quot;index.html&quot;), encoding=&quot;utf-8&quot;) as f:
+        html = f.read()
+    html = html.replace(&#x27;data-api-base=&quot;&quot;&#x27;, f&#x27;data-api-base=&quot;{PATH_PREFIX}&quot;&#x27;)
+    # ② Return the patched HTML page
+    return app.response_class(html, mimetype=&quot;text/html&quot;)
+
+
+@bp.route(&quot;/css/&lt;path:filename&gt;&quot;)
+def css(filename):
+    return app.send_static_file(os.path.join(&quot;css&quot;, filename))
+
+
+@bp.route(&quot;/js/&lt;path:filename&gt;&quot;)
+def js(filename):
+    return app.send_static_file(os.path.join(&quot;js&quot;, filename))
+
+
+@bp.route(&quot;/explanation/&lt;path:filename&gt;&quot;)
+@bp.route(&quot;/info/&lt;path:filename&gt;&quot;)
+def explanation_pages(filename):
+    return app.send_static_file(os.path.join(&quot;explanation&quot;, filename))
+
+
+@bp.route(&quot;/theory/&lt;path:filename&gt;&quot;)
+def theory_pages(filename):
+    &quot;&quot;&quot;Serve the theory documentation pages from src/theory.&quot;&quot;&quot;
+    return app.send_static_file(os.path.join(&quot;theory&quot;, filename))
+
+
+@bp.route(&quot;/api/travel&quot;, methods=[&quot;POST&quot;])
+def travel_suggestion():
+    # ① Parse city from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    city = (data.get(&quot;city&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not city:
+        return jsonify({&quot;error&quot;: &quot;City cannot be empty&quot;}), 400
+    try:
+        # ② Call get_travel_suggestion() in 01_chat_openai.py and return JSON
+        suggestion = mod_travel.get_travel_suggestion(city)
+        return jsonify({&quot;result&quot;: suggestion, &quot;city&quot;: city, &quot;suggestion&quot;: suggestion})
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+@bp.route(&quot;/api/joke&quot;, methods=[&quot;POST&quot;])
+def joke_generator():
+    # ① Parse topic from JSON payload and reject empty values
+    data = request.get_json(force=True, silent=True) or {}
+    topic = (data.get(&quot;topic&quot;) or data.get(&quot;message&quot;) or &quot;&quot;).strip()
+    if not topic:
+        return jsonify({&quot;error&quot;: &quot;Topic cannot be empty&quot;}), 400
+    try:
+        # ② Call get_groq_joke() in 02_chat_groq.py and return JSON
+        joke = mod_joke.get_groq_joke(topic)
+        return jsonify({&quot;result&quot;: joke, &quot;topic&quot;: topic, &quot;joke&quot;: joke})
+    except Exception as exc:
+        return jsonify({&quot;error&quot;: str(exc)}), 500
+
+
+app.register_blueprint(bp, url_prefix=PATH_PREFIX)
+
+if __name__ == &quot;__main__&quot;:
+    app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">AI Basics &mdash; ✈️ Travel Guide &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
