@@ -75,7 +75,7 @@ Model Context Protocol (MCP) client-server architecture via FastMCP, dynamic too
 
 [Open project →](https://app.techtoday.click/08-ai-mcp-evals/)
 
-[ⓘ](../../explanation/interviewiq.html)
+[ⓘ](https://app.techtoday.click/09-interviewiq/explanation/interviewiq.html)
 
 ### InterviewIQ
 
@@ -83,7 +83,7 @@ Multi-agent orchestration architecture (Interviewer & Evaluator agents), ReAct r
 
 [Open project →](https://app.techtoday.click/09-interviewiq/)
 
-[ⓘ](../../explanation/shipment-exception-desk.html)
+[ⓘ](https://app.techtoday.click/10-shipment-exception-desk/explanation/shipment-exception-desk.html)
 
 ### Shipment Exception Desk
 

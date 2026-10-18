@@ -38,6 +38,7 @@ the shared Flask plus Docker container architecture used by this repository.
 4. POST /log expects {"message": "any text"} and returns formatted ledger rows.
 5. POST /summary expects {"message": "any text"} and returns markdown summary text.
 6. POST /reset expects {"message": "any text"} and clears session records.
+7. GET /explanation/<path:filename> (alias /info/<path:filename>) serves "how this works" deep-dive explanation page (shipment-exception-desk.html).
 
 ## Project Structure
 
@@ -52,8 +53,15 @@ projects/10-shipment-exception-desk/
 |  |- test_components.py
 |- src/
    |- index.html
-   |- css/style.css
-   |- js/main.js
+   |- explanation/
+   |  |- shipment-exception-desk.html
+   |- css/
+   |  |- style.css
+   |  |- info.css
+   |  |- logo.svg
+   |- js/
+   |  |- main.js
+   |  |- info.js
    |- python/
       |- app.py
       |- config.py

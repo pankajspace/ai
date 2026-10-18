@@ -5,11 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />
-    <title>How it works — InterviewIQ · TechToday</title>
+    <title>How it works — InterviewIQ &middot; InterviewIQ</title>
     <meta name="description"
         content="How the InterviewIQ demo works: ReAct tool-calling agents, deterministic evaluation, and anti-recency session memory." />
-    <link rel="icon"
-        href="../logo.svg" />
+    <link rel="icon" href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
 </head>
 
@@ -18,9 +17,9 @@
         <nav class="tt-site-nav" aria-label="Main navigation">
             <a class="tt-site-brand" href="../">
                 <span class="tt-site-logo" aria-hidden="true"></span>
-                <span>TechToday</span>
+                <span>InterviewIQ</span>
             </a>
-            <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+            <a href="../" class="nav-back-link">&larr; Back to InterviewIQ</a>
         </nav>
     </header>
     <div class="progress" aria-hidden="true"></div>
@@ -29,12 +28,12 @@
             <details class="topic-menu-panel">
                 <summary>Topics</summary>
                 <ol class="table-of-contents">
-                                        <li><a href="#problem">The problem</a></li>
+                    <li><a href="#problem">The problem</a></li>
                     <li><a href="#asks">The asks</a></li>
                     <li><a href="#approach">Suggested approach</a></li>
                     <li><a href="#milestones">Milestones</a></li>
-<li><a href="#concept">Concept</a></li>
-                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-agent-py">agent.py</a></li>
@@ -47,12 +46,13 @@
                 </ol>
             </details>
         </nav>
-        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
         <article class="study">
-            <h1 id="how-it-works">🎯 InterviewIQ<a class="headerlink" href="#how-it-works"
-                    title="Permanent link">#</a></h1>
+            <h1 id="how-it-works">🎯 InterviewIQ<a class="headerlink" href="#how-it-works" title="Permanent link">#</a>
+            </h1>
 
-            <p class="lede">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency Session Memory. Open a topic to see the idea, the request path and the
+            <p class="lede">Autonomous ReAct Tool-Calling Agent · Deterministic Diagnostics · Anti-Recency Session
+                Memory. Open a topic to see the idea, the request path and the
                 function calls behind the demo, then read the complete Python source file by file.</p>
 
             <div class="course-toolbar">
@@ -89,7 +89,7 @@
                 </div>
             </div>
 
-<!-- ============================================================ 1 -->
+            <!-- ============================================================ 1 -->
 
             <section class="topic-section is-collapsed" id="sec-problem">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -109,14 +109,18 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-problem">
-                    <p>Hiring teams often want a fast, first-pass read on a candidate's interview answers before a human reviews them. Your task is to build <strong>InterviewIQ</strong>: an AI agent that acts as a mock-interview coach with a working browser interface. Given a candidate's spoken answer to an interview question, the agent evaluates it using a set of tools, produces short feedback, remembers the whole session well enough to answer questions about it at any point, and surfaces all of that through a UI &mdash; not just a terminal.</p>
+                    <p>Hiring teams often want a fast, first-pass read on a candidate's interview answers before a human
+                        reviews them. Your task is to build <strong>InterviewIQ</strong>: an AI agent that acts as a
+                        mock-interview coach with a working browser interface. Given a candidate's spoken answer to an
+                        interview question, the agent evaluates it using a set of tools, produces short feedback,
+                        remembers the whole session well enough to answer questions about it at any point, and surfaces
+                        all of that through a UI &mdash; not just a terminal.</p>
                 </div>
             </section>
-<!-- ============================================================ 2 -->
+            <!-- ============================================================ 2 -->
 
             <section class="topic-section is-collapsed" id="sec-asks">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-asks">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-asks">
                     <div class="topic-header-main">
                         <span class="topic-badge">2</span>
                         <h2 id="asks" class="topic-title">The asks<a class="headerlink" href="#asks"
@@ -133,26 +137,54 @@
                 </div>
                 <div class="topic-content" id="content-asks">
                     <p><strong>Ask 1 &mdash; Build a tool-calling evaluator agent.</strong><br>
-Implement three rule-based tools the agent can call, each returning a structured dict:</p>
+                        Implement three rule-based tools the agent can call, each returning a structured dict:</p>
                     <ol>
-                        <li><code>detect_filler_words</code> &mdash; flags filler words like "um", "like", "basically".</li>
-                        <li><code>check_star_structure</code> &mdash; checks whether a behavioral answer covers Situation, Task, Action, Result.</li>
-                        <li><code>score_relevance</code> &mdash; scores (0&ndash;100) how many expected keywords/concepts for the question appear in the answer.</li>
+                        <li><code>detect_filler_words</code> &mdash; flags filler words like "um", "like", "basically".
+                        </li>
+                        <li><code>check_star_structure</code> &mdash; checks whether a behavioral answer covers
+                            Situation, Task, Action, Result.</li>
+                        <li><code>score_relevance</code> &mdash; scores (0&ndash;100) how many expected
+                            keywords/concepts for the question appear in the answer.</li>
                     </ol>
-                    <p>The agent should read the candidate's answer, decide which tool(s) are relevant, call them, and turn the results into short, encouraging feedback.</p>
-                    
-                    <p><strong>Ask 2 &mdash; Session memory with a real aggregation, verified by a memory check.</strong><br>
-The agent must remember every answer's evaluation across the session &mdash; not just the current one &mdash; and be able to answer meta-questions at <em>any point</em> mid-session, such as "how am I doing so far?" or "what's my weakest area?", not only produce a report at the very end. The report must do real aggregation: an average relevance score and a named <strong>weakest area</strong> (the question with the lowest score), not a flat recap of everything scored so far.</p>
-                    <p>Run <code>memory_check.py</code> against your finished agent: it scores one strong answer and one deliberately weak one, then asks the meta-question. If your agent correctly names the weak answer's question as the weakest area &mdash; not whichever question was asked most recently &mdash; your memory and aggregation are working. If it gets this wrong, your agent is only looking at the last turn.</p>
-                    
+                    <p>The agent should read the candidate's answer, decide which tool(s) are relevant, call them, and
+                        turn the results into short, encouraging feedback.</p>
+
+                    <p><strong>Ask 2 &mdash; Session memory with a real aggregation, verified by a memory
+                            check.</strong><br>
+                        The agent must remember every answer's evaluation across the session &mdash; not just the
+                        current one &mdash; and be able to answer meta-questions at <em>any point</em> mid-session, such
+                        as "how am I doing so far?" or "what's my weakest area?", not only produce a report at the very
+                        end. The report must do real aggregation: an average relevance score and a named <strong>weakest
+                            area</strong> (the question with the lowest score), not a flat recap of everything scored so
+                        far.</p>
+                    <p>Run <code>memory_check.py</code> against your finished agent: it scores one strong answer and one
+                        deliberately weak one, then asks the meta-question. If your agent correctly names the weak
+                        answer's question as the weakest area &mdash; not whichever question was asked most recently
+                        &mdash; your memory and aggregation are working. If it gets this wrong, your agent is only
+                        looking at the last turn.</p>
+
                     <p><strong>Ask 3 &mdash; A working web interface (required).</strong><br>
-Wrap the agent in a plain HTML/JS web app (<code>app.py</code> acting as an API, with a <code>index.html</code> frontend) with: the current question and an answer box, a feedback panel, a live scorecard showing every question answered so far, a free-form box to ask the coach meta-questions, and a button to pull the final report. This is the interface you'll demo &mdash; not optional, and not just a CLI print loop.</p>
-                    
+                        Wrap the agent in a plain HTML/JS web app (<code>app.py</code> acting as an API, with a
+                        <code>index.html</code> frontend) with: the current question and an answer box, a feedback
+                        panel, a live scorecard showing every question answered so far, a free-form box to ask the coach
+                        meta-questions, and a button to pull the final report. This is the interface you'll demo &mdash;
+                        not optional, and not just a CLI print loop.
+                    </p>
+
                     <p><strong>Ask 4 (bonus, not graded) &mdash; a second agent.</strong><br>
-None of the six classes actually built a multi-agent system &mdash; Class 6's guide only introduces the <em>vocabulary</em> (an "orchestrator" coordinating "specialized agents") and explicitly scopes out building one as "a larger topic for later." So this ask sits outside the core project on purpose: <code>interviewer_agent.py</code> and <code>run_multi_agent.py</code> are included <strong>fully worked, not as a TODO</strong> &mdash; a second agent (the "Interviewer") whose only job is to decide the next question's category based on how the candidate has done so far, handed off to the Evaluator agent from Asks 1&ndash;3 (completely unchanged) by a small orchestrator loop. Run <code>python run_multi_agent.py</code> to try it. Read it, run it, and extend it if you want to go further &mdash; there's nothing here you're required to build or that gets graded, since it goes beyond what was actually taught.</p>
+                        None of the six classes actually built a multi-agent system &mdash; Class 6's guide only
+                        introduces the <em>vocabulary</em> (an "orchestrator" coordinating "specialized agents") and
+                        explicitly scopes out building one as "a larger topic for later." So this ask sits outside the
+                        core project on purpose: <code>interviewer_agent.py</code> and <code>run_multi_agent.py</code>
+                        are included <strong>fully worked, not as a TODO</strong> &mdash; a second agent (the
+                        "Interviewer") whose only job is to decide the next question's category based on how the
+                        candidate has done so far, handed off to the Evaluator agent from Asks 1&ndash;3 (completely
+                        unchanged) by a small orchestrator loop. Run <code>python run_multi_agent.py</code> to try it.
+                        Read it, run it, and extend it if you want to go further &mdash; there's nothing here you're
+                        required to build or that gets graded, since it goes beyond what was actually taught.</p>
                 </div>
             </section>
-<!-- ============================================================ 3 -->
+            <!-- ============================================================ 3 -->
 
             <section class="topic-section is-collapsed" id="sec-approach">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -173,15 +205,22 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                 </div>
                 <div class="topic-content" id="content-approach">
                     <ol>
-                        <li>Get the plumbing working first (API key, one plain LLM call) before writing any tool logic.</li>
-                        <li>Write and test each tool as a standalone Python function &mdash; don't wire it to the agent until you're confident it works on its own.</li>
-                        <li>Wire the tools to the agent and get one full evaluated turn working via <code>main.py</code> before touching memory.</li>
-                        <li>Add memory and the aggregation report, then run <code>memory_check.py</code> to prove it actually uses more than the last turn.</li>
-                        <li>Only once <code>main.py</code> and <code>memory_check.py</code> both work should you move to <code>app.py</code> &mdash; the UI should be the last layer on top of an agent you already trust.</li>
+                        <li>Get the plumbing working first (API key, one plain LLM call) before writing any tool logic.
+                        </li>
+                        <li>Write and test each tool as a standalone Python function &mdash; don't wire it to the agent
+                            until you're confident it works on its own.</li>
+                        <li>Wire the tools to the agent and get one full evaluated turn working via <code>main.py</code>
+                            before touching memory.</li>
+                        <li>Add memory and the aggregation report, then run <code>memory_check.py</code> to prove it
+                            actually uses more than the last turn.</li>
+                        <li>Only once <code>main.py</code> and <code>memory_check.py</code> both work should you move to
+                            <code>app.py</code> &mdash; the UI should be the last layer on top of an agent you already
+                            trust.
+                        </li>
                     </ol>
                 </div>
             </section>
-<!-- ============================================================ 4 -->
+            <!-- ============================================================ 4 -->
 
             <section class="topic-section is-collapsed" id="sec-milestones">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -202,18 +241,29 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                 </div>
                 <div class="topic-content" id="content-milestones">
                     <ol>
-                        <li>Environment setup &mdash; venv, <code>pip install -r requirements.txt</code>, <code>.env</code> configured with your API key.</li>
-                        <li>First plain LLM call working (no tools yet) &mdash; sanity check that your key and provider are correct.</li>
+                        <li>Environment setup &mdash; venv, <code>pip install -r requirements.txt</code>,
+                            <code>.env</code> configured with your API key.
+                        </li>
+                        <li>First plain LLM call working (no tools yet) &mdash; sanity check that your key and provider
+                            are correct.</li>
                         <li><code>detect_filler_words</code> implemented and tested directly.</li>
                         <li><code>check_star_structure</code> implemented and tested directly.</li>
                         <li><code>score_relevance</code> implemented and tested directly.</li>
-                        <li>All three tools wired into the agent's tool-calling loop; one full evaluated turn works end-to-end via <code>main.py</code>.</li>
+                        <li>All three tools wired into the agent's tool-calling loop; one full evaluated turn works
+                            end-to-end via <code>main.py</code>.</li>
                         <li>Session memory added &mdash; running a few questions shows it accumulating.</li>
-                        <li><code>generate_final_report</code> implemented with real aggregation (average relevance + named weakest area).</li>
-                        <li><code>ask_agent</code> implemented so meta-questions work mid-session, not just at the end.</li>
-                        <li><code>python memory_check.py</code> passes &mdash; the weakest area named matches the deliberately weak answer, not the most recent turn.</li>
-                        <li><code>app.py</code> built &mdash; the full flow (question &rarr; answer &rarr; feedback &rarr; scorecard &rarr; meta-question &rarr; final report) works in the browser.</li>
-                        <li>(Bonus, ungraded) Run <code>python run_multi_agent.py</code> and read <code>interviewer_agent.py</code> &mdash; a second agent handed off to your Evaluator by a small orchestrator.</li>
+                        <li><code>generate_final_report</code> implemented with real aggregation (average relevance +
+                            named weakest area).</li>
+                        <li><code>ask_agent</code> implemented so meta-questions work mid-session, not just at the end.
+                        </li>
+                        <li><code>python memory_check.py</code> passes &mdash; the weakest area named matches the
+                            deliberately weak answer, not the most recent turn.</li>
+                        <li><code>app.py</code> built &mdash; the full flow (question &rarr; answer &rarr; feedback
+                            &rarr; scorecard &rarr; meta-question &rarr; final report) works in the browser.</li>
+                        <li>(Bonus, ungraded) Run <code>python run_multi_agent.py</code> and read
+                            <code>interviewer_agent.py</code> &mdash; a second agent handed off to your Evaluator by a
+                            small orchestrator.
+                        </li>
                     </ol>
                 </div>
             </section>
@@ -223,11 +273,12 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls
+                        that answer it.</p>
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+            <!-- ============================================================ 5 -->
 
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -250,13 +301,15 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                     <p>
                         <strong>InterviewIQ</strong> is an AI-powered mock-interview coach engineered with a multi-turn
                         <strong>ReAct (Reasoning + Acting)</strong> tool-calling architecture. Instead of relying on a
-                        single subjective prompt that risks arithmetic hallucinations and inconsistent grading, InterviewIQ
+                        single subjective prompt that risks arithmetic hallucinations and inconsistent grading,
+                        InterviewIQ
                         embeds the LLM as a cognitive orchestrator inside an autonomous loop.
                     </p>
                     <p>
                         The agent dynamically decides which specialized diagnostic tools to invoke (filler-word density,
                         STAR framework coverage, keyword relevance scoring), inspects the structured outputs, and
-                        synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory ledger
+                        synthesizes nuanced, actionable coaching advice. In parallel, an append-only session memory
+                        ledger
                         tracks candidate performance across all turns, applying deterministic mathematical ranking to
                         eliminate recency bias and power mid-session meta-coaching.
                     </p>
@@ -265,21 +318,22 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         Evaluator. Its only job is to read the shared session memory and pick the <em>category</em> of
                         the next question. It never scores answers. A small orchestrator hands work between the two
                         agents: the <code>GET /next-question</code> route behind the
-                        <strong>Interviewer: Pick Next</strong> button, or the <code>run_multi_agent.py</code> loop on the
+                        <strong>Interviewer: Pick Next</strong> button, or the <code>run_multi_agent.py</code> loop on
+                        the
                         command line. The Evaluator stays exactly as it was.
                     </p>
 
 
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+            <!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-theory-concepts">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -300,31 +354,37 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         precise mathematical counting, and an inability to inspect intermediate diagnostic data.
                     </p>
                     <p>
-                        InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al., 2022)
+                        InterviewIQ implements the <strong>ReAct</strong> (Reasoning + Acting) framework (Yao et al.,
+                        2022)
                         via the OpenAI Function Calling protocol. The LLM operates in an autonomous loop:
                     </p>
                     <ul>
                         <li><strong>Tool Schema Contract:</strong> The application exposes a JSON schema
                             (<code>TOOLS_SCHEMA</code>) defining available Python evaluation functions, their parameter
                             specifications, and natural-language descriptions.</li>
-                        <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question metadata,
+                        <li><strong>Autonomous Tool Selection:</strong> Given a candidate's answer and question
+                            metadata,
                             the LLM acts as an autonomous planner. It decides <em>which</em> tools are necessary (e.g.,
                             invoking <code>detect_filler_words</code>, <code>check_star_structure</code>, and
                             <code>score_relevance</code> in parallel or sequentially) and extracts the appropriate
                             arguments.
                         </li>
                         <li><strong>Environment Execution &amp; Feedback:</strong> The runtime dispatches tool calls to
-                            deterministic Python functions, captures the structured outputs, and appends them back to the
+                            deterministic Python functions, captures the structured outputs, and appends them back to
+                            the
                             message transcript under the <code>tool</code> role.</li>
                         <li><strong>Iterative Convergence:</strong> The agent loops (up to <code>MAX_TOOL_ROUNDS</code>)
-                            until all necessary observations are gathered, then switches from tool calling to generating its
+                            until all necessary observations are gathered, then switches from tool calling to generating
+                            its
                             final synthesized coaching critique.</li>
                     </ul>
 
                     <p><strong>2. Separation of Concerns: Deterministic NLP vs. Generative Synthesis</strong></p>
                     <p>
-                        A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic code
-                            does with 100% precision</em>. Large Language Models are probabilistic next-token predictors;
+                        A core principle in robust AI engineering is <em>never asking an LLM to do what deterministic
+                            code
+                            does with 100% precision</em>. Large Language Models are probabilistic next-token
+                        predictors;
                         they are inherently unreliable at exact character counting, regex matching, and statistical
                         calculations.
                     </p>
@@ -332,11 +392,14 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         <li><strong>Exact Filler-Word Density (<code>detect_filler_words</code>):</strong> Uses compiled
                             regex word-boundary patterns
                             (<code>\b(um|uh|like|basically|actually|literally|you know)\b</code>) to compute exact word
-                            frequencies and normalized density per 100 words (<code>(fillers / word_count) * 100</code>).
+                            frequencies and normalized density per 100 words
+                            (<code>(fillers / word_count) * 100</code>).
                         </li>
                         <li><strong>STAR Structural Parsing (<code>check_star_structure</code>):</strong> Heuristically
-                            parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task, Action,
-                            Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable impact
+                            parses behavioral responses across the 4 pillars of the STAR framework (Situation, Task,
+                            Action,
+                            Result) using contextual phrases, temporal indicators, ownership verbs, and quantifiable
+                            impact
                             metrics (e.g., <code>\d+%</code> or <code>\$\d+</code>).</li>
                         <li><strong>Inflectional Keyword Relevance (<code>score_relevance</code>):</strong> Generates
                             morphological regex stems to match expected domain keywords across grammatical inflections
@@ -344,7 +407,8 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                             coverage against a calibrated tiered curve (0–100).</li>
                         <li><strong>Empathetic Cognitive Synthesis:</strong> By delegating mathematical and structural
                             analysis to deterministic tools, the LLM is freed from arithmetic. It uses its language
-                            capability solely to interpret raw metrics, contextualize trade-offs, and deliver encouraging,
+                            capability solely to interpret raw metrics, contextualize trade-offs, and deliver
+                            encouraging,
                             constructive feedback.</li>
                     </ul>
 
@@ -371,9 +435,11 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                             objective assessment even if the candidate aced the most recent question.
                         </li>
                         <li><strong>Dynamic Meta-Tool Invocation:</strong> The agent exposes
-                            <code>generate_final_report</code> as an executable tool. When a candidate asks a mid-session
+                            <code>generate_final_report</code> as an executable tool. When a candidate asks a
+                            mid-session
                             meta-question (e.g., <em>"What is my weakest area so far?"</em>), the LLM autonomously calls
-                            this tool, reads the aggregated memory state, and provides an evidence-based progress review.
+                            this tool, reads the aggregated memory state, and provides an evidence-based progress
+                            review.
                         </li>
                     </ul>
 
@@ -392,8 +458,10 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                         <li><strong>Evaluator agent</strong> (<code>EvaluatorAgent.evaluate_answer</code>): the
                             tool-calling agent from Asks 1&ndash;3, unchanged.</li>
                         <li><strong>Shared memory as the hand-off:</strong> the Evaluator writes each turn into
-                            <code>InterviewSessionMemory</code> and the Interviewer only reads it, so neither agent calls
-                            the other directly.</li>
+                            <code>InterviewSessionMemory</code> and the Interviewer only reads it, so neither agent
+                            calls
+                            the other directly.
+                        </li>
                         <li><strong>Guard rails:</strong> the Interviewer may only pick a category that still has
                             an unanswered question. If the model's reply is unusable, or there is no API key, the same
                             rule of thumb runs in plain Python. The UI labels the decision as an "AI decision" or a
@@ -403,7 +471,7 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
 
                 </div>
             </section>
-<!-- ============================================================ 7 -->
+            <!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -486,7 +554,7 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
 
                 </div>
             </section>
-<!-- ============================================================ 8 -->
+            <!-- ============================================================ 8 -->
 
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -556,19 +624,20 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-3"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
+                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open
+                        a file to read it top to bottom.</p>
                 </div>
             </div>
 
-<!-- ============================================================ 9 -->
+            <!-- ============================================================ 9 -->
 
             <section class="topic-section is-collapsed" id="sec-source-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-agent-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">9</span>
-                        <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink" href="#source-agent-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-agent-py" class="topic-title is-file">agent.py<a class="headerlink"
+                                href="#source-agent-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">660 lines</span>
@@ -581,7 +650,7 @@ None of the six classes actually built a multi-agent system &mdash; Class 6's gu
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-agent-py">
-                    <span class="file-path">09-interviewiq/src/python/agent.py</span>
+                    <span class="file-path">src/python/agent.py</span>
                     <p class="file-label">InterviewIQ Agent — tool-calling evaluator with session memory.</p>
                     <pre><code data-lang="python">"""InterviewIQ Agent — tool-calling evaluator with session memory.
 
@@ -1246,15 +1315,15 @@ class EvaluatorAgent:
                 </div>
             </section>
 
-<!-- ============================================================ 10 -->
+            <!-- ============================================================ 10 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interviewer-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interviewer-agent-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">10</span>
-                        <h2 id="source-interviewer-agent-py" class="topic-title is-file">interviewer_agent.py<a class="headerlink" href="#source-interviewer-agent-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-interviewer-agent-py" class="topic-title is-file">interviewer_agent.py<a
+                                class="headerlink" href="#source-interviewer-agent-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">215 lines</span>
@@ -1267,7 +1336,7 @@ class EvaluatorAgent:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-interviewer-agent-py">
-                    <span class="file-path">09-interviewiq/src/python/interviewer_agent.py</span>
+                    <span class="file-path">src/python/interviewer_agent.py</span>
                     <p class="file-label">Interviewer agent — Ask 4 (bonus): a second, specialised agent.</p>
                     <pre><code data-lang="python">"""Interviewer agent — Ask 4 (bonus): a second, specialised agent.
 
@@ -1487,15 +1556,15 @@ class InterviewerAgent:
                 </div>
             </section>
 
-<!-- ============================================================ 11 -->
+            <!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">11</span>
-                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink"
+                                href="#source-tools-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">306 lines</span>
@@ -1508,7 +1577,7 @@ class InterviewerAgent:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-tools-py">
-                    <span class="file-path">09-interviewiq/src/python/tools.py</span>
+                    <span class="file-path">src/python/tools.py</span>
                     <p class="file-label">Evaluation tools for InterviewIQ.</p>
                     <pre><code data-lang="python">"""Evaluation tools for InterviewIQ.
 
@@ -1819,15 +1888,15 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
                 </div>
             </section>
 
-<!-- ============================================================ 12 -->
+            <!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-interview-bank-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-interview-bank-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">12</span>
-                        <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a class="headerlink" href="#source-interview-bank-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-interview-bank-py" class="topic-title is-file">interview_bank.py<a
+                                class="headerlink" href="#source-interview-bank-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">157 lines</span>
@@ -1840,7 +1909,7 @@ def score_relevance(answer: str, expected_keywords: list[str]) -&gt; dict[str, A
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-interview-bank-py">
-                    <span class="file-path">09-interviewiq/src/python/interview_bank.py</span>
+                    <span class="file-path">src/python/interview_bank.py</span>
                     <p class="file-label">Interview Question Bank for InterviewIQ.</p>
                     <pre><code data-lang="python">"""Interview Question Bank for InterviewIQ.
 
@@ -2002,15 +2071,15 @@ def get_question_categories() -&gt; list[str]:
                 </div>
             </section>
 
-<!-- ============================================================ 13 -->
+            <!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-config-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-config-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">13</span>
-                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink" href="#source-config-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-config-py" class="topic-title is-file">config.py<a class="headerlink"
+                                href="#source-config-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">62 lines</span>
@@ -2023,7 +2092,7 @@ def get_question_categories() -&gt; list[str]:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-config-py">
-                    <span class="file-path">09-interviewiq/src/python/config.py</span>
+                    <span class="file-path">src/python/config.py</span>
                     <p class="file-label">Shared configuration: load .env, build API clients for Groq / OpenAI.</p>
                     <pre><code data-lang="python">"""Shared configuration: load .env, build API clients for Groq / OpenAI.
 
@@ -2090,15 +2159,15 @@ def get_openai_client():
                 </div>
             </section>
 
-<!-- ============================================================ 14 -->
+            <!-- ============================================================ 14 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">14</span>
-                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink"
+                                href="#source-app-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">262 lines</span>
@@ -2111,7 +2180,7 @@ def get_openai_client():
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-app-py">
-                    <span class="file-path">09-interviewiq/src/python/app.py</span>
+                    <span class="file-path">src/python/app.py</span>
                     <p class="file-label">Flask server exposing InterviewIQ evaluation endpoints.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Flask server exposing InterviewIQ evaluation endpoints.
 
@@ -2378,15 +2447,15 @@ if __name__ == &quot;__main__&quot;:
                 </div>
             </section>
 
-<!-- ============================================================ 15 -->
+            <!-- ============================================================ 15 -->
 
             <section class="topic-section is-collapsed" id="sec-source-run-multi-agent-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-run-multi-agent-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">15</span>
-                        <h2 id="source-run-multi-agent-py" class="topic-title is-file">run_multi_agent.py<a class="headerlink" href="#source-run-multi-agent-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-run-multi-agent-py" class="topic-title is-file">run_multi_agent.py<a
+                                class="headerlink" href="#source-run-multi-agent-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">99 lines</span>
@@ -2399,7 +2468,7 @@ if __name__ == &quot;__main__&quot;:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-run-multi-agent-py">
-                    <span class="file-path">09-interviewiq/src/python/run_multi_agent.py</span>
+                    <span class="file-path">src/python/run_multi_agent.py</span>
                     <p class="file-label">run_multi_agent.py — Ask 4 (bonus): two agents, one orchestrator.</p>
                     <pre><code data-lang="python">"""run_multi_agent.py — Ask 4 (bonus): two agents, one orchestrator.
 
@@ -2505,7 +2574,7 @@ if __name__ == "__main__":
 
         </article>
     </main>
-    <footer class="study-footer">TechToday &mdash; 🎯 InterviewIQ &middot; How it works</footer>
+    <footer class="study-footer">InterviewIQ &mdash; 🎯 InterviewIQ &middot; How it works</footer>
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>

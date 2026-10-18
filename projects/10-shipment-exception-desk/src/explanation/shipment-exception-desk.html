@@ -5,11 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#0b0d10" />
-    <title>How it works — Shipment Exception Desk · TechToday</title>
+    <title>How it works — Shipment Exception Desk &middot; Shipment Exception Desk</title>
     <meta name="description"
         content="How the Shipment Exception Desk demo works: LangChain triage classification, deterministic compensation policy, escalation logic, and daily aggregation." />
-    <link rel="icon"
-        href="../logo.svg" />
+    <link rel="icon" href="../css/logo.svg" />
     <link rel="stylesheet" href="../css/info.css" />
 </head>
 
@@ -18,9 +17,9 @@
         <nav class="tt-site-nav" aria-label="Main navigation">
             <a class="tt-site-brand" href="../">
                 <span class="tt-site-logo" aria-hidden="true"></span>
-                <span>TechToday</span>
+                <span>Shipment Exception Desk</span>
             </a>
-            <a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+            <a href="../" class="nav-back-link">&larr; Back to Shipment Exception Desk</a>
         </nav>
     </header>
     <div class="progress" aria-hidden="true"></div>
@@ -29,12 +28,12 @@
             <details class="topic-menu-panel">
                 <summary>Topics</summary>
                 <ol class="table-of-contents">
-                                        <li><a href="#problem">The problem</a></li>
+                    <li><a href="#problem">The problem</a></li>
                     <li><a href="#asks">The asks</a></li>
                     <li><a href="#approach">Suggested approach</a></li>
                     <li><a href="#milestones">Milestones</a></li>
-<li><a href="#concept">Concept</a></li>
-                    <li><a href="#theory-concepts">Theory &amp; Concepts</a></li>
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
                     <li><a href="#request-flow">Request flow</a></li>
                     <li><a href="#code-flow">Code flow</a></li>
                     <li><a href="#source-pipeline-py">pipeline.py</a></li>
@@ -48,12 +47,13 @@
                 </ol>
             </details>
         </nav>
-        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <script>if (window.matchMedia("(min-width: 961px)").matches) document.querySelector(".topic-menu .topic-menu-panel").open = true;</script>
         <article class="study">
             <h1 id="how-it-works">🚚 Shipment Exception Desk<a class="headerlink" href="#how-it-works"
                     title="Permanent link">#</a></h1>
 
-            <p class="lede">LLM Classification · Deterministic Compensation Policy · Tier-Aware Escalation · Session KPI Aggregation. Open a topic to see the idea, the request path and the
+            <p class="lede">LLM Classification · Deterministic Compensation Policy · Tier-Aware Escalation · Session KPI
+                Aggregation. Open a topic to see the idea, the request path and the
                 function calls behind the demo, then read the complete Python source file by file.</p>
 
             <div class="course-toolbar">
@@ -90,7 +90,7 @@
                 </div>
             </div>
 
-<!-- ============================================================ 1 -->
+            <!-- ============================================================ 1 -->
 
             <section class="topic-section is-collapsed" id="sec-problem">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -110,16 +110,29 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-problem">
-                    <p>Northwind Logistics handles shipments for dozens of retail clients. When something goes wrong with one &mdash; delayed, damaged, or lost in transit &mdash; a customer files an exception report, and right now a human ops analyst reads every single one: decide the category, work out compensation per policy, draft a reply, and escalate anything high-value or unclear to a manager. It's slow, and different analysts don't always apply the compensation rules the same way.</p>
-                    <p>Your task is to build the <strong>Shipment Exception Desk</strong>: an automated triage system, built with <strong>LangChain</strong>, that reads an incoming exception report, classifies it, calculates compensation, and either resolves it automatically or routes it to a human &mdash; with a working interface an analyst can actually use.</p>
-                    <p>This is your first hands-on LangChain project. You'll use the same <code>prompt | model | parser</code> chain pattern from Class 2 to call an LLM for classification and message-drafting, and plain Python (<code>if</code>/<code>elif</code>, function calls) to wire those chains together with rule-based business logic. There's no new framework beyond what you've already learned &mdash; it does <strong>not</strong> use RAG, AWS, MCP, or any graph-orchestration library.</p>
+                    <p>Northwind Logistics handles shipments for dozens of retail clients. When something goes wrong
+                        with one &mdash; delayed, damaged, or lost in transit &mdash; a customer files an exception
+                        report, and right now a human ops analyst reads every single one: decide the category, work out
+                        compensation per policy, draft a reply, and escalate anything high-value or unclear to a
+                        manager. It's slow, and different analysts don't always apply the compensation rules the same
+                        way.</p>
+                    <p>Your task is to build the <strong>Shipment Exception Desk</strong>: an automated triage system,
+                        built with <strong>LangChain</strong>, that reads an incoming exception report, classifies it,
+                        calculates compensation, and either resolves it automatically or routes it to a human &mdash;
+                        with a working interface an analyst can actually use.</p>
+                    <p>This is your first hands-on LangChain project. You'll use the same
+                        <code>prompt | model | parser</code> chain pattern from Class 2 to call an LLM for
+                        classification and message-drafting, and plain Python (<code>if</code>/<code>elif</code>,
+                        function calls) to wire those chains together with rule-based business logic. There's no new
+                        framework beyond what you've already learned &mdash; it does <strong>not</strong> use RAG, AWS,
+                        MCP, or any graph-orchestration library.
+                    </p>
                 </div>
             </section>
-<!-- ============================================================ 2 -->
+            <!-- ============================================================ 2 -->
 
             <section class="topic-section is-collapsed" id="sec-asks">
-                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
-                    aria-controls="content-asks">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-asks">
                     <div class="topic-header-main">
                         <span class="topic-badge">2</span>
                         <h2 id="asks" class="topic-title">The asks<a class="headerlink" href="#asks"
@@ -136,15 +149,38 @@
                 </div>
                 <div class="topic-content" id="content-asks">
                     <p><strong>Ask 1 &mdash; Build the exception-processing pipeline.</strong><br>
-<code>chains.py</code> gives you three ready-made LangChain chains: <code>classify_chain</code> (classifies a report as <code>delayed</code> / <code>damaged</code> / <code>lost</code> / <code>unknown</code>), <code>escalate_chain</code> (drafts an internal note for a manager), and <code>draft_email_chain</code> (drafts a customer-facing email). Your job is <code>tools.py</code>'s three compensation calculators &mdash; each returning a structured dict, not a formatted string, since the compensation amount drives the next decision &mdash; and <code>pipeline.py</code>'s <code>process_exception(...)</code>: call <code>classify_chain</code>, route to the right compensation function, decide whether to escalate (compensation over a threshold that's <em>lower for premium customers</em> than standard ones, or automatically for anything <code>unknown</code>), and call the right drafting chain.</p>
+                        <code>chains.py</code> gives you three ready-made LangChain chains: <code>classify_chain</code>
+                        (classifies a report as <code>delayed</code> / <code>damaged</code> / <code>lost</code> /
+                        <code>unknown</code>), <code>escalate_chain</code> (drafts an internal note for a manager), and
+                        <code>draft_email_chain</code> (drafts a customer-facing email). Your job is
+                        <code>tools.py</code>'s three compensation calculators &mdash; each returning a structured dict,
+                        not a formatted string, since the compensation amount drives the next decision &mdash; and
+                        <code>pipeline.py</code>'s <code>process_exception(...)</code>: call
+                        <code>classify_chain</code>, route to the right compensation function, decide whether to
+                        escalate (compensation over a threshold that's <em>lower for premium customers</em> than
+                        standard ones, or automatically for anything <code>unknown</code>), and call the right drafting
+                        chain.
+                    </p>
                     <p><strong>Ask 2 &mdash; Real daily aggregation.</strong><br>
-Every exception processed in a session should feed a Daily Triage Summary in <code>session.py</code> that does real aggregation, not a flat recap: total compensation paid, escalation rate, and the <strong>costliest category</strong> by total compensation (a category with many small payouts can beat one with a single large one).</p>
-                    <p>Run <code>triage_check.py</code> against your finished pipeline: it feeds four canned reports through it, each with a stated expected outcome (a mild delay, a high-value loss, a minor damage claim, and a garbled unclassifiable report). If it routes all four correctly &mdash; especially the garbled one, which must escalate regardless of value &mdash; your logic is working. If any land on the wrong branch, the bug is almost always in your threshold check or category branch, not the LLM call.</p>
+                        Every exception processed in a session should feed a Daily Triage Summary in
+                        <code>session.py</code> that does real aggregation, not a flat recap: total compensation paid,
+                        escalation rate, and the <strong>costliest category</strong> by total compensation (a category
+                        with many small payouts can beat one with a single large one).
+                    </p>
+                    <p>Run <code>triage_check.py</code> against your finished pipeline: it feeds four canned reports
+                        through it, each with a stated expected outcome (a mild delay, a high-value loss, a minor damage
+                        claim, and a garbled unclassifiable report). If it routes all four correctly &mdash; especially
+                        the garbled one, which must escalate regardless of value &mdash; your logic is working. If any
+                        land on the wrong branch, the bug is almost always in your threshold check or category branch,
+                        not the LLM call.</p>
                     <p><strong>Ask 3 &mdash; A working HTML UI interface (required).</strong><br>
-Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a report (text, shipment value, customer tier), a panel showing the outcome and the steps it went through, a running Daily Triage Log, and a button to pull the Daily Summary. This is the interface you'll demo &mdash; not optional, and not just a CLI print loop.</p>
+                        Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a report (text,
+                        shipment value, customer tier), a panel showing the outcome and the steps it went through, a
+                        running Daily Triage Log, and a button to pull the Daily Summary. This is the interface you'll
+                        demo &mdash; not optional, and not just a CLI print loop.</p>
                 </div>
             </section>
-<!-- ============================================================ 3 -->
+            <!-- ============================================================ 3 -->
 
             <section class="topic-section is-collapsed" id="sec-approach">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -165,15 +201,22 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                 </div>
                 <div class="topic-content" id="content-approach">
                     <ol>
-                        <li>Get <code>tools.py</code>'s three compensation functions working and tested standalone before touching <code>pipeline.py</code>.</li>
-                        <li>Build just the classification + compensation half of <code>pipeline.py</code> first (classify &rarr; compensate &rarr; return, skip escalation for now) and get one report through it via <code>main.py</code>.</li>
+                        <li>Get <code>tools.py</code>'s three compensation functions working and tested standalone
+                            before touching <code>pipeline.py</code>.</li>
+                        <li>Build just the classification + compensation half of <code>pipeline.py</code> first
+                            (classify &rarr; compensate &rarr; return, skip escalation for now) and get one report
+                            through it via <code>main.py</code>.</li>
                         <li>Add the escalation decision and the two drafting chains.</li>
-                        <li>Add <code>session.py</code>'s aggregation, then run <code>triage_check.py</code> to prove the whole thing routes correctly end-to-end.</li>
-                        <li>Only once <code>main.py</code> and <code>triage_check.py</code> both work should you move to <code>app.py</code> &mdash; the UI should be the last layer on top of logic you already trust.</li>
+                        <li>Add <code>session.py</code>'s aggregation, then run <code>triage_check.py</code> to prove
+                            the whole thing routes correctly end-to-end.</li>
+                        <li>Only once <code>main.py</code> and <code>triage_check.py</code> both work should you move to
+                            <code>app.py</code> &mdash; the UI should be the last layer on top of logic you already
+                            trust.
+                        </li>
                     </ol>
                 </div>
             </section>
-<!-- ============================================================ 4 -->
+            <!-- ============================================================ 4 -->
 
             <section class="topic-section is-collapsed" id="sec-milestones">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -194,15 +237,22 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                 </div>
                 <div class="topic-content" id="content-milestones">
                     <ol>
-                        <li>Environment setup &mdash; venv, <code>pip install -r requirements.txt</code>, <code>.env</code> configured with your API key.</li>
+                        <li>Environment setup &mdash; venv, <code>pip install -r requirements.txt</code>,
+                            <code>.env</code> configured with your API key.
+                        </li>
                         <li><code>calculate_delay_compensation</code> implemented and tested directly.</li>
                         <li><code>calculate_damage_compensation</code> implemented and tested directly.</li>
                         <li><code>calculate_lost_compensation</code> implemented and tested directly.</li>
-                        <li><code>pipeline.py</code>'s classification + compensation branch working, checked via <code>main.py</code> (report in, compensation out, escalation not wired yet).</li>
+                        <li><code>pipeline.py</code>'s classification + compensation branch working, checked via
+                            <code>main.py</code> (report in, compensation out, escalation not wired yet).
+                        </li>
                         <li>The escalation decision and both drafting chains wired into <code>pipeline.py</code>.</li>
-                        <li><code>session.py</code>'s <code>generate_daily_summary</code> implemented with real aggregation (total compensation, escalation rate, named costliest category).</li>
-                        <li><code>python triage_check.py</code> passes &mdash; all four scenarios land on their stated expected outcome.</li>
-                        <li><code>app.py</code> built &mdash; the full flow (submit report &rarr; outcome + steps &rarr; Daily Triage Log &rarr; Daily Summary) works in the browser.</li>
+                        <li><code>session.py</code>'s <code>generate_daily_summary</code> implemented with real
+                            aggregation (total compensation, escalation rate, named costliest category).</li>
+                        <li><code>python triage_check.py</code> passes &mdash; all four scenarios land on their stated
+                            expected outcome.</li>
+                        <li><code>app.py</code> built &mdash; the full flow (submit report &rarr; outcome + steps &rarr;
+                            Daily Triage Log &rarr; Daily Summary) works in the browser.</li>
                     </ol>
                 </div>
             </section>
@@ -212,11 +262,12 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-2"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls
+                        that answer it.</p>
                 </div>
             </div>
 
-<!-- ============================================================ 5 -->
+            <!-- ============================================================ 5 -->
 
             <section class="topic-section is-collapsed" id="sec-concept">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -246,7 +297,8 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                         and record everything in a session ledger.
                     </p>
                     <p>
-                        The design deliberately combines <strong>LLM reasoning</strong> with <strong>deterministic business
+                        The design deliberately combines <strong>LLM reasoning</strong> with <strong>deterministic
+                            business
                             rules</strong>.
                         Classification and narrative drafting are delegated to LangChain model chains, while monetary
                         calculations and
@@ -256,14 +308,14 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
 
                 </div>
             </section>
-<!-- ============================================================ 6 -->
+            <!-- ============================================================ 6 -->
 
             <section class="topic-section is-collapsed" id="sec-theory-concepts">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-theory-concepts">
                     <div class="topic-header-main">
                         <span class="topic-badge">6</span>
-                        <h2 id="theory-concepts" class="topic-title">Theory &amp; Concepts<a class="headerlink" href="#theory-concepts"
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
                                 title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
@@ -278,15 +330,18 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                 <div class="topic-content" id="content-theory-concepts">
                     <p><strong>1. Hybrid architecture: probabilistic AI + deterministic policy</strong></p>
                     <p>
-                        The project uses the model for language-heavy tasks (classification and writing) and uses plain code
+                        The project uses the model for language-heavy tasks (classification and writing) and uses plain
+                        code
                         for exact rule execution.
-                        This split keeps behavior stable for compliance-sensitive operations while still benefiting from LLM
+                        This split keeps behavior stable for compliance-sensitive operations while still benefiting from
+                        LLM
                         flexibility.
                     </p>
 
                     <p><strong>2. Tier-aware escalation gating</strong></p>
                     <p>
-                        Premium and standard customers use different escalation thresholds. Unknown reports auto-escalate.
+                        Premium and standard customers use different escalation thresholds. Unknown reports
+                        auto-escalate.
                         This makes escalation decisions both explainable and easy to tune:
                     </p>
                     <ul>
@@ -297,7 +352,8 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
 
                     <p><strong>3. Session-level operational analytics</strong></p>
                     <p>
-                        Each processed claim is appended to an in-memory ledger. A daily summary endpoint aggregates totals,
+                        Each processed claim is appended to an in-memory ledger. A daily summary endpoint aggregates
+                        totals,
                         escalation rate, and costliest category by cumulative payout, turning each run into an auditable
                         operations snapshot.
                     </p>
@@ -305,7 +361,7 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
 
                 </div>
             </section>
-<!-- ============================================================ 7 -->
+            <!-- ============================================================ 7 -->
 
             <section class="topic-section is-collapsed" id="sec-request-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -371,7 +427,7 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
 
                 </div>
             </section>
-<!-- ============================================================ 8 -->
+            <!-- ============================================================ 8 -->
 
             <section class="topic-section is-collapsed" id="sec-code-flow">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
@@ -391,7 +447,7 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-flow">
-                                    <!-- beautify ignore:start -->
+                    <!-- beautify ignore:start -->
                                     <!-- prettier-ignore -->
                                     <div class="mermaid-wrap mermaid-wrap-large">
                                         <div class="mermaid">
@@ -429,19 +485,20 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                 <div class="unit-divider-text">
                     <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-3"
                             title="Permanent link">#</a></h2>
-                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open a file to read it top to bottom.</p>
+                    <p class="unit-divider-desc">Every Python module in the project, complete and unedited &mdash; open
+                        a file to read it top to bottom.</p>
                 </div>
             </div>
 
-<!-- ============================================================ 9 -->
+            <!-- ============================================================ 9 -->
 
             <section class="topic-section is-collapsed" id="sec-source-pipeline-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-pipeline-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">9</span>
-                        <h2 id="source-pipeline-py" class="topic-title is-file">pipeline.py<a class="headerlink" href="#source-pipeline-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-pipeline-py" class="topic-title is-file">pipeline.py<a class="headerlink"
+                                href="#source-pipeline-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">160 lines</span>
@@ -454,7 +511,7 @@ Wrap the pipeline in a HTML UI app (<code>app.py</code>): a form to submit a rep
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-pipeline-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/pipeline.py</span>
+                    <span class="file-path">src/python/pipeline.py</span>
                     <p class="file-label">Triage pipeline for Northwind Logistics Shipment Exception Desk.</p>
                     <pre><code data-lang="python">"""Triage pipeline for Northwind Logistics Shipment Exception Desk.
 
@@ -618,15 +675,15 @@ def process_exception(
     return result</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 10 -->
+            <!-- ============================================================ 10 -->
 
             <section class="topic-section is-collapsed" id="sec-source-chains-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-chains-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">10</span>
-                        <h2 id="source-chains-py" class="topic-title is-file">chains.py<a class="headerlink" href="#source-chains-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-chains-py" class="topic-title is-file">chains.py<a class="headerlink"
+                                href="#source-chains-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">121 lines</span>
@@ -639,7 +696,7 @@ def process_exception(
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-chains-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/chains.py</span>
+                    <span class="file-path">src/python/chains.py</span>
                     <p class="file-label">LangChain chains for Northwind Logistics Shipment Exception Desk.</p>
                     <pre><code data-lang="python">"""LangChain chains for Northwind Logistics Shipment Exception Desk.
 
@@ -764,15 +821,15 @@ _draft_email_prompt = ChatPromptTemplate.from_messages(
 draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 11 -->
+            <!-- ============================================================ 11 -->
 
             <section class="topic-section is-collapsed" id="sec-source-llm-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-llm-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">11</span>
-                        <h2 id="source-llm-py" class="topic-title is-file">llm.py<a class="headerlink" href="#source-llm-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-llm-py" class="topic-title is-file">llm.py<a class="headerlink"
+                                href="#source-llm-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">22 lines</span>
@@ -785,7 +842,7 @@ draft_email_chain = _draft_email_prompt | llm | StrOutputParser()</code></pre>
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-llm-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/llm.py</span>
+                    <span class="file-path">src/python/llm.py</span>
                     <pre><code data-lang="python">import os
 from pathlib import Path
 from dotenv import load_dotenv, find_dotenv
@@ -810,15 +867,15 @@ llm = ChatOpenAI(
 )</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 12 -->
+            <!-- ============================================================ 12 -->
 
             <section class="topic-section is-collapsed" id="sec-source-tools-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-tools-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">12</span>
-                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink" href="#source-tools-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-tools-py" class="topic-title is-file">tools.py<a class="headerlink"
+                                href="#source-tools-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">111 lines</span>
@@ -831,8 +888,9 @@ llm = ChatOpenAI(
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-tools-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/tools.py</span>
-                    <p class="file-label">Compensation calculation tools for Northwind Logistics Shipment Exception Desk.</p>
+                    <span class="file-path">src/python/tools.py</span>
+                    <p class="file-label">Compensation calculation tools for Northwind Logistics Shipment Exception
+                        Desk.</p>
                     <pre><code data-lang="python">"""Compensation calculation tools for Northwind Logistics Shipment Exception Desk.
 
 Each function calculates compensation based on policy rules and returns
@@ -946,15 +1004,15 @@ def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 13 -->
+            <!-- ============================================================ 13 -->
 
             <section class="topic-section is-collapsed" id="sec-source-session-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-session-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">13</span>
-                        <h2 id="source-session-py" class="topic-title is-file">session.py<a class="headerlink" href="#source-session-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-session-py" class="topic-title is-file">session.py<a class="headerlink"
+                                href="#source-session-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">152 lines</span>
@@ -967,8 +1025,9 @@ def calculate_unknown_compensation(shipment_value: float) -&gt; Dict[str, Any]:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-session-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/session.py</span>
-                    <p class="file-label">Session tracking and daily aggregation for Northwind Logistics Shipment Exception Desk.</p>
+                    <span class="file-path">src/python/session.py</span>
+                    <p class="file-label">Session tracking and daily aggregation for Northwind Logistics Shipment
+                        Exception Desk.</p>
                     <pre><code data-lang="python">"""Session tracking and daily aggregation for Northwind Logistics Shipment Exception Desk.
 
 Aggregates session records to calculate:
@@ -1123,15 +1182,15 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
     }</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 14 -->
+            <!-- ============================================================ 14 -->
 
             <section class="topic-section is-collapsed" id="sec-source-app-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-app-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">14</span>
-                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink" href="#source-app-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-app-py" class="topic-title is-file">app.py<a class="headerlink"
+                                href="#source-app-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">143 lines</span>
@@ -1144,7 +1203,7 @@ def generate_daily_summary() -&gt; Dict[str, Any]:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-app-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/app.py</span>
+                    <span class="file-path">src/python/app.py</span>
                     <p class="file-label">Flask web server for Shipment Exception Desk.</p>
                     <pre><code data-lang="python">&quot;&quot;&quot;Flask web server for Shipment Exception Desk.
 
@@ -1291,15 +1350,15 @@ if __name__ == &quot;__main__&quot;:
     app.run(host=&quot;0.0.0.0&quot;, port=5000)</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 15 -->
+            <!-- ============================================================ 15 -->
 
             <section class="topic-section is-collapsed" id="sec-source-main-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-main-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">15</span>
-                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink"
+                                href="#source-main-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">118 lines</span>
@@ -1312,8 +1371,9 @@ if __name__ == &quot;__main__&quot;:
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-main-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/main.py</span>
-                    <p class="file-label">Command-line interface runner for Northwind Logistics Shipment Exception Desk.</p>
+                    <span class="file-path">src/python/main.py</span>
+                    <p class="file-label">Command-line interface runner for Northwind Logistics Shipment Exception Desk.
+                    </p>
                     <pre><code data-lang="python">"""Command-line interface runner for Northwind Logistics Shipment Exception Desk.
 
 Allows quick terminal testing of single exception reports or running demo presets.
@@ -1434,15 +1494,15 @@ if __name__ == "__main__":
     main()</code></pre>
                 </div>
             </section>
-<!-- ============================================================ 16 -->
+            <!-- ============================================================ 16 -->
 
             <section class="topic-section is-collapsed" id="sec-source-triage-check-py">
                 <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
                     aria-controls="content-source-triage-check-py">
                     <div class="topic-header-main">
                         <span class="topic-badge">16</span>
-                        <h2 id="source-triage-check-py" class="topic-title is-file">triage_check.py<a class="headerlink" href="#source-triage-check-py"
-                                title="Permanent link">#</a></h2>
+                        <h2 id="source-triage-check-py" class="topic-title is-file">triage_check.py<a class="headerlink"
+                                href="#source-triage-check-py" title="Permanent link">#</a></h2>
                     </div>
                     <div class="topic-header-meta">
                         <span class="topic-meta-chip">151 lines</span>
@@ -1455,7 +1515,7 @@ if __name__ == "__main__":
                     </div>
                 </div>
                 <div class="topic-content" id="content-source-triage-check-py">
-                    <span class="file-path">10-shipment-exception-desk/src/python/triage_check.py</span>
+                    <span class="file-path">src/python/triage_check.py</span>
                     <p class="file-label">Test harness for Northwind Logistics Shipment Exception Desk.</p>
                     <pre><code data-lang="python">"""Test harness for Northwind Logistics Shipment Exception Desk.
 
@@ -1613,7 +1673,7 @@ if __name__ == "__main__":
 
         </article>
     </main>
-    <footer class="study-footer">TechToday &mdash; 🚚 Shipment Exception Desk &middot; How it works</footer>
+    <footer class="study-footer">Shipment Exception Desk &mdash; 🚚 Shipment Exception Desk &middot; How it works</footer>
     <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
 
     <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
