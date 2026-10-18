@@ -458,7 +458,7 @@ To protect expensive external AI foundation model APIs (OpenAI, Bedrock, Groq) a
 
 The Nginx zone in Section 4.6 is a token-bucket refilling at 1 request per minute, so it cannot express a hard hourly cap, and it is bypassed entirely when an app is reached outside the proxy (local development, or a container port opened for debugging). Every project therefore ships a second, authoritative quota inside the Flask process.
 
-1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`09-interviewiq`, `10-shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
+1. **Shared Module:** `src/python/rate_limiter.py` is identical in every project (`01-ai-basics` through `10-shipment-exception-desk`, and `template`) and exposes `check_rate_limit(request, max_requests=30, window_seconds=3600)`.
 2. **Sliding Window Quota:** A strict sliding window of **30 POST requests per hour per client IP**. Each allowed request is appended to a `request_log` table; entries older than the window are purged on every check.
 3. **Storage:** SQLite at `/tmp/ai_rate_limit.db` in WAL mode, with an `(ip, timestamp)` index. No Redis or external dependency is required, and the quota survives worker threads within a container. The counter resets when the container is recreated, which is acceptable for an abuse guard.
 4. **Client Identification:** `get_client_ip()` prefers the first entry of `X-Forwarded-For`, falls back to `X-Real-IP`, then `request.remote_addr` — matching the headers Nginx sets in Section 4.4.
@@ -928,12 +928,12 @@ sequenceDiagram
 
 ### 8.2. Static Asset Delivery Flow
 
-For requests targeting `https://techtoday.click/` or `https://techtoday.click/study/ai-projects/rag-embeddings.html`:
+For requests targeting `https://techtoday.click/` or `https://techtoday.click/study/ai-projects/ai-projects.html`:
 
 1. Client resolves `techtoday.click` to the Elastic IP.
 2. Nginx accepts TCP 443, decrypts TLS using `/etc/letsencrypt/live/techtoday.click/fullchain.pem`.
 3. Matches the `techtoday.click` server block in `techtoday.conf`.
-4. Checks `/var/www/techtoday/study/ai-projects/rag-embeddings.html` directly from disk via `try_files`.
+4. Checks `/var/www/techtoday/study/ai-projects/ai-projects.html` directly from disk via `try_files`.
 5. Nginx streams the static HTML or PDF directly to the client socket using the Linux kernel `sendfile` system call. Zero Docker containers or Python processes are invoked.
 
 ---

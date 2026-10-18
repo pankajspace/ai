@@ -31,7 +31,7 @@ Read before editing:
 
 ## Inputs To Resolve
 
-Identify or ask for: project name; next free local port (`808x`) and EC2 host port (`500x`) from `ADD_PROJECT.md`, confirmed against existing READMEs/Compose files; whether Python feature files already exist and where from; required env vars (new secrets vs. already in `techtoday/secrets`); whether the project is production-documented; and whether it includes standalone example sub-projects (see **Complex Projects**).
+Identify or ask for: project name; next free local port (`808x`/`809x`) and EC2 host port (`500x`/`501x`) from `ADD_PROJECT.md`, confirmed against existing READMEs/Compose files; whether Python feature files already exist and where from; required env vars (new secrets vs. already in `techtoday/secrets`); whether the project is production-documented; and whether it includes standalone example sub-projects (see **Complex Projects**).
 
 Proceed without extra questions if you have enough information.
 
@@ -52,7 +52,7 @@ Proceed without extra questions if you have enough information.
 8. **Add one ⓘ explainer page per demo tile** — mandatory, not optional polish: every tile's `<h2>` carries the green ⓘ `info-link` to `explanation/<demo>.html`, and each page explains the concept, theory, request flow and code flow and embeds every Python file the demo runs, complete and unedited. Follow [explainer-pages.md](explainer-pages.md) §1–§6 (the `.info-link` CSS block, the `/explanation/<path:filename>` route, the shared `info.css`/`info.js`, numbered step comments in the real source files, one page per tile, verification, README). A project is not done while any tile lacks its ⓘ page.
 9. Update `requirements.txt` and `.env.example` for the project's Python files and secrets.
 10. Replace the template `README.md` with a self-contained runbook (see **README Requirements**).
-11. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting: 10 requests upfront, 1r/m continuous refill, 429 status on excess), and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
+11. **Create the deploy workflow** whenever the project is production-documented or the user wants deployment support. This is mandatory for any project you call deploy-ready. The template is self-provisioning: on the first push it creates the ECR repository, seeds the image, writes the project's `~/secrets/<project-name>.env`, drops the Nginx `/<project-name>/` location file under `/etc/nginx/conf.d/app-locations/` (with POST rate limiting: 30 requests upfront, 1r/m continuous refill, 429 status on excess), and creates the per-project Compose file on EC2 — so no manual ECR, SSH, Nginx, or Compose wiring is needed. Replace **both** placeholders (`PROJECT_NAME` and the `HOSTPORT` host port). From the repo root:
     ```bash
     cp projects/<project-name>/deploy.yml.template .github/workflows/deploy-<project-name>.yml
     sed -i -e "s/PROJECT_NAME/<project-name>/g" -e "s/HOSTPORT/<host-port>/g" .github/workflows/deploy-<project-name>.yml   # macOS: sed -i ''
@@ -84,7 +84,7 @@ Include all applicable sections:
 
 ## Consistent UI and Working Demo Tiles
 
-Every project must share one look and feel and present each feature as an interactive demo tile. The template (`projects/template/src/`) is the single source of truth for the UI; copy its structure verbatim and change only the project-specific content below. Sibling projects (`basic`, `langchain`, `rag`) show the pattern applied. Never let a project diverge into a different layout, a static code-reference browser, or read-only "view source" cards.
+Every project must share one look and feel and present each feature as an interactive demo tile. The template (`projects/template/src/`) is the single source of truth for the UI; copy its structure verbatim and change only the project-specific content below. Sibling projects (`01-ai-basics`, `02-langchain-agents`, `03-ai-rag-chroma`) show the pattern applied. Never let a project diverge into a different layout, a static code-reference browser, or read-only "view source" cards.
 
 ### CSS — copy verbatim, never restyle
 
@@ -136,7 +136,7 @@ setupCard({
 });
 ```
 
-Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (10 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
+Add a bespoke `render` function only when the response is richer than a single text string (e.g. rendering a list or table); reuse `renderText` for the common `{"result": "<text>"}` case. Every `endpoint` must correspond to a real `@bp.route(..., methods=["POST"])` in `app.py`, and every `field` must match the key that route reads from the JSON body. The shared `callApi` helper automatically intercepts non-OK responses (`!res.ok`), extracts JSON error details if present, safely falls back on HTTP 429 rate limit errors (`Rate limit exceeded (30 requests per hour). Please wait an hour and try again.`), and prevents raw HTML or JSON parse crashes.
 
 ### Dropdowns for Choices
 

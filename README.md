@@ -28,7 +28,7 @@
 1. [Architecture Guide](projects/ARCHITECTURE.md)
 2. [Setup Guide](projects/SETUP.md)
 3. [Add Project Guide](projects/ADD_PROJECT.md)
-4. [Nano Cheat Sheet](projects/NANO.md)
+4. [Deployment Guide](projects/DEPLOYMENT.md)
 
 ## Project Runbooks
 1. [TechToday Home Page](projects/techtoday/README.md)

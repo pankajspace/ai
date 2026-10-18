@@ -19,8 +19,8 @@ next project does not reuse them. Local port `8090` is reserved by
 For a new container app, choose:
 
 1. `<project-name>` — folder name, Docker Compose service name, and URL path segment.
-2. `<local-port>` — next free local `808x` port.
-3. `<host-port>` — next free EC2 host `500x` port.
+2. `<local-port>` — next free local `808x`/`809x` port.
+3. `<host-port>` — next free EC2 host `500x`/`501x` port.
 4. Container port — always `5000`.
 
 No new DNS record, EC2 instance, IAM role, or SSL certificate is needed. All

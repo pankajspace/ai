@@ -133,7 +133,7 @@ projects/techtoday/
 │   └── shipment-exception-desk.html ← Shipment Exception Desk deep dive
 └── study/
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
-    ├── ai-projects/             ← ai-projects.html catalog + LLM, RAG, Docker, Strands guides
+    ├── ai-projects/             ← ai-projects.html catalog (10 container projects) + shared study theme/scripts
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
     ├── design-patterns/         ← design-patterns-courses.html catalog + crash course + detailed course
     ├── devops/                  ← devops-courses.html catalog (4 cards)

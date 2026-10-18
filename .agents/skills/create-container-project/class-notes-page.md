@@ -6,7 +6,7 @@ Rewrite one class-notes HTML page into the same simple design as the DSA courses
 
 **Input:** the HTML file path, e.g. `projects/<project-name>/src/theory/<topic>.html` (or legacy `projects/techtoday/study/ai-projects/<topic>.html`). If none was given, ask for it.
 
-**Reference implementation:** `projects/01-ai-basics/src/theory/llms-prompting.html` (and its `.md`). It is the finished result of this workflow. Copy its `<head>` styles, topic/part markup, accordion script and static-example patterns (`.viz` panels that hold tables, token chips and worked examples) instead of inventing new ones.
+**Reference implementation:** `projects/01-ai-basics/src/theory/llms-prompting.html` and `projects/02-langchain-agents/src/theory/langchain-agents.html` (and their `.md` companions). They are the finished results of this workflow. Copy their `<head>` styles, topic/part markup, accordion script and static-example patterns (`.viz` panels that hold tables, token chips and worked examples) instead of inventing new ones.
 
 **Design source:** For container projects (`projects/<project-name>/src/theory/`), styles and scripts are self-contained in `src/css/` (`dsa-study.css`, `site-header.css`, `ai-projects.css`) and `src/js/` (`dsa-study.js`), linked as `../css/*` and `../js/*` so the container serves them without external dependencies. For legacy TechToday study paths, `projects/techtoday/study/dsa/dsa-study.css`, `projects/techtoday/study/ai-projects/ai-projects.css`, and `dsa-study.js`.
 
@@ -102,7 +102,7 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 3. Carry over all the information the widget held: preset data, every possible outcome or answer, hints, notes and feedback text. Data that lived only in the script (arrays, answers, explanations) must appear in the static version.
 4. Reuse styles already in the reference `<style>` (token chips, `.prob-row` bars) for static output; set bar widths inline. Recolour light pastel inline colours for the dark theme.
 5. Delete the widget's script and any styles used only by it. Extract any remaining page-specific scripts (like the accordion script and the `topic-menu-panel` opener) into a single external `<name>.js` file. Link your scripts at the end of the body in this order:
-   1. `<script src="../dsa/dsa-study.js">`
+   1. `<script src="../js/dsa-study.js">` (or `<script src="../dsa/dsa-study.js">` in legacy paths)
    2. `<script src="<name>.js">`
 
    Do not redeclare `dsa-study.js` globals (`progress`, `esc`, `copyText`, `VIZ`, …).
@@ -113,8 +113,8 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 
 1. Create `<name>.new.html` with the full rewritten page, then `mv` it over the original. Use the terminal only for the move.
 2. Regenerate the companion `<name>.md` the same way (`.new.md` → `mv`). Mirror the new HTML exactly:
-   - header comment with Source, Title, Theme-color, `Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-projects.css` and `Scripts: ../dsa/dsa-study.js`
-   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)`, eyebrow, `# h1`, lede, chips, Table of Contents
+   - header comment with Source, Title, Theme-color, `Stylesheets: ../css/dsa-study.css, ../css/site-header.css, ../css/ai-projects.css, <name>.css` and `Scripts: ../js/dsa-study.js, <name>.js` (or `../dsa/dsa-study.css, ../../site-header.css, ai-projects.css` and `../dsa/dsa-study.js` in legacy paths)
+   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)` (or `Navigation: [<Project>](../) · [← Back to App](../)` in container projects), eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
    - fenced code with the same language tag as the HTML `data-lang` (```` ```bash ````, ```` ```yaml ````, ```` ```python ````, ```` ```text ```` only for output/prompts/diagrams); diagrams as ```` ```mermaid ```` blocks
