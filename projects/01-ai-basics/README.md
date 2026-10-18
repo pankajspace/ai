@@ -1,16 +1,13 @@
 # 01-ai-basics · AI Basics
 
-Foundational artificial intelligence agent patterns and API integration workflows: direct OpenAI chat completions, Groq Llama-3 completions, LangChain LCEL text summarization, multi-turn memory chat, OpenAI tool-calling agents, and LangChain ReAct agents.
+Foundational large language model (LLM) API integration workflows: direct OpenAI chat completions with system personas and ultra-fast Groq Llama-3 completions.
 
 ## 1. Overview and Features
 
-1. **Travel Guide**: Direct OpenAI `chat.completions.create` using `gpt-4o-mini` with system persona and city prompt.
-2. **Joke Generator**: Fast Groq chat completion generating punchy tech jokes.
-3. **LangChain Summarizer**: LangChain LCEL pipeline (`PromptTemplate | ChatOpenAI | StrOutputParser`) summarizing long texts.
-4. **Memory Chat**: Multi-turn conversation preserving history buffer across dialogue turns.
-5. **Raw Tool Agent**: Direct OpenAI function calling loop executing a local `get_price` Python function.
-6. **LangChain One-Tool Agent**: Structured LangChain ReAct agent calling a weather lookup tool.
-7. **LangChain Multi-Tool Agent**: Multi-tool agent orchestrating between weather, arithmetic, and population lookup tools.
+1. **Travel Guide** (`src/python/01_chat_openai.py`, `POST /api/travel`): Direct OpenAI `chat.completions.create` using `gpt-4o-mini` with a system persona and city prompt.
+2. **Joke Generator** (`src/python/02_chat_groq.py`, `POST /api/joke`): Fast Groq chat completion generating punchy tech jokes via the OpenAI-compatible client interface.
+3. **Demo Explanation Pages (ⓘ)**: Each card title in `src/index.html` includes an ⓘ info icon linking to its self-contained explainer page under `src/explanation/` (`travel-guide.html`, `joke-generator.html`), styled and powered by `src/css/info.css` and `src/js/info.js`.
+4. **Theory Class Notes**: Self-contained LLMs & Prompting course notes (`src/theory/llms-prompting.html` and `llms-prompting.md`), served at `/theory/<path:filename>`.
 
 ## 2. Project Details
 
@@ -23,15 +20,16 @@ Foundational artificial intelligence agent patterns and API integration workflow
 7. ECR repository: `techtoday/01-ai-basics`
 8. Production service name: `01-ai-basics`
 9. Production path prefix: `/01-ai-basics`
-10. Deploy workflow: `.github/workflows/deploy-01-ai-basics.yml`
-11. Trigger path: `projects/01-ai-basics/**`
+10. Routes: `GET /`, `GET /explanation/<filename>`, `GET /theory/<filename>`, `POST /api/travel`, `POST /api/joke`
+11. Deploy workflow: `.github/workflows/deploy-01-ai-basics.yml`
+12. Trigger path: `projects/01-ai-basics/**`
 
 ## 3. Environment Variables
 
-1. `OPENAI_API_KEY`: Required. OpenAI API key used for chat completion, summarizer, memory chat, and tool agents.
+1. `OPENAI_API_KEY`: Required for Travel Guide. OpenAI API key used for chat completion.
 2. `OPENAI_MODEL`: Optional. Default `gpt-4o-mini`.
 3. `OPENAI_BASE_URL`: Optional. Default `https://api.openai.com/v1`.
-4. `GROQ_API_KEY`: Required for joke generator. Groq Cloud API key.
+4. `GROQ_API_KEY`: Required for Joke Generator. Groq Cloud API key.
 5. `GROQ_MODEL`: Optional. Default `openai/gpt-oss-20b`.
 6. `GROQ_BASE_URL`: Optional. Default `https://api.groq.com/openai/v1`.
 

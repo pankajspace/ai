@@ -1,8 +1,6 @@
 // 01-ai-basics front-end logic
 const API = document.body.dataset.apiBase || "";
 
-let memoryHistory = [];
-
 function setLoading(btn, loading) {
     if (!btn.dataset.label) btn.dataset.label = btn.textContent;
     btn.disabled = loading;
@@ -141,95 +139,6 @@ ${data.suggestion}`;
             el.textContent = `😂 Joke about ${data.topic}:
 
 ${data.joke}`;
-        },
-    });
-
-    // 3. Summarizer
-    bindPresetChips("card-summarizer", "summarizerInput");
-    setupCard({
-        inputId: "summarizerInput",
-        buttonId: "summarizerBtn",
-        resultId: "summarizerResult",
-        validationId: "summarizerValidation",
-        endpoint: "/api/summarize",
-        field: "text",
-        requiredMessage: "Please enter text to summarize.",
-        render: (data, el) => {
-            el.textContent = `📝 Summary:
-
-${data.summary}`;
-        },
-    });
-
-    // 4. Memory Chat
-    bindPresetChips("card-memoryChat", "memoryChatInput");
-    setupCard({
-        inputId: "memoryChatInput",
-        buttonId: "memoryChatBtn",
-        resultId: "memoryChatResult",
-        validationId: "memoryChatValidation",
-        endpoint: "/api/memory-chat",
-        getBody: (msg) => ({ message: msg, history: memoryHistory }),
-        requiredMessage: "Please enter a message.",
-        render: (data, el) => {
-            memoryHistory = data.history || [];
-            el.textContent = `Assistant:
-${data.response}
-
-[Memory Buffer: ${memoryHistory.length} messages]`;
-        },
-    });
-
-    // 5. OpenAI Tool Agent
-    bindPresetChips("card-agentOneTool", "agentOneToolInput");
-    setupCard({
-        inputId: "agentOneToolInput",
-        buttonId: "agentOneToolBtn",
-        resultId: "agentOneToolResult",
-        validationId: "agentOneToolValidation",
-        endpoint: "/api/agent",
-        field: "message",
-        requiredMessage: "Please enter a query.",
-        render: (data, el) => {
-            el.textContent = `Agent Response:
-
-${data.response}`;
-        },
-    });
-
-    // 6. LangChain One-Tool Agent
-    bindPresetChips("card-langchainOneTool", "langchainOneToolInput");
-    setupCard({
-        inputId: "langchainOneToolInput",
-        buttonId: "langchainOneToolBtn",
-        resultId: "langchainOneToolResult",
-        validationId: "langchainOneToolValidation",
-        endpoint: "/api/langchain-one-tool",
-        field: "message",
-        requiredMessage: "Please enter a query.",
-        render: (data, el) => {
-            const badge = data.tool_called ? "🔧 Tool Invoked: get_weather" : "💬 Direct Model Response (No Tool)";
-            el.textContent = `[${badge}]
-
-${data.response}`;
-        },
-    });
-
-    // 7. LangChain Multi-Tool Agent
-    bindPresetChips("card-multiToolAgent", "multiToolAgentInput");
-    setupCard({
-        inputId: "multiToolAgentInput",
-        buttonId: "multiToolAgentBtn",
-        resultId: "multiToolAgentResult",
-        validationId: "multiToolAgentValidation",
-        endpoint: "/api/multi-tool-agent",
-        field: "message",
-        requiredMessage: "Please enter a query.",
-        render: (data, el) => {
-            const badge = data.tool_called ? "🤖 Multi-Tool Orchestration Active" : "💬 Direct Model Response";
-            el.textContent = `[${badge}]
-
-${data.response}`;
         },
     });
 });

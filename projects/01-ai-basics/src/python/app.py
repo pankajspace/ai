@@ -35,11 +35,6 @@ def _load_service(filename: str, alias: str):
 
 mod_travel = _load_service("01_chat_openai.py", "chat_openai")
 mod_joke = _load_service("02_chat_groq.py", "chat_groq")
-mod_summarize = _load_service("03_langchain_summarizer.py", "langchain_summarizer")
-mod_memory = _load_service("04_langchain_memory_chat.py", "langchain_memory_chat")
-mod_agent = _load_service("05_agent_one_tool.py", "agent_one_tool")
-mod_lc_tool = _load_service("06_langchain_one_tool.py", "langchain_one_tool")
-mod_lc_multi = _load_service("07_langchain_multi_tools.py", "langchain_multi_tools")
 
 
 @bp.before_request
@@ -107,72 +102,6 @@ def joke_generator():
     try:
         joke = mod_joke.get_groq_joke(topic)
         return jsonify({"result": joke, "topic": topic, "joke": joke})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@bp.route("/api/summarize", methods=["POST"])
-def summarizer_service():
-    data = request.get_json(force=True, silent=True) or {}
-    text = (data.get("text") or data.get("message") or "").strip()
-    if not text:
-        return jsonify({"error": "Text cannot be empty"}), 400
-    try:
-        summary = mod_summarize.summarize(text)
-        return jsonify({"result": summary, "summary": summary})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@bp.route("/api/memory-chat", methods=["POST"])
-def memory_chat_service():
-    data = request.get_json(force=True, silent=True) or {}
-    message = (data.get("message") or "").strip()
-    history = data.get("history") or []
-    if not message:
-        return jsonify({"error": "Message cannot be empty"}), 400
-    try:
-        reply, updated_history = mod_memory.chat_with_memory(message, history)
-        return jsonify({"result": reply, "response": reply, "history": updated_history})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@bp.route("/api/agent", methods=["POST"])
-def agent_service():
-    data = request.get_json(force=True, silent=True) or {}
-    message = (data.get("message") or "").strip()
-    if not message:
-        return jsonify({"error": "Message cannot be empty"}), 400
-    try:
-        reply = mod_agent.run_agent_with_tool(message)
-        return jsonify({"result": reply, "response": reply})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@bp.route("/api/langchain-one-tool", methods=["POST"])
-def langchain_one_tool_service():
-    data = request.get_json(force=True, silent=True) or {}
-    message = (data.get("message") or "").strip()
-    if not message:
-        return jsonify({"error": "Message cannot be empty"}), 400
-    try:
-        reply, tool_called = mod_lc_tool.run_langchain_one_tool(message)
-        return jsonify({"result": reply, "response": reply, "tool_called": tool_called})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
-
-
-@bp.route("/api/multi-tool-agent", methods=["POST"])
-def multi_tool_agent_service():
-    data = request.get_json(force=True, silent=True) or {}
-    message = (data.get("message") or "").strip()
-    if not message:
-        return jsonify({"error": "Message cannot be empty"}), 400
-    try:
-        reply, tool_called = mod_lc_multi.run_multi_tool_agent(message)
-        return jsonify({"result": reply, "response": reply, "tool_called": tool_called})
     except Exception as exc:
         return jsonify({"error": str(exc)}), 500
 

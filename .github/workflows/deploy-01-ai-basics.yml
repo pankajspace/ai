@@ -268,7 +268,7 @@ jobs:
 
             # --- Clean up legacy renamed stacks (migration) ---
             RELOAD_NGINX=0
-            for legacy in basic rag docker aws-strands ai-systems ai-reliability mcp-evals ai-pocs interviewiq shipment-exception-desk; do
+            for legacy in basic rag docker aws-strands ai-systems ai-reliability mcp-evals ai-pocs interviewiq shipment-exception-desk 02-ai-rag-chroma 03-ai-model-training-chromadb 04-ai-aws-strands 05-ai-systems 06-ai-reliability 07-ai-mcp-evals 08-interviewiq 09-shipment-exception-desk; do
               if [ -d "$HOME/apps/$legacy" ]; then
                 docker compose -f "$HOME/apps/$legacy/docker-compose.yml" down 2>/dev/null || true
                 rm -rf "$HOME/apps/$legacy" 2>/dev/null || true
@@ -302,11 +302,11 @@ jobs:
             }
 
             location ^~ /interviewiq {
-                return 301 https://app.techtoday.click/08-interviewiq/;
+                return 301 https://app.techtoday.click/09-interviewiq/;
             }
 
             location ^~ /shipment-exception-desk {
-                return 301 https://app.techtoday.click/09-shipment-exception-desk/;
+                return 301 https://app.techtoday.click/10-shipment-exception-desk/;
             }
             REDIRECTS
             sudo nginx -t && sudo systemctl reload nginx || true

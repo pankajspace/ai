@@ -94,7 +94,7 @@ Projects carry byte-identical copies, and `projects/techtoday/js/info.js` is ide
 
 ## 4. One page per demo — `src/explanation/<demo>.html`
 
-Copy the shell of an existing page (e.g. `projects/01-ai-basics/src/explanation/joke.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
+Copy the shell of an existing page (e.g. `projects/01-ai-basics/src/explanation/joke-generator.html`): `header.tt-site-header` → `div.progress` → `main.study-layout > nav.topic-menu + inline auto-open script + article.study` → `footer.study-footer` → `button.back-to-top` → Mermaid `@11` CDN script → `../js/info.js`. Load only `../css/info.css` (not the project's `style.css`).
 
 - **Header** — brand link back to `../` (not `../index.html` — the Flask index route only matches `/`) plus a `&larr; <Project>` `nav-back-link`.
 - **`<h1 id="how-it-works">`** — the card's emoji + title (CSS adds the "How it works" eyebrow), then a `p.lede` with the models/providers used.
@@ -180,10 +180,10 @@ Update the project's `README.md` project-structure listing and module-responsibi
 
 ## 7. Project-level explainer on the TechToday site (optional)
 
-Some projects also get one "how the whole project works" page on the static site, linked from their card in the AI Projects catalog. Use this for projects without per-card explainers (`08-interviewiq`, `09-shipment-exception-desk`) or when the project needs an overview across all its demos.
+Some projects also get one "how the whole project works" page on the static site, linked from their card in the AI Projects catalog. Use this for projects without per-card explainers (`09-interviewiq`, `10-shipment-exception-desk`) or when the project needs an overview across all its demos.
 
 1. **Location** — `projects/techtoday/explanation/<project-name>.html`, using the TechToday copies `../css/info.css` and `../js/info.js` (no Flask route needed; the site is static).
 2. **Shell** — same as a demo page (§4) except: the brand links to `../`, the back link is `<a href="../study/ai-projects/ai-projects.html" class="nav-back-link">&larr; AI Projects</a>`, the `<h1 id="how-it-works">` is the project's emoji + name, the lede lists the demos it covers, and the footer reads `TechToday &mdash; <emoji> <Project> &middot; How it works`.
-3. **Topics** — Unit 1 has the same four topics, covering the whole project (request and code flow for every demo, with Mermaid fan-outs where demos share modules). Unit 2 embeds every Python file the project runs, complete and unedited, with `span.file-path` written from the `projects/` root (`08-interviewiq/src/python/agent.py`).
+3. **Topics** — Unit 1 has the same four topics, covering the whole project (request and code flow for every demo, with Mermaid fan-outs where demos share modules). Unit 2 embeds every Python file the project runs, complete and unedited, with `span.file-path` written from the `projects/` root (`09-interviewiq/src/python/agent.py`).
 4. **Catalog link** — in `projects/techtoday/study/ai-projects/ai-projects.html`, the project's card starts with a corner icon `<a class="info-link corner-link" href="../../explanation/<project-name>.html" data-tooltip="Explanation" title="Explanation" aria-label="Explanation">&#x24D8;</a>` (class-notes cards use `data-tooltip="Theory"` pointing at their study page instead). Mirror it in `ai-projects.md` as `[ⓘ](../../explanation/<project-name>.html)` above the card's `###` title.
 5. **Docs** — add the page to the `explanation/` listing in `projects/techtoday/README.md` *Project Structure*.

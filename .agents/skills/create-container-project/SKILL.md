@@ -26,7 +26,7 @@ Read before editing:
 2. [projects/ARCHITECTURE.md](../../../projects/ARCHITECTURE.md) — `§ 5. Application and Container Runtime Architecture`.
 3. [projects/DEPLOYMENT.md](../../../projects/DEPLOYMENT.md) — the branch flow the README must describe (any branch deploys on push for testing; merge into `main` to release).
 4. [projects/template/README.md](../../../projects/template/README.md) and [projects/template/src/python/app.py](../../../projects/template/src/python/app.py).
-5. A neighboring project ([08-interviewiq](../../../projects/08-interviewiq) or [09-shipment-exception-desk](../../../projects/09-shipment-exception-desk)) when its structure helps.
+5. A neighboring project ([09-interviewiq](../../../projects/09-interviewiq) or [10-shipment-exception-desk](../../../projects/10-shipment-exception-desk)) when its structure helps.
 6. The matching `study/NN-<topic>/` folder, if one exists, for feature context and source material: its `.md`, the companion `.html` deck, and the class code under `notes/` (project classes also ship a reference solution folder beside `notes/`).
 
 ## Inputs To Resolve

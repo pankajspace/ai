@@ -33,15 +33,16 @@
 ## Project Runbooks
 1. [TechToday Home Page](projects/techtoday/README.md)
 2. [AI Basics](projects/01-ai-basics/README.md)
-3. [AI RAG & Chroma](projects/02-ai-rag-chroma/README.md)
-4. [AI Model Training & ChromaDB](projects/03-ai-model-training-chromadb/README.md)
-5. [AWS Strands Agents](projects/04-ai-aws-strands/README.md)
-6. [AI Systems](projects/05-ai-systems/README.md)
-7. [AI Reliability](projects/06-ai-reliability/README.md)
-8. [AI MCP & Evals](projects/07-ai-mcp-evals/README.md)
-9. [InterviewIQ](projects/08-interviewiq/README.md)
-10. [Shipment Exception Desk](projects/09-shipment-exception-desk/README.md)
-11. [Container App Template](projects/template/README.md)
+3. [LangChain & Agents](projects/02-langchain-agents/README.md)
+4. [AI RAG & Chroma](projects/03-ai-rag-chroma/README.md)
+5. [AI Model Training & ChromaDB](projects/04-ai-model-training-chromadb/README.md)
+6. [AWS Strands Agents](projects/05-ai-aws-strands/README.md)
+7. [AI Systems](projects/06-ai-systems/README.md)
+8. [AI Reliability](projects/07-ai-reliability/README.md)
+9. [AI MCP & Evals](projects/08-ai-mcp-evals/README.md)
+10. [InterviewIQ](projects/09-interviewiq/README.md)
+11. [Shipment Exception Desk](projects/10-shipment-exception-desk/README.md)
+12. [Container App Template](projects/template/README.md)
 
 ---
 

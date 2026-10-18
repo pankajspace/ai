@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>How it works — Single-Tool Agent &middot; LangChain &amp; Agents</title>
+    <meta name="description"
+        content="🤖 Single-Tool Agent shows the raw agent loop with the plain OpenAI SDK: the model can ask for get_price(item), our code runs it, and the model writes the final answer from the result." />
+    <link rel="icon"
+        href="../css/logo.svg" />
+    <link rel="stylesheet" href="../css/info.css" />
+</head>
+
+<body>
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>LangChain &amp; Agents</span>
+            </a>
+            <a href="../" class="nav-back-link">&larr; Back to LangChain &amp; Agents</a>
+        </nav>
+    </header>
+    <div class="progress" aria-hidden="true"></div>
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel">
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#concept">Concept</a></li>
+                    <li><a href="#theory-concepts">Theory</a></li>
+                    <li><a href="#request-flow">Request flow</a></li>
+                    <li><a href="#code-flow">Code flow</a></li>
+                    <li><a href="#source-03-agent-one-tool-py">03_agent_one_tool.py</a></li>
+                    <li><a href="#source-main-py">main.py</a></li>
+                </ol>
+            </details>
+        </nav>
+        <script>if(window.matchMedia("(min-width: 961px)").matches)document.querySelector(".topic-menu .topic-menu-panel").open=true;</script>
+        <article class="study">
+            <h1 id="how-it-works">🤖 Single-Tool Agent<a class="headerlink" href="#how-it-works"
+                    title="Permanent link">#</a></h1>
+
+            <p class="lede"><strong>🤖 Single-Tool Agent</strong> shows the raw agent loop with the plain OpenAI SDK: the model can ask for <code>get_price(item)</code>, our code runs it, and the model writes the final answer from the result.</p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>6 Topics</span>
+                    <span class="dot">&bull;</span>
+                    <span>4 Explainers</span>
+                    <span class="dot">&bull;</span>
+                    <span>2 Python Files in Full</span>
+                </div>
+            </div>
+            <div class="course-toolbar-actions">
+                <button type="button" class="action-btn" data-course-action="expand-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="7 13 12 18 17 13"></polyline>
+                        <polyline points="7 6 12 11 17 6"></polyline>
+                    </svg>
+                    <span>Expand All</span>
+                </button>
+                <button type="button" class="action-btn" data-course-action="collapse-all">
+                    <svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="17 11 12 6 7 11"></polyline>
+                        <polyline points="17 18 12 13 7 18"></polyline>
+                    </svg>
+                    <span>Collapse All</span>
+                </button>
+            </div>
+
+            <div class="unit-divider" id="unit-1">
+                <div class="unit-divider-badge">Unit 1</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">How It Works<a class="headerlink" href="#unit-1"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">The idea behind the demo, the request it sends and the function calls that answer it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 1 -->
+
+            <section class="topic-section is-collapsed" id="sec-concept">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-concept">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 id="concept" class="topic-title">Concept<a class="headerlink" href="#concept"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-concept">
+                    <p>
+                        <strong>Single-Tool Agent</strong> strips away all frameworks to reveal the exact mechanics of
+                        how an LLM calls a Python function using raw <strong>OpenAI Function Calling</strong>. On its
+                        own, an LLM has no idea what items your store sells or what they cost in rupees &mdash; that
+                        data lives in a private backend dictionary (<code>PRICES</code>).
+                    </p>
+                    <p>
+                        When you ask <em>"How much are the shoes?"</em>, the service executes a two-call
+                        <strong>Think &rarr; Act &rarr; Observe &rarr; Answer</strong> loop:
+                    </p>
+                    <ol>
+                        <li><strong>First LLM Call (Decision):</strong> Sends your question plus the JSON Schema menu
+                            card (<code>TOOLS</code>) describing <code>get_price(item)</code>. Instead of guessing a
+                            price, the model replies with a structured <code>tool_calls</code> request:
+                            <code>get_price(item="shoes")</code>.</li>
+                        <li><strong>Local Tool Execution:</strong> Python parses the JSON arguments, runs
+                            <code>get_price("shoes")</code> against <code>PRICES</code> to get <code>"₹799"</code>, and
+                            appends a <code>role="tool"</code> message linked by <code>tool_call_id</code>.</li>
+                        <li><strong>Second LLM Call (Synthesis):</strong> Sends the full conversation (user question +
+                            assistant tool request + tool result) back to the model, which writes the final natural
+                            language reply.</li>
+                    </ol>
+                </div>
+            </section>
+<!-- ============================================================ 2 -->
+
+            <section class="topic-section is-collapsed" id="sec-theory-concepts">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-theory-concepts">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 id="theory-concepts" class="topic-title">Theory<a class="headerlink" href="#theory-concepts"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-theory-concepts">
+                    <p><strong>1. Crucial Mental Model: The LLM Never Executes Code</strong></p>
+                    <p>
+                        A common misconception is that the cloud LLM reaches into your server to run
+                        <code>get_price()</code>. In reality, the LLM only generates text &mdash; when a tool is needed,
+                        it outputs a structured JSON object (<code>msg.tool_calls</code>) saying <em>"I would like you
+                        to call function X with arguments Y"</em>. Your Python process is the gatekeeper that actually
+                        executes the function and decides what to return.
+                    </p>
+                    <p><strong>2. Anatomy of an OpenAI Tool Schema</strong></p>
+                    <p>
+                        The <code>TOOLS</code> list provides a JSON Schema contract for each function:
+                    </p>
+                    <ul>
+                        <li><code>name</code>: The exact identifier (<code>"get_price"</code>) the model will emit in
+                            <code>call.function.name</code>.</li>
+                        <li><code>description</code>: The natural-language rule telling the model <em>when</em> this
+                            tool is appropriate (<code>"Get the price of a shop item the user asks about."</code>).</li>
+                        <li><code>parameters</code>: A JSON Schema object specifying each argument's name, type
+                            (<code>"string"</code>), description, and <code>required</code> list.</li>
+                    </ul>
+                    <p><strong>3. Strict Message Ordering and <code>tool_call_id</code></strong></p>
+                    <p>
+                        The Chat Completions API enforces a strict state-machine invariant on <code>messages</code>:
+                        every message with <code>role="tool"</code> must immediately follow an <code>assistant</code>
+                        message that contains a matching <code>tool_calls[i].id</code>. If you forget
+                        <code>messages.append(msg)</code> before appending the <code>role="tool"</code> result, the API
+                        rejects the second call with a <code>400 Bad Request</code> error.
+                    </p>
+                    <p><strong>4. Conditional Routing (Tool vs. Direct Reply)</strong></p>
+                    <p>
+                        When you ask a general question like <em>"Hello, who are you?"</em>, the model sees that
+                        <code>get_price</code> is irrelevant, leaves <code>msg.tool_calls</code> empty, and populates
+                        <code>msg.content</code> directly &mdash; completing in a single API call without touching the
+                        tool.
+                    </p>
+                </div>
+            </section>
+<!-- ============================================================ 3 -->
+
+            <section class="topic-section is-collapsed" id="sec-request-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-request-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 id="request-flow" class="topic-title">Request flow<a class="headerlink" href="#request-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-request-flow">
+                    <div class="flow-diagram">
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail"><code>AgentOneToolCard.tsx</code> sends <code>POST /api/agent</code> with <code>{ message }</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">FastAPI route (<code>main.py</code>)</span>
+                            <span class="flow-detail"><code>agent_service(req)</code> calls <code>run_agent_with_tool(message)</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Call 1 &rarr; OpenAI</span>
+                            <span class="flow-detail">Question + <code>TOOLS</code> schema. The model either answers (returned immediately) or returns <code>tool_calls</code>.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Tool run (<code>03_agent_one_tool.py</code>)</span>
+                            <span class="flow-detail">For each tool call, <code>get_price(item)</code> looks up <code>PRICES</code> and the result is appended as a <code>tool</code> message.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">Call 2 &rarr; OpenAI</span>
+                            <span class="flow-detail">The full history goes back; the model writes the final answer.</span>
+                        </div>
+                        <div class="flow-arrow">&rarr;</div>
+                        <div class="flow-step">
+                            <span class="flow-title">&#x1F9D1; Browser</span>
+                            <span class="flow-detail">Shows <code>{ message, response }</code>.</span>
+                        </div>
+                    </div>
+                </div>
+            </section>
+<!-- ============================================================ 4 -->
+
+            <section class="topic-section is-collapsed" id="sec-code-flow">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-code-flow">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 id="code-flow" class="topic-title">Code flow<a class="headerlink" href="#code-flow"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-code-flow">
+                    <div class="mermaid-wrap">
+                        <div class="mermaid">
+flowchart TD
+    UI["AgentOneToolCard.tsx<br/>POST /api/agent"]:::entry -->|"message"| R["main.py<br/>agent_service()"]:::fn
+    R -->|"message"| S["03_agent_one_tool.py<br/>run_agent_with_tool()"]:::fn
+    S -->|"question + tool schema"| O[("OpenAI API")]:::ext
+    O -->|"tool_calls: get_price(item)"| S
+    S -->|"item"| T["get_price()<br/>PRICES lookup"]:::fn
+    T -->|"price string"| S
+    S -->|"history + tool result"| O
+    O -->|"final answer"| S
+    S -->|"answer"| R
+    R -->|"JSON { message, response }"| UI
+    classDef entry fill:#1e3a5f,stroke:#90caf9,color:#e0e0e0
+    classDef fn fill:#1e1e1e,stroke:#4caf50,color:#e0e0e0
+    classDef ext fill:#2d1f3d,stroke:#ce93d8,color:#e0e0e0
+    classDef ret fill:#1b3320,stroke:#81c784,color:#e0e0e0
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="unit-divider" id="unit-2">
+                <div class="unit-divider-badge">Unit 2</div>
+                <div class="unit-divider-text">
+                    <h2 class="unit-divider-title">Source Code<a class="headerlink" href="#unit-2"
+                            title="Permanent link">#</a></h2>
+                    <p class="unit-divider-desc">Every Python file this demo runs, complete and unedited: the service implementation first, then the FastAPI route that calls it.</p>
+                </div>
+            </div>
+
+<!-- ============================================================ 5 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-03-agent-one-tool-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-03-agent-one-tool-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 id="source-03-agent-one-tool-py" class="topic-title is-file">03_agent_one_tool.py<a class="headerlink" href="#source-03-agent-one-tool-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">140 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-03-agent-one-tool-py">
+                    <p class="file-label">Minimal Single-Tool Agent Demonstration.</p>
+                    <pre><code data-lang="python">&quot;&quot;&quot;Minimal Single-Tool Agent Demonstration.
+
+This script demonstrates the foundational mechanics of an LLM Agent:
+1. LLM + External Tool + Decision Loop (ReAct / Tool-Use Pattern).
+2. The LLM does NOT execute Python code directly; instead, it returns structured
+   JSON requesting a tool call when it needs external information.
+3. The client application executes the requested function locally and feeds
+   the result back to the LLM to generate the final response.
+&quot;&quot;&quot;
+
+import json
+import os
+
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+from pydantic import BaseModel
+
+# Load environment variables (e.g., OPENAI_API_KEY) from .env
+load_dotenv(find_dotenv())
+
+
+class AgentRequest(BaseModel):
+    message: str = &quot;How much are the shoes?&quot;
+
+
+class AgentResponse(BaseModel):
+    message: str
+    response: str
+
+
+# ---------------------------------------------------------------------------
+# Mock Database
+# ---------------------------------------------------------------------------
+# In a real-world system, this would be an external database, API, or service
+# containing domain data that the LLM has no inherent knowledge of.
+PRICES = {&quot;shoes&quot;: 799, &quot;hat&quot;: 399, &quot;bag&quot;: 1420, &quot;shorts&quot;: 1299, &quot;pants&quot;: 1699}
+
+
+# ---------------------------------------------------------------------------
+# Step 1: Define the Python Tool Function
+# ---------------------------------------------------------------------------
+def get_price(item: str) -&gt; str:
+    &quot;&quot;&quot;Fetch the price of a given shop item from the database.
+
+    Args:
+        item: Name of the item to look up.
+
+    Returns:
+        Formatted price string in INR, or &#x27;₹unknown&#x27; if item is not found.
+    &quot;&quot;&quot;
+    # Log to console so tool invocations are visible during execution
+    print(f&quot;   🔧 tool called: get_price({item!r})&quot;)
+    # Use .get() to safely handle unknown items without throwing a KeyError
+    return f&quot;₹{PRICES.get(item.lower(), &#x27;unknown&#x27;)}&quot;
+
+
+# ---------------------------------------------------------------------------
+# Step 2: Define Tool Schema for the Model (JSON Schema / Function Calling)
+# ---------------------------------------------------------------------------
+# The model uses this schema to know:
+# - Which tools are available (&#x27;name&#x27;)
+# - When to use each tool (&#x27;description&#x27; acts as guidance for the LLM)
+# - What arguments to generate (&#x27;parameters&#x27; defines argument types and requirements)
+TOOLS = [{
+    &quot;type&quot;: &quot;function&quot;,
+    &quot;function&quot;: {
+        &quot;name&quot;: &quot;get_price&quot;,
+        &quot;description&quot;: &quot;Get the price of a shop item the user asks about.&quot;,
+        &quot;parameters&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+                &quot;item&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;The item name, e.g. &#x27;shoes&#x27; or &#x27;bag&#x27;&quot;},
+            },
+            &quot;required&quot;: [&quot;item&quot;],
+        },
+    },
+}]
+
+
+# ---------------------------------------------------------------------------
+# Step 3: The Agent Decision Loop (Think -&gt; Tool Execution -&gt; Final Response)
+# ---------------------------------------------------------------------------
+def run_agent_with_tool(question: str = &quot;How much are the shoes?&quot;) -&gt; str:
+    &quot;&quot;&quot;Process a user query, invoking tools dynamically if required.
+
+    Execution Flow:
+    1. Send user message and tool definitions to the LLM.
+    2. Check if the LLM requested a tool call (msg.tool_calls).
+    3. If requested:
+       a. Append the assistant&#x27;s tool-call request to message history.
+       b. Parse arguments and execute the local Python function.
+       c. Append the tool output with role=&#x27;tool&#x27; and matching tool_call_id.
+       d. Send full conversation history back to the LLM for final synthesis.
+    4. If no tool requested, return the direct LLM text response.
+
+    Args:
+        question: Natural language prompt from the user.
+
+    Returns:
+        Final response text from the LLM.
+    &quot;&quot;&quot;
+    # ① Initialize OpenAI client and conversation history with the user&#x27;s prompt
+    client = OpenAI(timeout=15.0)
+    model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+    messages = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question}]
+
+    # ② Phase 1: Send user message along with available tool definitions.
+    # The model inspects the prompt and decides whether to respond directly
+    # or request a tool invocation.
+    msg = client.chat.completions.create(model=model, messages=messages, tools=TOOLS).choices[0].message
+
+    # ③ Phase 2: Inspect model response to see if tool invocation was requested
+    # (if not, return the model&#x27;s direct answer immediately)
+    if not msg.tool_calls:
+        return msg.content or &quot;&quot;
+
+    # ④ Step 2a: Crucial! Append the assistant&#x27;s tool call message to history.
+    # OpenAI requires the assistant&#x27;s tool_calls message to precede tool responses.
+    messages.append(msg)
+
+    # ⑤ Step 2b: Iterate through requested tool calls, execute local function, and append result
+    for call in msg.tool_calls:
+        # Parse the JSON arguments generated by the model
+        args = json.loads(call.function.arguments)
+
+        # Invoke the corresponding Python function locally
+        # Step 2c: Append tool result to history.
+        # Role &#x27;tool&#x27; and &#x27;tool_call_id&#x27; link the output back to the model&#x27;s call.
+        messages.append({
+            &quot;role&quot;: &quot;tool&quot;,
+            &quot;tool_call_id&quot;: call.id,
+            &quot;content&quot;: get_price(args.get(&quot;item&quot;, &quot;&quot;)),
+        })
+
+    # ⑥ Phase 3: Second LLM call with complete history (Prompt + Tool Call + Tool Result).
+    # The model reads the tool output and crafts a natural language response.
+    msg = client.chat.completions.create(model=model, messages=messages).choices[0].message
+
+    # ⑦ Return the assistant&#x27;s final text content
+    return msg.content or &quot;&quot;</code></pre>
+                </div>
+            </section>
+<!-- ============================================================ 6 -->
+
+            <section class="topic-section is-collapsed" id="sec-source-main-py">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false"
+                    aria-controls="content-source-main-py">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 id="source-main-py" class="topic-title is-file">main.py<a class="headerlink" href="#source-main-py"
+                                title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-meta-chip">34 lines</span>
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                                stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-source-main-py">
+                    <p class="file-label">FastAPI route handler for <code>POST /api/agent</code> (agent_service) in <code>server/main.py</code>.</p>
+                    <pre><code data-lang="python">from dotenv import find_dotenv, load_dotenv
+from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+
+from services import (
+    AgentRequest,
+    AgentResponse,
+    run_agent_with_tool,
+)
+
+# Load environment variables
+load_dotenv(find_dotenv())
+
+app = FastAPI(title=&quot;LangChain &amp; Agents API&quot;)
+
+# Enable CORS for frontend requests
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[&quot;*&quot;],
+    allow_credentials=True,
+    allow_methods=[&quot;*&quot;],
+    allow_headers=[&quot;*&quot;],
+)
+
+
+@app.post(&quot;/api/agent&quot;, response_model=AgentResponse)
+def agent_service(req: AgentRequest):
+    # ① Validate message and delegate to raw OpenAI single-tool agent
+    if not req.message.strip():
+        raise HTTPException(status_code=400, detail=&quot;Message cannot be empty&quot;)
+    try:
+        return AgentResponse(message=req.message, response=run_agent_with_tool(req.message))
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc))</code></pre>
+                </div>
+            </section>
+
+        </article>
+    </main>
+    <footer class="study-footer">LangChain &amp; Agents &mdash; 🤖 Single-Tool Agent &middot; How it works</footer>
+    <button class="back-to-top" type="button" aria-label="Back to top">&uarr;</button>
+
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js"></script>
+    <script src="../js/info.js"></script>
+</body>
+
+</html>
