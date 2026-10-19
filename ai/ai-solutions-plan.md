@@ -53,9 +53,24 @@
 import os
 from openai import OpenAI
 
-# Swap base_url for Groq ("https://api.groq.com/openai/v1") or Gemini ("https://generativelanguage.googleapis.com/v1beta/openai/")
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"), base_url="https://api.openai.com/v1")
+# 1. Configure provider endpoint and model:
+#    - OpenAI: base_url="https://api.openai.com/v1", MODEL="gpt-4o-mini"
+#    - Groq:   base_url="https://api.groq.com/openai/v1", MODEL="openai/gpt-oss-20b"
+#    - Gemini: base_url="https://generativelanguage.googleapis.com/v1beta/openai/", MODEL="gemini-3.8-flash"
+client = OpenAI(
+    api_key=os.getenv("OPENAI_API_KEY"),  # Reads API key from environment variable
+    base_url="https://api.openai.com/v1",
+)
 MODEL = "gpt-4o-mini"
+
+# 2. Sample Input & Basic Completion Call
+sample_prompt = "Reply in 3 words: What is Python?"
+resp = client.chat.completions.create(
+    model=MODEL,
+    messages=[{"role": "user", "content": sample_prompt}],
+    temperature=0.0,  # 0.0 = deterministic output
+)
+answer = resp.choices[0].message.content  # Sample Output: "Versatile programming language."
 ```
 
 ### 4.2. Classical ML (`scikit-learn` + `joblib`)
@@ -64,20 +79,31 @@ import joblib
 import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 
-# 1. Train & save tabular model
-df = pd.DataFrame({"x1": [1, 2, 3], "x2": [10, 20, 30], "y": [15, 30, 45]})
-model = RandomForestRegressor(random_state=42).fit(df[["x1", "x2"]], df["y"])
+# 1. Sample Training Input: tabular dataset with features (x1, x2) and target (y)
+train_df = pd.DataFrame({
+    "x1": [1.0, 2.0, 3.0, 4.0],
+    "x2": [10.0, 20.0, 30.0, 40.0],
+    "y": [15.0, 30.0, 45.0, 60.0],
+})
+
+# 2. Fit regression model on feature columns and persist to disk (.pkl)
+model = RandomForestRegressor(n_estimators=100, random_state=42)
+model.fit(train_df[["x1", "x2"]], train_df["y"])
 joblib.dump(model, "model.pkl")
 
-# 2. Load & predict (Sample Input: x1=2.5, x2=25)
-pred = float(joblib.load("model.pkl").predict(pd.DataFrame([{"x1": 2.5, "x2": 25}]))[0])  # -> ~37.5
+# 3. Sample Inference Input: unseen row with the exact same feature names
+sample_input = pd.DataFrame([{"x1": 2.5, "x2": 25.0}])
+
+# 4. Load saved artifact from disk and predict numeric target
+loaded_model = joblib.load("model.pkl")
+pred = float(loaded_model.predict(sample_input)[0])  # Sample Output: ~37.5
 ```
 
 ### 4.3. Single LLM Call & Enforced JSON Shape (`json_schema`)
 ```python
 import json
 
-# 1. Define exact expected JSON shape
+# 1. Define strict JSON Schema: guarantees keys, types, enums, and no extra fields
 RESPONSE_SCHEMA = {
     "type": "object",
     "properties": {
@@ -85,20 +111,29 @@ RESPONSE_SCHEMA = {
         "entities": {"type": "array", "items": {"type": "string"}},
     },
     "required": ["sentiment", "entities"],
-    "additionalProperties": False,
+    "additionalProperties": False,  # Required when strict=True
 }
 
-# 2. Enforce schema via response_format (Sample Input: "Great camera, weak battery.")
+# 2. Sample Input: unstructured customer review
+sample_review = "Great camera and display, but weak battery life."
+
+# 3. Call LLM with response_format={"type": "json_schema", ...} to enforce structure
 resp = client.chat.completions.create(
     model=MODEL,
-    messages=[{"role": "user", "content": "Extract from: 'Great camera, weak battery.'"}],
+    messages=[
+        {"role": "system", "content": "Extract overall sentiment and mentioned product entities."},
+        {"role": "user", "content": sample_review},
+    ],
     response_format={
         "type": "json_schema",
         "json_schema": {"name": "extraction", "strict": True, "schema": RESPONSE_SCHEMA},
     },
     temperature=0.0,
 )
-data = json.loads(resp.choices[0].message.content)  # -> {'sentiment': 'Mixed', 'entities': ['camera', 'battery']}
+
+# 4. Parse guaranteed-valid JSON string into a Python dict
+data = json.loads(resp.choices[0].message.content)
+# Sample Output: {"sentiment": "Mixed", "entities": ["camera", "display", "battery life"]}
 ```
 
 ### 4.4. LangChain LCEL Pipeline
@@ -108,17 +143,25 @@ from langchain_core.prompts import ChatPromptTemplate
 from langchain_core.runnables import RunnableLambda
 from langchain_openai import ChatOpenAI
 
-# Prompt -> LLM -> String Parser -> Allowlist Normalizer
+# 1. Build fixed pipe: Prompt Template -> Chat Model -> String Parser -> Python Guardrail
+ALLOWED_LABELS = {"low", "high"}
 chain = (
     ChatPromptTemplate.from_messages([
-        ("system", "Classify into ONE word: low, high, or unknown."),
+        ("system", "Classify ticket urgency into ONE word: low, high, or unknown."),
         ("human", "{text}"),
     ])
-    | ChatOpenAI(model="gpt-4o-mini", temperature=0)
-    | StrOutputParser()
-    | RunnableLambda(lambda s: s.strip().lower() if s.strip().lower() in ("low", "high") else "unknown")
+    | ChatOpenAI(model="gpt-4o-mini", temperature=0)  # Deterministic classification
+    | StrOutputParser()                               # Extracts message.content as str
+    | RunnableLambda(                                 # Fallback to "unknown" if hallucinated
+        lambda s: s.strip().lower() if s.strip().lower() in ALLOWED_LABELS else "unknown"
+    )
 )
-label = chain.invoke({"text": "Server is down!"})  # -> "high"
+
+# 2. Sample Input: incoming support ticket
+sample_ticket = {"text": "Production database is down and checkout is failing!"}
+
+# 3. Invoke pipeline synchronously
+label = chain.invoke(sample_ticket)  # Sample Output: "high"
 ```
 
 ### 4.5. Embeddings & ChromaDB RAG
@@ -129,62 +172,99 @@ from langchain_chroma import Chroma
 from langchain_openai import ChatOpenAI, OpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
-# 1. Local CPU embeddings & cosine similarity
-vecs = SentenceTransformer("all-MiniLM-L6-v2").encode(["Reset password", "Forgot login"], normalize_embeddings=True)
-sim = float(np.dot(vecs[0], vecs[1]))  # -> ~0.68
+# --- Part 1: Local CPU Embeddings & Cosine Similarity ---
+# Sample Input: two short support queries to compare semantically
+sample_pair = ["Reset my account password", "I forgot my login credentials"]
 
-# 2. Chunk -> Embed in ChromaDB -> Retrieve top-k -> Grounded Answer
-docs = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30).create_documents(["Refunds take 3 days."])
-vectorstore = Chroma.from_documents(docs, OpenAIEmbeddings(model="text-embedding-3-small"))
-context = "\n".join(d.page_content for d in vectorstore.similarity_search("Refund time?", k=2))
-answer = ChatOpenAI(model="gpt-4o-mini").invoke(f"Context:\n{context}\n\nQ: Refund time?").content
+# Encode into L2-normalized vectors so dot product equals cosine similarity (-1.0 to 1.0)
+embedder = SentenceTransformer("all-MiniLM-L6-v2")
+vecs = embedder.encode(sample_pair, normalize_embeddings=True)
+sim = float(np.dot(vecs[0], vecs[1]))  # Sample Output: ~0.68 (high semantic similarity)
+
+# --- Part 2: Chunk -> Embed in ChromaDB -> Retrieve Top-k -> Grounded Answer ---
+# Sample Input: raw policy documents + user question
+sample_docs = [
+    "Refund Policy: Standard refunds are processed within 3 business days to the original card.",
+    "Shipping Policy: Express orders ship within 24 hours; standard orders take 3-5 days.",
+]
+sample_question = "How long do refunds take?"
+
+# Split raw text into overlapping chunks and index in an in-memory Chroma vectorstore
+chunks = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=30).create_documents(sample_docs)
+vectorstore = Chroma.from_documents(chunks, OpenAIEmbeddings(model="text-embedding-3-small"))
+
+# Retrieve top-k most relevant chunks and pass them as grounding context to the LLM
+top_docs = vectorstore.similarity_search(sample_question, k=1)
+context = "\n".join(d.page_content for d in top_docs)
+answer = ChatOpenAI(model="gpt-4o-mini", temperature=0).invoke(
+    f"Answer using ONLY the context below.\nContext:\n{context}\n\nQuestion: {sample_question}"
+).content  # Sample Output: "Standard refunds take 3 business days."
 ```
 
 ### 4.6. Tool-Calling Agents (Raw SDK, LangGraph, AWS Strands)
 ```python
 # --- A. Raw OpenAI / Groq ReAct Loop ---
+# 1. Define JSON tool schema for the LLM and map function names to pure Python functions
 TOOLS_SCHEMA = [{
     "type": "function",
     "function": {
         "name": "add",
-        "description": "Add a and b.",
-        "parameters": {"type": "object", "properties": {"a": {"type": "number"}, "b": {"type": "number"}}, "required": ["a", "b"]},
+        "description": "Add two numbers a and b.",
+        "parameters": {
+            "type": "object",
+            "properties": {"a": {"type": "number"}, "b": {"type": "number"}},
+            "required": ["a", "b"],
+        },
     },
 }]
 TOOLS = {"add": lambda args: args["a"] + args["b"]}
 
-messages = [{"role": "user", "content": "What is 12 + 8?"}]
+# 2. Sample Input: natural-language math query requiring tool execution
+messages = [{"role": "user", "content": "What is 12.5 + 8.5?"}]
+
+# 3. Bounded ReAct loop (max 5 turns to prevent infinite tool loops)
 for _ in range(5):
     msg = client.chat.completions.create(model=MODEL, messages=messages, tools=TOOLS_SCHEMA).choices[0].message
     if not msg.tool_calls:
-        print(msg.content)  # -> "20"
+        print(msg.content)  # Sample Output: "12.5 + 8.5 is 21.0."
         break
-    messages.append(msg)
+    messages.append(msg)  # Record assistant's tool call request
     for call in msg.tool_calls:
-        res = TOOLS[call.function.name](json.loads(call.function.arguments))
+        # Parse LLM arguments, invoke Python function, and append tool result linked by tool_call_id
+        fn_args = json.loads(call.function.arguments)  # e.g., {"a": 12.5, "b": 8.5}
+        res = TOOLS[call.function.name](fn_args)       # -> 21.0
         messages.append({"role": "tool", "tool_call_id": call.id, "content": json.dumps(res)})
 ```
 
 ```python
-# --- B. LangGraph Agent & C. AWS Strands Bedrock Agent ---
+# --- B. LangGraph Prebuilt ReAct Agent ---
 from langchain_core.tools import tool as lc_tool
 from langgraph.prebuilt import create_react_agent
+
+# Docstring + type hints are automatically converted into the tool's JSON schema
+@lc_tool
+def multiply(a: int, b: int) -> int:
+    """Multiply two integers a and b."""
+    return a * b
+
+# Sample Input: user message list -> agent calls multiply(6, 7) -> returns final state
+lg_agent = create_react_agent(ChatOpenAI(model="gpt-4o-mini", temperature=0), tools=[multiply])
+lg_state = lg_agent.invoke({"messages": [("user", "What is 6 * 7?")]})
+lg_answer = lg_state["messages"][-1].content  # Sample Output: "6 * 7 is 42."
+
+# --- C. AWS Strands Bedrock Agent ---
 from strands import Agent, tool as strands_tool
 from strands.models.bedrock import BedrockModel
 
-@lc_tool
-def multiply(a: int, b: int) -> int:
-    """Multiply a and b."""
-    return a * b
-
-lg_res = create_react_agent(ChatOpenAI(model="gpt-4o-mini"), [multiply]).invoke({"messages": [("user", "6 * 7?")]})
-
 @strands_tool
-def get_status(id: str) -> str:
-    """Get status by ID."""
-    return f"{id}: active"
+def get_order_status(order_id: str) -> str:
+    """Look up current delivery status for a given order_id."""
+    return f"Order {order_id}: Shipped (arriving tomorrow)"
 
-strands_res = str(Agent(model=BedrockModel(model_id="amazon.nova-lite-v1:0"), tools=[get_status])("Status of 42?"))
+# Sample Input: natural-language prompt -> Bedrock Nova invokes @strands_tool -> returns answer
+strands_agent = Agent(model=BedrockModel(model_id="amazon.nova-lite-v1:0"), tools=[get_order_status])
+strands_answer = str(strands_agent("Check status for order ORD-42"))
+# Sample Output: "Order ORD-42 has shipped and is arriving tomorrow."
 ```
 
 ### 4.7. Redis Session Memory & `MessagesPlaceholder`
@@ -193,16 +273,32 @@ import redis
 from langchain_core.messages import AIMessage, HumanMessage
 from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
 
-# 1. Redis save & load with 1h TTL (Sample Input: session_id="u1")
-r = redis.Redis(host="localhost", port=6379, decode_responses=True)
-r.rpush("session:u1", json.dumps({"role": "user", "content": "Hi, I'm Alex"}))
-r.expire("session:u1", 3600)
-turns = [json.loads(x) for x in r.lrange("session:u1", 0, -1)]
+# 1. Sample Input: user session ID, prior conversation turn, and follow-up question
+session_key = "session:user_101"
+prior_turn = {"role": "user", "content": "Hi, my name is Alex and I use the Pro plan."}
+followup_input = "What is my name and plan?"
 
-# 2. Inject history into LangChain prompt
-history = [HumanMessage(content=t["content"]) if t["role"] == "user" else AIMessage(content=t["content"]) for t in turns]
-chat = ChatPromptTemplate.from_messages([MessagesPlaceholder("history"), ("human", "{input}")]) | ChatOpenAI(model="gpt-4o-mini")
-reply = chat.invoke({"history": history, "input": "What is my name?"}).content  # -> "Alex"
+# 2. Save turn to Redis list (rpush) with a 1-hour TTL (expire) and read back full session (lrange)
+r = redis.Redis(host="localhost", port=6379, decode_responses=True)
+r.rpush(session_key, json.dumps(prior_turn))
+r.expire(session_key, 3600)
+turns = [json.loads(x) for x in r.lrange(session_key, 0, -1)]
+
+# 3. Convert stored JSON dicts into LangChain message objects and inject via MessagesPlaceholder
+history = [
+    HumanMessage(content=t["content"]) if t["role"] == "user" else AIMessage(content=t["content"])
+    for t in turns
+]
+chat = (
+    ChatPromptTemplate.from_messages([
+        ("system", "You are a helpful support assistant."),
+        MessagesPlaceholder("history"),  # Expands prior HumanMessage/AIMessage list in-place
+        ("human", "{input}"),
+    ])
+    | ChatOpenAI(model="gpt-4o-mini", temperature=0)
+)
+reply = chat.invoke({"history": history, "input": followup_input}).content
+# Sample Output: "Your name is Alex and you are on the Pro plan."
 ```
 
 ### 4.8. Parallel Multi-Judge Voting & `FastMCP`
@@ -211,18 +307,31 @@ from collections import Counter
 from concurrent.futures import ThreadPoolExecutor
 from mcp.server.fastmcp import FastMCP
 
-# 1. Parallel Multi-Judge Voting Bench (Sample Input: 3 judge functions)
-judges = [lambda p: "UPHELD", lambda p: "UPHELD", lambda p: "ESCALATE"]
-with ThreadPoolExecutor(max_workers=8) as pool:
-    ballots = list(pool.map(lambda fn: fn("Rule UPHELD, REJECTED, or ESCALATE"), judges))
-verdict, count = Counter(ballots).most_common(1)[0]  # -> verdict="UPHELD", count=2
+# --- Part 1: Parallel Multi-Judge Voting Bench ---
+# Sample Input: dispute case description + 3 independent judge callables (e.g., OpenAI, Gemini, Groq)
+sample_case = "Customer returned item within 7 days with original receipt; merchant denied refund."
+judges = [
+    lambda case: "UPHELD",    # Judge 1 (e.g., OpenAI gpt-4o-mini)
+    lambda case: "UPHELD",    # Judge 2 (e.g., Gemini 3.8 Flash)
+    lambda case: "ESCALATE",  # Judge 3 (e.g., Groq gpt-oss-20b)
+]
 
-# 2. FastMCP Tool Server over stdio
-mcp = FastMCP("tools")
+# Execute all judge calls concurrently via thread pool and compute majority vote
+with ThreadPoolExecutor(max_workers=8) as pool:
+    ballots = list(pool.map(lambda fn: fn(sample_case), judges))  # -> ["UPHELD", "UPHELD", "ESCALATE"]
+verdict, vote_count = Counter(ballots).most_common(1)[0]
+# Sample Output: verdict="UPHELD", vote_count=2 (majority 2/3 reached)
+
+# --- Part 2: FastMCP Tool Server over stdio ---
+# Exposes Python functions as standardized MCP tools to any MCP-compatible client
+mcp = FastMCP("pricing-tools")
 
 @mcp.tool()
-def lookup_price(item: str) -> str:
-    """Return item price."""
-    return "$99"
-# Run server with: mcp.run() | Connect client via: stdio_client(StdioServerParameters(...)) -> session.list_tools() / session.call_tool()
+def lookup_price(sku: str) -> str:
+    """Return the unit price for a given product SKU."""
+    catalog = {"SKU-100": "$99.00", "SKU-200": "$149.00"}
+    return catalog.get(sku, "UNKNOWN_SKU")
+
+# Sample Input via MCP Client: session.call_tool("lookup_price", {"sku": "SKU-100"}) -> "$99.00"
+# Start server subprocess on stdio with: mcp.run()
 ```
