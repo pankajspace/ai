@@ -29,6 +29,7 @@
 2. [Setup Guide](projects/SETUP.md)
 3. [Add Project Guide](projects/ADD_PROJECT.md)
 4. [Deployment Guide](projects/DEPLOYMENT.md)
+5. [AI Solutions Plan](ai/ai-solutions-plan.md)
 
 ## Project Runbooks
 1. [TechToday Home Page](projects/techtoday/README.md)
@@ -105,6 +106,7 @@
 ## Claude Code Guide
 1. [Claude Code Guide](ai/claude-code-guide.md)
 2. [AI Syllabus](ai/ai-syllabus.md)
+3. [AI Solutions Plan](ai/ai-solutions-plan.md)
 
 ---
 
