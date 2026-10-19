@@ -252,51 +252,36 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This section breaks down every file, Pydantic schema, function, and numbered code step in the <strong>Travel Guide</strong> demo and shows how they connect from the browser to OpenAI and back.</p>
+                    <p><strong>Core AI Module (<code>src/python/01_chat_openai.py</code>)</strong></p>
+                    <p><code>src/python/01_chat_openai.py</code> implements a single-turn chat completion call using the official OpenAI Python SDK. It defines typed Pydantic data contracts and formats a role-structured conversation (<code>system</code> persona + <code>user</code> task prompt) to generate a concise travel recommendation for any city.</p>
 
-<p><strong>1. Purpose of Each File</strong></p>
-<ul>
-    <li><code>src/python/01_chat_openai.py</code> &mdash; The core feature module for the Travel Guide demo. It loads environment variables from <code>.env</code>, defines Pydantic schemas (<code>TravelRequest</code> and <code>TravelResponse</code>), and implements <code>get_travel_suggestion()</code> to request a concise travel recommendation from OpenAI's <code>gpt-4o-mini</code> model.</li>
-    <li><code>src/python/app.py</code> &mdash; The Flask application server and Blueprint router. It dynamically imports numbered Python modules, applies per-IP sliding-window rate limiting on <code>POST</code> routes, serves static and explanation files, and exposes <code>POST /api/travel</code> via <code>travel_suggestion()</code>.</li>
-    <li><code>src/index.html</code> &amp; <code>src/js/main.js</code> &mdash; The frontend dashboard card where the user enters a city name into <code>#travelInput</code> and clicks <code>#travelBtn</code>, triggering <code>setupCard()</code> and <code>callApi()</code> to call <code>POST /api/travel</code> and display the suggestion in <code>#travelResult</code>.</li>
-</ul>
+                    <p><strong>Pydantic Schemas and AI Service Function</strong></p>
+                    <ul>
+                        <li><strong><code>class TravelRequest(BaseModel)</code>:</strong> Defines the input schema with <code>city: str = "Bangalore"</code> as the target destination for the travel query.</li>
+                        <li><strong><code>class TravelResponse(BaseModel)</code>:</strong> Defines the output schema pairing the input <code>city: str</code> with the model-generated <code>suggestion: str</code>.</li>
+                        <li><strong><code>get_travel_suggestion(city: str = "Bangalore") -&gt; str</code>:</strong> Generates a witty travel suggestion from OpenAI through five numbered steps:
+                            <ol>
+                                <li><strong>Step ① — Initialize the OpenAI Client:</strong> Instantiates <code>client = OpenAI(timeout=15.0)</code>, which authenticates with <code>OPENAI_API_KEY</code> and sets a 15-second request timeout.</li>
+                                <li><strong>Step ② — Select the Target Model:</strong> Reads the model identifier via <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>, defaulting to <code>gpt-4o-mini</code> for fast, cost-efficient single-turn generation.</li>
+                                <li><strong>Step ③ — Build Role-Tagged Prompt Messages:</strong> Constructs the two-turn <code>messages</code> list separating behavioral instructions from the user's task:
+                                    <ul>
+                                        <li><code>{"role": "system", "content": "You are a witty travel guide."}</code> sets the assistant's persona and tone.</li>
+                                        <li><code>{"role": "user", "content": f"Suggest one thing to do in {city}."}</code> injects the requested city into a focused task prompt.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step ④ — Execute Chat Completion Inference:</strong> Calls <code>response = client.chat.completions.create(model=model, messages=messages)</code> to send the role-structured prompt to OpenAI's Chat Completions API.</li>
+                                <li><strong>Step ⑤ — Extract the Assistant's Reply:</strong> Unwraps the first completion candidate via <code>response.choices[0].message.content or ""</code> and returns the plain text recommendation.</li>
+                            </ol>
+                        </li>
+                    </ul>
 
-<p><strong>2. Entities in <code>src/python/01_chat_openai.py</code></strong></p>
-<ul>
-    <li><strong>Environment Setup (<code>load_dotenv(find_dotenv())</code>):</strong> Automatically locates the nearest <code>.env</code> file and loads <code>OPENAI_API_KEY</code> and optional <code>OPENAI_MODEL</code> into the process environment.</li>
-    <li><strong>Class <code>TravelRequest(BaseModel)</code>:</strong> A Pydantic request schema with <code>city: str = "Paris"</code> that documents the input contract and default city.</li>
-    <li><strong>Class <code>TravelResponse(BaseModel)</code>:</strong> A Pydantic response schema with <code>city: str</code> and <code>suggestion: str</code> that documents the output payload structure.</li>
-    <li><strong>Function <code>get_travel_suggestion(city: str = "Paris") -&gt; str</code>:</strong> Accepts a city name and returns a travel recommendation string through four numbered steps:
-        <ol>
-            <li><strong>Step ① — Initialize the OpenAI SDK Client:</strong> Instantiates <code>OpenAI(api_key=os.getenv("OPENAI_API_KEY"), timeout=15.0)</code> and reads <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>.</li>
-            <li><strong>Step ② — Construct the Role-Structured Prompt:</strong> Builds the <code>messages</code> list with a <code>system</code> persona (<code>"You are a helpful travel guide."</code>) and a <code>user</code> prompt (<code>f"Suggest one must-visit place in {city} and why in 2 sentences."</code>) that constrains both scope and output length.</li>
-            <li><strong>Step ③ — Dispatch the Chat Completions Request:</strong> Calls <code>client.chat.completions.create(model=model, messages=messages)</code> against OpenAI's <code>/v1/chat/completions</code> API.</li>
-            <li><strong>Step ④ — Extract and Return the Suggestion Text:</strong> Reads <code>response.choices[0].message.content</code> (or <code>""</code> if empty) and returns the generated string.</li>
-        </ol>
-    </li>
-</ul>
-
-<p><strong>3. Entities in <code>src/python/app.py</code></strong></p>
-<ul>
-    <li><strong>Helper <code>_load_service(filename: str, alias: str)</code>:</strong> Dynamically loads <code>01_chat_openai.py</code> as <code>mod_travel</code> using <code>importlib.util.spec_from_file_location()</code> (<strong>Step ①</strong>) and <code>spec.loader.exec_module()</code> (<strong>Step ②</strong>).</li>
-    <li><strong>Hook <code>enforce_rate_limit()</code> (<code>@bp.before_request</code>):</strong> Checks mutating <code>POST</code> requests (<strong>Step ①</strong>) against the 30 requests/hour SQLite sliding-window limiter (<strong>Step ②</strong>) and returns HTTP <code>429</code> with <code>Retry-After</code> when exceeded (<strong>Step ③</strong>).</li>
-    <li><strong>Route <code>travel_suggestion()</code> (<code>POST /api/travel</code>):</strong>
-        <ol>
-            <li><strong>Step ① — Parse and Validate City:</strong> Reads the JSON body via <code>request.get_json(force=True, silent=True)</code>, extracts and trims <code>city</code> (or fallback <code>message</code>), and returns HTTP <code>400</code> if empty.</li>
-            <li><strong>Step ② — Call Service and Return JSON:</strong> Invokes <code>mod_travel.get_travel_suggestion(city)</code> inside a <code>try/except</code> block and returns <code>jsonify({"result": suggestion, "city": city, "suggestion": suggestion})</code> (or HTTP <code>500</code> on exception).</li>
-        </ol>
-    </li>
-</ul>
-
-<p><strong>4. End-to-End Entity Connections</strong></p>
-<ol>
-    <li>The user enters a city (e.g., <code>"Tokyo"</code>) in <code>#travelInput</code> on <code>src/index.html</code> and clicks <strong>Get Suggestion</strong> (<code>#travelBtn</code>).</li>
-    <li><code>setupCard()</code> in <code>src/js/main.js</code> validates that the input is non-empty and invokes <code>callApi()</code>, sending <code>POST /api/travel</code> with <code>{"city": "Tokyo"}</code>.</li>
-    <li><code>enforce_rate_limit()</code> in <code>src/python/app.py</code> verifies the client IP is within the hourly rate limit, then passes control to <code>travel_suggestion()</code>.</li>
-    <li><code>travel_suggestion()</code> validates the city string and calls <code>mod_travel.get_travel_suggestion("Tokyo")</code> in <code>src/python/01_chat_openai.py</code>.</li>
-    <li><code>get_travel_suggestion()</code> creates the <code>OpenAI</code> client, sends the system persona and 2-sentence user prompt to <code>gpt-4o-mini</code>, and extracts <code>response.choices[0].message.content</code>.</li>
-    <li><code>travel_suggestion()</code> returns HTTP <code>200</code> JSON <code>{"result": suggestion, "city": city, "suggestion": suggestion}</code> to <code>main.js</code>, which displays the recommendation in <code>#travelResult</code>.</li>
-</ol>
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
+                    <ol>
+                        <li>A target <code>city</code> string (modeled by <code>TravelRequest</code>) is passed into <code>get_travel_suggestion(city)</code>.</li>
+                        <li>The function combines the persistent <code>system</code> persona (<code>"You are a witty travel guide."</code>) with the dynamic <code>user</code> prompt (<code>f"Suggest one thing to do in {city}."</code>) into a single <code>messages</code> array.</li>
+                        <li><code>client.chat.completions.create()</code> sends the message array and model name (<code>gpt-4o-mini</code>) to OpenAI, where the model conditions its response on both the persona and the city.</li>
+                        <li>The generated text is extracted from <code>response.choices[0].message.content</code> to fulfill the <code>TravelResponse</code> contract (<code>city</code> and <code>suggestion</code>).</li>
+                    </ol>
                 </div>
             </section>
 

@@ -263,94 +263,78 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <p><strong>1. Core 4-Stage Pipeline Architecture (<code>src/python/03_refund_bench.py</code>)</strong></p>
                     <ul>
-                        <li><code>src/python/03_refund_bench.py</code>: Implements the 4-stage multi-agent dispute adjudication pipeline: freezing order &amp; sensor evidence (Stage 1), extracting atomic checkable grievances with co-reference resolution (Stage 2), running a parallel multi-provider voting bench via <code>ThreadPoolExecutor</code> and pricing upheld claims in Python (Stage 3), and enforcing the financial auto-approval cap before drafting the customer message (Stage 4).</li>
-                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads <code>03_refund_bench.py</code> as <code>mod_refund</code>, enforces rate limiting on <code>POST</code> requests, and exposes <code>POST /api/refund-bench</code> via <code>refund_bench_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser frontend where users edit or select a dispute complaint, choose a judge bench layout (<code>bench</code>) and auto-approval cap (<code>cap</code>), post to <code>/api/refund-bench</code>, and inspect the frozen order evidence, extracted grievances, individual judge ballots, vote splits, rupee payouts, and customer response.</li>
+                        <li><code>03_refund_bench.py</code> implements a 4-stage multi-agent dispute adjudication pipeline that separates fact extraction, multi-model judgment, and financial calculation: freezing an immutable order and sensor evidence snapshot (Stage 1), decomposing messy complaint text into atomic checkable grievances with co-reference resolution (Stage 2), running a parallel multi-provider voting bench via <code>ThreadPoolExecutor</code> and pricing claims deterministically in Python (Stage 3), and enforcing an auto-approval cap before drafting the customer response (Stage 4).</li>
                     </ul>
 
-                    <p><strong>2. Multi-Provider Client Factories, Allowlists &amp; Presets in <code>03_refund_bench.py</code></strong></p>
+                    <p><strong>2. Multi-Provider Judges, Bench Layouts &amp; Evidence Snapshot</strong></p>
                     <ul>
-                        <li><code>get_env(name: str, default: str = "") -&gt; str</code>: Reads environment variables with a fallback default, used to configure <code>OPENAI_MODEL</code> (<code>"gpt-4o-mini"</code>), <code>GEMINI_MODEL</code> (<code>"gemini-3.8-flash"</code>), and <code>GROK_MODEL</code> (<code>"openai/gpt-oss-20b"</code>).</li>
-                        <li><code>get_openai_client()</code>, <code>get_gemini_client()</code>, and <code>get_grok_client()</code>: Lazy singleton factories that initialize OpenAI-compatible SDK clients for OpenAI, Google Gemini (<code>generativelanguage.googleapis.com</code>), and Groq/xAI (automatically selecting <code>api.groq.com</code> when the key starts with <code>gsk_</code>), falling back to <code>get_openai_client()</code> if a secondary provider key is absent.</li>
-                        <li><code>AUTO_APPROVE_CAP = 2000.0</code>: Default rupee circuit-breaker threshold above which approved payouts are held for human review.</li>
-                        <li><code>BENCH_CHOICES</code>: Dictionary allowlist mapping bench layout keys to human labels and provider seat arrays:
+                        <li><code>get_openai_client()</code>, <code>get_gemini_client()</code>, and <code>get_grok_client()</code>: Initialize OpenAI-compatible clients for three distinct model families &mdash; <code>OPENAI_MODEL</code> (<code>"gpt-4o-mini"</code>), <code>GEMINI_MODEL</code> (<code>"gemini-3.8-flash"</code>), and <code>GROK_MODEL</code> (<code>"openai/gpt-oss-20b"</code>) &mdash; so the voting bench combines uncorrelated model architectures.</li>
+                        <li><code>AUTO_APPROVE_CAP = 2000.0</code>: Financial circuit-breaker threshold (in INR) above which approved refunds are held for human supervisor review.</li>
+                        <li><code>BENCH_CHOICES</code>: Defines the selectable judge bench configurations:
                             <ul>
                                 <li><code>"single"</code>: 1 seat (<code>["openai"]</code>).</li>
-                                <li><code>"openai3"</code>: 3 seats of the same provider (<code>["openai"] * 3</code>, testing self-consistency).</li>
+                                <li><code>"openai3"</code>: 3 seats of the same model family (<code>["openai"] * 3</code>, testing self-consistency).</li>
                                 <li><code>"mixed3"</code>: 3 cross-provider seats (<code>["openai", "gemini", "grok"]</code>).</li>
                                 <li><code>"mixed5"</code>: 5 cross-provider seats (<code>["openai", "gemini", "grok", "openai", "gemini"]</code>).</li>
                             </ul>
                         </li>
-                        <li><code>DEFAULT_ORDER_EVIDENCE</code> &amp; <code>CANONICAL_COMPLAINT</code>: The frozen Stage 1 database/sensor snapshot for order <code>ord_d7a41c39</code> (4 Hyderabadi Chicken Biryanis at ₹320, 2 Mirchi Ka Salan at ₹80, 1 Raita Container at ₹60, ₹49 delivery fee, 85-minute actual delivery vs. 45-minute SLA, 1.2 kg pickup weight vs. 2.4 kg expected weight, 5-star door rating, and <code>packaging_condition_recorded: None</code>) paired with the canonical multi-issue customer complaint.</li>
+                        <li><code>DEFAULT_ORDER_EVIDENCE</code> &amp; <code>CANONICAL_COMPLAINT</code>: The frozen Stage 1 sensor and database snapshot for order <code>ord_d7a41c39</code> (4 Hyderabadi Chicken Biryanis at ₹320, 2 Mirchi Ka Salan at ₹80, 1 Raita Container at ₹60, ₹49 delivery fee, 85-minute actual duration vs. 45-minute SLA, 1.2 kg pickup weight vs. 2.4 kg expected weight, 5-star door rating at 21:41 IST, and <code>packaging_condition_recorded: None</code>) paired with the canonical multi-issue customer complaint.</li>
                     </ul>
 
-                    <p><strong>3. Pydantic Schemas &amp; Helper Functions in <code>03_refund_bench.py</code></strong></p>
+                    <p><strong>3. Pydantic Schemas &amp; Pipeline Helpers</strong></p>
                     <ul>
-                        <li><code>RefundBenchRequest(BaseModel)</code>, <code>GrievanceRuling(BaseModel)</code>, <code>JudgedGrievance(BaseModel)</code>, and <code>RefundBenchResponse(BaseModel)</code>: Define the structured input/output contracts for requests, individual judge ballots, per-grievance vote tallies + rupee amounts, and the overall settlement payload.</li>
+                        <li><code>RefundBenchRequest(BaseModel)</code>, <code>GrievanceRuling(BaseModel)</code>, <code>JudgedGrievance(BaseModel)</code>, and <code>RefundBenchResponse(BaseModel)</code>: Define the structured schemas for dispute inputs, individual judge ballots (<code>ruling</code>, <code>confidence</code>, <code>evidence_cited</code>, <code>reasoning</code>), per-grievance vote tallies and rupee amounts, and the final settlement output.</li>
                         <li><code>get_bench_judges(bench: str = "mixed3") -&gt; list</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Validates <code>bench</code> against <code>BENCH_CHOICES</code> (falling back to <code>"mixed3"</code>) and maps provider keys to <code>(provider_name, model_name, client_fn)</code> tuples.</li>
-                                <li><strong>Step ②:</strong> Iterates over the selected bench's <code>seats</code> list and returns one descriptor dictionary per seat (<code>id</code>, <code>name</code>, <code>provider</code>, <code>model</code>, <code>client_fn</code>).</li>
+                                <li><strong>Step ①:</strong> Resolves the bench layout key in <code>BENCH_CHOICES</code> and maps provider keys (<code>"openai"</code>, <code>"gemini"</code>, <code>"grok"</code>) to their display names, model identifiers, and client factories.</li>
+                                <li><strong>Step ②:</strong> Builds and returns one judge descriptor dictionary per seat on the selected bench.</li>
                             </ul>
                         </li>
-                        <li><code>extract_json(text: str)</code>: Strips optional <code>```json ... ```</code> markdown fences via regex (<strong>Step ①</strong>) and parses the JSON object or array via <code>json.loads()</code>, scanning from the first <code>[</code> or <code>{</code> character if leading text is present (<strong>Step ②</strong>).</li>
+                        <li><code>extract_json(text: str)</code>: Strips optional <code>```json ... ```</code> markdown fences (<strong>Step ①</strong>) and parses the JSON object or array via <code>json.loads()</code>, scanning from the first <code>[</code> or <code>{</code> character if leading text is present (<strong>Step ②</strong>).</li>
                     </ul>
 
-                    <p><strong>4. The 4-Stage Pipeline Functions in <code>03_refund_bench.py</code></strong></p>
+                    <p><strong>4. The 4 Adjudication Stages in <code>03_refund_bench.py</code></strong></p>
                     <ul>
                         <li><code>stage2_extract_grievances(complaint_text: str, line_items: list) -&gt; list</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Builds the dispute-intake prompt instructing the model to extract atomic, checkable grievances, resolve vague pronouns against <code>line_items</code>, strip emotional language/demands, and classify each claim into <code>LATE_DELIVERY | MISSING_ITEM | WRONG_ITEM | QUALITY | PACKAGING | PARTNER_CONDUCT | BILLING</code>.</li>
+                                <li><strong>Step ①:</strong> Constructs the dispute-intake prompt instructing the model to extract atomic, checkable claims, resolve pronouns and vague references against <code>line_items</code> (e.g., resolving <em>"Two of the four were missing"</em> to 2 of the 4 Hyderabadi Chicken Biryanis), strip emotional language and refund demands, and assign one category from <code>LATE_DELIVERY | MISSING_ITEM | WRONG_ITEM | QUALITY | PACKAGING | PARTNER_CONDUCT | BILLING</code>.</li>
                                 <li><strong>Step ②:</strong> Calls <code>OPENAI_MODEL</code> at <code>temperature=0.2</code> and parses the returned JSON array via <code>extract_json()</code>.</li>
-                                <li><strong>Step ③:</strong> Falls back to the 4 canonical grievances (<code>g1</code>–<code>g4</code>) if the API call or JSON parsing fails.</li>
+                                <li><strong>Step ③:</strong> Falls back to the 4 canonical grievances (<code>g1</code>&ndash;<code>g4</code>) if extraction fails.</li>
                             </ul>
                         </li>
                         <li><code>judge_single_grievance(grievance_text: str, evidence: dict, judge: dict) -&gt; dict</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Builds the constitutional adjudication prompt restricting rulings to <code>UPHELD</code> (supported by evidence), <code>REJECTED</code> (contradicted by evidence), or <code>ESCALATE</code> (evidence is silent, absent, or ambiguous).</li>
-                                <li><strong>Step ②:</strong> Invokes the seat's assigned provider client (<code>judge["client_fn"]()</code>) at <code>temperature=0.7</code>, parses the JSON ballot, normalizes invalid ruling strings to <code>"ESCALATE"</code>, and returns the <code>GrievanceRuling</code> dictionary with <code>is_fallback: False</code>.</li>
-                                <li><strong>Step ③:</strong> If a secondary provider key or endpoint fails, catches the exception and retries the exact same prompt on OpenAI, marking <code>is_fallback: True</code>.</li>
-                                <li><strong>Step ④:</strong> If both primary and fallback calls fail, safely defaults to <code>ruling: "ESCALATE"</code> with <code>confidence: 0.5</code> so no claim is silently dropped or auto-rejected on timeout.</li>
+                                <li><strong>Step ①:</strong> Builds the constitutional adjudication prompt restricting rulings to <code>UPHELD</code> (evidence supports the grievance), <code>REJECTED</code> (evidence contradicts the grievance), or <code>ESCALATE</code> (evidence is silent, absent, or ambiguous &mdash; never guessing when sensors lack a record).</li>
+                                <li><strong>Step ②:</strong> Calls the seat's assigned provider/model at <code>temperature=0.7</code>, parses the JSON ballot, normalizes any invalid ruling string to <code>"ESCALATE"</code>, and returns the <code>GrievanceRuling</code> dict with <code>is_fallback: False</code>.</li>
+                                <li><strong>Step ③:</strong> If a secondary provider fails, retries the exact same prompt on OpenAI with <code>is_fallback: True</code>.</li>
+                                <li><strong>Step ④:</strong> Defaults to <code>ruling: "ESCALATE"</code> (<code>confidence: 0.5</code>) if both calls fail so no claim is silently dropped.</li>
                             </ul>
                         </li>
                         <li><code>stage3_judge_bench(grievances: list, evidence: dict, bench: str = "mixed3") -&gt; list</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Builds the Cartesian product <code>pairs = [(g, judge) for g in grievances for judge in judges]</code> and fans out all <code>judge_single_grievance()</code> calls concurrently across a <code>ThreadPoolExecutor(max_workers=8)</code>.</li>
-                                <li><strong>Step ②:</strong> Slices the returned ballots per grievance, counts votes for <code>UPHELD</code>, <code>REJECTED</code>, and <code>ESCALATE</code>, determines the <code>majority_ruling</code>, and calculates <code>overall_confidence = round(split_ratio * avg_judge_conf, 2)</code>.</li>
-                                <li><strong>Step ③:</strong> Executes deterministic Python pricing based on <code>category</code> and <code>majority_ruling</code> (<code>₹49</code> delivery fee for <code>LATE_DELIVERY</code>, <code>2 * ₹320 = ₹640</code> for <code>MISSING_ITEM</code>, <code>₹60</code> for <code>PACKAGING</code>, and <code>₹0</code> for <code>PARTNER_CONDUCT</code>), assigning the rupee value to <code>refund_amount</code> when <code>UPHELD</code> or <code>held_amount</code> when <code>ESCALATE</code>.</li>
+                                <li><strong>Step ①:</strong> Generates all <code>(grievance, judge)</code> pairs and executes <code>judge_single_grievance()</code> concurrently across a <code>ThreadPoolExecutor(max_workers=8)</code>.</li>
+                                <li><strong>Step ②:</strong> Slices the returned ballots per grievance, counts votes for <code>UPHELD</code>, <code>REJECTED</code>, and <code>ESCALATE</code>, identifies the <code>majority_ruling</code>, and computes <code>overall_confidence = round(split_ratio * avg_judge_conf, 2)</code>.</li>
+                                <li><strong>Step ③:</strong> Computes deterministic rupee amounts in Python from the order evidence based on <code>category</code> and <code>majority_ruling</code> (<code>₹49</code> delivery fee for <code>LATE_DELIVERY</code>, <code>2 * ₹320 = ₹640</code> for <code>MISSING_ITEM</code>, <code>₹60</code> for <code>PACKAGING</code>, and <code>₹0</code> for <code>PARTNER_CONDUCT</code>), assigning the value to <code>refund_amount</code> when <code>UPHELD</code> or <code>held_amount</code> when <code>ESCALATE</code>.</li>
                             </ul>
                         </li>
                         <li><code>stage4_settle(complaint_text: str, judged_grievances: list, evidence: dict, cap: float = AUTO_APPROVE_CAP) -&gt; dict</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Sums <code>total_approved</code> and <code>total_held</code> across all grievances and enforces the auto-approval cap: if <code>total_approved &gt; cap</code>, sets <code>escalated_to_human = True</code>, shifts <code>total_approved</code> into <code>total_held</code>, and zeroes out <code>total_approved</code>.</li>
-                                <li><strong>Step ②:</strong> Prompts <code>OPENAI_MODEL</code> at <code>temperature=0.2</code> to write a 3–4 sentence customer support message stating the exact pre-computed <code>₹{total_approved:.0f}</code> payout and any held review amount without re-adjudicating rulings or lecturing the customer.</li>
-                                <li><strong>Step ③:</strong> Returns the final settlement dictionary containing totals, cap status, <code>customer_message</code>, and <code>grievances</code>.</li>
+                                <li><strong>Step ①:</strong> Sums <code>total_approved</code> and <code>total_held</code> across all judged grievances and enforces the auto-approval cap: if <code>total_approved &gt; cap</code>, sets <code>escalated_to_human = True</code>, moves <code>total_approved</code> into <code>total_held</code>, and sets <code>total_approved = 0.0</code>.</li>
+                                <li><strong>Step ②:</strong> Prompts <code>OPENAI_MODEL</code> at <code>temperature=0.2</code> to draft a courteous 3&ndash;4 sentence customer message stating the exact pre-computed <code>₹{total_approved:.0f}</code> refund and any held review amount without re-adjudicating rulings or lecturing the customer.</li>
+                                <li><strong>Step ③:</strong> Returns the complete settlement dictionary.</li>
                             </ul>
                         </li>
-                        <li><code>adjudicate_dispute()</code> (aliased as <code>run_refund_bench</code>): Orchestrates Stage 1 (<strong>Step ①</strong>), Stage 2 (<strong>Step ②</strong>), Stage 3 (<strong>Step ③</strong>), and Stage 4 (<strong>Step ④</strong>), attaching <code>bench_label</code> and <code>order_evidence</code> to the returned response.</li>
+                        <li><code>adjudicate_dispute()</code> (aliased as <code>run_refund_bench</code>): Orchestrates Stage 1 (<strong>Step ①</strong>), Stage 2 (<strong>Step ②</strong>), Stage 3 (<strong>Step ③</strong>), and Stage 4 (<strong>Step ④</strong>) end-to-end.</li>
                     </ul>
 
-                    <p><strong>5. Flask Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><code>refund_bench_route()</code> (<code>POST /api/refund-bench</code>):
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses <code>complaint_text</code>, <code>bench</code> (defaulting to <code>"mixed3"</code> or validating against <code>BENCH_CHOICES</code> via allowlist helpers such as <code>read_choice</code> / <code>invalid_choice</code>), and <code>cap</code> (default <code>2000.0</code>) from the JSON request body, returning HTTP <code>400</code> if <code>complaint_text</code> is empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>mod_refund.run_refund_bench(complaint_text, bench, cap)</code>, formats <code>res["result"]</code> with the approved and held rupee totals, and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>6. End-to-End Data Flow Walkthrough</strong></p>
+                    <p><strong>5. End-to-End AI Pipeline Flow</strong></p>
                     <ol>
-                        <li>The user enters a food delivery complaint, selects a judge bench layout (e.g., <code>mixed3</code>) and auto-approval cap in <code>src/index.html</code>, and clicks <strong>Run Refund Bench</strong>, causing <code>src/js/main.js</code> to send <code>POST /api/refund-bench</code> with <code>{ complaint_text, bench, cap }</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> middleware verifies the client's rate limit and forwards the request to <code>refund_bench_route()</code> in <code>app.py</code>.</li>
-                        <li><code>refund_bench_route()</code> validates the request and calls <code>run_refund_bench(complaint_text, bench, cap)</code> in <code>03_refund_bench.py</code>.</li>
-                        <li><strong>Stage 1 &amp; Stage 2:</strong> <code>adjudicate_dispute()</code> freezes <code>DEFAULT_ORDER_EVIDENCE</code> and calls <code>stage2_extract_grievances()</code>, which resolves pronouns against the order's line items and decomposes the complaint into atomic JSON grievances.</li>
-                        <li><strong>Stage 3 (Parallel Multi-Judge Bench):</strong> <code>stage3_judge_bench()</code> pairs every extracted grievance with every judge seat on the chosen bench (OpenAI, Gemini, Groq) and executes all judge calls in parallel using <code>ThreadPoolExecutor(max_workers=8)</code>.</li>
-                        <li>Each judge compares one grievance against the frozen sensor evidence and votes <code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code>; Python tallies the majority vote and computes exact rupee amounts from catalog prices.</li>
-                        <li><strong>Stage 4 (Settlement &amp; Cap Guardrail):</strong> <code>stage4_settle()</code> sums the approved and held amounts, shifts the payout to human review if <code>total_approved &gt; cap</code>, generates the customer support reply, and returns the complete JSON settlement to the browser UI.</li>
+                        <li><strong>Stage 1 (Freeze Evidence):</strong> <code>adjudicate_dispute()</code> locks the immutable order and sensor snapshot (<code>DEFAULT_ORDER_EVIDENCE</code>) and normalizes the raw customer complaint.</li>
+                        <li><strong>Stage 2 (Extract Atomic Grievances):</strong> <code>stage2_extract_grievances()</code> resolves pronouns against the order's line items, strips emotional language and refund demands, and emits structured JSON claims.</li>
+                        <li><strong>Stage 3 (Parallel Multi-Judge Bench &amp; Code Pricing):</strong> <code>stage3_judge_bench()</code> fans out every <code>(grievance, judge)</code> pair in parallel via <code>ThreadPoolExecutor</code>; each judge rules <code>UPHELD</code>, <code>REJECTED</code>, or <code>ESCALATE</code> strictly from the evidence snapshot, and Python tallies the majority vote and computes exact rupee payouts from catalog prices.</li>
+                        <li><strong>Stage 4 (Circuit-Breaker Cap &amp; Customer Synthesis):</strong> <code>stage4_settle()</code> checks <code>total_approved</code> against the auto-approval cap, shifts excess payouts to human review, and prompts the writer LLM to draft the final customer support message grounded in the pre-calculated totals.</li>
                     </ol>
                 </div>
             </section>

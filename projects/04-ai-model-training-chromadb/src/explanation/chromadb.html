@@ -239,42 +239,37 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is built across two backend Python files in <code>src/python/</code>, a corpus directory of study notes (<code>docs/</code>), and an optional external ChromaDB Docker container to demonstrate production-style RAG with persistent vector storage and source citations.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/02_chromadb.py</code> implements a Retrieval-Augmented Generation (RAG) workflow (ScalerGPT) over markdown and text study notes stored in <code>docs/</code>, indexing paragraph chunks into a ChromaDB collection with OpenAI embeddings and generating grounded answers with source metadata.</p>
+                    <p><strong>1. Core AI Concepts in Vector Database RAG</strong></p>
                     <ul>
-                        <li><strong><code>src/python/02_chromadb.py</code></strong>: Connects to the ChromaDB server (or falls back to an in-process <code>EphemeralClient</code>), lazily ingests all <code>.txt</code> and <code>.md</code> files from <code>docs/</code> using OpenAI&apos;s <code>text-embedding-3-small</code> embedding function, retrieves the top-3 matching notes for a user question, and generates a cited answer with <code>gpt-4o-mini</code>.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask server and <code>/api</code> Blueprint that checks <code>OPENAI_API_KEY</code>, validates the question, and routes <code>POST /api/chromadb</code> to <code>02_chromadb.py</code>.</li>
+                        <li><strong>Collection-Bound Embedding Function:</strong> Attaching <code>OpenAIEmbeddingFunction(model_name="text-embedding-3-small")</code> directly to the Chroma collection ensures that both document ingestion (<code>collection.upsert()</code>) and query-time lookup (<code>collection.query()</code>) automatically embed text into the exact same vector space.</li>
+                        <li><strong>Chunking with Source Metadata:</strong> Splitting study notes on paragraph breaks (<code>"\n\n"</code>) and tagging each chunk with <code>{"source": path.name}</code> and a composite ID (<code>f"{path.name}::{i}"</code>) preserves document provenance alongside every stored vector.</li>
+                        <li><strong>Client-Server &amp; Ephemeral Chroma Modes:</strong> ChromaDB supports connecting to a standalone vector database server via <code>chromadb.HttpClient</code> when <code>CHROMA_HOST</code> is configured, or running an in-memory <code>chromadb.EphemeralClient</code> using the identical collection API.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/02_chromadb.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/02_chromadb.py</code></strong></p>
                     <ul>
-                        <li><strong><code>DOCS_DIR</code> &amp; <code>_chroma_client</code></strong>: <code>DOCS_DIR</code> locates the project&apos;s <code>docs/</code> folder containing study notes; <code>_chroma_client</code> caches the active Chroma client across requests.</li>
-                        <li><strong><code>ChromaDbRequest</code>, <code>ChromaDbSource</code>, &amp; <code>ChromaDbResponse</code></strong>: Pydantic models defining the input question and output payload (<code>answer</code>, list of <code>ChromaDbSource(id, preview)</code> objects, and <code>backend</code> mode string).</li>
-                        <li><strong><code>_get_collection()</code></strong>:
+                        <li><strong><code>DOCS_DIR</code> &amp; <code>_chroma_client</code>:</strong> Point to the <code>docs/</code> directory of study notes and cache the active ChromaDB client instance.</li>
+                        <li><strong><code>ChromaDbRequest</code>, <code>ChromaDbSource</code>, &amp; <code>ChromaDbResponse</code>:</strong> Pydantic schemas defining the user's <code>question</code>, each retrieved source chunk (<code>source: str</code>, <code>content: str</code>), and the complete response (<code>question: str</code>, <code>answer: str</code>, <code>docs_indexed: int</code>, and <code>sources: list[ChromaDbSource]</code>).</li>
+                        <li><strong><code>_get_collection()</code>:</strong>
                             <ul>
-                                <li><strong>Step ① — Connect to ChromaDB</strong>: If <code>CHROMA_HOST</code> is set (e.g., in <code>docker-compose.yml</code>), connects to the remote container via <code>chromadb.HttpClient(host, port)</code> and verifies liveness with <code>heartbeat()</code>; if unreachable or unset, seamlessly falls back to <code>chromadb.EphemeralClient()</code>.</li>
-                                <li><strong>Step ② — Bind OpenAI Embedding Function</strong>: Attaches <code>OpenAIEmbeddingFunction(model_name="text-embedding-3-small")</code> to the <code>study_notes</code> collection via <code>get_or_create_collection()</code>.</li>
-                                <li><strong>Step ③ — Lazy Document Ingestion</strong>: Checks <code>collection.count() == 0</code>; on the first call, reads every <code>.txt</code> and <code>.md</code> file in <code>DOCS_DIR</code> and calls <code>collection.upsert(documents=docs, ids=ids)</code> so Chroma embeds and indexes them once.</li>
+                                <li><strong>Step ① — Initialize ChromaDB client:</strong> Connects via <code>chromadb.HttpClient(host=chroma_host, port=chroma_port)</code> when <code>CHROMA_HOST</code> is set, or initializes <code>chromadb.EphemeralClient()</code> otherwise.</li>
+                                <li><strong>Step ② — Bind OpenAI embedding function:</strong> Configures <code>embedding_functions.OpenAIEmbeddingFunction(api_key=api_key, model_name="text-embedding-3-small")</code> and calls <code>_chroma_client.get_or_create_collection(name="notes", embedding_function=openai_ef)</code>.</li>
+                                <li><strong>Step ③ — Ingest markdown/text notes on first query:</strong> When <code>collection.count() == 0</code>, reads all <code>*.txt</code> and <code>*.md</code> files in <code>DOCS_DIR</code>, splits each file on <code>"\n\n"</code> into paragraph chunks longer than 40 characters, and calls <code>collection.upsert(ids=ids, documents=documents, metadatas=metadatas)</code>.</li>
                             </ul>
                         </li>
-                        <li><strong><code>ask_chromadb_notes(question: str) -&gt; ChromaDbResponse</code></strong>:
+                        <li><strong><code>ask_chromadb_notes(question: str) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><strong>Step ④ — Retrieve top-3 relevant notes</strong>: Calls <code>collection.query(query_texts=[question], n_results=3)</code> to embed the question and fetch the 3 closest documents and their filenames (<code>ids</code>).</li>
-                                <li><strong>Step ⑤ — Augment the prompt</strong>: Formats the retrieved documents with <code>[Source: &lt;filename&gt;]</code> headers into a single context block.</li>
-                                <li><strong>Step ⑥ — Generate grounded answer</strong>: Calls <code>OpenAI().chat.completions.create(model="gpt-4o-mini", temperature=0.2, ...)</code> with the <code>ScalerGPT</code> system prompt instructing the model to answer using only the context and cite source filenames.</li>
+                                <li><strong>Step ④ — RETRIEVE:</strong> Calls <code>collection.query(query_texts=[question], n_results=3)</code> to fetch the top-3 semantically matching chunks (<code>retrieved_docs</code>) and their metadata dicts (<code>retrieved_metas</code>), joining the chunks with <code>"\n\n---\n\n"</code> into <code>context</code>.</li>
+                                <li><strong>Step ⑤ — AUGMENT:</strong> Builds the <code>ScalerGPT</code> system prompt instructing the model to answer using <em>only</em> the retrieved <code>CONTEXT</code> and to say it doesn't know if the answer is absent.</li>
+                                <li><strong>Step ⑥ — GENERATE:</strong> Calls <code>llm.chat.completions.create(model=model, messages=[...])</code> with <code>gpt-4o-mini</code> and pairs the grounded answer with the total indexed chunk count (<code>collection.count()</code>) and structured <code>sources</code> list.</li>
                             </ul>
                         </li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>chromadb_service()</code> (<code>POST /api/chromadb</code>)</strong>: Verifies <code>OPENAI_API_KEY</code> via <code>require_openai_key()</code>, extracts <code>question</code> via <code>read_json_field()</code>, calls <code>mod.ask_chromadb_notes(question)</code>, and returns <code>result.model_dump()</code> as JSON.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End ChromaDB RAG Flow</strong></p>
                     <ol>
-                        <li>The user types a study question in the browser UI and clicks Ask, triggering <code>POST /api/chromadb</code>.</li>
-                        <li><code>chromadb_service()</code> in <code>app.py</code> validates the request and invokes <code>ask_chromadb_notes(question)</code> in <code>02_chromadb.py</code>.</li>
-                        <li><code>_get_collection()</code> connects to the ChromaDB service (or in-memory fallback) and ensures the <code>study_notes</code> collection is populated with embeddings from <code>docs/*.txt</code> and <code>docs/*.md</code>.</li>
-                        <li><code>collection.query()</code> embeds the user&apos;s question with <code>text-embedding-3-small</code> and returns the top-3 matching study notes and their document IDs.</li>
-                        <li><code>ask_chromadb_notes()</code> injects those notes into the <code>ScalerGPT</code> prompt, calls <code>gpt-4o-mini</code>, and returns the cited answer, source previews, and active backend label to the browser.</li>
+                        <li><code>ask_chromadb_notes(question)</code> obtains the <code>"notes"</code> collection from <code>_get_collection()</code>, which lazily chunks, embeds, and upserts all <code>.md</code> and <code>.txt</code> files from <code>docs/</code> if the collection is empty.</li>
+                        <li><code>collection.query()</code> embeds <code>question</code> with <code>text-embedding-3-small</code> and returns the top-3 closest note chunks along with their <code>{"source": filename}</code> metadata.</li>
+                        <li>The retrieved chunks are injected into the <code>ScalerGPT</code> system prompt and sent to OpenAI Chat Completions, returning the grounded answer and source attributions.</li>
                     </ol>
                 </div>
             </section>

@@ -234,48 +234,27 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI &amp; Prebuilt <code>use_aws</code> Components in <code>09_use_aws.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/09_use_aws.py</code> &mdash; Defines the <strong>Natural Language AWS Agent</strong> service: imports the prebuilt <code>use_aws</code> meta-tool from <code>strands_tools</code>, configures the Strands <code>Agent</code> with a cloud-management system prompt, runs plain-English AWS queries against real AWS APIs via <code>boto3</code>, and records every executed AWS operation.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>09_use_aws.py</code> dynamically as <code>s_aws</code>, enforces rate limiting on POST requests, and exposes <code>POST /api/use-aws</code> via <code>use_aws_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>☁️ AWS Cloud Assistant</strong> card, sends the user's plain-English AWS prompt to <code>POST /api/use-aws</code> with <code>{ prompt }</code>, and displays both the summarized cloud resource report and <code>operations_executed</code>.</li>
-                    </ul>
-
-                    <p><strong>2. Pydantic Schemas, Prebuilt <code>use_aws</code> Tool &amp; Agent Setup in <code>09_use_aws.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_DEFAULT_REGION</code>) and Bedrock model configuration from <code>.env</code>.</li>
-                        <li><strong><code>UseAwsRequest(BaseModel)</code> &amp; <code>UseAwsResponse(BaseModel)</code>:</strong> Specify the input payload (<code>prompt: str</code> defaulting to <code>"List all S3 buckets in my account"</code>) and output payload (<code>prompt</code>, <code>response</code>, and <code>operations_executed: list[str]</code>).</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
-                        <li><strong>Prebuilt Meta-Tool (<code>from strands_tools import use_aws</code>):</strong> Exposes the entire AWS SDK for Python (<code>boto3</code>) through a single structured tool schema accepting <code>service_name</code> (e.g., <code>"s3"</code>, <code>"sts"</code>, <code>"dynamodb"</code>), <code>operation_name</code> (e.g., <code>"list_buckets"</code>, <code>"get_caller_identity"</code>), <code>parameters</code> (dict), <code>region</code> (str), and <code>label</code> (str).</li>
-                        <li><strong>Service Entry Point &mdash; <code>run_use_aws_agent(prompt: str) -&gt; dict</code>:</strong>
+                        <li><strong>Pydantic Contracts (<code>UseAwsRequest</code> &amp; <code>UseAwsResponse</code>):</strong> Specify the input payload (<code>prompt: str</code> defaulting to <code>"List all S3 buckets in my account"</code>) and output payload (<code>prompt: str</code>, <code>response: str</code>, and <code>operations_executed: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Prebuilt Meta-Tool (<code>from strands_tools import use_aws</code>):</strong> Exposes the AWS SDK for Python (<code>boto3</code>) through a single structured tool schema accepting <code>service_name</code> (e.g., <code>"s3"</code>, <code>"sts"</code>, <code>"dynamodb"</code>), <code>operation_name</code> (e.g., <code>"list_buckets"</code>, <code>"get_caller_identity"</code>), <code>parameters</code> (dict), <code>region</code> (str), and <code>label</code> (str).</li>
+                        <li><strong><code>run_use_aws_agent(prompt: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ③:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[use_aws], system_prompt="You are an AWS assistant that helps manage cloud resources.")</code>.</li>
-                                <li><strong>Step ④:</strong> Calls <code>response = agent(prompt)</code>, where Bedrock maps the user's English request to the exact <code>boto3</code> service and snake_case operation name, invokes <code>use_aws</code>, and summarizes the returned AWS JSON.</li>
+                                <li><strong>Step ④:</strong> Calls <code>response = agent(prompt)</code>, where Bedrock maps the user's English request to the exact <code>boto3</code> service and snake_case operation name, invokes <code>use_aws</code>, and summarizes the returned AWS API response.</li>
                                 <li><strong>Step ⑤:</strong> Extracts all <code>"toolUse"</code> blocks from <code>agent.messages</code> into <code>operations_executed</code> and returns <code>{"prompt": prompt, "response": str(response), "operations_executed": tool_calls}</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>use_aws_route()</code> (<code>POST /api/use-aws</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses <code>prompt</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>s_aws.run_use_aws_agent(prompt)</code>, copies <code>res["response"]</code> to <code>res["result"]</code>, and returns the JSON payload (or HTTP <code>500</code> on error).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>☁️ AWS Cloud Assistant</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/use-aws</code> with <code>{"prompt": "List all S3 buckets in my account"}</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> middleware verifies the client is within the 30-requests/hour limit and dispatches the request to <code>use_aws_route()</code>.</li>
-                        <li><code>use_aws_route()</code> validates <code>prompt</code> and calls <code>s_aws.run_use_aws_agent(prompt)</code> in <code>09_use_aws.py</code>.</li>
-                        <li><code>run_use_aws_agent()</code> initializes a Strands <code>Agent</code> with <code>BedrockModel(model_id=model_id)</code> and <code>tools=[use_aws]</code>.</li>
-                        <li>Calling <code>agent(prompt)</code> sends the prompt and the <code>use_aws</code> tool specification to Amazon Bedrock via the Converse API.</li>
-                        <li>Bedrock translates <em>"List all S3 buckets in my account"</em> into a <code>toolUse</code> block calling <code>use_aws(service_name="s3", operation_name="list_buckets", parameters={}, region="us-east-1", label="List all S3 buckets")</code>.</li>
-                        <li>Inside <code>use_aws</code>, the tool verifies that <code>list_buckets</code> is a non-mutating read operation, creates a <code>boto3.client("s3")</code> using the server's IAM credentials, executes <code>client.list_buckets()</code> against AWS, and returns the bucket list in a <code>toolResult</code> block.</li>
-                        <li>Bedrock formats the bucket names and creation dates into a clean answer, <code>run_use_aws_agent()</code> collects <code>operations_executed</code> from <code>agent.messages</code>, and <code>app.py</code> returns the JSON response to the browser.</li>
+                        <li><code>run_use_aws_agent(prompt)</code> initializes a Strands <code>Agent</code> with <code>BedrockModel(model_id=model_id)</code>, <code>tools=[use_aws]</code>, and <code>system_prompt="You are an AWS assistant that helps manage cloud resources."</code>.</li>
+                        <li>Calling <code>agent(prompt)</code> (e.g., for <code>"List all S3 buckets in my account"</code>) sends the prompt and the <code>use_aws</code> tool specification to Amazon Bedrock via the Converse API.</li>
+                        <li>Bedrock translates the natural-language request into a <code>toolUse</code> block calling <code>use_aws(service_name="s3", operation_name="list_buckets", parameters={}, region="us-east-1", label="List all S3 buckets")</code>.</li>
+                        <li>Inside <code>use_aws</code>, the tool verifies that <code>list_buckets</code> is a non-mutating read operation, creates a <code>boto3.client("s3")</code>, executes <code>client.list_buckets()</code> against AWS, and returns the bucket list in a <code>toolResult</code> block.</li>
+                        <li>Bedrock formats the bucket names and creation dates into a clean answer, and Step ⑤ collects <code>operations_executed</code> from <code>agent.messages</code> and returns <code>{"prompt": prompt, "response": str(response), "operations_executed": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

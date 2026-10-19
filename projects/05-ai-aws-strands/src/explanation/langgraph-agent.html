@@ -232,48 +232,28 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <p><strong>1. Core AI Components in <code>02_hello_world_langgraph.py</code></strong></p>
                     <ul>
-                        <li><strong><code>src/python/02_hello_world_langgraph.py</code>:</strong> Implements a tool-calling ReAct agent using <strong>LangChain</strong> and <strong>LangGraph</strong> backed by Amazon Bedrock's Converse API. It defines the <code>@tool greet(name)</code> function, constructs the state graph via <code>create_react_agent()</code>, and exposes <code>run_langgraph_agent(prompt)</code>.</li>
-                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically imports <code>02_hello_world_langgraph.py</code> as <code>s_langgraph</code> at startup and exposes the <code>POST /api/langgraph-agent</code> endpoint via <code>langgraph_route()</code>.</li>
-                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's prompt (e.g., <code>"Please greet Alice and Bob."</code>) to <code>POST /api/langgraph-agent</code> and renders both the assistant's final answer and the list of observed tool messages.</li>
-                    </ul>
-
-                    <p><strong>2. Classes, Tools, Graph Setup, and Functions in <code>02_hello_world_langgraph.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and region settings from <code>.env</code> so LangChain's Bedrock provider can authenticate via <code>boto3</code>.</li>
-                        <li><strong><code>LangGraphAgentRequest(BaseModel)</code> &amp; <code>LangGraphAgentResponse(BaseModel)</code>:</strong> Pydantic models documenting the input payload (<code>prompt: str = "Please greet Alice and Bob."</code>) and the output payload (<code>prompt: str</code>, <code>response: str</code>, and <code>tool_calls: list[str]</code>).</li>
-                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
-                        <li><strong><code>@tool def greet(name: str) -&gt; str</code>:</strong> Decorated with LangChain's <code>@tool</code> decorator (<code>from langchain.tools import tool</code>). Accepts a person's <code>name: str</code> and returns <code>f"Hello, {name}! Welcome to the world of AI agents."</code>. Its docstring (<code>"Greet someone by name."</code>) and type annotation form the tool schema sent to Bedrock.</li>
-                        <li><strong>Step <code>③</code> Chat Model Initialization (<code>llm = init_chat_model(model_id, model_provider="bedrock_converse")</code>):</strong> Instantiates a LangChain chat model using the unified <code>bedrock_converse</code> provider, which translates LangChain messages and tool definitions into Amazon Bedrock Converse API calls.</li>
-                        <li><strong>Step <code>④</code> ReAct Graph Compilation (<code>agent = create_react_agent(model=llm, tools=[greet])</code>):</strong> Uses LangGraph's prebuilt factory to compile a cyclic state graph with an LLM reasoning node and a tool execution node. Unlike Strands' stateful <code>Agent</code>, a compiled LangGraph graph is stateless across invocations unless a checkpointer is attached, so each <code>agent.invoke(...)</code> call starts with a fresh message list.</li>
-                        <li><strong><code>run_langgraph_agent(prompt: str) -&gt; dict</code>:</strong> Executes the compiled graph and formats the result:
+                        <li><strong>Pydantic Contracts (<code>LangGraphAgentRequest</code> &amp; <code>LangGraphAgentResponse</code>):</strong> Document the input payload (<code>prompt: str = "Please greet Alice and Bob."</code>) and output payload (<code>prompt: str</code>, <code>response: str</code>, and <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves the target Bedrock model ID (defaulting to <code>"amazon.nova-lite-v1:0"</code>).</li>
+                        <li><strong><code>@tool def greet(name: str) -&gt; str</code>:</strong> Decorated with LangChain's <code>@tool</code> decorator (<code>from langchain.tools import tool</code>). Accepts a person's <code>name: str</code> and returns <code>f"Hello, {name}! Welcome to the world of AI agents."</code>. Its docstring (<code>"Greet someone by name."</code>) and type annotation define the JSON Schema tool specification sent to Bedrock.</li>
+                        <li><strong>Step <code>③</code> Chat Model Initialization (<code>llm = init_chat_model(model_id, model_provider="bedrock_converse")</code>):</strong> Instantiates a LangChain chat model using the unified <code>bedrock_converse</code> provider, which translates LangChain messages and tool schemas into Amazon Bedrock Converse API requests.</li>
+                        <li><strong>Step <code>④</code> ReAct Graph Compilation (<code>agent = create_react_agent(model=llm, tools=[greet])</code>):</strong> Uses LangGraph's prebuilt factory to compile a cyclic ReAct state graph consisting of an LLM reasoning node and a tool execution node. Unlike Strands' stateful <code>Agent</code> instance, a compiled LangGraph graph is stateless across invocations unless a checkpointer is attached, so each <code>agent.invoke(...)</code> call starts with a fresh message list.</li>
+                        <li><strong><code>run_langgraph_agent(prompt: str) -&gt; dict</code>:</strong> Executes the compiled ReAct graph and extracts the tool observations:
                             <ul>
-                                <li><strong>Step <code>⑤</code> (<code>response = agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code>):</strong> Seeds the graph state with the user message and runs the Reason &rarr; Act &rarr; Observe cycle until the model emits a final response with no further tool calls. Extracts the full message history via <code>messages = response["messages"]</code>.</li>
-                                <li><strong>Step <code>⑥</code> (<code>tool_calls = [f"{m.name} -&gt; {m.content}" for m in messages if m.type == "tool"]</code>):</strong> Filters the conversation history for <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to capture each tool execution and its returned greeting string, and returns <code>{"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}</code>.</li>
+                                <li><strong>Step <code>⑤</code> (<code>response = agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code>):</strong> Seeds the graph state with the user message and runs the Reason &rarr; Act &rarr; Observe loop until the model emits a final response with no further tool calls. Extracts the full conversation history via <code>messages = response["messages"]</code>.</li>
+                                <li><strong>Step <code>⑥</code> (<code>tool_calls = [f"{m.name} -&gt; {m.content}" for m in messages if m.type == "tool"]</code>):</strong> Filters the message history for <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to capture each tool execution and its returned greeting string, returning <code>{"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>langgraph_route()</code> (<code>POST /api/langgraph-agent</code>):</strong>
-                            <ul>
-                                <li><strong>Step <code>①</code>:</strong> Parses the request JSON, extracts and strips <code>prompt</code> (or <code>message</code>), and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step <code>②</code>:</strong> Invokes <code>s_langgraph.run_langgraph_agent(prompt)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload (including <code>tool_calls</code>) to the client.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The browser sends <code>POST /api/langgraph-agent</code> with <code>{ "prompt": "Please greet Alice and Bob." }</code>.</li>
-                        <li><code>langgraph_route()</code> in <code>app.py</code> validates the prompt and calls <code>s_langgraph.run_langgraph_agent(prompt)</code>.</li>
-                        <li><code>run_langgraph_agent()</code> calls <code>agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code> on the compiled LangGraph ReAct graph.</li>
+                        <li><code>run_langgraph_agent(prompt)</code> invokes <code>agent.invoke({"messages": [{"role": "user", "content": prompt}]})</code> on the compiled LangGraph ReAct graph (e.g., for <code>"Please greet Alice and Bob."</code>).</li>
                         <li>On Turn 1, the LangGraph agent node calls Amazon Bedrock via <code>bedrock_converse</code>. Nova Lite inspects the <code>greet</code> tool schema and emits tool calls for <code>greet(name="Alice")</code> and <code>greet(name="Bob")</code>.</li>
-                        <li>LangGraph's tool node executes <code>greet("Alice")</code> and <code>greet("Bob")</code>, appends two <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to <code>state["messages"]</code>, and routes back to the agent node.</li>
-                        <li>On Turn 2, Bedrock reads the tool outputs and produces the final assistant message (<code>messages[-1].text</code>).</li>
-                        <li><code>run_langgraph_agent()</code> collects the <code>tool</code> messages into <code>tool_calls</code> and returns the dictionary to <code>app.py</code>, which sends the JSON response back to the browser.</li>
+                        <li>LangGraph's tool node executes <code>greet("Alice")</code> and <code>greet("Bob")</code>, appends two <code>ToolMessage</code> objects (<code>m.type == "tool"</code>) to <code>state["messages"]</code>, and routes control back to the agent node.</li>
+                        <li>On Turn 2, Bedrock reads the tool outputs and produces the final assistant reply (<code>messages[-1].text</code>).</li>
+                        <li>Step <code>⑥</code> collects the <code>tool</code> observations into <code>tool_calls</code> and returns <code>{"prompt": prompt, "response": messages[-1].text, "tool_calls": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

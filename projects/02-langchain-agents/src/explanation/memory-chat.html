@@ -249,42 +249,37 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is built across two backend Python files in <code>src/python/</code> that work with the frontend browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to run a multi-turn conversational chatbot that remembers context across turns within a session.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><strong>Core AI Module (<code>src/python/02_langchain_memory_chat.py</code>)</strong></p>
+                    <p><code>src/python/02_langchain_memory_chat.py</code> implements multi-turn conversational memory over a stateless LLM using LangChain's <code>ChatPromptTemplate</code> and <code>MessagesPlaceholder</code>. On every turn, prior messages are spliced between the fixed system persona and the new human question, and the latest exchange is appended to the history list for subsequent turns.</p>
+
+                    <p><strong>Schemas, Prompt Chain, and Memory Function</strong></p>
                     <ul>
-                        <li><strong><code>src/python/02_langchain_memory_chat.py</code></strong>: The feature module that manages per-session conversation history in memory, constructs a prompt template containing a history placeholder, wraps the LangChain LCEL chain with <code>RunnableWithMessageHistory</code>, and exposes <code>chat_with_memory()</code> and <code>clear_session()</code>.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask web server and API Blueprint (<code>/api</code>) that validates incoming requests, dynamically imports numbered feature scripts via <code>load_module()</code>, and routes <code>POST /api/chat</code> to <code>02_langchain_memory_chat.py</code>.</li>
-                    </ul>
-                    <p><strong>2. Key entities in <code>src/python/02_langchain_memory_chat.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>ChatRequest(BaseModel)</code> &amp; <code>ChatResponse(BaseModel)</code></strong>: Pydantic data contracts documenting the expected input (<code>session_id</code>, <code>message</code>, and optional <code>reset_session</code> boolean) and output (<code>reply</code>, <code>session_id</code>, and <code>turn_count</code>).</li>
-                        <li><strong><code>_store: dict[str, InMemoryChatMessageHistory]</code> (Step ①)</strong>: A module-level Python dictionary mapping each string <code>session_id</code> to its own <code>InMemoryChatMessageHistory</code> object so different browser tabs or users do not share conversation state.</li>
-                        <li><strong><code>get_session_history(session_id: str) -&gt; InMemoryChatMessageHistory</code></strong>: The factory lookup function passed to <code>RunnableWithMessageHistory</code>. If <code>session_id</code> is not yet in <code>_store</code>, it creates and stores a fresh <code>InMemoryChatMessageHistory()</code> instance before returning it.</li>
-                        <li><strong><code>clear_session(session_id: str) -&gt; None</code></strong>: Removes <code>session_id</code> from <code>_store</code> using <code>_store.pop(session_id, None)</code>, resetting that user&apos;s conversation memory to a blank slate.</li>
-                        <li><strong><code>prompt</code>, <code>model</code>, and <code>chain</code> (Step ②)</strong>:
-                            <ul>
-                                <li><code>prompt = ChatPromptTemplate.from_messages([...])</code> defines three slots: a <code>system</code> persona instruction, <code>MessagesPlaceholder(variable_name="history")</code> where prior human/AI messages are spliced in, and the latest <code>("human", "{input}")</code> message.</li>
-                                <li><code>model = ChatOpenAI(model="gpt-4o-mini", temperature=0.6)</code> initializes the OpenAI chat model.</li>
-                                <li><code>chain = prompt | model | StrOutputParser()</code> pipes the formatted messages into the model and unwraps the reply into a plain Python string.</li>
-                            </ul>
+                        <li><strong><code>class ChatMessage(BaseModel)</code>:</strong> Represents a single turn in the conversation transcript with <code>role: str</code> (<code>"user"</code> or <code>"assistant"</code>) and <code>content: str</code>.</li>
+                        <li><strong><code>class MemoryChatRequest(BaseModel)</code> &amp; <code>class MemoryChatResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input payload (<code>message: str = "My favorite color is navy blue."</code> and <code>history: list[ChatMessage] = []</code>) and output payload (<code>message: str</code>, <code>response: str</code>, and updated <code>history: list[ChatMessage]</code>).</li>
+                        <li><strong>Chain Setup and <code>chat_with_memory(question: str, history: list[ChatMessage]) -&gt; tuple[str, list[ChatMessage]]</code>:</strong>
+                            <ol>
+                                <li><strong>Step ① — Initialize the <code>ChatOpenAI</code> Client:</strong> Configures <code>model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), api_key=os.getenv("OPENAI_API_KEY") or "missing-key", base_url=os.getenv("OPENAI_BASE_URL") or None, timeout=15.0)</code>.</li>
+                                <li><strong>Step ② — Build the Multi-Turn Prompt Template:</strong> Uses <code>ChatPromptTemplate.from_messages([...])</code> to combine three ordered sections:
+                                    <ul>
+                                        <li><code>("system", "You are a friendly assistant. Use the conversation history to stay consistent.")</code></li>
+                                        <li><code>MessagesPlaceholder("history")</code> &mdash; a dynamic slot that expands a list of past <code>(role, content)</code> tuples into chronological chat messages.</li>
+                                        <li><code>("human", "{question}")</code> &mdash; the current user question at the tail of the prompt.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step ③ — Assemble the LCEL Pipeline:</strong> Connects <code>chain = prompt | model</code> using the LCEL pipe operator.</li>
+                                <li><strong>Step ④ — Format Prior History Tuples:</strong> Inside <code>chat_with_memory()</code>, converts the incoming <code>ChatMessage</code> objects into LangChain-compatible tuples via <code>lc_history = [(msg.role, msg.content) for msg in history]</code>.</li>
+                                <li><strong>Step ⑤ — Invoke the Chain with Context:</strong> Calls <code>answer = chain.invoke({"history": lc_history, "question": question}).content</code> so the LLM sees the full conversation history before answering.</li>
+                                <li><strong>Step ⑥ — Append the New Turn to History:</strong> Returns <code>answer</code> alongside a new list <code>[*history, ChatMessage(role="user", content=question), ChatMessage(role="assistant", content=answer)]</code> so the next turn retains both the user's question and the assistant's reply.</li>
+                            </ol>
                         </li>
-                        <li><strong><code>with_history = RunnableWithMessageHistory(...)</code> (Step ③)</strong>: Wraps <code>chain</code> so that before every invocation it calls <code>get_session_history(session_id)</code>, injects past messages into the <code>history</code> placeholder, runs the chain with <code>input</code>, and automatically appends both the new human message and AI reply to the session store.</li>
-                        <li><strong><code>chat_with_memory(session_id: str, message: str) -&gt; tuple[str, int]</code> (Step ④)</strong>: Invokes <code>with_history.invoke({"input": message}, config={"configurable": {"session_id": session_id}})</code>, computes the completed conversation turns as <code>len(history.messages) // 2</code>, and returns <code>(reply, turns)</code>.</li>
-                        <li><strong><code>if __name__ == "__main__":</code> block</strong>: Runs a 3-turn self-test under session <code>demo-user-1</code> to verify that the assistant remembers facts from turn 1 when asked in turn 3.</li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>load_module(name, filename)</code></strong>: Uses <code>importlib.util.spec_from_file_location</code> to load <code>02_langchain_memory_chat.py</code> at runtime despite its leading numeric prefix.</li>
-                        <li><strong><code>require_openai_key()</code> &amp; <code>read_json_field()</code></strong>: Guard helpers that verify <code>OPENAI_API_KEY</code> is configured and extract required non-empty string fields from the request JSON.</li>
-                        <li><strong><code>chat_service()</code> (<code>POST /api/chat</code>)</strong>: Reads <code>session_id</code> (defaulting to <code>"default"</code>) and <code>reset_session</code>. If <code>reset_session</code> is true and no message was sent, it calls <code>mod.clear_session(session_id)</code> and returns immediately; otherwise it validates <code>message</code>, optionally resets the session first, calls <code>mod.chat_with_memory(session_id, message)</code>, and returns the JSON response.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
                     <ol>
-                        <li>The browser UI sends a <code>POST /api/chat</code> request with <code>{"session_id": "...", "message": "...", "reset_session": false}</code>.</li>
-                        <li><code>chat_service()</code> in <code>app.py</code> checks the API key, loads <code>02_langchain_memory_chat.py</code>, and calls <code>chat_with_memory(session_id, message)</code>.</li>
-                        <li><code>RunnableWithMessageHistory</code> looks up the session&apos;s <code>InMemoryChatMessageHistory</code> via <code>get_session_history(session_id)</code> and injects prior messages into the <code>MessagesPlaceholder("history")</code> slot of <code>prompt</code>.</li>
-                        <li><code>ChatOpenAI</code> generates a context-aware response, <code>StrOutputParser</code> extracts the string, and <code>RunnableWithMessageHistory</code> saves the new human/AI message pair back into <code>_store[session_id]</code>.</li>
-                        <li><code>chat_with_memory()</code> calculates <code>turn_count</code> and returns it with <code>reply</code> to <code>app.py</code>, which serializes the JSON payload back to the browser.</li>
+                        <li><code>chat_with_memory(question, history)</code> receives the user's new question along with the list of prior <code>ChatMessage</code> turns.</li>
+                        <li>The prior messages are converted into <code>(role, content)</code> tuples and injected into <code>MessagesPlaceholder("history")</code> between the <code>system</code> instruction and <code>("human", "{question}")</code>.</li>
+                        <li><code>chain.invoke()</code> sends the complete, ordered message sequence to <code>ChatOpenAI</code> (<code>gpt-4o-mini</code>), allowing the stateless model to resolve references to earlier turns.</li>
+                        <li>The assistant's reply is extracted from <code>.content</code> and appended with the user's question as new <code>ChatMessage</code> entries, producing the updated history for the next turn.</li>
                     </ol>
                 </div>
             </section>

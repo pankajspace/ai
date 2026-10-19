@@ -235,18 +235,10 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <p><strong>1. Core AI &amp; Tool Components in <code>04_tip_calculator.py</code></strong></p>
                     <ul>
-                        <li><strong><code>src/python/04_tip_calculator.py</code>:</strong> Defines the multi-parameter <code>@tool calculate_tip(bill_amount, tip_percentage, num_people=1)</code> function and the Strands agent runner <code>run_tip_calculator_agent(query)</code>.</li>
-                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>04_tip_calculator.py</code> as <code>s_tip</code> and exposes <code>POST /api/tip-calculator</code> via <code>tip_calculator_route()</code>.</li>
-                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's natural-language bill question in <code>{ "query": "..." }</code> to <code>POST /api/tip-calculator</code> and displays the computed breakdown and extracted tool arguments.</li>
-                    </ul>
-
-                    <p><strong>2. Classes, <code>@tool</code> Function, and Service Logic in <code>04_tip_calculator.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>TipCalculatorRequest(BaseModel)</code> &amp; <code>TipCalculatorResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input <code>query: str</code> and output dictionary fields (<code>query: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
-                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves <code>BEDROCK_MODEL_ID</code> from environment variables, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>TipCalculatorRequest</code> &amp; <code>TipCalculatorResponse</code>):</strong> Define the input <code>query: str</code> and output dictionary fields (<code>query: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong><code>@tool def calculate_tip(bill_amount: float, tip_percentage: float, num_people: int = 1) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Parameters &amp; Schema Generation:</strong> Strands inspects the three typed parameters. Because <code>bill_amount: float</code> and <code>tip_percentage: float</code> have no default values, they are marked <code>required</code> in the Bedrock JSON Schema, while <code>num_people: int = 1</code> is marked optional with a default of <code>1</code>.</li>
@@ -263,25 +255,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>tip_calculator_route()</code> (<code>POST /api/tip-calculator</code>):</strong>
-                            <ul>
-                                <li><strong>Step <code>①</code>:</strong> Parses <code>query</code> (or fallback key <code>message</code>) from the request JSON and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_tip.run_tip_calculator_agent(query)</code>, populates <code>res["result"]</code>, and returns the JSON response.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user submits <code>"The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"</code>; <code>main.js</code> sends <code>POST /api/tip-calculator</code>.</li>
-                        <li><code>tip_calculator_route()</code> in <code>app.py</code> validates the non-empty query and calls <code>s_tip.run_tip_calculator_agent(query)</code>.</li>
-                        <li><code>run_tip_calculator_agent()</code> creates a fresh Strands <code>Agent</code> bound to <code>calculate_tip</code> and calls <code>agent(query)</code>.</li>
-                        <li>On Turn 1, Bedrock Nova Lite parses the natural-language sentence and emits a <code>toolUse</code> block: <code>calculate_tip({"bill_amount": 85.0, "tip_percentage": 20.0, "num_people": 4})</code>.</li>
+                        <li><code>run_tip_calculator_agent(query)</code> creates a fresh Strands <code>Agent</code> bound to <code>calculate_tip</code> and calls <code>agent(query)</code> (e.g., for <code>"The bill is $85. What's a 20% tip, and how much does each person pay if we're splitting it 4 ways?"</code>).</li>
+                        <li>On Turn 1, Bedrock Nova Lite parses the natural-language query and emits a <code>toolUse</code> block: <code>calculate_tip({"bill_amount": 85.0, "tip_percentage": 20.0, "num_people": 4})</code>.</li>
                         <li>Strands invokes <code>calculate_tip(85.0, 20.0, 4)</code> locally in Python, which returns <code>{"bill": 85.0, "tip": 17.0, "total": 102.0, "per_person": 25.5}</code> as a <code>toolResult</code> block.</li>
                         <li>On Turn 2, Bedrock formats those exact numbers into a friendly breakdown ($17.00 tip, $102.00 total, $25.50 per person).</li>
-                        <li>Step <code>⑤</code> records the tool call in <code>tool_calls</code>, and <code>app.py</code> sends the JSON response back to the browser.</li>
+                        <li>Step <code>⑤</code> records the tool call in <code>tool_calls</code> and returns <code>{"query": query, "response": str(response), "tool_calls": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

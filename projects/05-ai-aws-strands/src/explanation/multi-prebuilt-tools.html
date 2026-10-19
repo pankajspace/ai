@@ -232,25 +232,17 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI &amp; Prebuilt Pipeline Components in <code>08_multi_prebuilt_tools.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/08_multi_prebuilt_tools.py</code> &mdash; Defines the <strong>Multi-Prebuilt Tools Agent</strong> service: imports both <code>http_request</code> and <code>calculator</code> from <code>strands_tools</code>, initializes a Strands <code>Agent</code> for data analysis, runs a multi-step fetch &rarr; compute &rarr; summarize pipeline, and records the ordered <code>tool_sequence</code>.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>08_multi_prebuilt_tools.py</code> as <code>s_multi_pre</code>, enforces hourly rate limits, and exposes <code>POST /api/multi-prebuilt-tools</code> via <code>multi_prebuilt_tools_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🔗 Multi-Prebuilt Tools</strong> card, sends the user's multi-step data analysis task to <code>POST /api/multi-prebuilt-tools</code> with <code>{ task }</code>, and displays the summary alongside the ordered chain of tool calls.</li>
-                    </ul>
-
-                    <p><strong>2. Pydantic Schemas, Prebuilt Tools &amp; Agent Setup in <code>08_multi_prebuilt_tools.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>MultiPrebuiltToolsRequest(BaseModel)</code> &amp; <code>MultiPrebuiltToolsResponse(BaseModel)</code>:</strong> Define the default stock-fetching task (fetching 5-day AAPL chart JSON from Yahoo Finance, extracting closing prices, calculating the average, and summarizing) and the response structure (<code>task</code>, <code>response</code>, and <code>tool_sequence: list[str]</code>).</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves <code>BEDROCK_MODEL_ID</code> from environment variables with fallback <code>"amazon.nova-lite-v1:0"</code>.</li>
-                        <li><strong>Prebuilt Tools (<code>http_request</code> &amp; <code>calculator</code>):</strong>
+                        <li><strong>Pydantic Contracts (<code>MultiPrebuiltToolsRequest</code> &amp; <code>MultiPrebuiltToolsResponse</code>):</strong> Define the default stock-fetching task (fetching 5-day AAPL chart JSON from Yahoo Finance, extracting closing prices, calculating the average, and summarizing) and the response structure (<code>task: str</code>, <code>response: str</code>, and <code>tool_sequence: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Prebuilt Tools (<code>http_request</code> &amp; <code>calculator</code> from <code>strands_tools</code>):</strong>
                             <ul>
-                                <li><code>http_request</code> performs live HTTP/HTTPS requests (allowing read-only <code>GET</code> calls automatically in headless servers) and returns status codes, headers, and response bodies.</li>
-                                <li><code>calculator</code> evaluates mathematical expressions via SymPy so the mean closing price is computed accurately.</li>
+                                <li><code>http_request</code> performs live HTTP/HTTPS requests (executing read-only <code>GET</code> calls automatically) and returns status codes, headers, and response bodies.</li>
+                                <li><code>calculator</code> evaluates mathematical expressions via SymPy so the arithmetic mean of the extracted closing prices is computed accurately.</li>
                             </ul>
                         </li>
-                        <li><strong>Service Entry Point &mdash; <code>run_multi_prebuilt_tools_agent(task: str) -&gt; dict</code>:</strong>
+                        <li><strong><code>run_multi_prebuilt_tools_agent(task: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ③:</strong> Creates <code>Agent(model=BedrockModel(model_id=model_id), tools=[http_request, calculator], system_prompt="You help with data analysis tasks.")</code>.</li>
                                 <li><strong>Step ④:</strong> Invokes <code>response = agent(task)</code>, letting the agent autonomously chain <code>http_request</code> (to fetch the JSON payload) and <code>calculator</code> (to average the extracted closing prices) before writing the summary.</li>
@@ -259,26 +251,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>multi_prebuilt_tools_route()</code> (<code>POST /api/multi-prebuilt-tools</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Reads <code>task</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>s_multi_pre.run_multi_prebuilt_tools_agent(task)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload to the frontend.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>🔗 Multi-Prebuilt Tools</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/multi-prebuilt-tools</code> with <code>{"task": "Fetch stock data from https://query1.finance.yahoo.com/..."}</code>.</li>
-                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> checks the client's request rate and routes the call to <code>multi_prebuilt_tools_route()</code>.</li>
-                        <li><code>multi_prebuilt_tools_route()</code> validates the non-empty <code>task</code> and calls <code>s_multi_pre.run_multi_prebuilt_tools_agent(task)</code> in <code>08_multi_prebuilt_tools.py</code>.</li>
-                        <li><code>run_multi_prebuilt_tools_agent()</code> initializes a Strands <code>Agent</code> with <code>BedrockModel</code>, <code>tools=[http_request, calculator]</code>, and <code>system_prompt="You help with data analysis tasks."</code>.</li>
-                        <li>On <strong>Converse Turn 1</strong>, Bedrock inspects the prompt and emits a <code>toolUse</code> block for <code>http_request(method="GET", url="https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&range=5d")</code>.</li>
+                        <li><code>run_multi_prebuilt_tools_agent(task)</code> initializes a Strands <code>Agent</code> with <code>BedrockModel</code>, <code>tools=[http_request, calculator]</code>, and <code>system_prompt="You help with data analysis tasks."</code>.</li>
+                        <li>On <strong>Converse Turn 1</strong>, Bedrock inspects the prompt and emits a <code>toolUse</code> block for <code>http_request(method="GET", url="https://query1.finance.yahoo.com/v8/finance/chart/AAPL?interval=1d&amp;range=5d")</code>.</li>
                         <li>Strands executes <code>http_request</code>, fetches the live JSON payload from Yahoo Finance, and appends it as a <code>toolResult</code> block in <code>agent.messages</code>.</li>
                         <li>On <strong>Converse Turn 2</strong>, Bedrock parses the nested JSON in the conversation context, extracts the array of daily closing prices, and emits a second <code>toolUse</code> block calling <code>calculator</code> with the arithmetic mean expression.</li>
-                        <li>Strands runs <code>calculator</code> via SymPy and returns the exact average in a second <code>toolResult</code>; on <strong>Converse Turn 3</strong>, Bedrock synthesizes the final summary report and <code>app.py</code> returns <code>response</code> and <code>tool_sequence</code> to the browser.</li>
+                        <li>Strands runs <code>calculator</code> via SymPy and returns the exact average in a second <code>toolResult</code>; on <strong>Converse Turn 3</strong>, Bedrock synthesizes the final summary report and Step ⑤ returns <code>{"task": task, "response": str(response), "tool_sequence": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

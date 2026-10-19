@@ -234,45 +234,38 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is implemented across two backend Python files in <code>src/python/</code> that power the Multi-Tool Agent card in the frontend UI (<code>src/index.html</code> and <code>src/js/main.js</code>).</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><strong>Core AI Module (<code>src/python/05_langchain_multi_tools.py</code>)</strong></p>
+                    <p><code>src/python/05_langchain_multi_tools.py</code> equips a LangChain <code>create_agent()</code> graph with four distinct Python tools &mdash; <code>get_weather</code>, <code>add</code>, <code>multiply</code>, and <code>get_population</code> &mdash; so the LLM can act as a semantic router that selects zero, one, or multiple tools per turn to answer compound questions.</p>
+
+                    <p><strong>Schemas, Toolkit Functions, and Multi-Tool Agent Execution</strong></p>
                     <ul>
-                        <li><strong><code>src/python/05_langchain_multi_tools.py</code></strong>: Defines three distinct domain tools (<code>calculator</code>, <code>get_weather</code>, and <code>LookupBook</code>), binds them to <code>ChatOpenAI</code>, and runs a multi-step agent loop that can invoke multiple tools across turns to answer compound prompts.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask application and <code>/api</code> Blueprint that validates the incoming HTTP payload, dynamically imports <code>05_langchain_multi_tools.py</code>, and returns the final answer along with a structured trace of every tool call.</li>
-                    </ul>
-                    <p><strong>2. Key entities in <code>src/python/05_langchain_multi_tools.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>MultiToolRequest</code>, <code>ToolCallEntry</code>, &amp; <code>MultiToolResponse</code></strong>: Pydantic schemas defining the input prompt and the output structure containing <code>answer</code> and <code>tool_calls</code> (a list of <code>{tool, args, result}</code> trace items).</li>
-                        <li><strong><code>CITIES</code> &amp; <code>BOOKS</code> dictionaries</strong>: Deterministic in-memory knowledge tables holding weather data for five cities (Mumbai, Delhi, Bengaluru, London, Tokyo) and metadata for three classic software engineering books (<em>Clean Code</em>, <em>The Pragmatic Programmer</em>, <em>Designing Data-Intensive Applications</em>).</li>
-                        <li><strong>Three LangChain Tools (Step ①)</strong>:
+                        <li><strong>Provider Selection (<code>PROVIDER = "groq"</code>, <code>prefix = PROVIDER.upper()</code>):</strong> Selects the active model provider so <code>GROQ_MODEL</code>, <code>GROQ_API_KEY</code>, and <code>GROQ_BASE_URL</code> configure the OpenAI-compatible <code>ChatOpenAI</code> client.</li>
+                        <li><strong><code>class MultiToolAgentRequest(BaseModel)</code> &amp; <code>class MultiToolAgentResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input query (<code>message: str = "What's the weather in Tokyo, and what is 12 times 12?"</code>) and output payload (<code>message: str</code>, <code>response: str</code>, and <code>tool_called: bool</code>).</li>
+                        <li><strong>Four Registered Tool Functions:</strong> LangChain introspects each function's name, type annotations, and docstring to build the four tool schemas sent to the model:
                             <ul>
-                                <li><strong><code>@tool def calculator(expression: str) -&gt; str</code></strong>: Evaluates arithmetic expressions using Python&apos;s <code>eval()</code> with <code>__builtins__</code> stripped out and only the <code>math</code> module exposed.</li>
-                                <li><strong><code>@tool def get_weather(city: str) -&gt; str</code></strong>: Looks up the normalized city name in <code>CITIES</code> and returns a formatted temperature and condition string.</li>
-                                <li><strong><code>@tool def LookupBook(title: str) -&gt; str</code></strong>: Looks up a book title in <code>BOOKS</code> and returns its author, publication year, and summary.</li>
+                                <li><code>get_weather(city: str) -&gt; str</code>: Docstring <code>"""Get the current weather for a given city."""</code>; returns <code>f"The weather in {city} is sunny, 28 degrees C."</code>.</li>
+                                <li><code>add(a: float, b: float) -&gt; float</code>: Docstring <code>"""Add two numbers together."""</code>; returns <code>a + b</code>.</li>
+                                <li><code>multiply(a: float, b: float) -&gt; float</code>: Docstring <code>"""Multiply two numbers together."""</code>; returns <code>a * b</code>.</li>
+                                <li><code>get_population(city: str) -&gt; str</code>: Docstring <code>"""Get the approximate population of a major city."""</code>; looks up <code>city.lower()</code> in a dictionary covering <code>new york</code>, <code>london</code>, <code>bangalore</code>, and <code>tokyo</code>, or returns a fallback message if unknown.</li>
                             </ul>
                         </li>
-                        <li><strong><code>TOOLS</code> &amp; <code>TOOL_MAP</code></strong>: <code>TOOLS</code> lists the three tool objects for <code>model.bind_tools(TOOLS)</code>, while <code>TOOL_MAP = {t.name: t for t in TOOLS}</code> indexes them by name for $O(1)$ dispatch when the LLM requests a tool call.</li>
-                        <li><strong><code>run_multi_tool_agent(prompt: str) -&gt; tuple[str, list[ToolCallEntry]]</code> (Steps ②–③)</strong>:
-                            <ul>
-                                <li>Binds all three tools to <code>ChatOpenAI(model="gpt-4o-mini", temperature=0)</code> and initializes the <code>messages</code> list with a <code>SystemMessage</code> and the user&apos;s <code>HumanMessage</code>.</li>
-                                <li>Runs a bounded loop (<code>for _ in range(6):</code>) that invokes the LLM and appends the returned <code>AIMessage</code> to <code>messages</code>.</li>
-                                <li>If <code>ai.tool_calls</code> is empty, the model has finished gathering facts and its <code>ai.content</code> is returned alongside the <code>trace</code> list.</li>
-                                <li>Otherwise, for each tool call in <code>ai.tool_calls</code>, it dispatches <code>TOOL_MAP[call["name"]].invoke(call["args"])</code>, records a <code>ToolCallEntry</code> in <code>trace</code>, and appends a <code>ToolMessage(content=str(result), tool_call_id=call["id"])</code> so the LLM sees all tool results on the next iteration.</li>
-                            </ul>
+                        <li><strong>Agent Construction and <code>run_multi_tool_agent(question: str = "What's the weather in Tokyo, and what is 12 times 12?") -&gt; tuple[str, bool]</code>:</strong>
+                            <ol>
+                                <li><strong>Step ① — Initialize the LLM Client:</strong> Instantiates <code>llm = ChatOpenAI(model=os.getenv(f"{prefix}_MODEL"), api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key", base_url=os.getenv(f"{prefix}_BASE_URL") or None, temperature=0, timeout=20.0)</code> with <code>temperature=0</code> for deterministic multi-tool routing.</li>
+                                <li><strong>Step ② — Create the Multi-Tool LangChain Agent:</strong> Calls <code>agent = create_agent(model=llm, tools=[get_weather, add, multiply, get_population], system_prompt=...)</code> with an explicit instruction to state every final result clearly and completely.</li>
+                                <li><strong>Step ③ — Invoke the Multi-Tool Agent:</strong> Runs <code>messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]</code>, allowing the model to emit single or parallel tool calls across the four functions and synthesize all returned <code>ToolMessage</code> observations.</li>
+                                <li><strong>Step ④ — Detect Tool Execution:</strong> Computes <code>tool_called = any(m.type == "tool" for m in messages)</code> to record whether one or more tools were invoked during the turn.</li>
+                                <li><strong>Step ⑤ — Return Final Synthesized Answer:</strong> Returns <code>messages[-1].content, tool_called</code> from the final <code>AIMessage</code>.</li>
+                            </ol>
                         </li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>load_module(name, filename)</code></strong>: Dynamically loads <code>05_langchain_multi_tools.py</code> on demand.</li>
-                        <li><strong><code>multi_tool_service()</code> (<code>POST /api/multi-tool</code>)</strong>: Verifies <code>OPENAI_API_KEY</code>, validates the <code>prompt</code> field via <code>read_json_field()</code>, executes <code>mod.run_multi_tool_agent(prompt)</code>, and serializes each <code>ToolCallEntry</code> via <code>t.model_dump()</code> into the JSON response.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
                     <ol>
-                        <li>The user submits a compound question in the browser UI, triggering <code>POST /api/multi-tool</code> with <code>{"prompt": "..."}</code>.</li>
-                        <li><code>multi_tool_service()</code> in <code>app.py</code> validates the request and calls <code>run_multi_tool_agent(prompt)</code> in <code>05_langchain_multi_tools.py</code>.</li>
-                        <li><code>ChatOpenAI.bind_tools(TOOLS)</code> inspects the JSON schemas of <code>calculator</code>, <code>get_weather</code>, and <code>LookupBook</code> (derived from their type hints and docstrings) and emits one or more structured <code>tool_calls</code>.</li>
-                        <li>The Python loop executes each requested tool via <code>TOOL_MAP</code>, logs the call in <code>trace</code>, and feeds the <code>ToolMessage</code> outputs back to the LLM until it produces a final natural-language answer.</li>
-                        <li><code>app.py</code> returns <code>{"answer": answer, "tool_calls": [...]}</code> to the browser, which renders both the tool execution badges and the final synthesized response.</li>
+                        <li><code>run_multi_tool_agent(question)</code> passes the user's prompt into <code>agent.invoke({"messages": [...]})</code>.</li>
+                        <li>The LLM inspects the user's question alongside the JSON Schemas of <code>get_weather</code>, <code>add</code>, <code>multiply</code>, and <code>get_population</code> and decides which subset of tools (if any) to call.</li>
+                        <li>For a compound prompt like <em>"What's the weather in Tokyo, and what is 12 times 12?"</em>, the agent executes both <code>get_weather(city="Tokyo")</code> and <code>multiply(a=12, b=12)</code>, appends a <code>ToolMessage</code> for each result, and sends the combined observations back to the LLM.</li>
+                        <li>The model synthesizes a complete answer incorporating all tool outputs, and <code>run_multi_tool_agent()</code> returns <code>(messages[-1].content, tool_called)</code> to fulfill <code>MultiToolAgentResponse</code>.</li>
                     </ol>
                 </div>
             </section>

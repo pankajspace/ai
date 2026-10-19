@@ -246,40 +246,34 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is implemented across two backend Python files in <code>src/python/</code> that work with the frontend browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to run a complete Retrieval-Augmented Generation (RAG) pipeline combining recursive chunking, local HuggingFace embeddings, ChromaDB vector search, and grounded OpenAI answer generation.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/03_rag.py</code> implements a complete Retrieval-Augmented Generation (RAG) pipeline that splits a reference paragraph into overlapping chunks, indexes them in an in-memory ChromaDB vector store using local HuggingFace embeddings, retrieves the top matching passages for a question, and synthesizes a strictly grounded answer with OpenAI.</p>
+                    <p><strong>1. Core AI Concepts in the RAG Pipeline</strong></p>
                     <ul>
-                        <li><strong><code>src/python/03_rag.py</code></strong>: Implements the end-to-end <code>answer_rag(paragraph, question)</code> pipeline: splitting the user&apos;s source passage, indexing chunks in an ephemeral ChromaDB collection, retrieving the top-$k$ most relevant chunks, cleaning up the collection, and generating a grounded answer with <code>ChatOpenAI</code>.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask server and <code>/api</code> Blueprint that validates the incoming JSON request and routes <code>POST /api/rag</code> to <code>03_rag.py</code>.</li>
+                        <li><strong>Retrieve &rarr; Augment &rarr; Generate:</strong> Rather than relying on an LLM's static parametric memory, RAG retrieves relevant passages from an external knowledge source, injects them into the prompt as context, and instructs the LLM to answer strictly from those passages.</li>
+                        <li><strong>Hybrid Local Embedding + Cloud Synthesis:</strong> Chunking and vector indexing run locally on CPU using <code>HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")</code>, while only the final grounded synthesis step invokes <code>ChatOpenAI</code> with <code>temperature=0</code>.</li>
+                        <li><strong>Hallucination Refusal Guardrail:</strong> The prompt template explicitly instructs the model to answer using <em>only</em> the retrieved context and to reply <code>"I couldn't find that in the provided paragraph."</code> whenever the context lacks the answer.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/03_rag.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/03_rag.py</code></strong></p>
                     <ul>
-                        <li><strong><code>PARAGRAPH</code> constant</strong>: A default multi-paragraph reference passage about ChromaDB and RAG used when executing <code>03_rag.py</code> directly from the command line.</li>
-                        <li><strong><code>RagRequest(BaseModel)</code> &amp; <code>RagResponse(BaseModel)</code></strong>: Pydantic schemas defining the inputs (<code>paragraph</code>, <code>question</code>) and the structured output (<code>answer</code>, <code>retrieved_chunks</code>, <code>total_chunks</code>).</li>
-                        <li><strong><code>embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")</code></strong>: Module-level LangChain embedding wrapper that keeps the 384-D Sentence-Transformers model loaded in memory across requests.</li>
-                        <li><strong><code>prompt = ChatPromptTemplate.from_template(...)</code></strong>: A strict grounding prompt instructing the LLM to answer the question using <em>only</em> the provided <code>{context}</code> and to reply <code>"I cannot find that in the provided text."</code> if the answer is absent.</li>
-                        <li><strong><code>answer_rag(paragraph: str, question: str) -&gt; RagResponse</code></strong>:
+                        <li><strong><code>PARAGRAPH</code> constant:</strong> A default reference passage describing the TechToday Return Policy (30-day window, condition requirements, 5–7 business day refund timeline, and non-refundable shipping/clearance rules).</li>
+                        <li><strong><code>RagRequest(BaseModel)</code> &amp; <code>RagResponse(BaseModel)</code>:</strong> Pydantic schemas defining the inputs (<code>paragraph: str = PARAGRAPH</code>, <code>question: str</code>) and the output payload (<code>paragraph: str</code>, <code>question: str</code>, <code>answer: str</code>, and <code>sources: list[str]</code>).</li>
+                        <li><strong><code>embedder = HuggingFaceEmbeddings(model_name="all-MiniLM-L6-v2")</code>:</strong> Module-level embedding model that maps text chunks and queries into 384-dimensional vectors.</li>
+                        <li><strong><code>prompt = ChatPromptTemplate.from_template(...)</code>:</strong> Prompt template that binds <code>{context}</code> and <code>{question}</code> with strict grounding instructions.</li>
+                        <li><strong><code>answer_rag(paragraph: str, question: str) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><strong>Step ① — Chunk the source paragraph</strong>: Splits <code>paragraph</code> with <code>RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=40)</code> (falling back to <code>[paragraph]</code> if empty).</li>
-                                <li><strong>Step ② — Embed &amp; store in ChromaDB</strong>: Calls <code>Chroma.from_texts(chunks, embedder, collection_name=f"rag_{uuid.uuid4().hex[:8]}")</code> to embed every chunk and index it inside an isolated, per-request in-memory Chroma collection.</li>
-                                <li><strong>Step ③ — Retrieve top-k chunks</strong>: Runs <code>db.similarity_search(question, k=min(3, len(chunks)))</code> inside a <code>try ... finally</code> block and calls <code>db.delete_collection()</code> in <code>finally</code> so ephemeral collections never leak memory.</li>
-                                <li><strong>Step ④ — Generate grounded answer</strong>: Joins the retrieved chunk strings with <code>"\n\n"</code> and invokes the LCEL pipeline <code>(prompt | ChatOpenAI(model="gpt-4o-mini", temperature=0)).invoke({"context": context, "question": question})</code>.</li>
-                                <li><strong>Step ⑤ — Return response</strong>: Packages <code>answer</code>, <code>retrieved_chunks</code>, and <code>total_chunks</code> into a <code>RagResponse</code> object.</li>
+                                <li><strong>Step ① — Chunk the paragraph:</strong> Splits <code>paragraph</code> into overlapping pieces via <code>RecursiveCharacterTextSplitter(chunk_size=200, chunk_overlap=40).split_text(paragraph)</code>.</li>
+                                <li><strong>Step ② — Embed &amp; store in Chroma:</strong> Calls <code>db = Chroma.from_texts(chunks, embedder)</code> to vectorize every chunk and store it in an in-memory Chroma collection.</li>
+                                <li><strong>Step ③ — Retrieve top-$k$ chunks:</strong> Computes <code>k = min(3, len(chunks))</code> and runs <code>db.similarity_search(question, k=k)</code> to extract the most relevant chunk strings.</li>
+                                <li><strong>Step ④ — Join context &amp; clean up collection:</strong> Joins <code>relevant_chunks</code> with <code>"\n\n"</code> into <code>context</code> and calls <code>db.delete_collection()</code> so the next query starts with a fresh in-memory vector store.</li>
+                                <li><strong>Step ⑤ — Generate grounded answer:</strong> Composes a LangChain Expression Language (LCEL) chain <code>(prompt | model).invoke({"context": context, "question": question})</code> with <code>ChatOpenAI(temperature=0)</code> and returns <code>paragraph</code>, <code>question</code>, <code>answer</code>, and <code>sources</code>.</li>
                             </ul>
                         </li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>require_openai_key()</code> &amp; <code>read_json_field()</code></strong>: Verify that <code>OPENAI_API_KEY</code> is set and that both <code>paragraph</code> and <code>question</code> are non-empty strings.</li>
-                        <li><strong><code>rag_service()</code> (<code>POST /api/rag</code>)</strong>: Validates the request, dynamically loads <code>03_rag.py</code> via <code>load_module()</code>, calls <code>mod.answer_rag(paragraph, question)</code>, and returns <code>result.model_dump()</code> as JSON.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End RAG Execution Flow</strong></p>
                     <ol>
-                        <li>The user supplies a source passage and a question in the browser UI and clicks Ask, triggering <code>POST /api/rag</code>.</li>
-                        <li><code>rag_service()</code> in <code>app.py</code> checks <code>OPENAI_API_KEY</code>, validates <code>paragraph</code> and <code>question</code>, and calls <code>answer_rag()</code>.</li>
-                        <li><code>answer_rag()</code> chunks the passage, embeds the chunks with <code>HuggingFaceEmbeddings</code>, indexes them into a temporary ChromaDB collection, and retrieves the top-3 semantically closest chunks to the user&apos;s question.</li>
-                        <li>The retrieved chunks are injected into <code>prompt</code> and sent to <code>ChatOpenAI(temperature=0)</code> to synthesize a strictly grounded answer.</li>
-                        <li><code>app.py</code> returns the JSON response containing both the final <code>answer</code> and the exact <code>retrieved_chunks</code> so the UI can display the provenance alongside the answer.</li>
+                        <li><code>answer_rag()</code> splits the input <code>paragraph</code> into 200-character chunks with a 40-character overlap.</li>
+                        <li><code>Chroma.from_texts()</code> embeds all chunks with <code>all-MiniLM-L6-v2</code> and indexes them in memory, then <code>db.similarity_search()</code> retrieves the top-$k$ chunks closest to <code>question</code> before deleting the temporary collection.</li>
+                        <li>The retrieved chunks are formatted into <code>prompt</code> and passed to <code>ChatOpenAI(temperature=0)</code>, producing a deterministic, fact-grounded answer alongside the exact source chunks used.</li>
                     </ol>
                 </div>
             </section>

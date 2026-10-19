@@ -229,49 +229,30 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <p><strong>1. Core AI &amp; Multi-Tool Pipeline Components in <code>05_multi_tool_sales.py</code></strong></p>
                     <ul>
-                        <li><strong><code>src/python/05_multi_tool_sales.py</code>:</strong> Defines three focused <code>@tool</code> functions (<code>get_sales_data</code>, <code>analyze_sales</code>, <code>send_email</code>) and the orchestrator function <code>run_multi_tool_sales_agent(task)</code> that passes all three tools to a Strands <code>Agent</code> without hardcoding an execution sequence.</li>
-                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>05_multi_tool_sales.py</code> as <code>s_sales</code> and exposes <code>POST /api/multi-tool-sales</code> via <code>multi_tool_sales_route()</code>.</li>
-                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's pipeline task in <code>{ "task": "..." }</code> to <code>POST /api/multi-tool-sales</code> and displays both the agent's final summary and the ordered <code>tool_calls</code> trace.</li>
-                    </ul>
-
-                    <p><strong>2. Classes, Three <code>@tool</code> Functions, and Service Logic in <code>05_multi_tool_sales.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>MultiToolSalesRequest(BaseModel)</code> &amp; <code>MultiToolSalesResponse(BaseModel)</code>:</strong> Pydantic schemas documenting the input <code>task: str</code> and output dictionary fields (<code>task: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
-                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
-                        <li><strong><code>@tool def get_sales_data(quarter: str) -&gt; dict</code>:</strong> Step 1 of the implicit data chain. Accepts a quarter identifier (e.g., <code>"Q1"</code> or <code>"4"</code>) and returns mock CRM metrics: <code>{"revenue": 1250000, "deals": 47, "quarter": quarter}</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>MultiToolSalesRequest</code> &amp; <code>MultiToolSalesResponse</code>):</strong> Document the input <code>task: str</code> and output dictionary fields (<code>task: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong><code>@tool def get_sales_data(quarter: str) -&gt; dict</code>:</strong> Step 1 of the implicit data dependency chain. Accepts a quarter identifier (e.g., <code>"Q1"</code> or <code>"4"</code>) and returns mock CRM metrics: <code>{"revenue": 1250000, "deals": 47, "quarter": quarter}</code>.</li>
                         <li><strong><code>@tool def analyze_sales(revenue: int, deals: int, quarter: str) -&gt; str</code>:</strong> Step 2 of the chain. Accepts <code>revenue: int</code>, <code>deals: int</code>, and <code>quarter: str</code> (values discovered from <code>get_sales_data</code>), computes <code>avg_deal = revenue / deals</code>, and returns the formatted executive summary string <code>f"Q{quarter}: ${revenue:,} revenue, {deals} deals, ${avg_deal:,.0f} avg deal size"</code>.</li>
                         <li><strong><code>@tool def send_email(to: str, subject: str, body: str) -&gt; str</code>:</strong> Step 3 of the chain. Accepts the recipient address, subject line, and the summary body produced by <code>analyze_sales</code>, and returns <code>f"Email sent to {to}"</code>.</li>
                         <li><strong><code>run_multi_tool_sales_agent(task: str) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><strong>Step <code>③</code>:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[get_sales_data, analyze_sales, send_email])</code>.</li>
+                                <li><strong>Step <code>③</code>:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[get_sales_data, analyze_sales, send_email])</code> without hardcoding an execution order.</li>
                                 <li><strong>Step <code>④</code>:</strong> Calls <code>response = agent(task)</code>, allowing the agentic loop to plan and execute the three-step workflow across turns.</li>
                                 <li><strong>Step <code>⑤</code>:</strong> Extracts every <code>"toolUse"</code> block from <code>agent.messages</code> in chronological order into <code>tool_calls</code> and returns <code>{"task": task, "response": str(response), "tool_calls": tool_calls}</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>multi_tool_sales_route()</code> (<code>POST /api/multi-tool-sales</code>):</strong>
-                            <ul>
-                                <li><strong>Step <code>①</code>:</strong> Parses <code>task</code> (or fallback key <code>message</code>) from the request JSON and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_sales.run_multi_tool_sales_agent(task)</code>, copies <code>res["response"]</code> into <code>res["result"]</code>, and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user submits <code>"Pull last quarter's sales data and email a summary to the team"</code>; <code>main.js</code> sends <code>POST /api/multi-tool-sales</code>.</li>
-                        <li><code>multi_tool_sales_route()</code> in <code>app.py</code> validates the task and calls <code>s_sales.run_multi_tool_sales_agent(task)</code>.</li>
-                        <li>On Turn 1, Bedrock inspects all three tool schemas, realizes it does not yet have <code>revenue</code> or <code>deals</code> to call <code>analyze_sales</code>, and invokes <code>get_sales_data(quarter=...)</code> first.</li>
-                        <li>Strands runs <code>get_sales_data()</code> and returns <code>{"revenue": 1250000, "deals": 47, ...}</code> to Bedrock.</li>
+                        <li><code>run_multi_tool_sales_agent(task)</code> initializes the Strands <code>Agent</code> with <code>[get_sales_data, analyze_sales, send_email]</code> and passes the user task (e.g., <code>"Pull last quarter's sales data and email a summary to the team"</code>).</li>
+                        <li>On Turn 1, Bedrock inspects all three tool schemas, recognizes that <code>analyze_sales</code> requires <code>revenue</code> and <code>deals</code> that are not yet known, and invokes <code>get_sales_data(quarter=...)</code> first.</li>
+                        <li>Strands executes <code>get_sales_data()</code> and returns <code>{"revenue": 1250000, "deals": 47, ...}</code> to Bedrock in a <code>toolResult</code> block.</li>
                         <li>On Turn 2, Bedrock feeds those exact integers into <code>analyze_sales(revenue=1250000, deals=47, quarter=...)</code>, receiving the formatted summary string with the $26,596 average deal size.</li>
                         <li>On Turn 3, Bedrock passes that summary string into <code>send_email(to=..., subject=..., body=...)</code> and receives <code>"Email sent to ..."</code>.</li>
-                        <li>On Turn 4, Bedrock produces the final confirmation message; Step <code>⑤</code> collects all three tool calls in order and returns the JSON payload to the browser.</li>
+                        <li>On Turn 4, Bedrock produces the final confirmation message, and Step <code>⑤</code> collects all three tool calls in chronological order into <code>tool_calls</code>.</li>
                     </ol>
                 </div>
             </section>

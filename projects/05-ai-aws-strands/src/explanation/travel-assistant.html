@@ -244,18 +244,10 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI, Custom Tools &amp; Prebuilt Tool Components in <code>12_travel_assistant.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/12_travel_assistant.py</code> &mdash; Defines the <strong>Capstone Travel Assistant Agent</strong> service: implements three custom <code>@tool</code> functions (<code>get_weather_forecast</code>, <code>suggest_packing_list</code>, and <code>estimate_trip_cost</code>), combines them with the prebuilt <code>calculator</code> tool and a workflow-guiding <code>system_prompt</code>, runs the multi-step planning loop, and returns the itinerary and <code>workflow_steps</code>.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>12_travel_assistant.py</code> dynamically as <code>s_travel</code>, enforces hourly POST rate limits, and exposes <code>POST /api/travel-assistant</code> via <code>travel_assistant_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🏖️ Capstone Travel Planner</strong> card, sends the user's natural-language trip prompt to <code>POST /api/travel-assistant</code> with <code>{ query }</code>, and displays the complete travel plan alongside the ordered <code>workflow_steps</code>.</li>
-                    </ul>
-
-                    <p><strong>2. Schemas, Custom &amp; Prebuilt Tools, and Agent Setup in <code>12_travel_assistant.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>TravelAssistantRequest(BaseModel)</code> &amp; <code>TravelAssistantResponse(BaseModel)</code>:</strong> Define the default trip brief (3 days in Goa with 2 friends on a ₹20,000 budget) and the response structure (<code>query</code>, <code>response</code>, and <code>workflow_steps: list[str]</code>).</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>TravelAssistantRequest</code> &amp; <code>TravelAssistantResponse</code>):</strong> Define the default trip brief (3 days in Goa with 2 friends on a ₹20,000 budget) and the response structure (<code>query: str</code>, <code>response: str</code>, and <code>workflow_steps: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong>Custom Tool 1 &mdash; <code>@tool def get_weather_forecast(city: str, days: int) -&gt; dict</code>:</strong> Looks up <code>city.lower()</code> in the <code>forecasts</code> dictionary (covering <code>"goa"</code>, <code>"bangalore"</code>, <code>"jaipur"</code>, and <code>"manali"</code>, with a moderate fallback of <code>28°C / 20°C</code> for unknown cities) and returns <code>{"city": city, "days": days, "high_c": ..., "low_c": ..., "conditions": ...}</code>.</li>
                         <li><strong>Custom Tool 2 &mdash; <code>@tool def suggest_packing_list(high_c: int, low_c: int, days: int, conditions: str) -&gt; list</code>:</strong> Starts with base items (<code>f"{days + 1} sets of clothes"</code>, <code>"toiletries"</code>, <code>"phone charger"</code>) and applies deterministic threshold rules:
                             <ul>
@@ -267,7 +259,7 @@
                         </li>
                         <li><strong>Custom Tool 3 &mdash; <code>@tool def estimate_trip_cost(city: str, days: int, travellers: int = 1) -&gt; dict</code>:</strong> Computes accommodation (<code>per_night.get(city.lower(), 3000) * days</code>), food (<code>1200 * days * travellers</code>), and local transport (<code>800 * days</code>) in Indian rupees, returning the itemized breakdown and <code>total_inr</code>.</li>
                         <li><strong>Prebuilt Tool 4 &mdash; <code>calculator</code> (from <code>strands_tools</code>):</strong> Available to verify budget differences, per-person splits, or extra arithmetic.</li>
-                        <li><strong>Service Entry Point &mdash; <code>run_travel_assistant_agent(query: str) -&gt; dict</code>:</strong>
+                        <li><strong><code>run_travel_assistant_agent(query: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ③:</strong> Instantiates <code>Agent</code> with all four tools and a standing <code>system_prompt</code> instructing the agent to check weather first, suggest packing second, estimate cost third, and state whether the trip fits the user's budget.</li>
                                 <li><strong>Step ④:</strong> Runs <code>response = agent(query)</code> across multiple Bedrock Converse turns.</li>
@@ -276,26 +268,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>travel_assistant_route()</code> (<code>POST /api/travel-assistant</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses <code>query</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>s_travel.run_travel_assistant_agent(query)</code>, copies <code>res["response"]</code> to <code>res["result"]</code>, and returns the JSON payload to the browser.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>🏖️ Capstone Travel Planner</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/travel-assistant</code> with the Goa 3-day trip query.</li>
-                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> checks the hourly request rate and routes the POST request to <code>travel_assistant_route()</code>.</li>
-                        <li><code>travel_assistant_route()</code> validates <code>query</code> and invokes <code>s_travel.run_travel_assistant_agent(query)</code> in <code>12_travel_assistant.py</code>.</li>
-                        <li><code>run_travel_assistant_agent()</code> creates a Strands <code>Agent</code> with <code>[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator]</code> and the travel-planning <code>system_prompt</code>.</li>
-                        <li>Following the system prompt, Bedrock starts by calling <code>get_weather_forecast(city="Goa", days=3)</code>, which returns <code>{"city": "Goa", "days": 3, "high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"}</code>.</li>
+                        <li><code>run_travel_assistant_agent(query)</code> creates a Strands <code>Agent</code> with <code>[get_weather_forecast, suggest_packing_list, estimate_trip_cost, calculator]</code> and the travel-planning <code>system_prompt</code>.</li>
+                        <li>Following the system prompt for the Goa 3-day trip query, Bedrock starts by calling <code>get_weather_forecast(city="Goa", days=3)</code>, which returns <code>{"city": "Goa", "days": 3, "high_c": 32, "low_c": 26, "conditions": "humid, occasional showers"}</code>.</li>
                         <li>On the next turn, Bedrock pipes those exact weather outputs into <code>suggest_packing_list(high_c=32, low_c=26, days=3, conditions="humid, occasional showers")</code>, receiving the 9-item checklist including cotton clothes, sunscreen, and a compact umbrella.</li>
                         <li>Bedrock also infers from <em>"I'm going... with 2 friends"</em> that <code>travellers=3</code> and calls <code>estimate_trip_cost(city="Goa", days=3, travellers=3)</code>, which returns <code>stay_inr=10500</code>, <code>food_inr=10800</code>, <code>local_travel_inr=2400</code>, and <code>total_inr=23700</code> (optionally invoking <code>calculator</code> to compare ₹23,700 against the ₹20,000 budget).</li>
-                        <li>Bedrock synthesizes the complete weather summary, packing checklist, itemized cost breakdown, and budget verdict (₹3,700 over the ₹20,000 budget), and <code>app.py</code> returns <code>response</code> and <code>workflow_steps</code> to the browser.</li>
+                        <li>Bedrock synthesizes the complete weather summary, packing checklist, itemized cost breakdown, and budget verdict (₹3,700 over the ₹20,000 budget), and Step ⑤ returns <code>{"query": query, "response": str(response), "workflow_steps": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

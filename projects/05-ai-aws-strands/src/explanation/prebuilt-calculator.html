@@ -229,20 +229,12 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI &amp; Prebuilt Tool Components in <code>07_prebuilt_tools.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/07_prebuilt_tools.py</code> &mdash; Defines the <strong>Prebuilt Calculator Agent</strong> service: imports the off-the-shelf <code>calculator</code> tool from <code>strands_tools</code>, configures the <code>Agent</code> with a standing math-assistant system prompt, runs the user's mathematical query, and extracts every tool call from <code>agent.messages</code>.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>07_prebuilt_tools.py</code> dynamically as <code>s_calc</code> via <code>_load_service()</code>, enforces rate limiting (30 POSTs/hour), and exposes <code>POST /api/prebuilt-calculator</code> via <code>prebuilt_calculator_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🧮 Math Assistant</strong> interactive demo card, reads the mathematical expression or word problem from the input box, sends <code>POST /api/prebuilt-calculator</code> with <code>{ query }</code>, and displays both the natural-language answer and the exact <code>calculator(...)</code> invocation.</li>
-                    </ul>
-
-                    <p><strong>2. Pydantic Schemas, Prebuilt Tool &amp; Agent Setup in <code>07_prebuilt_tools.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and optional Bedrock configuration from the nearest <code>.env</code> file into environment variables.</li>
-                        <li><strong><code>PrebuiltCalculatorRequest(BaseModel)</code> &amp; <code>PrebuiltCalculatorResponse(BaseModel)</code>:</strong> Document the expected input payload (<code>query: str</code> defaulting to <code>"What's 42 raised to the power of 9?"</code>) and the structured output dictionary (<code>query</code>, <code>response</code>, and <code>tool_calls: list[str]</code>).</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>PrebuiltCalculatorRequest</code> &amp; <code>PrebuiltCalculatorResponse</code>):</strong> Document the expected input payload (<code>query: str</code> defaulting to <code>"What's 42 raised to the power of 9?"</code>) and the structured output dictionary (<code>query: str</code>, <code>response: str</code>, and <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong>Prebuilt Tool (<code>from strands_tools import calculator</code>):</strong> Imports the SymPy-backed <code>calculator</code> tool directly from the <code>strands_tools</code> package &mdash; providing symbolic and numerical expression evaluation, equation solving, differentiation, integration, and matrix operations with zero custom <code>@tool</code> code.</li>
-                        <li><strong>Service Entry Point &mdash; <code>run_prebuilt_calculator_agent(query: str) -&gt; dict</code>:</strong>
+                        <li><strong><code>run_prebuilt_calculator_agent(query: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ③:</strong> Instantiates <code>Agent(model=BedrockModel(model_id=model_id), tools=[calculator], system_prompt="You are a helpful math assistant.")</code> so the standing system instruction primes Bedrock to delegate arithmetic and symbolic math to <code>calculator</code>.</li>
                                 <li><strong>Step ④:</strong> Calls <code>response = agent(query)</code>, triggering the Strands tool-use loop where Bedrock emits a <code>toolUse</code> block for <code>calculator</code>, Strands evaluates the expression via SymPy, and returns the exact result in a <code>toolResult</code> block.</li>
@@ -251,26 +243,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>prebuilt_calculator_route()</code> (<code>POST /api/prebuilt-calculator</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses the JSON request body with <code>request.get_json(force=True, silent=True)</code>, extracts <code>query</code> (or fallback <code>message</code>), and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>s_calc.run_prebuilt_calculator_agent(query)</code>, copies <code>res["response"]</code> into <code>res["result"]</code> for the unified frontend renderer, and returns the JSON payload (or HTTP <code>500</code> if an exception occurs).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>🧮 Math Assistant</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/prebuilt-calculator</code> with <code>{"query": "What's 42 raised to the power of 9?"}</code>.</li>
-                        <li>Flask's <code>@bp.before_request</code> hook (<code>enforce_rate_limit()</code>) verifies the client is within the 30-requests/hour quota and forwards the request to <code>prebuilt_calculator_route()</code>.</li>
-                        <li><code>prebuilt_calculator_route()</code> validates the non-empty <code>query</code> and calls <code>s_calc.run_prebuilt_calculator_agent(query)</code> in <code>07_prebuilt_tools.py</code>.</li>
-                        <li><code>run_prebuilt_calculator_agent()</code> creates a <code>BedrockModel</code> and a Strands <code>Agent</code> configured with <code>tools=[calculator]</code> and <code>system_prompt="You are a helpful math assistant."</code>.</li>
-                        <li>Calling <code>agent(query)</code> sends the user prompt, the system prompt, and the <code>calculator</code> JSON Schema to Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>) via the Converse API.</li>
+                        <li><code>run_prebuilt_calculator_agent(query)</code> creates a <code>BedrockModel</code> and a Strands <code>Agent</code> configured with <code>tools=[calculator]</code> and <code>system_prompt="You are a helpful math assistant."</code>.</li>
+                        <li>Calling <code>agent(query)</code> (e.g., for <code>"What's 42 raised to the power of 9?"</code>) sends the user prompt, the system prompt, and the <code>calculator</code> JSON Schema to Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>) via the Converse API.</li>
                         <li>Bedrock responds with <code>stopReason="tool_use"</code> and a <code>toolUse</code> block specifying <code>name="calculator"</code> and input <code>{"expression": "42**9"}</code> (or equivalent).</li>
                         <li>The Strands runtime invokes <code>strands_tools.calculator</code> locally, which uses SymPy to compute <code>406,671,383,849,472</code> with arbitrary-precision integer arithmetic and sends it back to Bedrock inside a <code>toolResult</code> message.</li>
-                        <li>Bedrock generates the final natural-language answer, <code>run_prebuilt_calculator_agent()</code> extracts the <code>tool_calls</code> trace from <code>agent.messages</code>, and <code>app.py</code> returns the JSON response to the browser card.</li>
+                        <li>Bedrock generates the final natural-language answer, and Step ⑤ extracts the <code>tool_calls</code> trace from <code>agent.messages</code> and returns <code>{"query": query, "response": str(response), "tool_calls": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

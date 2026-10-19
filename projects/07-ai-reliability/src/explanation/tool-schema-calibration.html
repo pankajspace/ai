@@ -245,57 +245,42 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <p><strong>1. Core Experiment Architecture (<code>src/python/03_tool_schema_calibration.py</code>)</strong></p>
                     <ul>
-                        <li><code>src/python/03_tool_schema_calibration.py</code>: Implements the 2&times;2 Tool Schema Routing Calibration experiment. It tests how an LLM routes a user weather query across four schema conditions crossing <strong>Function Name Clarity</strong> (Descriptive vs. Opaque) with <strong>Description Precision</strong> (Loose vs. Tight), forcing a tool choice via <code>tool_choice="required"</code> and scoring whether the model picks the target hourly precipitation tool.</li>
-                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads <code>03_tool_schema_calibration.py</code> as <code>mod_calib</code>, enforces rate limiting on <code>POST</code> requests, and exposes <code>POST /api/tool-schema-calibration</code> via <code>tool_schema_calibration_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser UI where users enter or select a routing query (<code>query</code>), send a <code>POST /api/tool-schema-calibration</code> request, and inspect the 2&times;2 matrix of selected tools, routing accuracy badges, and calibration summary.</li>
+                        <li><code>03_tool_schema_calibration.py</code> runs a controlled <strong>2&times;2 factorial experiment</strong> on LLM function-calling routing, crossing <strong>Function Name Clarity</strong> (Descriptive vs. Opaque) with <strong>Description Precision</strong> (Loose vs. Tight) to isolate how strongly tool names and docstrings govern tool selection accuracy.</li>
                     </ul>
 
-                    <p><strong>2. Pydantic Schemas in <code>03_tool_schema_calibration.py</code></strong></p>
+                    <p><strong>2. Pydantic Data Schemas</strong></p>
                     <ul>
-                        <li><code>ToolSchemaCalibrationRequest(BaseModel)</code>: Defines the input payload with default <code>query: str = "What is the current hourly precipitation forecast for Seattle?"</code>.</li>
-                        <li><code>ConditionResult(BaseModel)</code>: Represents the routing outcome for one cell of the 2&times;2 matrix: <code>condition_code: str</code> (<code>"A"</code>, <code>"B"</code>, <code>"C"</code>, or <code>"D"</code>), <code>condition_label: str</code>, <code>selected_tool: Optional[str]</code>, and <code>is_correct_routing: bool</code>.</li>
-                        <li><code>ToolSchemaCalibrationResponse(BaseModel)</code>: Wraps the full experiment response containing <code>target_intent: str</code>, <code>condition_results: List[ConditionResult]</code>, and <code>analysis_summary: str</code>.</li>
+                        <li><code>ToolSchemaCalibrationRequest(BaseModel)</code>: Defines the input query with default <code>query: str = "What is the current hourly precipitation forecast for Seattle?"</code>.</li>
+                        <li><code>ConditionResult(BaseModel)</code>: Captures the routing outcome for one cell of the 2&times;2 matrix: <code>condition_code: str</code> (<code>"A"</code>, <code>"B"</code>, <code>"C"</code>, or <code>"D"</code>), <code>condition_label: str</code>, <code>selected_tool: Optional[str]</code>, and <code>is_correct_routing: bool</code>.</li>
+                        <li><code>ToolSchemaCalibrationResponse(BaseModel)</code>: Wraps the overall calibration output containing <code>target_intent: str</code>, <code>condition_results: List[ConditionResult]</code>, and <code>analysis_summary: str</code>.</li>
                     </ul>
 
-                    <p><strong>3. The 2&times;2 Calibration Matrix &amp; Main Function: <code>run_tool_schema_calibration()</code></strong></p>
+                    <p><strong>3. The 2&times;2 Factorial Matrix &amp; Main Function: <code>run_tool_schema_calibration()</code></strong></p>
                     <ul>
                         <li>Accepts <code>query: str</code> and returns a dictionary matching <code>ToolSchemaCalibrationResponse</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client using <code>OPENAI_API_KEY</code> and <code>OPENAI_BASE_URL</code> and resolves <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>.</li>
-                                <li><strong>Step ②:</strong> Defines the 4-element <code>conditions</code> list representing the 2&times;2 factorial matrix where every tool takes the identical parameter schema <code>{"city": {"type": "string"}}</code>:
+                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client for the configured model (default <code>"gpt-4o-mini"</code>).</li>
+                                <li><strong>Step ②:</strong> Defines the 4-element <code>conditions</code> list representing the 2&times;2 matrix where all three candidate tools accept the exact same parameter schema (<code>{"city": {"type": "string"}}</code>):
                                     <ul>
-                                        <li><strong>Condition A (<code>Descriptive Names x Loose Descriptions</code>):</strong> Uses clear function names (<code>get_current_weather</code>, <code>get_hourly_precipitation</code>, <code>get_historical_climate</code>) with terse, low-detail descriptions; <code>correct_target</code> is <code>"get_hourly_precipitation"</code>.</li>
-                                        <li><strong>Condition B (<code>Descriptive Names x Tight Descriptions</code>):</strong> Pairs the same descriptive function names with rich docstrings specifying exact metrics and time horizons; <code>correct_target</code> is <code>"get_hourly_precipitation"</code>.</li>
+                                        <li><strong>Condition A (<code>Descriptive Names x Loose Descriptions</code>):</strong> Pairs descriptive function names (<code>get_current_weather</code>, <code>get_hourly_precipitation</code>, <code>get_historical_climate</code>) with terse, minimal descriptions; <code>correct_target</code> is <code>"get_hourly_precipitation"</code>.</li>
+                                        <li><strong>Condition B (<code>Descriptive Names x Tight Descriptions</code>):</strong> Pairs descriptive function names with detailed docstrings specifying exact weather metrics and time horizons; <code>correct_target</code> is <code>"get_hourly_precipitation"</code>.</li>
                                         <li><strong>Condition C (<code>Opaque Names x Loose Descriptions</code>):</strong> Replaces function names with opaque identifiers (<code>service_fn_101</code>, <code>service_fn_102</code>, <code>service_fn_103</code>) paired with terse descriptions; <code>correct_target</code> is <code>"service_fn_102"</code>.</li>
-                                        <li><strong>Condition D (<code>Opaque Names x Tight Descriptions</code>):</strong> Pairs opaque names (<code>service_fn_101..103</code>) with rich, explicit docstrings to isolate the routing power of descriptions alone; <code>correct_target</code> is <code>"service_fn_102"</code>.</li>
+                                        <li><strong>Condition D (<code>Opaque Names x Tight Descriptions</code>):</strong> Pairs opaque function names (<code>service_fn_101..103</code>) with detailed, explicit docstrings to isolate the routing signal of descriptions alone; <code>correct_target</code> is <code>"service_fn_102"</code>.</li>
                                     </ul>
                                 </li>
-                                <li><strong>Step ③:</strong> Iterates over each condition in <code>conditions</code>, builds the OpenAI <code>tools</code> schema array, and calls <code>client.chat.completions.create()</code> with <code>tool_choice="required"</code>. It extracts the chosen tool name from <code>msg.tool_calls[0].function.name</code>, compares <code>chosen == c["correct_target"]</code>, and appends the <code>ConditionResult</code> dictionary to <code>results</code>.</li>
-                                <li><strong>Step ④:</strong> Tallies <code>correct_count = sum(1 for r in results if r["is_correct_routing"])</code>, formats <code>analysis_summary</code> (<code>"Routed accurately in X of 4 calibration conditions."</code>), and returns the response dictionary.</li>
+                                <li><strong>Step ③:</strong> Loops over each condition in <code>conditions</code>, builds the 3 OpenAI function-calling schemas, and calls <code>client.chat.completions.create()</code> with <code>tool_choice="required"</code> so the model must commit to one tool. It reads <code>chosen = msg.tool_calls[0].function.name</code>, evaluates <code>is_correct = (chosen == c["correct_target"])</code>, and appends the <code>ConditionResult</code> dictionary to <code>results</code>.</li>
+                                <li><strong>Step ④:</strong> Tallies <code>correct_count = sum(1 for r in results if r["is_correct_routing"])</code>, formats <code>analysis_summary</code> (<code>"Routed accurately in X of 4 calibration conditions."</code>), and returns the complete calibration dictionary.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>4. Flask Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><code>tool_schema_calibration_route()</code> (<code>POST /api/tool-schema-calibration</code>):
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses the JSON request body, extracts and trims <code>query</code> (or fallback key <code>message</code>), and returns HTTP <code>400</code> if <code>query</code> is empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>mod_calib.run_tool_schema_calibration(query)</code>, sets <code>res["result"] = res.get("analysis_summary", "Calibration complete.")</code>, and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>5. End-to-End Data Flow Walkthrough</strong></p>
+                    <p><strong>4. End-to-End AI Calibration Flow</strong></p>
                     <ol>
-                        <li>The user enters or selects a weather routing query in <code>src/index.html</code> and clicks <strong>Run Calibration</strong>, causing <code>src/js/main.js</code> to send <code>POST /api/tool-schema-calibration</code> with <code>{ query }</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> middleware checks the client's rate limit and routes the request to <code>tool_schema_calibration_route()</code> in <code>app.py</code>.</li>
-                        <li><code>tool_schema_calibration_route()</code> validates that <code>query</code> is non-empty and calls <code>run_tool_schema_calibration(query)</code> in <code>03_tool_schema_calibration.py</code>.</li>
-                        <li>For each of the 4 conditions (<code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>), <code>run_tool_schema_calibration()</code> constructs 3 OpenAI function-calling schemas with identical <code>city</code> parameter definitions and calls the LLM with <code>tool_choice="required"</code>.</li>
-                        <li>The service inspects <code>msg.tool_calls[0].function.name</code> for each condition, checks whether it matches <code>correct_target</code> (<code>get_hourly_precipitation</code> for A/B, <code>service_fn_102</code> for C/D), and aggregates the total score.</li>
-                        <li>Flask serializes the 4 condition results and summary to JSON and returns them to <code>main.js</code>, which renders the 2&times;2 routing matrix in the browser.</li>
+                        <li><code>run_tool_schema_calibration()</code> takes the user's weather query (targeting hourly precipitation forecast) and iterates through the four schema conditions (<code>A</code>, <code>B</code>, <code>C</code>, <code>D</code>).</li>
+                        <li>For each condition, it presents three competing weather tools with identical argument signatures and forces a tool invocation via <code>tool_choice="required"</code>.</li>
+                        <li>It extracts the selected function name from <code>msg.tool_calls[0].function.name</code>, grades it against the condition's ground-truth target tool (<code>get_hourly_precipitation</code> or <code>service_fn_102</code>), and summarizes how naming clarity and docstring precision affect routing reliability.</li>
                     </ol>
                 </div>
             </section>

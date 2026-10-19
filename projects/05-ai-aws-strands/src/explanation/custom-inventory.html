@@ -229,22 +229,14 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <p><strong>1. Core AI &amp; Domain Tool Components in <code>06_custom_tool_inventory.py</code></strong></p>
                     <ul>
-                        <li><strong><code>src/python/06_custom_tool_inventory.py</code>:</strong> Defines the custom domain tool <code>@tool check_inventory(product_id: str) -&gt; str</code> backed by a mock SKU dictionary and exposes <code>run_custom_inventory_agent(question)</code>.</li>
-                        <li><strong><code>src/python/app.py</code>:</strong> Dynamically loads <code>06_custom_tool_inventory.py</code> as <code>s_inv</code> and exposes <code>POST /api/custom-inventory</code> via <code>custom_inventory_route()</code>.</li>
-                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> Sends the user's inventory question (e.g., <code>"Is PROD-123 in stock?"</code>) in <code>{ "question": "..." }</code> to <code>POST /api/custom-inventory</code> and renders the agent's answer and tool call trace.</li>
-                    </ul>
-
-                    <p><strong>2. Classes, Mock Inventory Data, <code>@tool</code> Function, and Service Logic in <code>06_custom_tool_inventory.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>CustomInventoryRequest(BaseModel)</code> &amp; <code>CustomInventoryResponse(BaseModel)</code>:</strong> Pydantic schemas documenting the input <code>question: str = "Is PROD-123 in stock?"</code> and output dictionary fields (<code>question: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
-                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from environment variables, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>CustomInventoryRequest</code> &amp; <code>CustomInventoryResponse</code>):</strong> Document the input <code>question: str = "Is PROD-123 in stock?"</code> and output dictionary fields (<code>question: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>).</li>
+                        <li><strong>Step <code>②</code> Model Identifier (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong><code>@tool def check_inventory(product_id: str) -&gt; str</code>:</strong>
                             <ul>
-                                <li><strong>Docstring &amp; Example Format:</strong> The <code>Args:</code> block specifies <code>product_id: The product ID to check (e.g., "PROD-123")</code>, giving the LLM a concrete pattern so it formats SKU identifiers accurately.</li>
-                                <li><strong>Mock Inventory Dictionary:</strong> Defines <code>inventory = {"PROD-123": 15, "PROD-456": 0, "PROD-789": 8}</code> representing an internal enterprise database table.</li>
+                                <li><strong>Docstring &amp; Example Format:</strong> The <code>Args:</code> block specifies <code>product_id: The product ID to check (e.g., "PROD-123")</code>, giving the LLM a concrete pattern so it extracts SKU identifiers accurately.</li>
+                                <li><strong>Mock Inventory Catalog:</strong> Defines <code>inventory = {"PROD-123": 15, "PROD-456": 0, "PROD-789": 8}</code> representing an internal domain data store.</li>
                                 <li><strong>Safe Lookup &amp; Status Formatting:</strong> Uses <code>quantity = inventory.get(product_id, 0)</code> so unknown SKUs safely default to <code>0</code> without raising a <code>KeyError</code>. Returns <code>f"Product {product_id} is in stock. We have {quantity} units available."</code> when <code>quantity &gt; 0</code>, or <code>f"Product {product_id} is currently out of stock."</code> otherwise.</li>
                             </ul>
                         </li>
@@ -257,25 +249,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>custom_inventory_route()</code> (<code>POST /api/custom-inventory</code>):</strong>
-                            <ul>
-                                <li><strong>Step <code>①</code>:</strong> Parses <code>question</code> (or fallback key <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_inv.run_custom_inventory_agent(question)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user asks <code>"Is PROD-123 in stock?"</code> in the browser; <code>main.js</code> sends <code>POST /api/custom-inventory</code>.</li>
-                        <li><code>custom_inventory_route()</code> in <code>app.py</code> validates the question and calls <code>s_inv.run_custom_inventory_agent(question)</code>.</li>
-                        <li><code>run_custom_inventory_agent()</code> creates a fresh Strands <code>Agent</code> registered with <code>check_inventory</code> and calls <code>agent(question)</code>.</li>
+                        <li><code>run_custom_inventory_agent(question)</code> creates a fresh Strands <code>Agent</code> registered with <code>check_inventory</code> and calls <code>agent(question)</code> (e.g., for <code>"Is PROD-123 in stock?"</code>).</li>
                         <li>On Turn 1, Bedrock Nova Lite inspects the tool schema, extracts <code>product_id="PROD-123"</code>, and emits a <code>toolUse</code> block.</li>
                         <li>Strands invokes <code>check_inventory("PROD-123")</code> in Python, which looks up <code>"PROD-123"</code> in <code>inventory</code>, finds <code>15</code>, and returns <code>"Product PROD-123 is in stock. We have 15 units available."</code> in a <code>toolResult</code> block.</li>
                         <li>On Turn 2, Bedrock reads the tool output and writes a natural-language reply confirming 15 units are available.</li>
-                        <li>Step <code>⑤</code> records <code>check_inventory({'product_id': 'PROD-123'})</code> in <code>tool_calls</code>, and <code>app.py</code> returns the JSON payload to the browser.</li>
+                        <li>Step <code>⑤</code> records <code>check_inventory({'product_id': 'PROD-123'})</code> in <code>tool_calls</code> and returns <code>{"question": question, "response": str(response), "tool_calls": tool_calls}</code>.</li>
                     </ol>
                 </div>
             </section>

@@ -237,50 +237,39 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is built across two backend Python files in <code>src/python/</code> and an optional Redis Docker container to run a tool-calling OpenAI agent whose per-session conversation history persists in Redis (with automatic in-memory fallback).</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/03_redis.py</code> implements DeskBuddy, an autonomous tool-calling OpenAI agent whose per-session conversation history is persisted in Redis under <code>history:{session_id}</code> (with automatic in-memory fallback when Redis is unavailable).</p>
+                    <p><strong>1. Core AI Concepts in Stateful Tool-Calling Agents</strong></p>
                     <ul>
-                        <li><strong><code>src/python/03_redis.py</code></strong>: Manages Redis connection detection and JSON list serialization for session histories (`history:{session_id}`), defines two OpenAI function-calling tools (<code>calculator</code> and <code>get_datetime</code>), runs a bounded 5-lap tool-calling agent loop in <code>run_redis_agent()</code>, and saves the updated conversation back to Redis.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask server and <code>/api</code> Blueprint that validates incoming JSON fields and routes <code>POST /api/redis</code> to <code>03_redis.py</code>.</li>
+                        <li><strong>Externalized Session Memory (<code>history:{session_id}</code>):</strong> LLMs are stateless across API calls. Storing each session's ordered message list in Redis (`r.lrange` / `r.rpush` of JSON-serialized messages) lets the agent remember prior turns, user facts, and previous tool outputs across requests.</li>
+                        <li><strong>OpenAI Function-Calling Schemas (<code>TOOL_DEFS</code>):</strong> Declaring structured JSON schemas for external functions (<code>calculator</code> and <code>get_datetime</code>) allows the LLM to emit structured <code>tool_calls</code> instead of guessing math or current timestamps.</li>
+                        <li><strong>Bounded Think &rarr; Act &rarr; Observe Loop:</strong> The agent iterates up to 5 laps—calling the LLM, executing every requested tool, appending both the assistant's <code>tool_calls</code> message and each <code>role="tool"</code> result message to history, and re-querying the LLM until it produces a final natural-language answer.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/03_redis.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/03_redis.py</code></strong></p>
                     <ul>
-                        <li><strong><code>_redis_client</code>, <code>_redis_checked</code>, &amp; <code>_fallback_memory</code></strong>: Module-level state that caches the Redis connection once via <code>_get_redis()</code> and provides a Python dictionary fallback (<code>_fallback_memory</code>) when no Redis server is reachable.</li>
-                        <li><strong><code>RedisAgentRequest</code>, <code>RedisAgentToolCall</code>, &amp; <code>RedisAgentResponse</code></strong>: Pydantic schemas defining the input request (<code>session_id</code>, <code>message</code>, <code>reset_session</code>) and the structured response (<code>reply</code>, <code>session_id</code>, <code>history_length</code>, <code>tool_calls</code>, and <code>backend</code>).</li>
-                        <li><strong><code>_get_redis()</code>, <code>_load_history()</code>, <code>_save_history()</code>, &amp; <code>_clear_history()</code></strong>:
+                        <li><strong><code>RedisAgentRequest</code>, <code>RedisAgentToolCall</code>, &amp; <code>RedisAgentResponse</code>:</strong> Pydantic schemas defining the input (<code>session_id: str = "demo"</code>, <code>message: str</code>, <code>reset_session: bool = False</code>), each tool invocation trace (<code>tool: str</code>, <code>args: dict</code>, <code>result: dict</code>), and the response payload (<code>session_id</code>, <code>message</code>, <code>answer</code>, <code>tool_calls</code>, <code>stored_messages_count</code>, and <code>storage_backend</code>).</li>
+                        <li><strong><code>_get_redis()</code>, <code>_load_history()</code>, <code>_save_history()</code>, &amp; <code>_clear_history()</code>:</strong>
                             <ul>
-                                <li><code>_get_redis()</code> reads <code>REDIS_HOST</code> and <code>REDIS_PORT</code>, connects with a 1.5-second socket timeout, and pings the server; if unreachable, it sets <code>_redis_client = None</code> so subsequent calls use <code>_fallback_memory</code> without stalling.</li>
-                                <li><code>_load_history(session_id)</code> fetches the JSON string stored at key <code>f"history:{session_id}"</code> via <code>r.get()</code> (or seeds a default system message on a new session) and deserializes it with <code>json.loads()</code>.</li>
-                                <li><code>_save_history(session_id, history)</code> serializes the message list with <code>json.dumps(history)</code> and writes it back to Redis via <code>r.set()</code>.</li>
-                                <li><code>_clear_history(session_id)</code> deletes <code>f"history:{session_id}"</code> from Redis and pops it from <code>_fallback_memory</code>.</li>
+                                <li><code>_get_redis()</code> probes <code>redis.Redis(host=host, port=port, decode_responses=True, socket_connect_timeout=1.5)</code> once via <code>client.ping()</code> and falls back to <code>_fallback_memory</code> if unreachable.</li>
+                                <li><code>_load_history(session_id)</code> reads all JSON items from the Redis list <code>r.lrange(f"history:{session_id}", 0, -1)</code> (or <code>_fallback_memory</code>) and returns <code>(history_list, backend_label)</code>.</li>
+                                <li><code>_save_history(session_id, history)</code> replaces the Redis list by calling <code>r.delete(key)</code> followed by <code>r.rpush(key, json.dumps(m))</code> for each message in <code>history</code>.</li>
+                                <li><code>_clear_history(session_id)</code> deletes <code>f"history:{session_id}"</code> from Redis and <code>_fallback_memory</code>.</li>
                             </ul>
                         </li>
-                        <li><strong><code>TOOL_DEFS</code> &amp; <code>call_tool(name: str, args: dict) -&gt; str</code></strong>:
+                        <li><strong><code>TOOL_DEFS</code> &amp; <code>call_tool(name: str, args: dict) -&gt; dict</code>:</strong> Define and execute <code>calculator(expression)</code> (using a restricted <code>eval(expr, {"__builtins__": {}})</code>) and <code>get_datetime()</code> (returning <code>datetime.datetime.now().isoformat()</code>).</li>
+                        <li><strong><code>run_redis_agent(session_id: str, message: str, reset_session: bool = False) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><code>TOOL_DEFS</code> declares the OpenAI JSON schemas for two tools: <code>calculator(expression)</code> and <code>get_datetime()</code>.</li>
-                                <li><code>call_tool()</code> executes <code>calculator</code> using a sandboxed <code>eval()</code> exposing only <code>math</code> functions, or returns the current UTC timestamp for <code>get_datetime</code>.</li>
-                            </ul>
-                        </li>
-                        <li><strong><code>run_redis_agent(session_id: str, message: str, reset_session: bool = False) -&gt; RedisAgentResponse</code></strong>:
-                            <ul>
-                                <li><strong>Step ① — Load session history</strong>: Optionally clears the session if <code>reset_session</code> is true, loads the prior message list via <code>_load_history(session_id)</code>, and appends the new user message.</li>
-                                <li><strong>Step ② — Run bounded agent loop (<code>range(5)</code>)</strong>: Calls <code>client.chat.completions.create(model="gpt-4o-mini", messages=history, tools=TOOL_DEFS, tool_choice="auto")</code>.</li>
-                                <li><strong>Step ③ — Execute tool calls or finish</strong>: If <code>msg.tool_calls</code> is present, appends the assistant&apos;s tool-call request to <code>history</code>, executes each requested tool via <code>call_tool()</code>, records a <code>RedisAgentToolCall</code>, and appends each <code>role="tool"</code> result message to <code>history</code> for the next loop iteration. Once <code>msg.tool_calls</code> is empty, appends the final assistant reply and breaks out of the loop.</li>
-                                <li><strong>Step ④ — Persist updated history</strong>: Calls <code>_save_history(session_id, history)</code> and returns the <code>RedisAgentResponse</code>.</li>
+                                <li><strong>Step ① — Optional session reset:</strong> If <code>reset_session</code> is true, clears the session via <code>_clear_history(session_id)</code> and returns early if <code>message</code> is empty.</li>
+                                <li><strong>Step ② — Load conversation history:</strong> Loads prior messages via <code>_load_history(session_id)</code> and appends <code>{"role": "user", "content": message}</code>.</li>
+                                <li><strong>Step ③ — Bounded 5-lap agent loop:</strong> Calls <code>llm.chat.completions.create(model=model, messages=history, tools=TOOL_DEFS)</code>. When <code>msg.tool_calls</code> is empty, breaks out of the loop; otherwise appends <code>msg.model_dump(exclude_none=True)</code>, executes each tool via <code>call_tool()</code>, records the step in <code>tool_calls_trace</code>, and appends the corresponding <code>{"role": "tool", "tool_call_id": tc.id, "content": json.dumps(result)}</code> message to <code>history</code>.</li>
+                                <li><strong>Step ④ — Persist updated history:</strong> Appends the final <code>{"role": "assistant", "content": answer}</code> message, saves the full conversation via <code>_save_history(session_id, history)</code>, and returns the response dictionary.</li>
                             </ul>
                         </li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>redis_agent_service()</code> (<code>POST /api/redis</code>)</strong>: Checks <code>OPENAI_API_KEY</code>, handles standalone session resets when <code>reset_session</code> is true and <code>message</code> is empty, otherwise validates <code>message</code>, calls <code>mod.run_redis_agent(session_id, message, reset_session=reset)</code>, and returns the serialized JSON response.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End Stateful Agent Flow</strong></p>
                     <ol>
-                        <li>The browser UI sends <code>POST /api/redis</code> with <code>{"session_id": "...", "message": "...", "reset_session": false}</code>.</li>
-                        <li><code>redis_agent_service()</code> in <code>app.py</code> validates the request and calls <code>run_redis_agent()</code> in <code>03_redis.py</code>.</li>
-                        <li><code>_load_history()</code> fetches the existing JSON conversation array from Redis key <code>history:{session_id}</code> (or <code>_fallback_memory</code>) and appends the new user prompt.</li>
-                        <li>The 5-lap OpenAI tool-calling loop invokes <code>calculator</code> and/or <code>get_datetime</code> as needed, appending tool calls and tool outputs directly to the session history until the model produces its final answer.</li>
-                        <li><code>_save_history()</code> writes the updated JSON list back to Redis, and <code>app.py</code> returns the reply, tool trace, history length, and active storage backend to the browser.</li>
+                        <li><code>run_redis_agent()</code> loads the existing message list for <code>session_id</code> from Redis (or fallback memory) and appends the new user message.</li>
+                        <li>During the bounded loop, OpenAI inspects the conversation history and <code>TOOL_DEFS</code>, emitting <code>tool_calls</code> for arithmetic or current-time queries that <code>call_tool()</code> executes locally and feeds back as <code>role="tool"</code> messages.</li>
+                        <li>Once the LLM synthesizes its final answer, the updated message history is persisted back to <code>history:{session_id}</code> so subsequent turns in the same session retain full multi-turn context.</li>
                     </ol>
                 </div>
             </section>

@@ -243,60 +243,44 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo spans three Python files that connect a Groq-hosted LLM to the FastMCP cricket server via dynamic runtime tool discovery and an OpenAI-compatible ReAct tool-calling loop:</p>
+                    <p><code>src/python/02_mcp_agent.py</code> and <code>src/python/cricket_server.py</code> connect a Groq-hosted LLM to a FastMCP server via dynamic runtime tool discovery and an OpenAI-compatible ReAct tool-calling loop:</p>
                     <ul>
-                        <li><code>02_mcp_agent.py</code> &mdash; Spawns <code>cricket_server.py</code> over <code>stdio</code>, discovers its tools at runtime with <code>session.list_tools()</code>, translates them into OpenAI function-calling format, and runs a multi-turn Groq LLM tool-calling loop while recording a structured execution trace.</li>
+                        <li><code>02_mcp_agent.py</code> &mdash; Spawns <code>cricket_server.py</code> over <code>stdio</code>, discovers its tools at runtime with <code>session.list_tools()</code>, translates them into OpenAI function-calling schemas, and runs a multi-turn LLM tool-calling loop while recording an execution trace.</li>
                         <li><code>cricket_server.py</code> &mdash; The standalone FastMCP server exposing <code>get_live_score</code> and <code>get_player_stats</code> over <code>stdio</code> transport.</li>
-                        <li><code>app.py</code> &mdash; The Flask Blueprint server exposing <code>POST /api/mcp-agent</code> to validate user questions, run the async MCP agent, and return both the final answer and the tool call trace as JSON.</li>
                     </ul>
 
                     <p><strong>1. MCP-Enabled LLM Agent Module (<code>02_mcp_agent.py</code>)</strong></p>
                     <ul>
                         <li><strong>Pydantic Payload Contracts (<code>McpAgentRequest</code> &amp; <code>McpAgentResponse</code>):</strong>
                             <ul>
-                                <li><code>McpAgentRequest</code> specifies the input question (defaulting to <code>"What is the score in India vs West Indies?"</code>).</li>
-                                <li><code>McpAgentResponse</code> defines the output structure: <code>answer: str</code> (the model's final natural-language answer) and <code>trace: list[dict]</code> (each MCP tool call's name, arguments, and raw JSON output).</li>
+                                <li><code>McpAgentRequest</code> specifies the input <code>question: str = "What is the score in India vs West Indies?"</code>.</li>
+                                <li><code>McpAgentResponse</code> defines the output payload: <code>answer: str</code> (the LLM's final natural-language answer) and <code>trace: list[dict]</code> (each MCP tool call's name, arguments, and raw JSON output).</li>
                             </ul>
                         </li>
-                        <li><strong>Step ① &mdash; Model &amp; Subprocess Configuration (<code>MODEL</code>, <code>GROQ_BASE_URL</code>, <code>server_script</code>, <code>server</code>):</strong> Reads <code>GROQ_MODEL</code> (defaulting to <code>"openai/gpt-oss-20b"</code>) and <code>GROQ_BASE_URL</code> (<code>"https://api.groq.com/openai/v1"</code>) from environment variables, and builds <code>StdioServerParameters(command=sys.executable, args=[server_script])</code> pointing to <code>cricket_server.py</code>.</li>
-                        <li><strong><code>def to_openai_format(mcp_tools)</code>:</strong> Bridges the MCP protocol schema to the OpenAI function-calling schema. Iterates over the tool objects returned by <code>session.list_tools()</code> and maps each tool's <code>t.name</code>, <code>t.description</code>, and <code>t.inputSchema</code> into <code>{"type": "function", "function": {"name": t.name, "description": t.description or "", "parameters": t.inputSchema}}</code>.</li>
-                        <li><strong><code>def call_llm(llm, kwargs, retries=2)</code>:</strong> Wraps <code>llm.chat.completions.create(**kwargs)</code> with retry logic (up to 3 total attempts) to handle a known quirk where OpenAI's open-weight <code>gpt-oss</code> models occasionally attempt to call a pretrained <code>browser.search</code> tool not in the tool list (triggering Groq's <code>tool_use_failed</code> error). Returns <code>(message, None)</code> on success or <code>(None, error_message)</code> on failure.</li>
+                        <li><strong>Step ① &mdash; Model &amp; Subprocess Configuration (<code>MODEL</code>, <code>GROQ_BASE_URL</code>, <code>server_script</code>, <code>server</code>):</strong> Configures the Groq model (defaulting to <code>"openai/gpt-oss-20b"</code>) and OpenAI-compatible base URL (<code>"https://api.groq.com/openai/v1"</code>), and builds <code>StdioServerParameters(command=sys.executable, args=[server_script])</code> for <code>cricket_server.py</code>.</li>
+                        <li><strong><code>def to_openai_format(mcp_tools)</code>:</strong> Bridges MCP tool descriptors to OpenAI's function-calling schema by mapping each tool's <code>t.name</code>, <code>t.description</code>, and <code>t.inputSchema</code> into <code>{"type": "function", "function": {"name": t.name, "description": t.description or "", "parameters": t.inputSchema}}</code>.</li>
+                        <li><strong><code>def call_llm(llm, kwargs, retries=2)</code>:</strong> Wraps <code>llm.chat.completions.create(**kwargs)</code> with retry logic (up to 3 total attempts) to recover when an open-weight model attempts to invoke an undeclared built-in tool (triggering Groq's <code>tool_use_failed</code> error).</li>
                         <li><strong><code>async def run_mcp_agent(question: str) -&gt; dict</code>:</strong> Executes the end-to-end MCP agent loop:
                             <ul>
-                                <li><strong>Step ② &mdash; Client &amp; Prompt Setup:</strong> Instantiates <code>OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=GROQ_BASE_URL)</code>, initializes an empty <code>trace = []</code> list, and builds the initial <code>messages</code> list with a strict system prompt (instructing the model to use only provided functions and stay brief) plus the user's <code>question</code>.</li>
-                                <li><strong>Step ③ &mdash; MCP Handshake &amp; Runtime Tool Discovery:</strong> Opens the subprocess pipe with <code>async with stdio_client(server) as (read, write):</code> and <code>async with ClientSession(read, write) as session:</code>, runs <code>await session.initialize()</code>, and calls <code>to_openai_format((await session.list_tools()).tools)</code> so the agent discovers tools dynamically with zero hardcoded tool names.</li>
-                                <li><strong>Step ④ &mdash; Multi-Step Tool-Calling Loop (up to 5 turns):</strong> Calls <code>call_llm()</code> with <code>temperature=0</code> and the converted <code>tools</code> list. If an error occurs, returns early with the error message and partial trace. If <code>not reply.tool_calls</code>, the model has finished gathering facts and its <code>reply.content</code> is returned immediately with <code>trace</code>.</li>
-                                <li><strong>Step ⑤ &mdash; MCP Tool Execution &amp; Observation Feedback:</strong> Appends the assistant's <code>tool_calls</code> message to <code>messages</code>, then loops over each requested <code>call</code>: parses <code>args = json.loads(call.function.arguments)</code>, invokes the MCP server via <code>await session.call_tool(call.function.name, args)</code>, extracts the text payload, appends <code>{"tool": call.function.name, "args": args, "result": text}</code> to <code>trace</code>, and appends a <code>{"role": "tool", "tool_call_id": call.id, "content": text}</code> message so the LLM can read the server's output on the next iteration.</li>
+                                <li><strong>Step ② &mdash; Client &amp; Prompt Setup:</strong> Initializes the OpenAI client pointed at Groq, creates an empty <code>trace = []</code> list, and seeds <code>messages</code> with a system prompt (instructing the assistant to use only provided functions) and the user's <code>question</code>.</li>
+                                <li><strong>Step ③ &mdash; MCP Handshake &amp; Runtime Tool Discovery:</strong> Opens the subprocess pipe via <code>stdio_client(server)</code> and <code>ClientSession(read, write)</code>, awaits <code>session.initialize()</code>, and converts <code>(await session.list_tools()).tools</code> with <code>to_openai_format()</code> so the agent discovers available tools dynamically without hardcoded schemas.</li>
+                                <li><strong>Step ④ &mdash; Multi-Step Tool-Calling Loop (up to 5 turns):</strong> Calls <code>call_llm()</code> with <code>temperature=0</code> and the discovered <code>tools</code>. When <code>not reply.tool_calls</code>, the model has finished gathering facts and returns <code>{"answer": reply.content or "", "trace": trace}</code>.</li>
+                                <li><strong>Step ⑤ &mdash; MCP Tool Execution &amp; Observation Feedback:</strong> Appends the assistant's <code>tool_calls</code> message to <code>messages</code>, then iterates over each requested <code>call</code>: parses <code>args = json.loads(call.function.arguments)</code>, invokes the MCP server via <code>await session.call_tool(call.function.name, args)</code>, records <code>{"tool": call.function.name, "args": args, "result": text}</code> in <code>trace</code>, and appends a <code>{"role": "tool", "tool_call_id": call.id, "content": text}</code> message for the next LLM turn.</li>
                             </ul>
                         </li>
                     </ul>
 
                     <p><strong>2. FastMCP Cricket Server (<code>cricket_server.py</code>)</strong></p>
                     <ul>
-                        <li><strong><code>mcp = FastMCP("Cricket-Score-Server")</code>:</strong> Initializes the FastMCP server and exposes <code>LIVE_MATCHES</code> and <code>PLAYER_STATS</code> through two decorated tool functions.</li>
-                        <li><strong><code>get_live_score(teams)</code> &amp; <code>get_player_stats(player_name)</code>:</strong> Log diagnostic traces to <code>sys.stderr</code> (Step ①) so <code>stdout</code> remains clean for JSON-RPC frames, normalize the input string (Step ②), and return the matching dictionary or an <code>{"error": ...}</code> object.</li>
-                        <li><strong><code>mcp.run(transport="stdio")</code>:</strong> Runs the stdio JSON-RPC server loop when spawned by <code>02_mcp_agent.py</code>.</li>
+                        <li><strong><code>mcp = FastMCP("Cricket-Score-Server")</code>:</strong> Exposes <code>LIVE_MATCHES</code> and <code>PLAYER_STATS</code> through two decorated MCP tools (<code>get_live_score</code> and <code>get_player_stats</code>).</li>
+                        <li><strong><code>get_live_score(teams)</code> &amp; <code>get_player_stats(player_name)</code>:</strong> Log diagnostic traces to <code>sys.stderr</code> (Step ①) so <code>stdout</code> stays clean for JSON-RPC frames, normalize the input query (Step ②), and return the matching dictionary or an <code>{"error": ...}</code> object.</li>
                     </ul>
 
-                    <p><strong>3. Flask Web Server &amp; Blueprint Routes (<code>app.py</code>)</strong></p>
-                    <ul>
-                        <li><strong>Dynamic Service Loader (<code>_load_service</code>) &amp; Rate Limiter (<code>enforce_rate_limit</code>):</strong> Loads <code>02_mcp_agent.py</code> as <code>mod_mcp_agent</code> at startup and caps mutating <code>POST</code> requests at 30 per hour per client.</li>
-                        <li><strong><code>@bp.route("/api/mcp-agent", methods=["POST"]) def mcp_agent_route()</code>:</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Extracts <code>question</code> (or <code>message</code>) from the JSON request body, strips whitespace, and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Runs <code>asyncio.run(mod_mcp_agent.run_mcp_agent(question))</code>, copies <code>res["answer"]</code> into <code>res["result"]</code> for frontend compatibility, and returns <code>jsonify(res)</code> containing <code>answer</code>, <code>result</code>, and <code>trace</code>.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Connection Flow</strong></p>
+                    <p><strong>3. End-to-End Agent &amp; MCP Server Flow</strong></p>
                     <ol>
-                        <li>The user submits a natural-language cricket question in the browser, sending <code>POST /api/mcp-agent</code> with <code>{"question": ...}</code>.</li>
-                        <li><code>mcp_agent_route()</code> in <code>app.py</code> validates the non-empty question and runs <code>asyncio.run(mod_mcp_agent.run_mcp_agent(question))</code>.</li>
-                        <li><code>run_mcp_agent()</code> in <code>02_mcp_agent.py</code> spawns <code>cricket_server.py</code> over <code>stdio</code>, completes <code>session.initialize()</code>, fetches the MCP tool schemas via <code>session.list_tools()</code>, and converts them to OpenAI format with <code>to_openai_format()</code>.</li>
-                        <li>The agent sends the system prompt, user question, and tool schemas to Groq's OpenAI-compatible API via <code>call_llm()</code>.</li>
-                        <li>When Groq responds with <code>tool_calls</code> (e.g., calling <code>get_live_score</code> or <code>get_player_stats</code>), the agent forwards each call over the <code>stdio</code> pipe to <code>cricket_server.py</code> via <code>await session.call_tool(...)</code>, records the step in <code>trace</code>, and appends the JSON tool output to <code>messages</code>.</li>
-                        <li>On the next loop turn, Groq reads the tool output from <code>messages</code> and produces a grounded natural-language answer, which returns through <code>app.py</code> to the browser alongside the full <code>trace</code> list.</li>
+                        <li><code>run_mcp_agent(question)</code> spawns <code>cricket_server.py</code> over <code>stdio</code>, completes <code>session.initialize()</code>, fetches the MCP tool schemas via <code>session.list_tools()</code>, and converts them to OpenAI tool format with <code>to_openai_format()</code>.</li>
+                        <li>The agent sends the conversation messages and converted tool schemas to Groq via <code>call_llm()</code>.</li>
+                        <li>Whenever the LLM emits <code>tool_calls</code>, the agent forwards each tool call over the MCP <code>stdio</code> session via <code>await session.call_tool(...)</code>, appends the step to <code>trace</code>, and feeds the JSON tool output back into <code>messages</code> until the LLM produces its final grounded answer.</li>
                     </ol>
                 </div>
             </section>

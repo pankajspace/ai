@@ -235,47 +235,25 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-                    <p><strong>1. Purpose of Each File in This Demo</strong></p>
+                    <p><strong>1. Core AI Architecture in <code>01_hello_world_agent.py</code></strong></p>
                     <ul>
-                        <li><strong><code>src/python/01_hello_world_agent.py</code>:</strong> Defines the minimal AWS Strands agent service. It loads environment variables, declares Pydantic request/response schemas, configures an Amazon Bedrock foundation model (<code>BedrockModel</code>), and exposes <code>run_hello_world_agent(prompt)</code> to execute a single-turn natural-language prompt.</li>
-                        <li><strong><code>src/python/app.py</code>:</strong> The Flask web server and API gateway. Because Python module names cannot begin with digits in standard <code>import</code> statements, <code>app.py</code> dynamically loads <code>01_hello_world_agent.py</code> via <code>_load_service("01_hello_world_agent.py", "s_hello")</code>, enforces IP-based rate limiting on <code>POST</code> requests, and exposes <code>POST /api/hello-world-agent</code>.</li>
-                        <li><strong><code>src/index.html</code> + <code>src/js/main.js</code>:</strong> The interactive browser card that collects the user's prompt string, sends <code>POST /api/hello-world-agent</code> with JSON body <code>{ "prompt": "..." }</code>, and renders the returned agent response.</li>
-                    </ul>
-
-                    <p><strong>2. Classes, Model Configuration, and Functions in <code>01_hello_world_agent.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step <code>①</code> Environment Loading (<code>load_dotenv(find_dotenv())</code>):</strong> Walks up the directory tree to locate <code>.env</code> and injects AWS credentials (<code>AWS_ACCESS_KEY_ID</code>, <code>AWS_SECRET_ACCESS_KEY</code>, <code>AWS_DEFAULT_REGION</code>) and optional model overrides into <code>os.environ</code>.</li>
-                        <li><strong><code>HelloWorldAgentRequest(BaseModel)</code>:</strong> Pydantic input schema holding a single field, <code>prompt: str</code>, defaulting to <code>"Hello! Tell me a fun fact about AI agents."</code>. It documents the expected input contract.</li>
-                        <li><strong><code>HelloWorldAgentResponse(BaseModel)</code>:</strong> Pydantic output schema specifying the two keys returned by the service: <code>prompt: str</code> (the echoed input) and <code>response: str</code> (the assistant's generated text).</li>
-                        <li><strong>Step <code>②</code> Foundation Model Setup (<code>model_id</code> &amp; <code>model</code>):</strong> Resolves the Bedrock model ID by checking <code>BEDROCK_NOVA_LITE</code> first, then <code>BEDROCK_MODEL_ID</code>, and finally defaulting to <code>"amazon.nova-lite-v1:0"</code>. It wraps that identifier in <code>BedrockModel(model_id=model_id)</code>, which is stateless and safe to reuse across requests.</li>
-                        <li><strong><code>run_hello_world_agent(prompt: str) -&gt; dict</code>:</strong> The main service entry point. Accepts the user's <code>prompt</code> string and performs two numbered steps:
+                        <li><strong>Pydantic Contracts (<code>HelloWorldAgentRequest</code> &amp; <code>HelloWorldAgentResponse</code>):</strong> Define the structured input/output contract for the agent service: <code>prompt: str</code> (defaulting to <code>"Hello! Tell me a fun fact about AI agents."</code>) and the returned <code>prompt: str</code> and <code>response: str</code> fields.</li>
+                        <li><strong>Step <code>②</code> Foundation Model Setup (<code>model_id</code> &amp; <code>model</code>):</strong> Resolves the target Amazon Bedrock model identifier (checking <code>BEDROCK_NOVA_LITE</code> and <code>BEDROCK_MODEL_ID</code>, defaulting to <code>"amazon.nova-lite-v1:0"</code>) and wraps it in a stateless <code>BedrockModel(model_id=model_id)</code> provider instance.</li>
+                        <li><strong><code>run_hello_world_agent(prompt: str) -&gt; dict</code>:</strong> Executes the core Strands agentic loop:
                             <ul>
-                                <li><strong>Step <code>③</code> (<code>agent = Agent(model=model)</code>):</strong> Instantiates a fresh Strands <code>Agent</code> bound to the shared <code>BedrockModel</code>. Creating the <code>Agent</code> inside the function ensures each HTTP request starts with an empty <code>agent.messages</code> history.</li>
-                                <li><strong>Step <code>④</code> (<code>response = agent(prompt)</code>):</strong> Invokes the agent's <code>__call__</code> method, which formats the prompt as a Bedrock Converse user message, sends it to Amazon Nova Lite, and returns an <code>AgentResult</code> object. Converting it with <code>str(response)</code> extracts the plain text reply, returning <code>{"prompt": prompt, "response": str(response)}</code>.</li>
+                                <li><strong>Step <code>③</code> (<code>agent = Agent(model=model)</code>):</strong> Instantiates a fresh Strands <code>Agent</code> bound to the <code>BedrockModel</code>. Creating a new <code>Agent</code> per call guarantees an isolated conversation state (<code>agent.messages</code>) for every prompt.</li>
+                                <li><strong>Step <code>④</code> (<code>response = agent(prompt)</code>):</strong> Invokes the agent's <code>__call__</code> method, which formats the prompt into a Bedrock Converse user message, sends it to Amazon Nova Lite, and returns an <code>AgentResult</code> object. Calling <code>str(response)</code> extracts the assistant's generated text, returning <code>{"prompt": prompt, "response": str(response)}</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>3. Server Loader, Middleware, and Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>_load_service(filename: str, alias: str)</code>:</strong> Uses <code>importlib.util.spec_from_file_location</code> (Step <code>①</code>) and <code>spec.loader.exec_module(mod)</code> (Step <code>②</code>) to load numbered Python files like <code>01_hello_world_agent.py</code> into <code>sys.modules["services.s_hello"]</code> and assign the module object to <code>s_hello</code>.</li>
-                        <li><strong><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>):</strong> Intercepts every incoming <code>POST</code> request (Step <code>①</code>), calls <code>check_rate_limit(request, max_requests=30, window_seconds=3600)</code> (Step <code>②</code>), and returns HTTP <code>429 Too Many Requests</code> with a <code>Retry-After</code> header if the client exceeds 30 calls per hour (Step <code>③</code>).</li>
-                        <li><strong><code>hello_world_route()</code> (<code>POST /api/hello-world-agent</code>):</strong>
-                            <ul>
-                                <li><strong>Step <code>①</code>:</strong> Parses the incoming JSON body via <code>request.get_json(force=True, silent=True)</code>, extracts <code>prompt</code> (or fallback key <code>message</code>), strips whitespace, and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step <code>②</code>:</strong> Calls <code>s_hello.run_hello_world_agent(prompt)</code>, copies <code>res["response"]</code> into <code>res["result"]</code> for frontend compatibility, and serializes the dictionary as JSON via <code>jsonify(res)</code> (catching any AWS/runtime exceptions as HTTP <code>500</code>).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Execution Walkthrough</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the Hello World card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/hello-world-agent</code> with <code>{ "prompt": "Hello! Tell me a fun fact about AI agents." }</code>.</li>
-                        <li>Flask's Blueprint <code>before_request</code> hook (<code>enforce_rate_limit</code>) verifies the client is within the 30 requests/hour quota.</li>
-                        <li><code>hello_world_route()</code> in <code>app.py</code> validates the non-empty prompt and calls <code>s_hello.run_hello_world_agent(prompt)</code>.</li>
-                        <li>Inside <code>01_hello_world_agent.py</code>, <code>run_hello_world_agent()</code> creates a request-scoped <code>Agent(model=model)</code> and calls <code>agent(prompt)</code>.</li>
-                        <li>Strands sends a Converse API request via <code>boto3</code> to Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>). Because no tools are registered, the model answers in a single turn.</li>
-                        <li><code>run_hello_world_agent()</code> casts the <code>AgentResult</code> to <code>str(response)</code> and returns <code>{"prompt": prompt, "response": "..."}</code> to <code>app.py</code>, which adds <code>"result"</code> and returns the JSON payload to the browser.</li>
+                        <li><code>run_hello_world_agent(prompt)</code> receives the natural-language prompt (e.g., <code>"Hello! Tell me a fun fact about AI agents."</code>).</li>
+                        <li>It instantiates <code>Agent(model=model)</code> with no tools registered and invokes <code>agent(prompt)</code>.</li>
+                        <li>Strands sends a Converse API request to Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>) containing the user message.</li>
+                        <li>Because no tools are attached, the foundation model completes its reasoning in a single turn (<code>stopReason="end_turn"</code>) and returns the assistant message.</li>
+                        <li><code>run_hello_world_agent()</code> converts the returned <code>AgentResult</code> to plain text via <code>str(response)</code> and returns <code>{"prompt": prompt, "response": str(response)}</code>.</li>
                     </ol>
                 </div>
             </section>

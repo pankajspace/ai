@@ -256,54 +256,34 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>Purpose of Each File</strong></p>
-                    <ul>
-                        <li><code>src/python/03_agent_one_tool.py</code> &mdash; Implements a complete single-tool agent from scratch using only the raw <code>openai.OpenAI</code> SDK. It defines the mock store catalog (<code>PRICES</code>), the local Python tool function (<code>get_price()</code>), the OpenAI JSON Schema tool specification (<code>TOOLS</code>), and the two-call agent decision loop (<code>run_agent_with_tool()</code>).</li>
-                        <li><code>src/python/app.py</code> &mdash; The Flask server and Blueprint router for <code>02-langchain-agents</code>. It dynamically loads all five service scripts via <code>_load_service()</code>, enforces hourly POST rate limits, serves static frontend files, and exposes <code>POST /api/agent</code> through <code>agent_service()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; The interactive browser card. In <code>main.js</code>, <code>bindPresetChips("card-agentOneTool", "agentOneToolInput")</code> connects the preset question buttons and <code>setupCard()</code> binds <code>#agentOneToolInput</code> and <code>#agentOneToolBtn</code> to send <code>POST /api/agent</code> with <code>{ "message": value }</code> and display the answer in <code>#agentOneToolResult</code>.</li>
-                    </ul>
+                    <p><strong>Core AI Module (<code>src/python/03_agent_one_tool.py</code>)</strong></p>
+                    <p><code>src/python/03_agent_one_tool.py</code> implements a complete single-tool agent from scratch using raw <strong>OpenAI Function Calling</strong>. It defines a private catalog dictionary (<code>PRICES</code>), a local Python lookup function (<code>get_price()</code>), a JSON Schema tool specification (<code>TOOLS</code>), and the two-call agent decision loop (<code>run_agent_with_tool()</code>).</p>
 
-                    <p><strong>Schemas, Constants, Tool Function, and Agent Loop in <code>src/python/03_agent_one_tool.py</code></strong></p>
+                    <p><strong>Schemas, Tool Definition, and Agent Decision Loop</strong></p>
                     <ul>
-                        <li><code>class AgentRequest(BaseModel)</code> &amp; <code>class AgentResponse(BaseModel)</code>: Pydantic schemas documenting the expected input payload (<code>message: str = "How much are the shoes?"</code>) and output payload (<code>message: str</code>, <code>response: str</code>).</li>
-                        <li><code>PRICES: dict[str, int]</code>: A module-level dictionary (<code>{"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}</code>) acting as a private product database that the LLM cannot know without calling a tool.</li>
-                        <li><code>get_price(item: str) -&gt; str</code>: The local Python tool function. It accepts an <code>item</code> name string, logs <code>🔧 tool called: get_price(...)</code> to stdout, normalizes the key with <code>item.lower()</code>, and looks it up via <code>PRICES.get(item.lower(), 'unknown')</code>, returning a rupee-formatted string such as <code>"₹799"</code> or <code>"₹unknown"</code>.</li>
-                        <li><code>TOOLS: list[dict]</code>: The JSON Schema tool specification passed to OpenAI's <code>tools=</code> parameter. It declares <code>"type": "function"</code>, sets <code>"name": "get_price"</code>, provides a natural-language <code>"description"</code> so the model knows when to invoke it, and defines a JSON Schema <code>"parameters"</code> object requiring a string property named <code>"item"</code>.</li>
-                        <li><code>run_agent_with_tool(question: str = "How much are the shoes?") -&gt; str</code>: The core agent orchestrator function that takes the user's natural-language <code>question</code> and returns the final assistant answer:
-                            <ul>
-                                <li><strong>Step ① (Initialize client &amp; message list):</strong> Creates <code>client = OpenAI(timeout=15.0)</code>, reads <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>, and initializes <code>messages = [{"role": "user", "content": question}]</code>.</li>
-                                <li><strong>Step ② (Phase 1 &mdash; First LLM call with tools):</strong> Calls <code>client.chat.completions.create(model=model, messages=messages, tools=TOOLS).choices[0].message</code> so the model can inspect the prompt alongside the <code>TOOLS</code> menu.</li>
-                                <li><strong>Step ③ (Phase 2 &mdash; Check for tool calls):</strong> Checks <code>if not msg.tool_calls:</code>. If the user asked a general question that needs no price lookup, <code>msg.tool_calls</code> is empty and the function immediately returns <code>msg.content or ""</code> after just one API call.</li>
-                                <li><strong>Step ④ (Append assistant tool-call message):</strong> Executes <code>messages.append(msg)</code>. OpenAI's API protocol requires the assistant message containing <code>tool_calls</code> to precede any <code>role="tool"</code> messages in the history.</li>
-                                <li><strong>Step ⑤ (Execute local function &amp; append tool output):</strong> Loops over every <code>call</code> in <code>msg.tool_calls</code>, parses the JSON string <code>call.function.arguments</code> via <code>json.loads()</code>, invokes <code>get_price(args.get("item", ""))</code> in Python, and appends <code>{"role": "tool", "tool_call_id": call.id, "content": ...}</code> to <code>messages</code>.</li>
-                                <li><strong>Step ⑥ (Phase 3 &mdash; Second LLM call for synthesis):</strong> Calls <code>client.chat.completions.create(model=model, messages=messages).choices[0].message</code> with the full 3-part history (user prompt + assistant tool call + tool result) so the LLM can write a natural-language reply grounded in the exact rupee price.</li>
-                                <li><strong>Step ⑦ (Return final response):</strong> Returns <code>msg.content or ""</code>.</li>
-                            </ul>
+                        <li><strong><code>class AgentRequest(BaseModel)</code> &amp; <code>class AgentResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input query (<code>message: str = "How much are the shoes?"</code>) and output payload (<code>message: str</code>, <code>response: str</code>).</li>
+                        <li><strong><code>PRICES: dict[str, int]</code>:</strong> A private product catalog (<code>{"shoes": 799, "hat": 399, "bag": 1420, "shorts": 1299, "pants": 1699}</code>) holding domain data that the LLM cannot know without invoking a tool.</li>
+                        <li><strong><code>get_price(item: str) -&gt; str</code>:</strong> The local Python tool function. It normalizes <code>item.lower()</code>, looks up the price via <code>PRICES.get(item.lower(), 'unknown')</code>, and returns a rupee-formatted string such as <code>"₹799"</code> or <code>"₹unknown"</code>.</li>
+                        <li><strong><code>TOOLS: list[dict]</code>:</strong> The JSON Schema specification passed to OpenAI's <code>tools=</code> parameter. It declares <code>"type": "function"</code>, names the tool <code>"get_price"</code>, explains when to call it via <code>"description": "Get the price of a shop item the user asks about."</code>, and requires a string parameter <code>"item"</code>.</li>
+                        <li><strong><code>run_agent_with_tool(question: str = "How much are the shoes?") -&gt; str</code>:</strong> Executes the Think &rarr; Act &rarr; Observe &rarr; Answer loop across seven numbered steps:
+                            <ol>
+                                <li><strong>Step ① — Initialize Client and Conversation History:</strong> Creates <code>client = OpenAI(timeout=15.0)</code>, selects <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>, and initializes <code>messages = [{"role": "user", "content": question}]</code>.</li>
+                                <li><strong>Step ② — Phase 1 (First LLM Call with Tool Schema):</strong> Calls <code>msg = client.chat.completions.create(model=model, messages=messages, tools=TOOLS).choices[0].message</code> so the model can decide whether to answer directly or request <code>get_price</code>.</li>
+                                <li><strong>Step ③ — Phase 2 (Inspect <code>msg.tool_calls</code>):</strong> Checks <code>if not msg.tool_calls:</code>. When the question does not require a price lookup, the model leaves <code>tool_calls</code> empty and the function returns <code>msg.content or ""</code> immediately.</li>
+                                <li><strong>Step ④ — Append Assistant Tool-Call Request:</strong> Appends <code>msg</code> to <code>messages</code> so the assistant's <code>tool_calls</code> entry precedes the corresponding tool outputs, satisfying the Chat Completions state-machine contract.</li>
+                                <li><strong>Step ⑤ — Execute Local Function and Append <code>role="tool"</code> Output:</strong> Iterates over <code>msg.tool_calls</code>, parses <code>call.function.arguments</code> with <code>json.loads()</code>, runs <code>get_price(args.get("item", ""))</code> in Python, and appends <code>{"role": "tool", "tool_call_id": call.id, "content": ...}</code> to <code>messages</code>.</li>
+                                <li><strong>Step ⑥ — Phase 3 (Second LLM Call for Final Synthesis):</strong> Calls <code>client.chat.completions.create(model=model, messages=messages).choices[0].message</code> with the full conversation history (user prompt + assistant tool call + tool output) so the LLM can craft a natural-language answer grounded in the exact price.</li>
+                                <li><strong>Step ⑦ — Return Final Response:</strong> Returns <code>msg.content or ""</code>.</li>
+                            </ol>
                         </li>
                     </ul>
 
-                    <p><strong>Helpers, Middleware, and Route Handlers in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><code>_load_service(filename: str, alias: str)</code>: Uses <code>importlib.util.spec_from_file_location()</code> (Step ①) and <code>spec.loader.exec_module()</code> (Step ②) to load <code>03_agent_one_tool.py</code> into <code>mod_agent</code> alongside the other four service modules in <code>02-langchain-agents</code>.</li>
-                        <li><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>): Checks <code>request.method == "POST"</code> (Step ①), calls <code>check_rate_limit(request, max_requests=30, window_seconds=3600)</code> (Step ②), and returns HTTP <code>429</code> with <code>Retry-After</code> when exceeded (Step ③).</li>
-                        <li><code>index()</code> &amp; Static Asset Routes: Injects <code>PATH_PREFIX</code> into <code>data-api-base</code> in <code>index.html</code> (Steps ①–②) and serves static CSS, JS, explanation, and theory files.</li>
-                        <li><code>agent_service()</code> (<code>POST /api/agent</code>): The route handler for the Single-Tool Agent card:
-                            <ul>
-                                <li><strong>Step ① (Parse &amp; validate query):</strong> Extracts <code>message = (data.get("message") or "").strip()</code> from the JSON body and returns HTTP <code>400</code> with <code>{"error": "Message cannot be empty"}</code> if blank.</li>
-                                <li><strong>Step ② (Run agent loop &amp; return JSON):</strong> Calls <code>reply = mod_agent.run_agent_with_tool(message)</code> inside a <code>try/except</code> block and returns <code>jsonify({"result": reply, "response": reply})</code> (or HTTP <code>500</code> on error).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>End-to-End Execution Flow</strong></p>
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
                     <ol>
-                        <li>The user selects a preset query (e.g., <em>"How much are the shoes?"</em>) or types a question into <code>#agentOneToolInput</code> and clicks <code>#agentOneToolBtn</code>.</li>
-                        <li><code>main.js</code> sends <code>POST ${API}/api/agent</code> with JSON body <code>{"message": "How much are the shoes?"}</code> via <code>callApi()</code>.</li>
-                        <li>Flask runs <code>enforce_rate_limit()</code> and dispatches the request to <code>agent_service()</code> in <code>src/python/app.py</code>, which validates the message and calls <code>mod_agent.run_agent_with_tool(message)</code>.</li>
-                        <li><code>run_agent_with_tool()</code> in <code>src/python/03_agent_one_tool.py</code> sends the user prompt and the <code>TOOLS</code> schema to OpenAI (Call #1).</li>
-                        <li>OpenAI responds with an assistant message containing <code>tool_calls=[{id: "call_...", function: {name: "get_price", arguments: '{"item": "shoes"}'}}]</code>.</li>
-                        <li>Python appends the assistant request to <code>messages</code>, parses <code>{"item": "shoes"}</code>, executes <code>get_price("shoes")</code> locally against <code>PRICES</code> to obtain <code>"₹799"</code>, and appends the <code>role="tool"</code> message with matching <code>tool_call_id</code>.</li>
-                        <li><code>run_agent_with_tool()</code> sends the updated <code>messages</code> list back to OpenAI (Call #2); OpenAI synthesizes the final sentence (e.g., <em>"The shoes cost ₹799."</em>), which <code>app.py</code> returns as JSON and <code>main.js</code> renders inside <code>#agentOneToolResult</code>.</li>
+                        <li><code>run_agent_with_tool(question)</code> sends the user's question alongside the <code>TOOLS</code> JSON Schema to OpenAI (Call #1).</li>
+                        <li>If the question asks about a shop item, the LLM responds with a structured <code>tool_calls</code> payload specifying <code>get_price</code> and JSON arguments <code>{"item": "..."}</code> instead of guessing a price.</li>
+                        <li>Python appends the assistant's tool request to <code>messages</code>, executes <code>get_price()</code> against <code>PRICES</code> locally, and appends the result as a <code>role="tool"</code> message linked by <code>tool_call_id</code>.</li>
+                        <li>The augmented <code>messages</code> transcript is sent back to OpenAI (Call #2), which reads the tool result and synthesizes the final natural-language answer.</li>
                     </ol>
                 </div>
             </section>

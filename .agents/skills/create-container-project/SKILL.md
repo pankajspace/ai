@@ -297,7 +297,7 @@ Every container project must keep all its educational materials self-contained i
 3. **Contents**:
    - The underlying architectural concept, intuition, and theory.
    - Request flow diagram.
-   - Code explanation section (before code flow) explaining the purpose of each file, class, function, or code block and how they connect end-to-end.
+   - Code explanation section (before code flow) focused strictly on AI concepts and related main functionality (prompts, models, schemas, tools, chains, agent loops, embeddings, vector stores, and core domain logic), omitting non-AI boilerplate such as rate limiting, dynamic module importing, `.env` loading, Flask route plumbing, and frontend JS wiring.
    - Code flow diagram (Mermaid flowchart/graph).
    - Complete, unedited Python source code with numbered comment annotations (`# ①`, `# ②`, etc.).
    - Quick revision section at the end summarizing the AI concepts and patterns used in the demo in numbered bullet-points format (`<ol>`).
