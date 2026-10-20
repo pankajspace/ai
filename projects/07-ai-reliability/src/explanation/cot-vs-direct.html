@@ -244,65 +244,48 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <p><strong>1. Core Benchmark Architecture (<code>src/python/01_cot_vs_direct.py</code>)</strong></p>
                     <ul>
-                        <li><code>src/python/01_cot_vs_direct.py</code>: Implements the Chain-of-Thought vs. Direct reliability benchmark. It defines preset multi-step state-tracking logic puzzles (<code>PROBLEMS</code>), runs each selected puzzle twice against OpenAI (once forbidding intermediate working and once instructing step-by-step reasoning), extracts the final answer line, and grades both against accepted ground-truth answers while recording latency.</li>
-                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads <code>01_cot_vs_direct.py</code> as <code>mod_cot</code>, enforces rate limiting on <code>POST</code> requests, and exposes <code>POST /api/cot-vs-direct</code> via <code>cot_vs_direct_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser frontend where users select a logic puzzle from the dropdown (<code>problem_title</code>), trigger <code>POST /api/cot-vs-direct</code>, and compare the Direct and Chain-of-Thought responses, extracted answers, correctness badges, and latencies side by side.</li>
+                        <li><code>01_cot_vs_direct.py</code> benchmarks <strong>Chain-of-Thought (CoT)</strong> reasoning against <strong>Direct</strong> answering on multi-step state-tracking logic puzzles, measuring how externalizing intermediate state transitions into the token stream improves accuracy at the cost of additional generation latency.</li>
                     </ul>
 
-                    <p><strong>2. Pydantic Schemas &amp; Logic Puzzle Dataset in <code>01_cot_vs_direct.py</code></strong></p>
+                    <p><strong>2. Pydantic Schemas &amp; State-Tracking Puzzle Dataset (<code>PROBLEMS</code>)</strong></p>
                     <ul>
-                        <li><code>CotVsDirectRequest(BaseModel)</code>: Defines the input payload with default <code>problem_title: str = "Spatial Navigation (Grid)"</code>.</li>
-                        <li><code>CotVsDirectResult(BaseModel)</code>: Represents the outcome of one strategy run: <code>strategy: str</code>, <code>response: str</code>, <code>extracted_answer: str</code>, <code>is_correct: bool</code>, and <code>latency_seconds: float</code>.</li>
+                        <li><code>CotVsDirectRequest(BaseModel)</code>: Defines the benchmark input with default <code>problem_title: str = "Spatial Navigation (Grid)"</code>.</li>
+                        <li><code>CotVsDirectResult(BaseModel)</code>: Captures the evaluation metrics of a single strategy run: <code>strategy: str</code>, <code>response: str</code>, <code>extracted_answer: str</code>, <code>is_correct: bool</code>, and <code>latency_seconds: float</code>.</li>
                         <li><code>CotVsDirectResponse(BaseModel)</code>: Wraps the side-by-side comparison containing <code>problem_title: str</code>, <code>accepted_answers: List[str]</code>, <code>direct_result: CotVsDirectResult</code>, and <code>cot_result: CotVsDirectResult</code>.</li>
-                        <li><code>PROBLEMS</code>: A dictionary of multi-step state-tracking logic puzzles, each with a <code>question</code>, list of normalized <code>correct_answers</code>, and human-readable <code>explanation</code>:
+                        <li><code>PROBLEMS</code>: Defines three multi-step state-tracking logic puzzles, each with a <code>question</code>, list of normalized <code>correct_answers</code>, and ground-truth step-by-step <code>explanation</code>:
                             <ul>
-                                <li><code>"Spatial Navigation (Grid)"</code>: Tracks <code>(X, Y)</code> coordinates and compass heading from <code>(0,0)</code> facing North across 5 forward/turn/backward instructions, ending at <code>(0, -2)</code>.</li>
-                                <li><code>"Relational Logic (Family Tree)"</code>: Resolves chained kinship links across four generations (Alice &rarr; Bob &rarr; Charlie &rarr; Diana &rarr; Eve) to identify Alice as Eve's <code>great-aunt</code> / <code>grand-aunt</code>.</li>
-                                <li><code>"Temporal Scheduling"</code>: Solves a 5-speaker ordering constraint satisfaction puzzle (E is 3rd, B immediately follows D, D is not 1st, C precedes A) to yield <code>C, A, E, D, B</code>.</li>
+                                <li><code>"Spatial Navigation (Grid)"</code>: Tracks <code>(X, Y)</code> coordinates and compass heading from <code>(0,0)</code> facing North across 5 sequential forward/turn/backward instructions, ending at <code>(0, -2)</code>.</li>
+                                <li><code>"Relational Logic (Family Tree)"</code>: Resolves chained kinship relationships across four generations (Alice &rarr; Bob &rarr; Charlie &rarr; Diana &rarr; Eve) to identify Alice as Eve's <code>great-aunt</code> / <code>grand-aunt</code>.</li>
+                                <li><code>"Temporal Scheduling"</code>: Solves a 5-speaker ordering constraint satisfaction puzzle (E is 3rd, B immediately follows D, D is not 1st, C precedes A) to derive the sequence <code>C, A, E, D, B</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>3. Scoring &amp; Benchmark Functions in <code>01_cot_vs_direct.py</code></strong></p>
+                    <p><strong>3. Accuracy Scoring &amp; Benchmark Execution</strong></p>
                     <ul>
-                        <li><code>evaluate_cot_accuracy(extracted: str, accepted: List[str]) -&gt; bool</code>: Grades whether the extracted final answer matches any accepted ground-truth string:
+                        <li><code>evaluate_cot_accuracy(extracted: str, accepted: List[str]) -&gt; bool</code>: Grades whether the model's answer matches any accepted ground-truth string:
                             <ul>
-                                <li><strong>Step ①:</strong> Lowercases <code>extracted</code> and strips spaces and hyphens (<code>.replace(" ", "").replace("-", "")</code>), then checks whether any similarly normalized string in <code>accepted</code> is contained within <code>cleaned</code>.</li>
+                                <li><strong>Step ①:</strong> Lowercases <code>extracted</code> and strips whitespace and hyphens (<code>.replace(" ", "").replace("-", "")</code>), then checks whether any similarly normalized string in <code>accepted</code> is contained within <code>cleaned</code>.</li>
                             </ul>
                         </li>
                         <li><code>run_cot_vs_direct_benchmark(problem_title: str = "Spatial Navigation (Grid)") -&gt; dict</code>: Executes the head-to-head reliability comparison:
                             <ul>
-                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client using <code>OPENAI_API_KEY</code> / <code>OPENAI_BASE_URL</code> and resolves <code>OPENAI_MODEL</code> (default <code>"gpt-4o-mini"</code>), then looks up <code>problem_title</code> in <code>PROBLEMS</code> (falling back to <code>"Spatial Navigation (Grid)"</code>).</li>
-                                <li><strong>Step ②:</strong> Runs the <strong>Direct Strategy</strong> at <code>temperature=0.3</code> with the prompt suffix <em>"Answer in one short sentence. Do not show working."</em>, measures elapsed wall-clock time via <code>time.perf_counter()</code>, and grades <code>text_d</code> with <code>evaluate_cot_accuracy(text_d, accepted)</code>.</li>
-                                <li><strong>Step ③:</strong> Runs the <strong>Chain-of-Thought Strategy</strong> at <code>temperature=0.3</code> with the prompt suffix <em>"Think step by step, then state your final answer clearly on a new line."</em>, measures latency <code>dur_c</code>, and grades <code>text_c</code> with <code>evaluate_cot_accuracy(text_c, accepted)</code>.</li>
-                                <li><strong>Step ④:</strong> Isolates the last line of the CoT trace (<code>text_c.strip().splitlines()[-1]</code>) as <code>extracted_answer</code> and returns the dictionary containing <code>problem_title</code>, <code>accepted_answers</code>, <code>direct_result</code>, and <code>cot_result</code>.</li>
+                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client for the configured model (default <code>"gpt-4o-mini"</code>) and loads the selected puzzle's <code>question</code> and <code>correct_answers</code> from <code>PROBLEMS</code>.</li>
+                                <li><strong>Step ② (Direct Strategy):</strong> Appends <em>"Answer in one short sentence. Do not show working."</em> to force a single-pass answer without intermediate reasoning tokens, calls <code>client.chat.completions.create()</code> at <code>temperature=0.3</code> while timing latency with <code>time.perf_counter()</code>, and grades <code>text_d</code> with <code>evaluate_cot_accuracy(text_d, accepted)</code>.</li>
+                                <li><strong>Step ③ (Chain-of-Thought Strategy):</strong> Appends <em>"Think step by step, then state your final answer clearly on a new line."</em> so the model writes out each intermediate state transition before concluding, calls the LLM at the same <code>temperature=0.3</code>, records latency <code>dur_c</code>, and grades <code>text_c</code> with <code>evaluate_cot_accuracy(text_c, accepted)</code>.</li>
+                                <li><strong>Step ④:</strong> Extracts the final line of the CoT trace (<code>text_c.strip().splitlines()[-1]</code>) as <code>extracted_answer</code> and returns <code>problem_title</code>, <code>accepted_answers</code>, <code>direct_result</code>, and <code>cot_result</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>4. Flask Server &amp; Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><code>_load_service(filename: str, alias: str)</code>: Dynamically loads <code>01_cot_vs_direct.py</code> as <code>mod_cot</code> using <code>importlib.util</code> (<strong>Steps ①–②</strong>).</li>
-                        <li><code>enforce_rate_limit()</code>: Rate-limits <code>POST</code> requests to 30 per hour per client IP via <code>check_rate_limit()</code> (<strong>Steps ①–③</strong>).</li>
-                        <li><code>cot_vs_direct_route()</code> (<code>POST /api/cot-vs-direct</code>):
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses <code>problem_title</code> from the JSON request body (defaulting to <code>"Spatial Navigation (Grid)"</code> or validating against the <code>PROBLEMS</code> allowlist via <code>read_choice</code> / <code>invalid_choice</code>).</li>
-                                <li><strong>Step ②:</strong> Calls <code>mod_cot.run_cot_vs_direct_benchmark(problem_title)</code>, attaches a summary string in <code>res["result"]</code> (<code>"Direct: Correct/Failed | CoT: Correct/Failed"</code>), and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>5. End-to-End Data Flow Walkthrough</strong></p>
+                    <p><strong>4. End-to-End AI Benchmark Flow</strong></p>
                     <ol>
-                        <li>The user selects a state-tracking logic puzzle in <code>src/index.html</code> and clicks <strong>Run Benchmark</strong>, causing <code>src/js/main.js</code> to send <code>POST /api/cot-vs-direct</code> with <code>{ problem_title }</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> middleware verifies the client's rate limit before routing the request to <code>cot_vs_direct_route()</code> in <code>app.py</code>.</li>
-                        <li><code>cot_vs_direct_route()</code> reads <code>problem_title</code> and invokes <code>run_cot_vs_direct_benchmark(problem_title)</code> in <code>01_cot_vs_direct.py</code>.</li>
-                        <li><code>run_cot_vs_direct_benchmark()</code> retrieves the puzzle's <code>question</code> and <code>correct_answers</code> list from <code>PROBLEMS</code>.</li>
-                        <li>It first calls OpenAI with the <strong>Direct</strong> prompt (forbidding working), timing the call and scoring the response via <code>evaluate_cot_accuracy()</code>.</li>
-                        <li>It then calls OpenAI with the <strong>Chain-of-Thought</strong> prompt (requiring step-by-step reasoning before the final line), timing the call, extracting the final line, and scoring it against <code>accepted</code>.</li>
-                        <li>Flask serializes <code>direct_result</code> and <code>cot_result</code> to JSON and returns them to <code>main.js</code>, which renders both cognitive traces, pass/fail badges, and latency metrics in the UI.</li>
+                        <li><code>run_cot_vs_direct_benchmark()</code> looks up the selected state-tracking puzzle and its accepted ground-truth answers in <code>PROBLEMS</code>.</li>
+                        <li>It first runs the <strong>Direct Strategy</strong> at <code>temperature=0.3</code>, forbidding intermediate working so the model must compress all state transitions into a single forward pass.</li>
+                        <li>It then runs the <strong>Chain-of-Thought Strategy</strong> at the same temperature, allowing the model to externalize each step's intermediate state (coordinates, kinship link, or speaker slot) into the context window before emitting its final line.</li>
+                        <li>Both outputs are scored against <code>accepted_answers</code> by <code>evaluate_cot_accuracy()</code> and paired with their wall-clock latencies to quantify the reliability gain of step-by-step reasoning.</li>
                     </ol>
                 </div>
             </section>

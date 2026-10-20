@@ -237,55 +237,31 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>Purpose of Each File</strong></p>
-                    <ul>
-                        <li><code>src/python/04_langchain_one_tool.py</code> &mdash; Implements a single-tool agent using LangChain's <code>create_agent()</code> factory and <code>ChatOpenAI</code> pointed at Groq. It defines the plain Python tool function <code>get_weather(city: str)</code>, builds the compiled agent graph at module load time, and exposes <code>run_langchain_one_tool()</code> to return both the final answer and a <code>tool_called</code> boolean.</li>
-                        <li><code>src/python/app.py</code> &mdash; The Flask server and Blueprint router for <code>02-langchain-agents</code>. It loads all five numbered service modules via <code>_load_service()</code>, enforces rate limits on POST endpoints, serves static assets, and exposes <code>POST /api/langchain-one-tool</code> through <code>langchain_one_tool_service()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; The browser frontend. In <code>main.js</code>, <code>bindPresetChips("card-langchainOneTool", "langchainOneToolInput")</code> connects the preset buttons, and <code>setupCard()</code> binds <code>#langchainOneToolInput</code> and <code>#langchainOneToolBtn</code> to send <code>POST /api/langchain-one-tool</code> with <code>{ "message": value }</code> and render a badge (<code>🔧 Tool Invoked: get_weather</code> vs. <code>💬 Direct Model Response (No Tool)</code>) plus the response inside <code>#langchainOneToolResult</code>.</li>
-                    </ul>
+                    <p><strong>Core AI Module (<code>src/python/04_langchain_one_tool.py</code>)</strong></p>
+                    <p><code>src/python/04_langchain_one_tool.py</code> builds a single-tool ReAct agent using LangChain's <code>create_agent()</code> factory and <code>ChatOpenAI</code> configured for Groq. Instead of hand-writing JSON Schema definitions and manual tool loops, it registers a plain Python function (<code>get_weather</code>) and lets LangChain introspect its signature and orchestrate the tool-calling cycle automatically.</p>
 
-                    <p><strong>Schemas, Constants, Tool Function, and Agent Setup in <code>src/python/04_langchain_one_tool.py</code></strong></p>
+                    <p><strong>Schemas, Tool Function, and Agent Execution</strong></p>
                     <ul>
-                        <li><code>PROVIDER = "groq"</code> &amp; <code>prefix = PROVIDER.upper()</code>: Selects the active LLM host and computes the environment variable prefix (<code>"GROQ"</code>) so <code>GROQ_MODEL</code>, <code>GROQ_API_KEY</code>, and <code>GROQ_BASE_URL</code> are read dynamically from <code>.env</code>.</li>
-                        <li><code>class LangchainOneToolRequest(BaseModel)</code> &amp; <code>class LangchainOneToolResponse(BaseModel)</code>: Pydantic schemas defining the input contract (<code>message: str = "What is the weather like in New York?"</code>) and output contract (<code>message: str</code>, <code>response: str</code>, <code>tool_called: bool</code>).</li>
-                        <li><code>get_weather(city: str) -&gt; str</code>: A plain Python function registered as a LangChain tool. LangChain introspects its name (<code>get_weather</code>), parameter type hint (<code>city: str</code>), and docstring (<code>"""Get the current weather for a given city."""</code>) to auto-generate the JSON Schema tool definition, returning <code>f"The weather in {city} is too hot to handle, 28 degrees C."</code> when executed.</li>
-                        <li><strong>Module-Level Agent Construction:</strong>
-                            <ul>
-                                <li><strong>Step ① (Initialize <code>ChatOpenAI</code> client):</strong> Creates <code>llm = ChatOpenAI(model=os.getenv(f"{prefix}_MODEL"), api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key", base_url=os.getenv(f"{prefix}_BASE_URL") or None, temperature=0, timeout=20.0)</code>. Using <code>temperature=0</code> ensures deterministic tool selection, and <code>"missing-key"</code> prevents import-time crashes if <code>.env</code> is not yet populated.</li>
-                                <li><strong>Step ② (Build agent with <code>create_agent()</code>):</strong> Calls <code>agent = create_agent(model=llm, tools=[get_weather], system_prompt=...)</code> to compile the ReAct tool-calling graph with instructions to use tools when needed and state the final result clearly.</li>
-                            </ul>
-                        </li>
-                        <li><code>run_langchain_one_tool(question: str = "What is the weather like in New York?") -&gt; tuple[str, bool]</code>: The service entry point that accepts a <code>question</code> string and returns <code>(final_answer, tool_called)</code>:
-                            <ul>
-                                <li><strong>Step ③ (Invoke the agent graph):</strong> Runs <code>messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]</code>, which automatically executes the LLM decision call, runs <code>get_weather()</code> if requested, feeds the <code>ToolMessage</code> back to the LLM, and collects the full message trace.</li>
-                                <li><strong>Step ④ (Detect tool usage):</strong> Computes <code>tool_called = any(m.type == "tool" for m in messages)</code> by scanning the message trace for any <code>ToolMessage</code> entry.</li>
-                                <li><strong>Step ⑤ (Return final answer and flag):</strong> Returns <code>messages[-1].content, tool_called</code> where <code>messages[-1]</code> is the final <code>AIMessage</code>.</li>
-                            </ul>
+                        <li><strong>Provider Selection (<code>PROVIDER = "groq"</code>, <code>prefix = PROVIDER.upper()</code>):</strong> Selects the active model provider so <code>GROQ_MODEL</code>, <code>GROQ_API_KEY</code>, and <code>GROQ_BASE_URL</code> configure the OpenAI-compatible chat client.</li>
+                        <li><strong><code>class LangchainOneToolRequest(BaseModel)</code> &amp; <code>class LangchainOneToolResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input query (<code>message: str = "What is the weather like in New York?"</code>) and output contract (<code>message: str</code>, <code>response: str</code>, and <code>tool_called: bool</code>).</li>
+                        <li><strong><code>get_weather(city: str) -&gt; str</code>:</strong> The plain Python tool function. LangChain inspects its name (<code>get_weather</code>), parameter type annotation (<code>city: str</code>), and docstring (<code>"""Get the current weather for a given city."""</code>) to auto-generate the tool schema sent to the LLM, returning <code>f"The weather in {city} is too hot to handle, 28 degrees C."</code> when invoked.</li>
+                        <li><strong>Agent Construction and <code>run_langchain_one_tool(question: str = "What is the weather like in New York?") -&gt; tuple[str, bool]</code>:</strong>
+                            <ol>
+                                <li><strong>Step ① — Initialize the LLM Client:</strong> Instantiates <code>llm = ChatOpenAI(model=os.getenv(f"{prefix}_MODEL"), api_key=os.getenv(f"{prefix}_API_KEY") or "missing-key", base_url=os.getenv(f"{prefix}_BASE_URL") or None, temperature=0, timeout=20.0)</code>. Setting <code>temperature=0</code> ensures deterministic tool selection and argument extraction.</li>
+                                <li><strong>Step ② — Create the LangChain Tool-Calling Agent:</strong> Calls <code>agent = create_agent(model=llm, tools=[get_weather], system_prompt=...)</code> to compile the ReAct agent graph with instructions to invoke available tools when needed and state the final result clearly.</li>
+                                <li><strong>Step ③ — Invoke the Agent Graph:</strong> Runs <code>messages = agent.invoke({"messages": [{"role": "user", "content": question}]})["messages"]</code>, which sends the question and tool schema to the LLM, executes <code>get_weather(city)</code> if requested, feeds the <code>ToolMessage</code> back to the model, and returns the complete message trace.</li>
+                                <li><strong>Step ④ — Detect Tool Execution in the Trace:</strong> Evaluates <code>tool_called = any(m.type == "tool" for m in messages)</code> to determine whether a <code>ToolMessage</code> was recorded during the turn.</li>
+                                <li><strong>Step ⑤ — Return Final Reply and Indicator:</strong> Returns <code>messages[-1].content, tool_called</code>, where <code>messages[-1]</code> is the assistant's final <code>AIMessage</code>.</li>
+                            </ol>
                         </li>
                     </ul>
 
-                    <p><strong>Helpers, Middleware, and Route Handlers in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><code>_load_service(filename: str, alias: str)</code>: Loads <code>04_langchain_one_tool.py</code> as <code>mod_lc_tool</code> via <code>importlib.util.spec_from_file_location()</code> (Step ①) and <code>spec.loader.exec_module()</code> (Step ②).</li>
-                        <li><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>): Checks <code>request.method == "POST"</code> (Step ①), enforces the 30-requests-per-hour limit via <code>check_rate_limit()</code> (Step ②), and returns HTTP <code>429</code> if exceeded (Step ③).</li>
-                        <li><code>index()</code> &amp; Static Asset Routes: Injects <code>PATH_PREFIX</code> into <code>index.html</code> (Steps ①–②) and serves static CSS, JS, explanation, and theory assets.</li>
-                        <li><code>langchain_one_tool_service()</code> (<code>POST /api/langchain-one-tool</code>): The route handler for this demo:
-                            <ul>
-                                <li><strong>Step ① (Parse &amp; validate query):</strong> Reads <code>message = (data.get("message") or "").strip()</code> from the JSON request and returns HTTP <code>400</code> with <code>{"error": "Message cannot be empty"}</code> when empty.</li>
-                                <li><strong>Step ② (Execute service &amp; serialize response):</strong> Calls <code>reply, tool_called = mod_lc_tool.run_langchain_one_tool(message)</code> and returns <code>jsonify({"result": reply, "response": reply, "tool_called": tool_called})</code> (or HTTP <code>500</code> on exception).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>End-to-End Execution Flow</strong></p>
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
                     <ol>
-                        <li>The user clicks a preset chip (such as <em>"Weather in Paris"</em> or <em>"Capital of France"</em>) or types a query into <code>#langchainOneToolInput</code> and clicks <code>#langchainOneToolBtn</code>.</li>
-                        <li><code>setupCard()</code> in <code>src/js/main.js</code> calls <code>callApi()</code>, sending <code>POST ${API}/api/langchain-one-tool</code> with JSON body <code>{"message": "..."}</code>.</li>
-                        <li>Flask's Blueprint runs <code>enforce_rate_limit()</code> and routes the request to <code>langchain_one_tool_service()</code> in <code>src/python/app.py</code>.</li>
-                        <li><code>langchain_one_tool_service()</code> validates that <code>message</code> is non-empty and calls <code>mod_lc_tool.run_langchain_one_tool(message)</code>.</li>
-                        <li><code>run_langchain_one_tool()</code> in <code>src/python/04_langchain_one_tool.py</code> calls <code>agent.invoke({"messages": [{"role": "user", "content": question}]})</code>.</li>
-                        <li>LangChain sends the system prompt, user question, and auto-generated <code>get_weather</code> JSON Schema to Groq. If the question asks about weather, the model emits a <code>tool_calls</code> request, LangChain executes <code>get_weather(city)</code>, appends a <code>ToolMessage</code>, and calls Groq a second time to synthesize the final answer.</li>
-                        <li><code>run_langchain_one_tool()</code> checks <code>any(m.type == "tool" for m in messages)</code>, returns <code>(messages[-1].content, tool_called)</code> to <code>app.py</code>, and <code>main.js</code> renders the tool-invocation badge and final answer inside <code>#langchainOneToolResult</code>.</li>
+                        <li><code>run_langchain_one_tool(question)</code> passes the user's question into <code>agent.invoke({"messages": [...]})</code>.</li>
+                        <li>The compiled <code>create_agent</code> graph sends the system prompt, user message, and introspected <code>get_weather</code> schema to the Groq LLM.</li>
+                        <li>When the question asks about weather, the model emits a <code>tool_calls</code> request; LangChain automatically runs <code>get_weather(city)</code>, wraps the returned string in a <code>ToolMessage</code>, and re-invokes the LLM to synthesize the final answer (or skips the tool step for general-knowledge questions).</li>
+                        <li>The message trace is inspected for any <code>m.type == "tool"</code> entry, and <code>(messages[-1].content, tool_called)</code> is returned to fulfill <code>LangchainOneToolResponse</code>.</li>
                     </ol>
                 </div>
             </section>

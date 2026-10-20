@@ -210,58 +210,24 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>Purpose of Each File</strong></p>
+                    <p><strong>Core Feature Module (<code>src/python/echo.py</code>)</strong></p>
+                    <p><code>src/python/echo.py</code> is the reference starter feature module for the container template. It implements a pure-Python text transformation function with zero external dependencies so the project can be run and verified offline.</p>
+
+                    <p><strong>Main Functionality in <code>echo(text: str) -&gt; str</code></strong></p>
                     <ul>
-                        <li><code>src/python/echo.py</code> &mdash; The reference starter feature module for the container template. It implements a pure-Python <code>echo(text: str) -&gt; str</code> function with zero external API dependencies so the container template can be built, run, and tested end-to-end offline or in CI.</li>
-                        <li><code>src/python/app.py</code> &mdash; The Flask application and Blueprint server. It configures <code>PATH_PREFIX</code> for reverse-proxy compatibility, attaches a <code>before_request</code> rate-limiting hook, serves static frontend and documentation pages, and exposes <code>POST /echo</code> via <code>echo_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; The dependency-free browser frontend. Inside <code>main.js</code>, <code>setupCard()</code> wires <code>#echoInput</code>, <code>#echoBtn</code>, <code>#echoResult</code>, and <code>#echoValidation</code> so submitting non-empty text calls <code>callApi()</code> to send <code>POST /echo</code> with <code>{ "message": value }</code> and renders <code>data.result</code> via <code>renderText()</code>.</li>
+                        <li><code>echo(text: str) -&gt; str</code>: Accepts a raw user message string <code>text</code> and returns an upper-cased confirmation string annotated with its character count:
+                            <ul>
+                                <li><strong>Step ① (Clean and format message):</strong> Strips leading and trailing whitespace via <code>cleaned = text.strip()</code>, converts the cleaned string to uppercase with <code>cleaned.upper()</code>, computes its length with <code>len(cleaned)</code>, and returns <code>f"You said: {cleaned.upper()} ({len(cleaned)} characters)"</code>.</li>
+                            </ul>
+                        </li>
+                        <li><strong>CLI Execution Block (<code>if __name__ == "__main__":</code>):</strong> Prompts for interactive terminal input with <code>message = input("Enter a message to echo: ")</code> and prints the result of <code>echo(message)</code> so the feature module can also be tested directly from the command line.</li>
                     </ul>
 
-                    <p><strong>Functions and Code Blocks in <code>src/python/echo.py</code></strong></p>
-                    <ul>
-                        <li><code>echo(text: str) -&gt; str</code>: The feature function that accepts a raw input string <code>text</code> and returns an upper-cased confirmation string with its character length:
-                            <ul>
-                                <li><strong>Step ① (Clean and format message):</strong> Strips leading and trailing whitespace via <code>cleaned = text.strip()</code> and returns <code>f"You said: {cleaned.upper()} ({len(cleaned)} characters)"</code>.</li>
-                            </ul>
-                        </li>
-                        <li><code>if __name__ == "__main__":</code> CLI Entry Point: Prompts for interactive terminal input with <code>message = input("Enter a message to echo: ")</code> and prints <code>echo(message)</code> so the feature module can also be executed standalone via <code>docker compose run --rm echo</code>.</li>
-                    </ul>
-
-                    <p><strong>Configuration, Middleware, and Route Handlers in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong>Module Configuration &amp; Blueprint Setup:</strong> Reads <code>PATH_PREFIX = os.environ.get("PATH_PREFIX", "")</code>, resolves <code>STATIC_DIR = Path(__file__).resolve().parents[1]</code> (pointing to <code>src/</code>), creates <code>app = Flask(__name__, static_folder=str(STATIC_DIR))</code>, enables cross-origin requests via <code>CORS(app)</code>, and initializes <code>bp = Blueprint("main", __name__)</code>.</li>
-                        <li><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>): Runs before every Blueprint request to protect mutating endpoints:
-                            <ul>
-                                <li><strong>Step ①:</strong> Checks <code>if request.method == "POST":</code> so read-only <code>GET</code> requests for HTML/CSS/JS are never rate-limited.</li>
-                                <li><strong>Step ②:</strong> Calls <code>blocked, msg, retry_after = check_rate_limit(request, max_requests=30, window_seconds=3600)</code> to enforce a strict 30-requests-per-hour sliding window per client IP.</li>
-                                <li><strong>Step ③:</strong> If <code>blocked</code> is true, builds a JSON error response <code>jsonify({"error": msg})</code> with HTTP status <code>429</code> and attaches the <code>Retry-After</code> header.</li>
-                            </ul>
-                        </li>
-                        <li><code>index()</code> (<code>GET /</code>) &amp; Static Asset Routes:
-                            <ul>
-                                <li><strong>Step ①:</strong> Reads <code>src/index.html</code> from <code>app.static_folder</code>.</li>
-                                <li><strong>Step ②:</strong> Replaces <code>data-api-base=""</code> with <code>f'data-api-base="{PATH_PREFIX}"'</code> so <code>const API = document.body.dataset.apiBase || ""</code> in <code>main.js</code> automatically targets the right base URL both locally and behind Nginx.</li>
-                                <li><strong>Step ③:</strong> Returns the patched HTML with <code>mimetype="text/html"</code>. Companion routes (<code>css()</code>, <code>js()</code>, <code>explanation()</code>, <code>theory_pages()</code>) serve static files from <code>src/css</code>, <code>src/js</code>, <code>src/explanation</code>, and <code>src/theory</code>.</li>
-                            </ul>
-                        </li>
-                        <li><code>echo_route()</code> (<code>POST /echo</code>): The route handler for the Echo feature card:
-                            <ul>
-                                <li><strong>Step ① (Parse &amp; normalize JSON):</strong> Calls <code>data = request.get_json(force=True)</code> and extracts <code>message = (data.get("message") or "").strip()</code>.</li>
-                                <li><strong>Step ② (Boundary validation):</strong> Checks <code>if not message:</code> and immediately returns <code>jsonify({"error": "A message is required."}), 400</code> rather than passing empty input to the feature function.</li>
-                                <li><strong>Step ③ (Delegate to feature module):</strong> Calls <code>echo(message)</code> and wraps the returned string in <code>jsonify({"result": echo(message)})</code>.</li>
-                            </ul>
-                        </li>
-                        <li><code>app.register_blueprint(bp, url_prefix=PATH_PREFIX)</code>: Mounts all Blueprint routes under <code>PATH_PREFIX</code> in a single place and starts the server on <code>0.0.0.0:5000</code> when run directly.</li>
-                    </ul>
-
-                    <p><strong>End-to-End Execution Flow</strong></p>
+                    <p><strong>End-to-End Feature Flow</strong></p>
                     <ol>
-                        <li>The user types a message into <code>#echoInput</code> in <code>src/index.html</code> (which enables <code>#echoBtn</code> via the <code>input</code> listener in <code>setupCard()</code>) and clicks <code>#echoBtn</code> or presses Enter.</li>
-                        <li><code>setupCard()</code> in <code>src/js/main.js</code> reads the trimmed input and invokes <code>callApi()</code>, which toggles <code>setLoading(btn, true)</code> and sends <code>POST ${API}/echo</code> with JSON body <code>{"message": "..."}</code>.</li>
-                        <li>Flask receives the request on Blueprint <code>bp</code> and executes <code>enforce_rate_limit()</code> in <code>src/python/app.py</code>, consulting <code>check_rate_limit()</code> in <code>rate_limiter.py</code> to ensure the client IP is within the 30 POSTs/hour limit.</li>
-                        <li><code>echo_route()</code> in <code>app.py</code> parses the JSON payload, validates that <code>message</code> is non-empty, and calls <code>echo(message)</code> in <code>src/python/echo.py</code>.</li>
-                        <li><code>echo()</code> strips outer whitespace, converts the text to uppercase, counts its characters, and returns <code>"You said: &lt;UPPER&gt; (&lt;N&gt; characters)"</code>.</li>
-                        <li><code>echo_route()</code> serializes the string as <code>{"result": "..."}</code> with HTTP <code>200</code>, and <code>callApi()</code> in <code>main.js</code> passes the parsed JSON to <code>renderText()</code>, which writes <code>data.result</code> into <code>#echoResult</code> and restores the button label.</li>
+                        <li>A raw input string <code>text</code> is passed into <code>echo(text)</code> in <code>src/python/echo.py</code>.</li>
+                        <li><code>echo()</code> strips surrounding whitespace to produce <code>cleaned</code>, converts the text to uppercase, and measures <code>len(cleaned)</code>.</li>
+                        <li>The function formats and returns <code>"You said: &lt;UPPER&gt; (&lt;N&gt; characters)"</code> as the final output string.</li>
                     </ol>
                 </div>
             </section>

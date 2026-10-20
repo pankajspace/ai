@@ -229,18 +229,10 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI &amp; Stateful Class-Based Tool Components in <code>10_class_based_tools.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/10_class_based_tools.py</code> &mdash; Defines the <strong>Class-Based Tools (Shared-Resource Pattern) Agent</strong> service: encapsulates shared product inventory state (<code>self.products</code>) and two <code>@tool</code> methods (<code>check_stock</code> and <code>update_stock</code>) inside the <code>InventoryTools</code> class, instantiates a module-level singleton <code>inventory = InventoryTools()</code>, binds its methods to a Strands <code>Agent</code>, and returns the reply, tool calls, and updated inventory snapshot.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>10_class_based_tools.py</code> dynamically as <code>s_cls_tool</code>, enforces rate limiting, and exposes <code>POST /api/class-based-tools</code> via <code>class_based_tools_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>🏛️ Class-Based Tools</strong> card, sends the user's stock update/verification query to <code>POST /api/class-based-tools</code> with <code>{ query }</code>, and displays the agent's confirmation alongside the live stock quantities from <code>current_inventory</code>.</li>
-                    </ul>
-
-                    <p><strong>2. Schemas, <code>InventoryTools</code> Class &amp; Agent Setup in <code>10_class_based_tools.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>ClassBasedToolsRequest(BaseModel)</code> &amp; <code>ClassBasedToolsResponse(BaseModel)</code>:</strong> Define the default multi-step prompt (<code>"Update PROD-456 stock to 25 units, then confirm the new level"</code>) and the output schema (<code>query</code>, <code>response</code>, <code>tool_calls: list[str]</code>, and <code>current_inventory: dict[str, int]</code>).</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Reads <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>ClassBasedToolsRequest</code> &amp; <code>ClassBasedToolsResponse</code>):</strong> Define the default multi-step prompt (<code>"Update PROD-456 stock to 25 units, then confirm the new level"</code>) and the output schema (<code>query: str</code>, <code>response: str</code>, <code>tool_calls: list[str]</code>, and <code>current_inventory: dict[str, int]</code>).</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong><code>class InventoryTools</code> (Shared-State Tool Container):</strong>
                             <ul>
                                 <li><strong><code>__init__(self)</code>:</strong> Initializes <code>self.products</code> with three SKUs (<code>PROD-123</code> Wireless Mouse with 15 units at $29.99, <code>PROD-456</code> USB-C Cable with 0 units at $12.99, and <code>PROD-789</code> Laptop Stand with 8 units at $49.99), modeling a shared database connection pool or state store.</li>
@@ -248,8 +240,8 @@
                                 <li><strong><code>@tool def update_stock(self, product_id: str, quantity: int) -&gt; str</code>:</strong> Mutates <code>self.products[product_id]["quantity"] = quantity</code> in place and returns <code>f"Updated {product_id} to {quantity} units"</code>.</li>
                             </ul>
                         </li>
-                        <li><strong>Step ③ &mdash; Module-Level Singleton (<code>inventory = InventoryTools()</code>):</strong> Instantiates <code>InventoryTools</code> once at module load time so state mutations persist across tool calls and across HTTP requests.</li>
-                        <li><strong>Service Entry Point &mdash; <code>run_class_based_tools_agent(query: str) -&gt; dict</code>:</strong>
+                        <li><strong>Step ③ &mdash; Module-Level Singleton (<code>inventory = InventoryTools()</code>):</strong> Instantiates <code>InventoryTools</code> once so state mutations persist across tool invocations.</li>
+                        <li><strong><code>run_class_based_tools_agent(query: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ④:</strong> Creates <code>Agent(model=BedrockModel(model_id=model_id), tools=[inventory.check_stock, inventory.update_stock])</code>, passing bound instance methods so both tools operate on the same <code>inventory</code> object.</li>
                                 <li><strong>Step ⑤:</strong> Executes <code>response = agent(query)</code>, allowing the agent to call <code>update_stock</code> and then <code>check_stock</code> to verify its own write.</li>
@@ -258,26 +250,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>class_based_tools_route()</code> (<code>POST /api/class-based-tools</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Extracts <code>query</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>s_cls_tool.run_class_based_tools_agent(query)</code>, sets <code>res["result"] = res.get("response")</code>, and returns the JSON response including <code>current_inventory</code>.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>🏛️ Class-Based Tools</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/class-based-tools</code> with <code>{"query": "Update PROD-456 stock to 25 units, then confirm the new level"}</code>.</li>
-                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> checks the hourly request limit and routes the request to <code>class_based_tools_route()</code>.</li>
-                        <li><code>class_based_tools_route()</code> validates <code>query</code> and calls <code>s_cls_tool.run_class_based_tools_agent(query)</code> in <code>10_class_based_tools.py</code>.</li>
-                        <li><code>run_class_based_tools_agent()</code> constructs a Strands <code>Agent</code> with the bound methods <code>[inventory.check_stock, inventory.update_stock]</code>; Strands automatically hides the bound <code>self</code> parameter from the Bedrock tool schemas.</li>
-                        <li>On <strong>Converse Turn 1</strong>, Bedrock emits a <code>toolUse</code> block calling <code>update_stock(product_id="PROD-456", quantity=25)</code>.</li>
+                        <li><code>run_class_based_tools_agent(query)</code> constructs a Strands <code>Agent</code> with the bound methods <code>[inventory.check_stock, inventory.update_stock]</code>; Strands automatically excludes the bound <code>self</code> parameter from the Bedrock tool schemas.</li>
+                        <li>On <strong>Converse Turn 1</strong>, for <code>"Update PROD-456 stock to 25 units, then confirm the new level"</code>, Bedrock emits a <code>toolUse</code> block calling <code>update_stock(product_id="PROD-456", quantity=25)</code>.</li>
                         <li>Strands invokes <code>inventory.update_stock("PROD-456", 25)</code>, which mutates <code>inventory.products["PROD-456"]["quantity"]</code> from <code>0</code> to <code>25</code> and returns <code>"Updated PROD-456 to 25 units"</code> in a <code>toolResult</code> block.</li>
                         <li>On <strong>Converse Turn 2</strong>, to fulfill <em>"then confirm the new level"</em>, Bedrock emits a second <code>toolUse</code> block calling <code>check_stock(product_id="PROD-456")</code>; because <code>check_stock</code> reads the exact same <code>inventory.products</code> dict, it returns <code>"USB-C Cable: 25 units at $12.99"</code>.</li>
-                        <li>On <strong>Converse Turn 3</strong>, Bedrock writes the final confirmation message, and <code>run_class_based_tools_agent()</code> returns the reply, <code>tool_calls</code>, and the live <code>current_inventory</code> map to the browser.</li>
+                        <li>On <strong>Converse Turn 3</strong>, Bedrock writes the final confirmation message, and Step ⑥ returns <code>{"query": query, "response": str(response), "tool_calls": tool_calls, "current_inventory": ...}</code>.</li>
                     </ol>
                 </div>
             </section>

@@ -239,51 +239,30 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This section breaks down every file, Pydantic schema, function, and numbered code step involved in the <strong>Joke Generator</strong> demo and explains how they connect end-to-end.</p>
+                    <p><strong>Core AI Module (<code>src/python/02_chat_groq.py</code>)</strong></p>
+                    <p><code>src/python/02_chat_groq.py</code> demonstrates provider portability using the OpenAI-compatible Chat Completions protocol. It reuses the standard <code>openai.OpenAI</code> SDK client but redirects inference to Groq's LPU cloud (<code>https://api.groq.com/openai/v1</code>) to run Meta's open-weights <code>llama-3.3-70b-versatile</code> model.</p>
 
-<p><strong>1. Purpose of Each File</strong></p>
-<ul>
-    <li><code>src/python/02_chat_groq.py</code> &mdash; The core feature module for the Joke Generator demo. It loads environment variables, defines Pydantic request/response schemas (<code>JokeRequest</code> and <code>JokeResponse</code>), and implements <code>get_groq_joke()</code> using the standard <code>openai.OpenAI</code> SDK client pointed at Groq's OpenAI-compatible inference endpoint.</li>
-    <li><code>src/python/app.py</code> &mdash; The Flask application server and Blueprint router. It dynamically imports numbered Python service modules, enforces per-IP sliding-window rate limits on <code>POST</code> requests, serves the frontend HTML/CSS/JS and explanation pages, and exposes the <code>POST /api/joke</code> route handler (<code>joke_generator()</code>).</li>
-    <li><code>src/index.html</code> &amp; <code>src/js/main.js</code> &mdash; The browser UI where the user types a joke topic into <code>#jokeInput</code> and clicks <code>#jokeBtn</code>, triggering <code>setupCard()</code> and <code>callApi()</code> to send a JSON <code>POST /api/joke</code> request and render the response inside <code>#jokeResult</code>.</li>
-</ul>
+                    <p><strong>Pydantic Schemas and AI Service Function</strong></p>
+                    <ul>
+                        <li><strong><code>class JokeRequest(BaseModel)</code>:</strong> Defines the input schema with <code>topic: str = "programming"</code> specifying the subject of the joke.</li>
+                        <li><strong><code>class JokeResponse(BaseModel)</code>:</strong> Defines the output schema pairing the requested <code>topic: str</code> with the generated <code>joke: str</code>.</li>
+                        <li><strong><code>get_groq_joke(topic: str = "programming") -&gt; str</code>:</strong> Generates a topical joke from Groq through four numbered steps:
+                            <ol>
+                                <li><strong>Step ① — Initialize the OpenAI SDK Client for Groq:</strong> Instantiates <code>OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"), timeout=15.0)</code> and selects <code>model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")</code>.</li>
+                                <li><strong>Step ② — Build Role-Tagged Prompt Messages:</strong> Constructs a two-element <code>messages</code> array with a <code>system</code> persona (<code>"You are a funny joke teller."</code>) and a <code>user</code> instruction (<code>f"Tell me a joke about {topic}."</code>).</li>
+                                <li><strong>Step ③ — Call the Chat Completions Endpoint:</strong> Invokes <code>response = client.chat.completions.create(model=model, messages=messages)</code>, dispatching an OpenAI-formatted request to Groq's inference endpoint.</li>
+                                <li><strong>Step ④ — Extract and Return the Joke Text:</strong> Reads <code>response.choices[0].message.content or ""</code> from the completion envelope and returns the generated string.</li>
+                            </ol>
+                        </li>
+                    </ul>
 
-<p><strong>2. Entities in <code>src/python/02_chat_groq.py</code></strong></p>
-<ul>
-    <li><strong>Environment Initialization (<code>load_dotenv(find_dotenv())</code>):</strong> Scans upward from the module path to locate the nearest <code>.env</code> file and populates <code>os.environ</code> with <code>GROQ_API_KEY</code>, <code>GROQ_BASE_URL</code>, and <code>GROQ_MODEL</code>.</li>
-    <li><strong>Class <code>JokeRequest(BaseModel)</code>:</strong> A Pydantic input schema defining a single field, <code>topic: str = "programming"</code>, which documents the expected JSON payload contract and supplies a default topic when none is provided.</li>
-    <li><strong>Class <code>JokeResponse(BaseModel)</code>:</strong> A Pydantic output schema defining <code>topic: str</code> and <code>joke: str</code> to formalize the structure of the returned payload.</li>
-    <li><strong>Function <code>get_groq_joke(topic: str = "programming") -&gt; str</code>:</strong> Takes a topic string and returns a generated joke from Groq through four numbered steps:
-        <ol>
-            <li><strong>Step ① — Initialize the OpenAI SDK Client for Groq:</strong> Creates <code>OpenAI(api_key=os.getenv("GROQ_API_KEY"), base_url=os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1"), timeout=15.0)</code> and reads <code>model = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")</code>.</li>
-            <li><strong>Step ② — Build the Prompt Messages:</strong> Constructs a two-element <code>messages</code> list containing a <code>{"role": "system", "content": "You are a funny joke teller."}</code> persona instruction and a <code>{"role": "user", "content": f"Tell me a joke about {topic}."}</code> user prompt.</li>
-            <li><strong>Step ③ — Call the Chat Completions Endpoint:</strong> Invokes <code>client.chat.completions.create(model=model, messages=messages)</code>, which sends an HTTPS <code>POST /openai/v1/chat/completions</code> request to Groq.</li>
-            <li><strong>Step ④ — Extract and Return the Joke Text:</strong> Reads <code>response.choices[0].message.content</code> (falling back to <code>""</code> if <code>None</code>) and returns the plain text string to the caller.</li>
-        </ol>
-    </li>
-</ul>
-
-<p><strong>3. Entities in <code>src/python/app.py</code></strong></p>
-<ul>
-    <li><strong>Helper <code>_load_service(filename: str, alias: str)</code>:</strong> Because Python module filenames starting with digits (like <code>02_chat_groq.py</code>) cannot be imported with a plain <code>import</code> statement, <strong>Step ①</strong> resolves the file path and creates a module spec via <code>importlib.util.spec_from_file_location()</code>, and <strong>Step ②</strong> instantiates, registers (<code>sys.modules</code>), and executes the module, binding <code>mod_joke</code> at startup.</li>
-    <li><strong>Hook <code>enforce_rate_limit()</code> (<code>@bp.before_request</code>):</strong> Intercepts every incoming request before it reaches a route handler. <strong>Step ①</strong> filters for <code>POST</code> requests; <strong>Step ②</strong> calls <code>check_rate_limit(request, max_requests=30, window_seconds=3600)</code>; <strong>Step ③</strong> returns HTTP <code>429</code> with a <code>Retry-After</code> header if the client IP has exceeded its hourly quota.</li>
-    <li><strong>Route <code>joke_generator()</code> (<code>POST /api/joke</code>):</strong>
-        <ol>
-            <li><strong>Step ① — Parse and Validate Topic:</strong> Parses the request JSON body via <code>request.get_json(force=True, silent=True)</code>, extracts <code>topic</code> (or fallback <code>message</code>), strips whitespace, and returns HTTP <code>400</code> if empty.</li>
-            <li><strong>Step ② — Invoke Service and Return JSON:</strong> Calls <code>mod_joke.get_groq_joke(topic)</code> inside a <code>try/except</code> block and returns <code>jsonify({"result": joke, "topic": topic, "joke": joke})</code> (or HTTP <code>500</code> on error).</li>
-        </ol>
-    </li>
-</ul>
-
-<p><strong>4. End-to-End Entity Connections</strong></p>
-<ol>
-    <li>The user types a topic in <code>#jokeInput</code> on <code>src/index.html</code> and clicks <strong>Tell me a joke</strong> (<code>#jokeBtn</code>).</li>
-    <li><code>setupCard()</code> in <code>src/js/main.js</code> reads the input value and calls <code>callApi()</code>, which sends <code>POST /api/joke</code> with JSON body <code>{"topic": "..."}</code>.</li>
-    <li>Flask runs <code>enforce_rate_limit()</code> in <code>src/python/app.py</code> to verify the IP quota, then dispatches the request to <code>joke_generator()</code>.</li>
-    <li><code>joke_generator()</code> validates the non-empty topic and calls <code>mod_joke.get_groq_joke(topic)</code> in <code>src/python/02_chat_groq.py</code>.</li>
-    <li><code>get_groq_joke()</code> initializes the <code>OpenAI</code> client with Groq's <code>base_url</code> and <code>GROQ_API_KEY</code>, sends the system + user messages to <code>llama-3.3-70b-versatile</code>, and returns the completion string.</li>
-    <li><code>joke_generator()</code> wraps the string into <code>{"result": joke, "topic": topic, "joke": joke}</code> and returns HTTP <code>200</code> to <code>main.js</code>, which renders the joke inside <code>#jokeResult</code>.</li>
-</ol>
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
+                    <ol>
+                        <li>A <code>topic</code> string (modeled by <code>JokeRequest</code>) is passed into <code>get_groq_joke(topic)</code>.</li>
+                        <li>The <code>OpenAI</code> client is pointed at Groq's OpenAI-compatible <code>base_url</code> and configured with <code>llama-3.3-70b-versatile</code>.</li>
+                        <li>The <code>system</code> persona and <code>user</code> topic prompt are sent together via <code>client.chat.completions.create()</code>.</li>
+                        <li>Groq's model generates the joke completion, and <code>response.choices[0].message.content</code> is extracted to populate the <code>JokeResponse</code> contract (<code>topic</code> and <code>joke</code>).</li>
+                    </ol>
                 </div>
             </section>
 

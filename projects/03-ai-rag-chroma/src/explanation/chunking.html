@@ -238,37 +238,29 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is implemented across two backend Python files in <code>src/python/</code> that work alongside the browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to split long documents into overlapping chunks ready for embedding and vector retrieval.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/01_chunking.py</code> implements the document chunking stage of a Retrieval-Augmented Generation (RAG) pipeline, splitting long documents into smaller, overlapping passages suitable for dense vector embedding and similarity search.</p>
+                    <p><strong>1. Core AI Concepts in Document Chunking</strong></p>
                     <ul>
-                        <li><strong><code>src/python/01_chunking.py</code></strong>: Contains the default sample article (<code>TEXT_RAG</code>), Pydantic request/response schemas, and the <code>chunk_text()</code> function powered by LangChain&apos;s <code>RecursiveCharacterTextSplitter</code>.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask web server and <code>/api</code> Blueprint that validates incoming JSON parameters (including integer bounds for <code>chunk_size</code> and <code>chunk_overlap</code>) and routes <code>POST /api/chunk</code> to <code>01_chunking.py</code>.</li>
+                        <li><strong>Granular Retrieval Units:</strong> Embedding an entire multi-paragraph document into a single vector blurs distinct facts together. Splitting text into focused chunks ensures each vector represents a coherent passage.</li>
+                        <li><strong>Recursive Separator Hierarchy:</strong> Rather than slicing blindly at fixed character offsets (which cuts words and sentences in half), <code>RecursiveCharacterTextSplitter</code> walks a hierarchy of natural boundaries—paragraphs (<code>"\n\n"</code>), lines (<code>"\n"</code>), and spaces (<code>" "</code>)—keeping semantically related sentences together whenever they fit within <code>chunk_size</code>.</li>
+                        <li><strong>Sliding Window Context Glue (<code>chunk_overlap</code>):</strong> Repeating a configurable tail of characters at the start of the next chunk preserves context across boundaries so ideas spanning two adjacent chunks are not severed.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/01_chunking.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/01_chunking.py</code></strong></p>
                     <ul>
-                        <li><strong><code>TEXT_RAG</code> constant</strong>: A default multi-paragraph explainer about Retrieval-Augmented Generation (RAG) used when the caller runs the script directly from the CLI.</li>
-                        <li><strong><code>ChunkingRequest(BaseModel)</code> &amp; <code>ChunkingResponse(BaseModel)</code></strong>: Pydantic schemas specifying the inputs (<code>text</code>, <code>chunk_size=250</code>, <code>chunk_overlap=40</code>) and outputs (<code>chunks</code> list, <code>total_chunks</code>, <code>chunk_size</code>, <code>chunk_overlap</code>).</li>
-                        <li><strong><code>chunk_text(text: str, chunk_size: int = 250, chunk_overlap: int = 40) -&gt; list[str]</code></strong>:
+                        <li><strong><code>TEXT_RAG</code> constant:</strong> A default sample passage explaining RAG, recursive splitting, and chunk overlap.</li>
+                        <li><strong><code>ChunkingRequest(BaseModel)</code> &amp; <code>ChunkingResponse(BaseModel)</code>:</strong> Pydantic schemas defining the chunking parameters (<code>text: str = TEXT_RAG</code>, <code>chunk_size: int = 250</code>, <code>chunk_overlap: int = 40</code>) and the structured output (<code>total_chunks: int</code>, <code>chunk_size: int</code>, <code>chunk_overlap: int</code>, and <code>chunks: list[str]</code>).</li>
+                        <li><strong><code>chunk_text(text: str = TEXT_RAG, chunk_size: int = 250, chunk_overlap: int = 40) -&gt; list[str]</code>:</strong>
                             <ul>
-                                <li><strong>Step ① — Configure the recursive splitter</strong>: Instantiates <code>RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap, length_function=len)</code>, which tries to split on paragraph breaks (<code>"\n\n"</code>), then lines (<code>"\n"</code>), then sentences/words (<code>" "</code>), and finally characters only as a last resort.</li>
-                                <li><strong>Step ② — Split the raw string</strong>: Calls <code>splitter.split_text(text)</code> and returns the ordered list of string chunks, where adjacent chunks share up to <code>chunk_overlap</code> characters of context.</li>
+                                <li><strong>Step ① — Configure the recursive splitter:</strong> Instantiates <code>RecursiveCharacterTextSplitter(chunk_size=chunk_size, chunk_overlap=chunk_overlap)</code> so chunks target <code>chunk_size</code> characters while preserving natural paragraph, line, and word boundaries.</li>
+                                <li><strong>Step ② — Split the document text:</strong> Calls <code>splitter.split_text(text)</code> and returns the ordered list of overlapping text chunks.</li>
                             </ul>
                         </li>
-                        <li><strong><code>if __name__ == "__main__":</code> block</strong>: Splits <code>TEXT_RAG</code> and prints each chunk with its character length for quick CLI verification.</li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>load_module(name, filename)</code></strong>: Dynamically imports <code>01_chunking.py</code> using <code>importlib.util</code>.</li>
-                        <li><strong><code>read_json_field(data, field)</code></strong>: Ensures the <code>text</code> field is present and non-empty before splitting.</li>
-                        <li><strong><code>chunking_service()</code> (<code>POST /api/chunk</code>)</strong>: Extracts <code>text</code>, parses <code>chunk_size</code> (default <code>250</code>) and <code>chunk_overlap</code> (default <code>40</code>) as integers, validates that <code>50 &lt;= chunk_size &lt;= 2000</code> and <code>0 &lt;= chunk_overlap &lt; chunk_size</code>, invokes <code>mod.chunk_text(...)</code>, and returns the chunks and metadata as JSON.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End Chunking Flow</strong></p>
                     <ol>
-                        <li>The user enters source text and adjusts chunk size/overlap in the browser UI, sending a <code>POST /api/chunk</code> request to Flask.</li>
-                        <li><code>chunking_service()</code> in <code>app.py</code> validates the text and numeric bounds so invalid overlap settings (such as <code>chunk_overlap &gt;= chunk_size</code>) return a clean <code>400 Bad Request</code> error.</li>
-                        <li><code>app.py</code> loads <code>01_chunking.py</code> and calls <code>chunk_text(text, chunk_size, chunk_overlap)</code>.</li>
-                        <li><code>RecursiveCharacterTextSplitter</code> walks its separator hierarchy to produce semantically coherent chunks within the target character budget while carrying over overlapping tail text into each subsequent chunk.</li>
-                        <li><code>app.py</code> packages the resulting list into a <code>ChunkingResponse</code> JSON object and returns it to the frontend to render individual numbered chunk cards.</li>
+                        <li><code>chunk_text()</code> receives the raw document string along with the target <code>chunk_size</code> and <code>chunk_overlap</code>.</li>
+                        <li><code>RecursiveCharacterTextSplitter</code> partitions the text along paragraph and sentence boundaries so each piece stays under <code>chunk_size</code> characters.</li>
+                        <li>Adjacent chunks carry over up to <code>chunk_overlap</code> shared characters from the preceding chunk, producing a list of context-preserving passages ready for downstream embedding and vector indexing.</li>
                     </ol>
                 </div>
             </section>

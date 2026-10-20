@@ -247,36 +247,34 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo spans four Python files that build an automated, unit-test-style evaluation harness on top of the MCP Cricket Agent:</p>
+                    <p><code>src/python/03_mcp_evals.py</code>, <code>src/python/02_mcp_agent.py</code>, and <code>src/python/cricket_server.py</code> implement an automated, unit-test-style evaluation harness for the MCP Cricket Agent:</p>
                     <ul>
                         <li><code>03_mcp_evals.py</code> &mdash; Defines the 5-case golden evaluation dataset (<code>TEST_CASES</code>) and runs each prompt through <code>run_mcp_agent()</code>, grading both tool-routing accuracy (trajectory evaluation) and factual answer containment (outcome evaluation).</li>
-                        <li><code>02_mcp_agent.py</code> &mdash; The system under test: connects Groq's LLM to <code>cricket_server.py</code> over MCP and returns <code>{"answer": ..., "trace": ...}</code> for each evaluation prompt.</li>
+                        <li><code>02_mcp_agent.py</code> &mdash; The system under test: connects the LLM to <code>cricket_server.py</code> over MCP and returns <code>{"answer": ..., "trace": ...}</code> for each evaluation prompt.</li>
                         <li><code>cricket_server.py</code> &mdash; The FastMCP server providing deterministic ground-truth cricket scores and player stats over <code>stdio</code>.</li>
-                        <li><code>app.py</code> &mdash; The Flask Blueprint server exposing <code>POST /api/mcp-evals</code> to trigger the full 5-case evaluation suite and return the aggregated scorecard as JSON.</li>
                     </ul>
 
                     <p><strong>1. MCP Evaluation Suite Module (<code>03_mcp_evals.py</code>)</strong></p>
                     <ul>
-                        <li><strong>Step ① &mdash; Dynamic Agent Module Import (<code>mcp_agent</code>):</strong> Reuses <code>sys.modules["services.mcp_agent"]</code> if already loaded by <code>app.py</code>, or loads <code>02_mcp_agent.py</code> via <code>importlib.util.spec_from_file_location()</code> so <code>03_mcp_evals.py</code> can also run standalone from the command line.</li>
                         <li><strong>Pydantic Scorecard Contracts (<code>TestCaseEvalResult</code> &amp; <code>McpEvalsResponse</code>):</strong>
                             <ul>
                                 <li><code>TestCaseEvalResult</code> captures per-question grading: <code>prompt: str</code>, <code>expected_tool: Optional[str]</code>, <code>tools_used: list[str]</code>, <code>tool_routing_passed: bool</code>, <code>answer_verified: bool</code>, and <code>overall_passed: bool</code>.</li>
                                 <li><code>McpEvalsResponse</code> aggregates suite-level KPIs: <code>total_cases: int</code>, <code>passed_cases: int</code>, <code>accuracy_percentage: int</code>, and <code>results: list[TestCaseEvalResult]</code>.</li>
                             </ul>
                         </li>
-                        <li><strong>Step ② &mdash; Golden Evaluation Dataset (<code>TEST_CASES</code>):</strong> Defines 5 structured test cases covering three distinct behavioral patterns:
+                        <li><strong>Golden Evaluation Dataset (<code>TEST_CASES</code>, Step ②):</strong> Defines 5 structured test cases covering three distinct agent behaviors:
                             <ul>
-                                <li><em>Live Match Routing (Cases 1 &amp; 2):</em> Questions about the India vs West Indies score and runs needed to win &rarr; expect <code>tool="get_live_score"</code> and facts <code>["287"]</code> / <code>["90"]</code>.</li>
+                                <li><em>Live Match Routing (Cases 1 &amp; 2):</em> Questions about the India vs West Indies live score and runs needed to win &rarr; expect <code>tool="get_live_score"</code> and facts <code>["287"]</code> / <code>["90"]</code>.</li>
                                 <li><em>Player Stats Routing (Cases 3 &amp; 4):</em> Questions about Shubman Gill's series runs and Shai Hope's highest score &rarr; expect <code>tool="get_player_stats"</code> and facts <code>["164"]</code> / <code>["78"]</code>.</li>
-                                <li><em>Negative Control / Abstention (Case 5):</em> <code>"What is 2 + 2?"</code> &rarr; expects <code>tool=None</code> (no MCP tool should be called) and fact <code>["4"]</code>.</li>
+                                <li><em>Negative Control / Abstention (Case 5):</em> <code>"What is 2 + 2?"</code> &rarr; expects <code>tool=None</code> (verifying the agent abstains from calling MCP tools on unrelated arithmetic) and fact <code>["4"]</code>.</li>
                             </ul>
                         </li>
                         <li><strong><code>async def run_mcp_evals_suite() -&gt; dict</code>:</strong> Executes and grades all 5 cases sequentially:
                             <ul>
-                                <li><strong>Step ③ &mdash; Agent Invocation &amp; Trace Extraction:</strong> Loops over each <code>case</code> in <code>TEST_CASES</code>, awaits <code>mcp_agent.run_mcp_agent(case["q"])</code>, extracts the list of called tool names <code>tools_used = [step["tool"] for step in result["trace"]]</code>, and reads <code>answer = result["answer"] or ""</code>.</li>
-                                <li><strong>Step ④ &mdash; Assertion 1: Tool Routing Check (<code>tool_ok</code>):</strong> Evaluates <code>(case["tool"] in tools_used) if case["tool"] else (tools_used == [])</code>. When an MCP tool is expected, verifies it was called; when <code>case["tool"] is None</code>, verifies the agent abstained from calling any tools.</li>
-                                <li><strong>Step ⑤ &mdash; Assertion 2: Ground-Truth Fact Check (<code>answer_ok</code>):</strong> Evaluates <code>all(word.lower() in answer.lower() for word in case["must_contain"])</code> to confirm every required ground-truth number appears in the final natural-language answer.</li>
-                                <li><strong>Step ⑥ &mdash; Per-Case Verdict Aggregation:</strong> Computes <code>ok = tool_ok and answer_ok</code>, increments <code>passed += ok</code>, and appends the structured result dictionary to <code>results</code>.</li>
+                                <li><strong>Step ③ &mdash; Agent Invocation &amp; Trace Extraction:</strong> Loops over each <code>case</code> in <code>TEST_CASES</code>, awaits <code>mcp_agent.run_mcp_agent(case["q"])</code> (Step ①), extracts the list of invoked tool names <code>tools_used = [step["tool"] for step in result["trace"]]</code>, and reads <code>answer = result["answer"] or ""</code>.</li>
+                                <li><strong>Step ④ &mdash; Assertion 1: Tool Routing Check (<code>tool_ok</code>):</strong> Evaluates <code>(case["tool"] in tools_used) if case["tool"] else (tools_used == [])</code>. When an MCP tool is expected, verifies it was called; when <code>case["tool"] is None</code>, verifies no tools were called.</li>
+                                <li><strong>Step ⑤ &mdash; Assertion 2: Ground-Truth Fact Check (<code>answer_ok</code>):</strong> Evaluates <code>all(word.lower() in answer.lower() for word in case["must_contain"])</code> to confirm every required ground-truth token appears in the final answer.</li>
+                                <li><strong>Step ⑥ &mdash; Per-Case Verdict Aggregation:</strong> Computes <code>ok = tool_ok and answer_ok</code>, increments <code>passed += ok</code>, and appends the per-case result dictionary to <code>results</code>.</li>
                                 <li><strong>Step ⑦ &mdash; Suite Score Calculation:</strong> Returns <code>total_cases</code>, <code>passed_cases</code>, integer percentage <code>accuracy_percentage = 100 * passed // len(TEST_CASES)</code>, and the per-case <code>results</code> list.</li>
                             </ul>
                         </li>
@@ -284,27 +282,15 @@
 
                     <p><strong>2. System Under Test: Agent &amp; Server (<code>02_mcp_agent.py</code> &amp; <code>cricket_server.py</code>)</strong></p>
                     <ul>
-                        <li><strong><code>run_mcp_agent(question)</code> in <code>02_mcp_agent.py</code>:</strong> Spawns <code>cricket_server.py</code> over <code>stdio</code>, converts MCP tools via <code>to_openai_format()</code>, runs the Groq tool-calling loop with <code>call_llm()</code>, and returns both <code>answer</code> and <code>trace</code> so <code>03_mcp_evals.py</code> can inspect the exact trajectory.</li>
+                        <li><strong><code>run_mcp_agent(question)</code> in <code>02_mcp_agent.py</code>:</strong> Spawns <code>cricket_server.py</code> over <code>stdio</code>, converts discovered MCP tools via <code>to_openai_format()</code>, runs the Groq tool-calling loop with <code>call_llm()</code>, and returns both <code>answer</code> and <code>trace</code> so <code>03_mcp_evals.py</code> can inspect the exact tool trajectory.</li>
                         <li><strong><code>get_live_score</code> &amp; <code>get_player_stats</code> in <code>cricket_server.py</code>:</strong> Provide deterministic mock data (<code>287/6</code>, <code>90 runs from 70 balls</code>, Gill's <code>164</code> runs, Hope's <code>78</code> highest score) so ground-truth assertions are 100% reproducible.</li>
                     </ul>
 
-                    <p><strong>3. Flask Web Server &amp; Blueprint Routes (<code>app.py</code>)</strong></p>
-                    <ul>
-                        <li><strong><code>@bp.route("/api/mcp-evals", methods=["POST"]) def mcp_evals_route()</code>:</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Calls <code>asyncio.run(mod_mcp_evals.run_mcp_evals_suite())</code>, formats a top-line summary banner in <code>res["result"]</code> (<code>"Evaluation Suite Accuracy: ...% (.../5 passed)"</code>), and returns the full JSON scorecard to the browser.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Connection Flow</strong></p>
+                    <p><strong>3. End-to-End Evaluation Flow</strong></p>
                     <ol>
-                        <li>The user clicks the evaluation button in the browser UI, sending <code>POST /api/mcp-evals</code> to <code>app.py</code>.</li>
-                        <li><code>mcp_evals_route()</code> checks the rate limit and runs <code>asyncio.run(mod_mcp_evals.run_mcp_evals_suite())</code>.</li>
-                        <li>For each of the 5 <code>TEST_CASES</code> in <code>03_mcp_evals.py</code>, <code>run_mcp_evals_suite()</code> calls <code>await mcp_agent.run_mcp_agent(case["q"])</code> in <code>02_mcp_agent.py</code>.</li>
-                        <li><code>run_mcp_agent()</code> starts <code>cricket_server.py</code> over <code>stdio</code>, discovers its tools, queries Groq, executes any requested MCP tools on <code>cricket_server.py</code>, and returns <code>{"answer": ..., "trace": ...}</code>.</li>
-                        <li><code>run_mcp_evals_suite()</code> grades each response on two axes &mdash; <code>tool_routing_passed</code> (against <code>trace</code>) and <code>answer_verified</code> (against <code>must_contain</code>) &mdash; and computes <code>accuracy_percentage</code> across all 5 cases.</li>
-                        <li><code>mcp_evals_route()</code> returns the JSON scorecard to the browser, which renders the pass/fail table and overall accuracy score.</li>
+                        <li>For each of the 5 <code>TEST_CASES</code> in <code>03_mcp_evals.py</code>, <code>run_mcp_evals_suite()</code> calls <code>await mcp_agent.run_mcp_agent(case["q"])</code>.</li>
+                        <li><code>run_mcp_agent()</code> starts <code>cricket_server.py</code> over <code>stdio</code>, discovers its tools, queries the LLM, executes any requested MCP tools on <code>cricket_server.py</code>, and returns <code>{"answer": ..., "trace": ...}</code>.</li>
+                        <li><code>run_mcp_evals_suite()</code> grades each response on two axes &mdash; <code>tool_routing_passed</code> (trajectory check against <code>trace</code>) and <code>answer_verified</code> (outcome check against <code>must_contain</code>) &mdash; and computes <code>accuracy_percentage</code> across all 5 cases.</li>
                     </ol>
                 </div>
             </section>

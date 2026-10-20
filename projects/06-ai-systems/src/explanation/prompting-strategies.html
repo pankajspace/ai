@@ -238,77 +238,60 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <p><strong>1. Core Benchmark Architecture (<code>src/python/01_prompting_strategies.py</code>)</strong></p>
                     <ul>
-                        <li><code>src/python/01_prompting_strategies.py</code>: Implements the core benchmark service that constructs three distinct prompt formats (<strong>Direct</strong>, <strong>Zero-Shot CoT</strong>, and <strong>Few-Shot CoT</strong>), resolves the selected LLM provider/model client, runs all three prompts sequentially while timing latency and recording token consumption, extracts the final answer line, and scores accuracy against ground truth.</li>
-                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads the numbered service modules, enforces rate limiting on <code>POST</code> endpoints, serves static assets, and exposes <code>POST /api/prompting-strategies</code> via <code>prompting_strategies_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser frontend where users select a preset arithmetic problem, expected answer, model/provider dropdown, and temperature from the UI controls, send a JSON <code>POST</code> request to <code>/api/prompting-strategies</code>, and render the comparative strategy cards with token counts and reasoning traces.</li>
+                        <li><code>01_prompting_strategies.py</code> implements a controlled head-to-head prompting benchmark that evaluates three distinct reasoning strategies &mdash; <strong>Direct Prompting</strong>, <strong>Zero-Shot Chain-of-Thought (CoT)</strong>, and <strong>Few-Shot Chain-of-Thought</strong> &mdash; on the same multi-step arithmetic word problem, measuring answer accuracy, prompt tokens, completion tokens, and inference latency.</li>
                     </ul>
 
-                    <p><strong>2. Pydantic Data Schemas &amp; Constants in <code>01_prompting_strategies.py</code></strong></p>
+                    <p><strong>2. Pydantic Data Schemas &amp; In-Context Exemplars</strong></p>
                     <ul>
-                        <li><code>PromptingStrategiesRequest(BaseModel)</code>: Defines the input contract with defaults for <code>question: str</code> (the multi-step pen purchase word problem), <code>expected_answer: str = "293"</code>, <code>model: str = "gpt-4o-mini"</code>, and <code>temperature: float = 0.7</code>.</li>
-                        <li><code>StrategyResult(BaseModel)</code>: Captures the metrics of a single prompting strategy run: <code>name: str</code>, <code>response_text: str</code>, <code>extracted_answer: str</code>, <code>is_correct: bool</code>, <code>prompt_tokens: int</code>, <code>completion_tokens: int</code>, <code>total_tokens: int</code>, and <code>latency_seconds: float</code>.</li>
-                        <li><code>PromptingStrategiesResponse(BaseModel)</code>: Wraps the overall benchmark output containing <code>expected_answer: str</code>, <code>model: str</code>, <code>temperature: float</code>, and <code>strategies: List[StrategyResult]</code>.</li>
-                        <li><code>FEW_SHOT_EXAMPLES</code>: A multi-line string constant containing two worked arithmetic examples (<code>Example 1</code> on counting apples and <code>Example 2</code> on worker widget output). Each example shows a <code>Question:</code>, numbered <code>Thought:</code> steps, and a final <code>Answer: &lt;number&gt;</code> line to calibrate the model's reasoning structure and output formatting.</li>
+                        <li><code>PromptingStrategiesRequest(BaseModel)</code>: Defines the benchmark parameters with defaults for <code>question: str</code> (the multi-step pen purchase word problem), <code>expected_answer: str = "293"</code>, <code>model: str = "gpt-4o-mini"</code>, and <code>temperature: float = 0.7</code>.</li>
+                        <li><code>StrategyResult(BaseModel)</code>: Captures the evaluation metrics for a single prompting strategy: <code>name: str</code>, <code>response_text: str</code>, <code>extracted_answer: str</code>, <code>is_correct: bool</code>, <code>prompt_tokens: int</code>, <code>completion_tokens: int</code>, <code>total_tokens: int</code>, and <code>latency_seconds: float</code>.</li>
+                        <li><code>PromptingStrategiesResponse(BaseModel)</code>: Wraps the comparative benchmark output containing <code>expected_answer: str</code>, <code>model: str</code>, <code>temperature: float</code>, and <code>strategies: List[StrategyResult]</code>.</li>
+                        <li><code>FEW_SHOT_EXAMPLES</code>: A multi-line prompt constant containing two worked arithmetic demonstrations (<code>Example 1</code> on counting apples and <code>Example 2</code> on worker widget output). Each exemplar pairs a <code>Question:</code> with numbered <code>Thought:</code> steps and a final <code>Answer: &lt;number&gt;</code> delimiter to calibrate the model's step-by-step decomposition and output format.</li>
                     </ul>
 
-                    <p><strong>3. Helper, Parsing, and Scoring Functions in <code>01_prompting_strategies.py</code></strong></p>
+                    <p><strong>3. Provider Resolution, Answer Extraction &amp; Accuracy Scoring</strong></p>
                     <ul>
-                        <li><code>_resolve_client_and_model(model_choice: str) -&gt; tuple[OpenAI, str]</code>: Accepts the user's selected model string, normalizes it to lowercase, and returns an initialized OpenAI-compatible SDK client paired with the concrete model identifier:
+                        <li><code>_resolve_client_and_model(model_choice: str) -&gt; tuple[OpenAI, str]</code>: Resolves the requested model family (Google Gemini, Groq, or OpenAI <code>gpt-4o</code> / <code>gpt-4o-mini</code>) into an initialized OpenAI-compatible client and concrete model identifier so the three prompting strategies can be compared across different model families.</li>
+                        <li><code>extract_final_answer(response_text: str) -&gt; str</code>: Isolates the final numeric conclusion from a free-text or step-by-step reasoning trace:
                             <ul>
-                                <li>If <code>"gemini"</code> is in <code>choice</code> and <code>GEMINI_API_KEY</code> is set, it points <code>OpenAI</code> at Google's OpenAI-compatible endpoint (<code>GEMINI_BASE_URL</code>) with <code>GEMINI_MODEL</code> (default <code>"gemini-3.8-flash"</code>).</li>
-                                <li>If <code>"groq"</code>, <code>"oss"</code>, or <code>"llama"</code> is in <code>choice</code> and <code>GROQ_API_KEY</code> is set, it points <code>OpenAI</code> at Groq's endpoint (<code>GROQ_BASE_URL</code>) with <code>GROQ_MODEL</code> (default <code>"openai/gpt-oss-20b"</code>).</li>
-                                <li>Otherwise, it validates <code>choice</code> against the allowlist <code>("gpt-4o", "gpt-4o-mini")</code> (falling back to <code>OPENAI_MODEL</code> / <code>"gpt-4o-mini"</code>) and returns the standard OpenAI client.</li>
+                                <li><strong>Step ①:</strong> Searches for all case-insensitive occurrences of <code>answer\s*:</code> using <code>re.finditer()</code>. If found, it slices the text after the <em>last</em> <code>Answer:</code> delimiter (<code>matches[-1].end()</code>) so intermediate reasoning steps are ignored; otherwise, it falls back to the final non-empty line.</li>
+                                <li><strong>Step ②:</strong> Takes the first line of that segment, strips markdown formatting characters (<code>*</code> and <code>`</code>), and normalizes case and whitespace.</li>
                             </ul>
                         </li>
-                        <li><code>extract_final_answer(response_text: str) -&gt; str</code>: Parses the raw model reply to isolate the final answer value:
+                        <li><code>evaluate_accuracy(extracted: str, expected: str) -&gt; bool</code>: Grades whether the extracted answer matches the ground-truth value:
                             <ul>
-                                <li><strong>Step ①:</strong> Strips leading/trailing whitespace and searches for all case-insensitive occurrences of <code>answer\s*:</code> using <code>re.finditer()</code>. If found, it slices the substring immediately after the <em>last</em> <code>Answer:</code> match (<code>matches[-1].end()</code>); otherwise, it falls back to the last non-empty line of the response.</li>
-                                <li><strong>Step ②:</strong> Takes the first line of that segment, removes markdown bold/code characters (<code>*</code> and <code>`</code>), trims whitespace, and lowercases the string.</li>
-                            </ul>
-                        </li>
-                        <li><code>evaluate_accuracy(extracted: str, expected: str) -&gt; bool</code>: Grades whether the extracted answer matches ground truth:
-                            <ul>
-                                <li><strong>Step ①:</strong> Returns <code>False</code> immediately if either string is empty, strips punctuation/currency symbols from both strings via <code>re.sub()</code>, and checks whether <code>clean_expected in clean_extracted</code>.</li>
+                                <li><strong>Step ①:</strong> Returns <code>False</code> if either string is empty, strips currency symbols and punctuation via <code>re.sub(r"[^\w\.\:\/]", "", ...)</code>, and checks whether <code>clean_expected in clean_extracted</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>4. Main Benchmark Function: <code>run_prompting_strategies()</code></strong></p>
+                    <p><strong>4. Main Benchmark Execution: <code>run_prompting_strategies()</code></strong></p>
                     <ul>
                         <li>Accepts <code>question: str</code>, <code>expected_answer: str</code>, <code>model: str</code>, and <code>temperature: float</code>, and returns a dictionary matching <code>PromptingStrategiesResponse</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Calls <code>_resolve_client_and_model(model)</code> to obtain <code>(client, resolved_model)</code> and clamps <code>temperature</code> to the valid range <code>[0.0, 2.0]</code> via <code>max(0.0, min(2.0, float(temperature)))</code>.</li>
-                                <li><strong>Step ②:</strong> Builds the <code>prompts</code> dictionary mapping <code>"Direct"</code> (forbids explanations/working), <code>"Zero-Shot CoT"</code> (instructs step-by-step reasoning before <code>Answer: &lt;your answer&gt;</code>), and <code>"Few-Shot CoT"</code> (prepends <code>FEW_SHOT_EXAMPLES</code> before <code>Question: {question}</code> and <code>Thought:</code>).</li>
-                                <li><strong>Step ③:</strong> Loops over each strategy in <code>prompts.items()</code>, records <code>start_t = time.perf_counter()</code>, calls <code>client.chat.completions.create()</code> at <code>clamped_temp</code>, computes elapsed wall-clock latency <code>dur</code>, and extracts <code>prompt_tokens</code> and <code>completion_tokens</code> from <code>resp.usage</code>.</li>
-                                <li><strong>Step ④:</strong> Calls <code>extract_final_answer(text)</code> and <code>evaluate_accuracy(extracted, expected_answer)</code>, then appends the strategy's metrics dictionary (including <code>total_tokens = p_tok + c_tok</code> and <code>round(dur, 3)</code>) to <code>results</code>.</li>
-                                <li><strong>Step ⑤:</strong> Returns the dictionary containing <code>expected_answer</code>, <code>model</code>, <code>temperature</code>, and <code>strategies</code>.</li>
+                                <li><strong>Step ①:</strong> Resolves <code>(client, resolved_model)</code> via <code>_resolve_client_and_model(model)</code> and clamps <code>temperature</code> to the valid sampling interval <code>[0.0, 2.0]</code>.</li>
+                                <li><strong>Step ②:</strong> Constructs the three strategy prompts in <code>prompts</code>:
+                                    <ul>
+                                        <li><code>"Direct"</code>: Appends <em>"Answer the question directly. State your final answer in the format: 'Answer: &lt;your answer&gt;'. Do not include any explanations or working."</em> (forcing single-pass calculation without an external token scratchpad).</li>
+                                        <li><code>"Zero-Shot CoT"</code>: Appends <em>"Think through the problem step by step to find the solution. After your reasoning, state your final answer on a new line in the format: 'Answer: &lt;your answer&gt;'."</em> (turning generated output tokens into intermediate working memory).</li>
+                                        <li><code>"Few-Shot CoT"</code>: Prepends <code>FEW_SHOT_EXAMPLES</code> before <code>Question: {question}\nThought:\n</code> to guide both intermediate equation structure and final delimiter formatting.</li>
+                                    </ul>
+                                </li>
+                                <li><strong>Step ③:</strong> Iterates through <code>prompts.items()</code>, times each <code>client.chat.completions.create()</code> call with <code>time.perf_counter()</code>, and reads <code>prompt_tokens</code> and <code>completion_tokens</code> from <code>resp.usage</code>.</li>
+                                <li><strong>Step ④:</strong> Extracts the final answer via <code>extract_final_answer(text)</code>, grades correctness via <code>evaluate_accuracy(extracted, expected_answer)</code>, and records the strategy's accuracy, token breakdown (<code>total_tokens = p_tok + c_tok</code>), and latency.</li>
+                                <li><strong>Step ⑤:</strong> Returns the comparative benchmark dictionary across all three strategies.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>5. Flask Server &amp; Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><code>_load_service(filename: str, alias: str)</code>: Uses <code>importlib.util.spec_from_file_location</code> (<strong>Step ①</strong>) and <code>spec.loader.exec_module</code> (<strong>Step ②</strong>) to dynamically import files whose names start with digits (such as <code>01_prompting_strategies.py</code> as <code>mod_prompt</code>).</li>
-                        <li><code>enforce_rate_limit()</code>: A <code>@bp.before_request</code> hook that inspects <code>POST</code> requests (<strong>Step ①</strong>), calls <code>check_rate_limit(request, max_requests=30, window_seconds=3600)</code> (<strong>Step ②</strong>), and returns HTTP <code>429</code> with a <code>Retry-After</code> header if exceeded (<strong>Step ③</strong>).</li>
-                        <li><code>prompting_strategies_route()</code> (<code>POST /api/prompting-strategies</code>):
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses the incoming JSON body via <code>request.get_json(force=True, silent=True)</code>, extracts and trims <code>question</code> and <code>expected_answer</code>, reads <code>model</code> and <code>temperature</code> (or validates preset choices via allowlist helpers such as <code>read_choice</code> / <code>invalid_choice</code>), and returns HTTP <code>400</code> if <code>question</code> is empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>mod_prompt.run_prompting_strategies(question, expected, model, temp)</code>, attaches a human-readable summary string in <code>res["result"]</code>, and returns the JSON response (or HTTP <code>500</code> on exception).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>6. End-to-End Data Flow Walkthrough</strong></p>
+                    <p><strong>5. End-to-End AI Benchmark Flow</strong></p>
                     <ol>
-                        <li>The user selects a preset word problem, model, and temperature in <code>src/index.html</code> and clicks <strong>Run Benchmark</strong>, triggering <code>src/js/main.js</code> to send <code>POST /api/prompting-strategies</code> with <code>{ question, expected_answer, model, temperature }</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> hook in <code>app.py</code> verifies the client is within the 30 requests/hour quota before routing the request to <code>prompting_strategies_route()</code>.</li>
-                        <li><code>prompting_strategies_route()</code> validates that <code>question</code> is non-empty and forwards <code>(question, expected, model, temp)</code> to <code>run_prompting_strategies()</code> in <code>01_prompting_strategies.py</code>.</li>
-                        <li><code>_resolve_client_and_model()</code> inspects the requested model name and instantiates the matching OpenAI, Gemini, or Groq client while clamping temperature to <code>[0.0, 2.0]</code>.</li>
-                        <li><code>run_prompting_strategies()</code> formats the <code>Direct</code>, <code>Zero-Shot CoT</code>, and <code>Few-Shot CoT</code> prompts and dispatches three sequential chat completion calls, timing each call with <code>time.perf_counter()</code> and reading token counts from <code>resp.usage</code>.</li>
-                        <li>Each raw LLM response is passed through <code>extract_final_answer()</code> to isolate the final <code>Answer: ...</code> clause and <code>evaluate_accuracy()</code> to compare it against <code>expected_answer</code>.</li>
-                        <li>The assembled <code>strategies</code> list and metadata are serialized to JSON by Flask and returned to <code>main.js</code>, which renders the side-by-side accuracy badges, token breakdowns, latencies, and reasoning traces in the browser.</li>
+                        <li><code>run_prompting_strategies()</code> receives the target word problem, expected ground-truth answer, model identifier, and sampling temperature.</li>
+                        <li>It constructs three prompt variants &mdash; <strong>Direct</strong> (no scratchpad), <strong>Zero-Shot CoT</strong> (instruction-triggered scratchpad), and <strong>Few-Shot CoT</strong> (exemplar-guided scratchpad) &mdash; holding the question, model, and temperature constant.</li>
+                        <li>Each prompt is sent to the LLM while measuring wall-clock generation latency and capturing prompt vs. completion token counts from <code>resp.usage</code>.</li>
+                        <li><code>extract_final_answer()</code> strips away the intermediate reasoning trace to isolate the final <code>Answer: ...</code> clause, and <code>evaluate_accuracy()</code> verifies it against <code>expected_answer</code>, revealing the accuracy vs. token-cost trade-off across the three prompting strategies.</li>
                     </ol>
                 </div>
             </section>

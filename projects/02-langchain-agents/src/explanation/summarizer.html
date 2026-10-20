@@ -238,54 +238,30 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>Purpose of Each File</strong></p>
-                    <ul>
-                        <li><code>src/python/01_langchain_summarizer.py</code> &mdash; Implements a declarative text summarization pipeline using LangChain Expression Language (LCEL). It defines a default sample paragraph (<code>TEXT_LANGCHAIN</code>), Pydantic request/response schemas (<code>SummarizerRequest</code>, <code>SummarizerResponse</code>), the three-stage LCEL chain (<code>prompt | model | parser</code>), and the <code>summarize()</code> service function.</li>
-                        <li><code>src/python/app.py</code> &mdash; The Flask server and Blueprint router for <code>02-langchain-agents</code>. It dynamically loads all five numbered service files via <code>_load_service()</code>, enforces rate limits on POST endpoints, serves static assets, and exposes <code>POST /api/summarize</code> through <code>summarizer_service()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; The browser UI. In <code>main.js</code>, <code>bindPresetChips("card-summarizer", "summarizerInput")</code> wires the preset passage buttons, and <code>setupCard()</code> binds <code>#summarizerInput</code> and <code>#summarizerBtn</code> so clicking submit invokes <code>callApi()</code> to send <code>POST /api/summarize</code> with <code>{ "text": value }</code> and renders the resulting summary inside <code>#summarizerResult</code>.</li>
-                    </ul>
+                    <p><strong>Core AI Module (<code>src/python/01_langchain_summarizer.py</code>)</strong></p>
+                    <p><code>src/python/01_langchain_summarizer.py</code> implements a declarative text summarization pipeline using <strong>LangChain Expression Language (LCEL)</strong>. It composes a parameterized prompt template, a low-temperature chat model, and a string output parser into a single runnable sequence (<code>prompt | model | parser</code>).</p>
 
-                    <p><strong>Constants, Schemas, LCEL Chain, and Service Function in <code>src/python/01_langchain_summarizer.py</code></strong></p>
+                    <p><strong>Schemas, LCEL Pipeline Components, and Service Function</strong></p>
                     <ul>
-                        <li><code>TEXT_LANGCHAIN: str</code>: A multi-sentence default paragraph describing LangChain's capabilities, used as the default value for <code>SummarizerRequest.text</code> and <code>summarize(long_text=...)</code>.</li>
-                        <li><code>class SummarizerRequest(BaseModel)</code> &amp; <code>class SummarizerResponse(BaseModel)</code>: Pydantic models documenting the input contract (<code>text: str = TEXT_LANGCHAIN</code>) and output contract (<code>text: str</code>, <code>summary: str</code>).</li>
-                        <li><strong>Module-Level LCEL Chain Construction:</strong>
-                            <ul>
-                                <li><strong>Step ① (Create reusable prompt template):</strong> Calls <code>prompt = ChatPromptTemplate.from_template("Give a short, friendly summary of this long text:\n\n{data}")</code>, defining a template runnable expecting a <code>{data}</code> input variable.</li>
-                                <li><strong>Step ② (Initialize <code>ChatOpenAI</code> wrapper):</strong> Instantiates <code>model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), api_key=os.getenv("OPENAI_API_KEY") or "missing-key", base_url=os.getenv("OPENAI_BASE_URL") or None, temperature=0.3, timeout=20.0)</code>. Setting <code>temperature=0.3</code> keeps summaries grounded and faithful to the input passage.</li>
-                                <li><strong>Step ③ (Initialize output parser):</strong> Creates <code>parser = StrOutputParser()</code>, which extracts the plain text <code>.content</code> string from the model's <code>AIMessage</code> response object.</li>
-                                <li><strong>Step ④ (Compose pipeline with <code>|</code>):</strong> Chains <code>chain = prompt | model | parser</code> into a single <code>RunnableSequence</code> where each component's output feeds automatically into the next component's input.</li>
-                            </ul>
-                        </li>
-                        <li><code>summarize(long_text: str = TEXT_LANGCHAIN) -&gt; str</code>: The core service function that accepts <code>long_text</code> and returns the summarized string:
-                            <ul>
-                                <li><strong>Step ⑤ (Invoke the chain):</strong> Calls <code>return chain.invoke({"data": long_text})</code>, which binds <code>long_text</code> to <code>{data}</code> in the prompt template, executes the OpenAI call, parses the output into a <code>str</code>, and returns it.</li>
-                            </ul>
+                        <li><strong><code>TEXT_LANGCHAIN: str</code>:</strong> A multi-sentence sample passage describing LangChain's role in building AI workflows, used as the default input text.</li>
+                        <li><strong><code>class SummarizerRequest(BaseModel)</code> &amp; <code>class SummarizerResponse(BaseModel)</code>:</strong> Pydantic schemas defining the input payload (<code>text: str = TEXT_LANGCHAIN</code>) and output payload (<code>text: str</code>, <code>summary: str</code>).</li>
+                        <li><strong>LCEL Chain Construction and Execution:</strong>
+                            <ol>
+                                <li><strong>Step ① — Create a Reusable Prompt Template:</strong> Defines <code>prompt = ChatPromptTemplate.from_template("Give a short, friendly summary of this long text:\n\n{data}")</code>, exposing <code>{data}</code> as a named input variable.</li>
+                                <li><strong>Step ② — Initialize the LangChain Chat Model:</strong> Instantiates <code>model = ChatOpenAI(model=os.getenv("OPENAI_MODEL", "gpt-4o-mini"), api_key=os.getenv("OPENAI_API_KEY") or "missing-key", base_url=os.getenv("OPENAI_BASE_URL") or None, temperature=0.3, timeout=20.0)</code>. Setting <code>temperature=0.3</code> keeps the generated summary factually grounded in the source passage.</li>
+                                <li><strong>Step ③ — Initialize the Output Parser:</strong> Creates <code>parser = StrOutputParser()</code> to unwrap the model's <code>AIMessage</code> response object into a plain Python <code>str</code>.</li>
+                                <li><strong>Step ④ — Compose the Pipeline with LCEL (<code>|</code>):</strong> Links <code>chain = prompt | model | parser</code> into a unified <code>RunnableSequence</code> where each stage's output automatically feeds into the next stage's input.</li>
+                                <li><strong>Step ⑤ — Invoke the Chain in <code>summarize(long_text: str = TEXT_LANGCHAIN) -&gt; str</code>:</strong> Calls <code>return chain.invoke({"data": long_text})</code>, binding <code>long_text</code> to the <code>{data}</code> placeholder and returning the parsed summary string.</li>
+                            </ol>
                         </li>
                     </ul>
 
-                    <p><strong>Helpers, Middleware, and Route Handlers in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><code>_load_service(filename: str, alias: str)</code>: Loads <code>01_langchain_summarizer.py</code> into <code>mod_summarize</code> via <code>importlib.util.spec_from_file_location()</code> (Step ①) and <code>spec.loader.exec_module()</code> (Step ②).</li>
-                        <li><code>enforce_rate_limit()</code> (<code>@bp.before_request</code>): Filters for <code>POST</code> requests (Step ①), checks the 30-requests-per-hour quota via <code>check_rate_limit()</code> (Step ②), and returns HTTP <code>429</code> with <code>Retry-After</code> when exceeded (Step ③).</li>
-                        <li><code>index()</code> &amp; Static Asset Routes: Injects <code>PATH_PREFIX</code> into <code>index.html</code> (Steps ①–②) and serves CSS, JS, explanation, and theory files.</li>
-                        <li><code>summarizer_service()</code> (<code>POST /api/summarize</code>): The route handler for the Text Summarizer card:
-                            <ul>
-                                <li><strong>Step ① (Parse &amp; validate input text):</strong> Reads <code>data = request.get_json(force=True, silent=True) or {}</code>, normalizes <code>text = (data.get("text") or data.get("message") or "").strip()</code>, and returns HTTP <code>400</code> with <code>{"error": "Text cannot be empty"}</code> if blank.</li>
-                                <li><strong>Step ② (Run summarizer chain &amp; return JSON):</strong> Calls <code>summary = mod_summarize.summarize(text)</code> inside a <code>try/except</code> block and returns <code>jsonify({"result": summary, "summary": summary})</code> (or HTTP <code>500</code> on exception).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>End-to-End Execution Flow</strong></p>
+                    <p><strong>How the AI Components Connect End-to-End</strong></p>
                     <ol>
-                        <li>The user clicks a preset passage chip or pastes long text into <code>#summarizerInput</code> and clicks <code>#summarizerBtn</code> in <code>src/index.html</code>.</li>
-                        <li><code>setupCard()</code> in <code>src/js/main.js</code> verifies the input is non-empty and calls <code>callApi()</code>, which sends <code>POST ${API}/api/summarize</code> with JSON payload <code>{"text": "..."}</code>.</li>
-                        <li>Flask's Blueprint runs <code>enforce_rate_limit()</code> and routes the request to <code>summarizer_service()</code> in <code>src/python/app.py</code>.</li>
-                        <li><code>summarizer_service()</code> extracts and strips <code>text</code>, ensures it is not empty, and calls <code>mod_summarize.summarize(text)</code>.</li>
-                        <li><code>summarize()</code> in <code>src/python/01_langchain_summarizer.py</code> executes <code>chain.invoke({"data": long_text})</code>.</li>
-                        <li>Inside the LCEL sequence, <code>ChatPromptTemplate</code> formats the prompt with <code>{data}</code>, <code>ChatOpenAI</code> sends the request to OpenAI (<code>gpt-4o-mini</code> at <code>temperature=0.3</code>) and receives an <code>AIMessage</code>, and <code>StrOutputParser</code> unwraps <code>AIMessage.content</code> into a plain Python string.</li>
-                        <li><code>summarizer_service()</code> returns <code>{"result": summary, "summary": summary}</code> as HTTP <code>200</code> JSON, and <code>main.js</code> renders the concise summary inside <code>#summarizerResult</code>.</li>
+                        <li><code>summarize(long_text)</code> receives the passage to condense and passes <code>{"data": long_text}</code> into <code>chain.invoke()</code>.</li>
+                        <li><code>ChatPromptTemplate</code> substitutes <code>long_text</code> into the <code>{data}</code> slot to produce a formatted <code>PromptValue</code>.</li>
+                        <li><code>ChatOpenAI</code> sends the rendered prompt to <code>gpt-4o-mini</code> at <code>temperature=0.3</code> and returns an <code>AIMessage</code> containing the summary.</li>
+                        <li><code>StrOutputParser</code> extracts <code>AIMessage.content</code> as a plain string and returns it to fulfill the <code>SummarizerResponse</code> contract.</li>
                     </ol>
                 </div>
             </section>

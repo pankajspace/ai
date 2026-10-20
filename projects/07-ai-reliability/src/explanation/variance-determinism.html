@@ -238,52 +238,37 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File in the Demo</strong></p>
+                    <p><strong>1. Core Benchmark Architecture (<code>src/python/02_variance_determinism.py</code>)</strong></p>
                     <ul>
-                        <li><code>src/python/02_variance_determinism.py</code>: Implements the Structured Output Variance &amp; Determinism benchmark. Given an unstructured product review, it runs three extraction strategies against OpenAI &mdash; <strong>Strategy A (Unconstrained Freeform)</strong>, <strong>Strategy B (Prompt-Constrained Instructional JSON)</strong>, and <strong>Strategy C (API Schema-Enforced JSON Mode)</strong> &mdash; and tests each raw output with Python's <code>json.loads()</code> parser.</li>
-                        <li><code>src/python/app.py</code>: The Flask web server and Blueprint router. It dynamically loads <code>02_variance_determinism.py</code> as <code>mod_var</code>, enforces rate limiting on <code>POST</code> requests, and exposes <code>POST /api/variance-determinism</code> via <code>variance_determinism_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code>: The browser frontend where users enter or select a customer product review (<code>review_text</code>), send a <code>POST /api/variance-determinism</code> request, and inspect the raw LLM output, JSON parse validity badge, parsed dictionary fields, or exact <code>JSONDecodeError</code> exception for all three strategies.</li>
+                        <li><code>02_variance_determinism.py</code> evaluates how output constraints turn a stochastic LLM into a deterministic software component by extracting structured fields (<code>product</code>, <code>sentiment</code>, <code>pros</code>, <code>cons</code>, and <code>rating</code>) from an unstructured customer review across three progressively stricter strategies &mdash; <strong>Strategy A (Unconstrained Freeform)</strong>, <strong>Strategy B (Prompt-Constrained Instructional JSON)</strong>, and <strong>Strategy C (API Schema-Enforced JSON Mode)</strong> &mdash; and verifying each output with Python's <code>json.loads()</code> parser.</li>
                     </ul>
 
-                    <p><strong>2. Pydantic Schemas &amp; Parser Verification Helper in <code>02_variance_determinism.py</code></strong></p>
+                    <p><strong>2. Pydantic Schemas &amp; JSON Parser Verification Helper</strong></p>
                     <ul>
-                        <li><code>VarianceDeterminismRequest(BaseModel)</code>: Defines the input payload with default <code>review_text: str</code> (a 4-star smartphone review praising camera and design while criticizing battery life).</li>
-                        <li><code>StrategyOutput(BaseModel)</code>: Captures the parser evaluation for one strategy: <code>strategy_name: str</code>, <code>raw_output: str</code>, <code>is_valid_json: bool</code>, <code>parsed_data: Optional[Dict[str, Any]] = None</code>, and <code>parse_error: Optional[str] = None</code>.</li>
-                        <li><code>VarianceDeterminismResponse(BaseModel)</code>: Wraps the list of three strategy outcomes in <code>strategies: List[StrategyOutput]</code>.</li>
-                        <li><code>check_json(strategy_name: str, raw_output: str, text_to_parse: str) -&gt; dict</code>: Attempts <code>json.loads(text_to_parse)</code> inside a <code>try / except json.JSONDecodeError</code> block. On success, it returns <code>is_valid_json: True</code> with the parsed Python dictionary in <code>parsed_data</code>; on failure, it catches the <code>JSONDecodeError</code> and returns <code>is_valid_json: False</code> with the exact parser error message in <code>parse_error</code>.</li>
+                        <li><code>VarianceDeterminismRequest(BaseModel)</code>: Defines the input payload with default <code>review_text: str</code> (a 4-star smartphone review praising camera quality and sleek design while criticizing battery life).</li>
+                        <li><code>StrategyOutput(BaseModel)</code>: Captures the parser evaluation for one extraction strategy: <code>strategy_name: str</code>, <code>raw_output: str</code>, <code>is_valid_json: bool</code>, <code>parsed_data: Optional[Dict[str, Any]] = None</code>, and <code>parse_error: Optional[str] = None</code>.</li>
+                        <li><code>VarianceDeterminismResponse(BaseModel)</code>: Wraps the three strategy outcomes in <code>strategies: List[StrategyOutput]</code>.</li>
+                        <li><code>check_json(strategy_name: str, raw_output: str, text_to_parse: str) -&gt; dict</code>: Attempts <code>json.loads(text_to_parse)</code> inside a <code>try / except json.JSONDecodeError</code> block. On success, it returns <code>is_valid_json: True</code> with the parsed dictionary in <code>parsed_data</code>; on failure, it catches the <code>JSONDecodeError</code> and records <code>is_valid_json: False</code> along with the exact parser exception string in <code>parse_error</code>.</li>
                     </ul>
 
-                    <p><strong>3. Main Benchmark Function: <code>run_variance_determinism_benchmark()</code></strong></p>
+                    <p><strong>3. Main Benchmark Execution: <code>run_variance_determinism_benchmark()</code></strong></p>
                     <ul>
                         <li>Accepts <code>review_text: str</code> and returns a dictionary matching <code>VarianceDeterminismResponse</code>:
                             <ul>
-                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client using <code>OPENAI_API_KEY</code> and <code>OPENAI_BASE_URL</code> and resolves <code>model = os.getenv("OPENAI_MODEL", "gpt-4o-mini")</code>.</li>
-                                <li><strong>Step ② (Strategy A &mdash; Unconstrained Freeform):</strong> Prompts the model with <em>"Extract product, sentiment, pros, cons, and rating from this review"</em> without specifying a data format, producing freeform prose/bullet points in <code>text_a</code> that fail strict JSON parsing.</li>
-                                <li><strong>Step ③ (Strategy B &mdash; Prompt-Constrained Instructional JSON):</strong> Instructs the model in natural language to output JSON with keys <code>'product'</code>, <code>'sentiment'</code>, <code>'pros'</code>, <code>'cons'</code>, and <code>'rating'</code> without markdown ticks, storing the reply in <code>text_b</code>.</li>
-                                <li><strong>Step ④ (Strategy C &mdash; API Schema-Enforced JSON Mode):</strong> Calls <code>client.chat.completions.create()</code> with <code>response_format={"type": "json_object"}</code>, enforcing valid JSON token generation at the inference API level.</li>
-                                <li><strong>Step ⑤:</strong> Passes all three outputs through <code>check_json()</code> (stripping <code>```json</code> and <code>```</code> fences for Strategy B before parsing) and returns the three <code>StrategyOutput</code> dictionaries in <code>strategies</code>.</li>
+                                <li><strong>Step ①:</strong> Initializes the <code>OpenAI</code> client for the configured model (default <code>"gpt-4o-mini"</code>).</li>
+                                <li><strong>Step ② (Strategy A &mdash; Unconstrained Freeform):</strong> Prompts the model with <em>"Extract product, sentiment, pros, cons, and rating from this review"</em> without specifying an output format, producing conversational prose or bullet points in <code>text_a</code> that fail strict JSON parsing.</li>
+                                <li><strong>Step ③ (Strategy B &mdash; Prompt-Constrained Instructional JSON):</strong> Instructs the model in natural language to extract the 5 keys (<code>'product'</code>, <code>'sentiment'</code>, <code>'pros'</code>, <code>'cons'</code>, <code>'rating'</code>) as JSON without markdown ticks or commentary, storing the response in <code>text_b</code>.</li>
+                                <li><strong>Step ④ (Strategy C &mdash; API Schema-Enforced JSON Mode):</strong> Calls <code>client.chat.completions.create()</code> with <code>response_format={"type": "json_object"}</code>, constraining token sampling at the API decoding level so the model is guaranteed to emit valid JSON syntax in <code>text_c</code>.</li>
+                                <li><strong>Step ⑤:</strong> Evaluates all three outputs with <code>check_json()</code> (stripping optional <code>```json</code> and <code>```</code> fences from <code>text_b</code> before parsing) and returns the three <code>StrategyOutput</code> dictionaries in <code>strategies</code>.</li>
                             </ul>
                         </li>
                     </ul>
 
-                    <p><strong>4. Flask Route Handler in <code>app.py</code></strong></p>
-                    <ul>
-                        <li><code>variance_determinism_route()</code> (<code>POST /api/variance-determinism</code>):
-                            <ul>
-                                <li><strong>Step ①:</strong> Parses the JSON request body, extracts and trims <code>review_text</code> (or fallback key <code>message</code>), and returns HTTP <code>400</code> if the review text is empty.</li>
-                                <li><strong>Step ②:</strong> Calls <code>mod_var.run_variance_determinism_benchmark(review_text)</code>, populates <code>res["result"]</code> with the number of strategies tested, and returns the JSON response (or HTTP <code>500</code> on exception).</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>5. End-to-End Data Flow Walkthrough</strong></p>
+                    <p><strong>4. End-to-End AI Benchmark Flow</strong></p>
                     <ol>
-                        <li>The user enters or selects a product review in <code>src/index.html</code> and clicks <strong>Run Determinism Benchmark</strong>, causing <code>src/js/main.js</code> to send <code>POST /api/variance-determinism</code> with <code>{ review_text }</code>.</li>
-                        <li>Flask's <code>enforce_rate_limit()</code> middleware checks the client's rate limit and forwards the request to <code>variance_determinism_route()</code> in <code>app.py</code>.</li>
-                        <li><code>variance_determinism_route()</code> validates that <code>review_text</code> is non-empty and invokes <code>run_variance_determinism_benchmark(review_text)</code> in <code>02_variance_determinism.py</code>.</li>
-                        <li><code>run_variance_determinism_benchmark()</code> executes three OpenAI calls: Strategy A (freeform prompt), Strategy B (JSON requested in prompt), and Strategy C (<code>response_format={"type": "json_object"}</code>).</li>
-                        <li>Each strategy's output is passed to <code>check_json()</code>, which runs <code>json.loads()</code> and captures either the parsed dictionary or the exact <code>JSONDecodeError</code> string.</li>
-                        <li>Flask returns the <code>strategies</code> array as JSON to <code>main.js</code>, which renders the raw output, parser status badge, and extracted fields for each strategy in the browser.</li>
+                        <li><code>run_variance_determinism_benchmark()</code> receives the unstructured customer review text.</li>
+                        <li>It runs three extraction calls against the LLM: <strong>Strategy A</strong> (no format constraint), <strong>Strategy B</strong> (prompt-level JSON instruction), and <strong>Strategy C</strong> (API-level constrained decoding via <code>response_format={"type": "json_object"}</code>).</li>
+                        <li>Each raw output is tested against Python's <code>json.loads()</code> inside <code>check_json()</code>, demonstrating why downstream software pipelines rely on API-enforced structured outputs rather than prompt persuasion alone.</li>
                     </ol>
                 </div>
             </section>

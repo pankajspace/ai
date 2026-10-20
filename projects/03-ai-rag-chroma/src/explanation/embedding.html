@@ -238,37 +238,29 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is built across two backend Python files in <code>src/python/</code> that work with the frontend browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to convert text sentences into 384-dimensional dense vectors and measure their semantic similarity.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/02_embedding.py</code> converts natural-language sentences into 384-dimensional dense numeric vectors using a local HuggingFace SentenceTransformer model and measures their semantic alignment using cosine similarity.</p>
+                    <p><strong>1. Core AI Concepts in Dense Embeddings</strong></p>
                     <ul>
-                        <li><strong><code>src/python/02_embedding.py</code></strong>: Loads the local HuggingFace <code>SentenceTransformer("all-MiniLM-L6-v2")</code> model, encodes two input sentences into dense NumPy vectors, and computes their cosine similarity and vector previews.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask server and <code>/api</code> Blueprint that validates incoming JSON inputs and routes <code>POST /api/embedding</code> to <code>02_embedding.py</code>.</li>
+                        <li><strong>Dense Vector Representations:</strong> An embedding model projects variable-length text into a fixed-size coordinate space (384 dimensions for <code>all-MiniLM-L6-v2</code>) where texts with similar meanings land close together even when they share zero keywords.</li>
+                        <li><strong>Cosine Similarity:</strong> Measures the cosine of the angle between two vectors $\mathbf{v}_1$ and $\mathbf{v}_2$ via $\frac{\mathbf{v}_1 \cdot \mathbf{v}_2}{\|\mathbf{v}_1\| \|\mathbf{v}_2\|}$. Scores near <code>1.0</code> indicate strong semantic equivalence, scores near <code>0.0</code> indicate unrelated topics, and negative values indicate opposing directions.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/02_embedding.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/02_embedding.py</code></strong></p>
                     <ul>
-                        <li><strong><code>EmbeddingRequest(BaseModel)</code> &amp; <code>EmbeddingResponse(BaseModel)</code></strong>: Pydantic schemas documenting the two input strings (<code>text1</code>, <code>text2</code>) and the returned metrics (<code>dimension</code>, <code>cosine_similarity</code>, <code>preview_text1</code>, <code>preview_text2</code>).</li>
-                        <li><strong><code>model = SentenceTransformer("all-MiniLM-L6-v2")</code> (Step ①)</strong>: Loaded once at module import time so the 80 MB transformer weights stay warm in memory across HTTP requests instead of reloading from disk on every call.</li>
-                        <li><strong><code>compute_similarity(text1: str, text2: str) -&gt; EmbeddingResponse</code></strong>:
+                        <li><strong><code>EmbeddingRequest(BaseModel)</code> &amp; <code>EmbeddingResponse(BaseModel)</code>:</strong> Pydantic schemas defining the two input texts (<code>text1</code>, <code>text2</code>) and the output structure (<code>text1: str</code>, <code>text2: str</code>, <code>similarity: float</code>, <code>dimensions: int</code>, <code>preview_text1: list[float]</code>, <code>preview_text2: list[float]</code>).</li>
+                        <li><strong><code>model = SentenceTransformer("all-MiniLM-L6-v2")</code> (Step ①):</strong> Loads the compact 384-dimensional bi-encoder model once at startup so its weights remain warm in memory for fast inference.</li>
+                        <li><strong><code>compute_similarity(text1: str, text2: str) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><strong>Step ② — Encode both sentences</strong>: Calls <code>model.encode([text1, text2])</code> in a single batch, producing two 384-dimensional floating-point NumPy vectors (<code>v1</code> and <code>v2</code>).</li>
-                                <li><strong>Step ③ — Compute cosine similarity</strong>: Evaluates <code>(v1 · v2) / (||v1|| * ||v2||)</code> using <code>np.dot(v1, v2) / (norm(v1) * norm(v2))</code> to measure the cosine of the angle between the two vectors in 384-D space.</li>
-                                <li><strong>Step ④ — Format response</strong>: Rounds the similarity score to 4 decimal places and extracts the first 5 floating-point numbers of each vector (<code>v1[:5]</code> and <code>v2[:5]</code>) as human-readable previews inside <code>EmbeddingResponse</code>.</li>
+                                <li><strong>Step ② — Encode both texts into dense vectors:</strong> Calls <code>v1 = model.encode(text1)</code> and <code>v2 = model.encode(text2)</code> to produce two 384-dimensional NumPy arrays.</li>
+                                <li><strong>Step ③ — Compute cosine similarity:</strong> Calculates <code>float(dot(v1, v2) / (norm(v1) * norm(v2)))</code> using NumPy's dot product and L2 vector norms.</li>
+                                <li><strong>Step ④ — Format similarity metrics and vector previews:</strong> Returns a dictionary containing the rounded 4-decimal similarity score, vector dimensionality (<code>len(v1)</code>), and the first 5 rounded floating-point values of each vector (<code>v1[:5]</code> and <code>v2[:5]</code>).</li>
                             </ul>
                         </li>
-                        <li><strong><code>if __name__ == "__main__":</code> block</strong>: Compares a synonym pair (<em>"How do I reset my password?"</em> vs. <em>"I forgot my login credentials, how can I recover access?"</em>) against an unrelated weather sentence to contrast high vs. low cosine similarity.</li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>load_module(name, filename)</code> &amp; <code>_MODULE_CACHE</code></strong>: Dynamically loads <code>02_embedding.py</code> and caches the module in <code>_MODULE_CACHE</code> so the <code>SentenceTransformer</code> weights are initialized only once per server process.</li>
-                        <li><strong><code>embedding_service()</code> (<code>POST /api/embedding</code>)</strong>: Validates that both <code>text1</code> and <code>text2</code> are non-empty strings via <code>read_json_field()</code>, calls <code>mod.compute_similarity(text1, text2)</code>, and returns <code>result.model_dump()</code> as JSON.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End Embedding &amp; Similarity Flow</strong></p>
                     <ol>
-                        <li>The user enters two sentences in the browser UI and clicks the compare button, triggering <code>POST /api/embedding</code>.</li>
-                        <li><code>embedding_service()</code> in <code>app.py</code> validates both fields and retrieves the cached <code>02_embedding.py</code> module.</li>
-                        <li><code>compute_similarity()</code> passes <code>[text1, text2]</code> into <code>SentenceTransformer.encode()</code>, which tokenizes both strings and pools their transformer hidden states into 384-dimensional vectors.</li>
-                        <li>NumPy computes the normalized dot product (cosine similarity) and slices the first 5 dimensions of each vector.</li>
-                        <li><code>app.py</code> serializes the <code>EmbeddingResponse</code> back to the browser, which displays the vector dimension (<code>384</code>), the similarity score, and the side-by-side vector previews.</li>
+                        <li><code>compute_similarity()</code> receives two sentences (<code>text1</code> and <code>text2</code>).</li>
+                        <li>The <code>all-MiniLM-L6-v2</code> SentenceTransformer tokenizes each sentence and pools its transformer hidden states into a 384-dimensional vector.</li>
+                        <li>NumPy computes the normalized dot product between <code>v1</code> and <code>v2</code>, returning the cosine similarity score alongside 5-element vector previews and the embedding dimension count.</li>
                     </ol>
                 </div>
             </section>

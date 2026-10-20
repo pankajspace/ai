@@ -241,38 +241,32 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p>This demo is built across two backend Python files in <code>src/python/</code> that work with the browser UI (<code>src/index.html</code> and <code>src/js/main.js</code>) to train, persist, and serve a classical Scikit-Learn <code>RandomForestRegressor</code> that predicts food-delivery ETA in minutes.</p>
-                    <p><strong>1. Purpose of each file</strong></p>
+                    <p><code>src/python/01_model_training.py</code> trains, serializes, and serves a classical Scikit-Learn <code>RandomForestRegressor</code> (QuickBite ETA) that predicts food-delivery arrival time in minutes from structured tabular order features.</p>
+                    <p><strong>1. Core ML Concepts in Tabular Regression &amp; Model Serving</strong></p>
                     <ul>
-                        <li><strong><code>src/python/01_model_training.py</code></strong>: Synthesizes a 5,000-row delivery dataset with NumPy/Pandas, trains a <code>RandomForestRegressor</code>, persists the trained artifact to <code>/tmp/eta_model.pkl</code> with <code>joblib</code>, caches it in process memory, and serves single-order ETA predictions via <code>predict_delivery_eta()</code>.</li>
-                        <li><strong><code>src/python/app.py</code></strong>: The Flask web server and <code>/api</code> Blueprint that validates numeric feature ranges (`distance_km`, `prep_time_min`, `traffic`, `weather`) and routes <code>POST /api/model-training</code> to <code>01_model_training.py</code>.</li>
+                        <li><strong>Supervised Tabular Regression:</strong> Maps four numerical order features (<code>distance_km</code>, <code>prep_time_min</code>, <code>rider_available</code>, and <code>is_raining</code>) to a continuous target variable (<code>eta_min</code>).</li>
+                        <li><strong>Ensemble Decision Trees (<code>RandomForestRegressor</code>):</strong> Fits 60 bootstrapped decision trees (<code>n_estimators=60, random_state=42</code>) and averages their leaf predictions to reduce variance and prevent overfitting.</li>
+                        <li><strong>Two-Tier Model Artifact Caching:</strong> Separating training from inference avoids fitting 5,000 rows on every prediction. The trained estimator is persisted to disk (<code>/tmp/eta_model.pkl</code> via <code>joblib</code>) and cached in process memory (<code>_cached_model</code>) for sub-millisecond inference.</li>
                     </ul>
-                    <p><strong>2. Key entities in <code>src/python/01_model_training.py</code></strong></p>
+                    <p><strong>2. Key Entities in <code>src/python/01_model_training.py</code></strong></p>
                     <ul>
-                        <li><strong><code>MODEL_PATH = Path("/tmp/eta_model.pkl")</code> &amp; <code>_cached_model</code></strong>: Define the two-tier caching strategy—an in-process global variable (<code>_cached_model</code>) for zero-I/O warm lookups and a disk artifact (<code>/tmp/eta_model.pkl</code>) that survives worker reloads.</li>
-                        <li><strong><code>ModelTrainingRequest(BaseModel)</code> &amp; <code>ModelTrainingResponse(BaseModel)</code></strong>: Pydantic contracts specifying the four input features plus optional <code>retrain</code> flag, and the output payload (<code>predicted_eta_min</code>, <code>trained_fresh</code>, <code>sample_count</code>, <code>model_path</code>, and echoed <code>features</code>).</li>
-                        <li><strong><code>get_or_train_model(force_retrain: bool = False) -&gt; tuple[RandomForestRegressor, bool]</code></strong>:
+                        <li><strong><code>MODEL_PATH</code> &amp; <code>_cached_model</code>:</strong> Store the path to the serialized model artifact (<code>/tmp/eta_model.pkl</code>) and the in-memory cached <code>RandomForestRegressor</code> instance.</li>
+                        <li><strong><code>ModelTrainingRequest(BaseModel)</code> &amp; <code>ModelTrainingResponse(BaseModel)</code>:</strong> Pydantic schemas defining the four input order features (<code>distance_km: float = 4.5</code>, <code>prep_time_min: float = 15.0</code>, <code>rider_available: int = 1</code>, <code>is_raining: int = 1</code>) and the output prediction payload (echoed features, <code>eta_minutes: float</code>, and <code>message: str</code>).</li>
+                        <li><strong><code>get_or_train_model() -&gt; RandomForestRegressor</code>:</strong>
                             <ul>
-                                <li><strong>Step ① — Check memory and disk cache</strong>: If <code>not force_retrain</code>, returns <code>(_cached_model, False)</code> immediately if warm in RAM, or loads <code>MODEL_PATH</code> via <code>joblib.load()</code> if the pickle file already exists on disk.</li>
-                                <li><strong>Step ② — Synthesize training data</strong>: Seeds NumPy (<code>np.random.seed(42)</code>) and generates 5,000 rows with four features (<code>distance_km</code>, <code>prep_time_min</code>, <code>traffic</code>, <code>weather</code>) and target <code>eta_min = 6 + distance_km * 3.1 + prep_time_min * 0.92 + traffic * 4.5 + weather * 5.2 + noise</code>.</li>
-                                <li><strong>Step ③ — Fit RandomForestRegressor</strong>: Splits features <code>X</code> and target <code>y</code> and fits <code>RandomForestRegressor(n_estimators=60, random_state=42)</code>.</li>
-                                <li><strong>Step ④ — Save to disk &amp; memory</strong>: Serializes the fitted estimator with <code>joblib.dump(model, MODEL_PATH)</code>, caches it in <code>_cached_model</code>, and returns <code>(model, True)</code>.</li>
+                                <li><strong>Step ① — Synthesize training dataset on first run:</strong> If <code>_cached_model</code> is <code>None</code> and <code>MODEL_PATH</code> does not exist, seeds NumPy (<code>np.random.seed(42)</code>) and generates a 5,000-row <code>pd.DataFrame</code> covering <code>distance_km</code> (0.5–12 km), <code>prep_time_min</code> (5–30 min), <code>rider_available</code> (0 or 1), and <code>is_raining</code> (0 or 1).</li>
+                                <li><strong>Step ② — Compute ground-truth target (<code>eta_min</code>):</strong> Evaluates <code>8 + df.distance_km * 3 + df.prep_time_min * 0.7 + df.is_raining * 9 + (1 - df.rider_available) * 6 + np.random.normal(0, 2, n)</code>.</li>
+                                <li><strong>Step ③ — Fit &amp; serialize RandomForestRegressor:</strong> Separates features <code>X</code> and target <code>y</code>, fits <code>RandomForestRegressor(n_estimators=60, random_state=42).fit(X, y)</code>, and saves the artifact to <code>MODEL_PATH</code> via <code>joblib.dump(model, MODEL_PATH)</code>.</li>
+                                <li><strong>Step ④ — Load persisted model into memory:</strong> Loads <code>_cached_model = joblib.load(MODEL_PATH)</code> and returns it.</li>
                             </ul>
                         </li>
-                        <li><strong><code>predict_delivery_eta(...) -&gt; ModelTrainingResponse</code> (Step ⑤)</strong>: Calls <code>get_or_train_model(force_retrain=retrain)</code>, constructs a single-row <code>pd.DataFrame</code> with the four input features, runs <code>model.predict(X_new)[0]</code>, and returns a populated <code>ModelTrainingResponse</code>.</li>
+                        <li><strong><code>predict_delivery_eta(distance_km, prep_time_min, rider_available, is_raining) -&gt; dict</code> (Step ⑤):</strong> Calls <code>get_or_train_model()</code>, builds a single-row <code>pd.DataFrame([order_row])</code> with matching feature names, runs <code>model.predict(X)[0]</code>, and returns the rounded <code>eta_minutes</code> and status message.</li>
                     </ul>
-                    <p><strong>3. Key entities in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>load_module(name, filename)</code></strong>: Dynamically loads and caches <code>01_model_training.py</code>.</li>
-                        <li><strong><code>model_training_service()</code> (<code>POST /api/model-training</code>)</strong>: Parses <code>distance_km</code>, <code>prep_time_min</code>, <code>traffic</code>, <code>weather</code>, and <code>retrain</code> from JSON, validates their numeric bounds (`0.1..100` km, `1..120` min, `traffic` in `1..4`, `weather` in `0..2`), invokes <code>mod.predict_delivery_eta(...)</code>, and returns the JSON prediction.</li>
-                    </ul>
-                    <p><strong>4. How the components connect end-to-end</strong></p>
+                    <p><strong>3. End-to-End Training &amp; Inference Flow</strong></p>
                     <ol>
-                        <li>The user adjusts the delivery sliders (distance, prep time, traffic, weather) in the browser UI and clicks Predict, sending <code>POST /api/model-training</code>.</li>
-                        <li><code>model_training_service()</code> in <code>app.py</code> validates the numeric ranges and calls <code>predict_delivery_eta()</code> in <code>01_model_training.py</code>.</li>
-                        <li><code>get_or_train_model()</code> either reuses the cached <code>RandomForestRegressor</code> (fast path) or synthesizes 5,000 rows, fits 60 decision trees, and saves <code>/tmp/eta_model.pkl</code> via <code>joblib.dump()</code> (cold start or when <code>retrain=True</code>).</li>
-                        <li><code>model.predict(X_new)</code> runs the 1-row DataFrame through all 60 trees and averages their leaf predictions into a single ETA estimate in minutes.</li>
-                        <li><code>app.py</code> returns the JSON payload to the browser, showing the predicted ETA alongside whether the model was freshly trained or served from cache.</li>
+                        <li><code>predict_delivery_eta()</code> receives the four order features and requests the estimator from <code>get_or_train_model()</code>.</li>
+                        <li>On a cold start, <code>get_or_train_model()</code> synthesizes 5,000 labeled delivery orders, trains the 60-tree <code>RandomForestRegressor</code>, and persists <code>eta_model.pkl</code> with <code>joblib</code>; on warm calls, it returns <code>_cached_model</code> directly from memory.</li>
+                        <li>The single-row feature DataFrame is passed to <code>model.predict(X)</code>, averaging predictions across all 60 trees to produce the final delivery ETA in minutes.</li>
                     </ol>
                 </div>
             </section>

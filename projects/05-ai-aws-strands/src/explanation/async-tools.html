@@ -233,25 +233,17 @@
                     </div>
                 </div>
                 <div class="topic-content" id="content-code-explanation">
-<p><strong>1. Purpose of Each File</strong></p>
+                    <p><strong>1. Core AI &amp; Async Parallel Tool Components in <code>11_async_tools.py</code></strong></p>
                     <ul>
-                        <li><code>src/python/11_async_tools.py</code> &mdash; Defines the <strong>Async Parallel Tools Agent</strong> service: declares an asynchronous tool coroutine <code>@tool async def check_warehouse_inventory(...)</code> that simulates a 2-second non-blocking network lookup, runs the Strands agent asynchronously via <code>await agent.invoke_async(query)</code>, measures wall-clock execution time, and returns the reply, elapsed seconds, and tool calls.</li>
-                        <li><code>src/python/app.py</code> &mdash; Loads <code>11_async_tools.py</code> dynamically as <code>s_async_tool</code>, bridges synchronous Flask request handling to the async coroutine using <code>asyncio.run()</code>, and exposes <code>POST /api/async-tools</code> via <code>async_tools_route()</code>.</li>
-                        <li><code>src/index.html</code> + <code>src/js/main.js</code> &mdash; Renders the <strong>⚡ Async Parallel Tools</strong> card, sends the multi-warehouse fulfillment query to <code>POST /api/async-tools</code> with <code>{ query }</code>, and displays the fulfillment verdict, <code>parallel_duration_seconds</code>, and the three concurrent warehouse tool calls.</li>
-                    </ul>
-
-                    <p><strong>2. Schemas, Async <code>@tool</code> Coroutine &amp; <code>invoke_async</code> in <code>11_async_tools.py</code></strong></p>
-                    <ul>
-                        <li><strong>Step ① &mdash; Environment Configuration (<code>load_dotenv(find_dotenv())</code>):</strong> Loads AWS credentials and Bedrock configuration from <code>.env</code>.</li>
-                        <li><strong><code>AsyncToolsRequest(BaseModel)</code> &amp; <code>AsyncToolsResponse(BaseModel)</code>:</strong> Define the default fulfillment query (<code>"Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."</code>) and the response schema including <code>parallel_duration_seconds: float</code> and <code>tool_calls: list[str]</code>.</li>
-                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves <code>BEDROCK_MODEL_ID</code> from the environment, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
+                        <li><strong>Pydantic Contracts (<code>AsyncToolsRequest</code> &amp; <code>AsyncToolsResponse</code>):</strong> Define the default fulfillment query (<code>"Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."</code>) and the response schema including <code>parallel_duration_seconds: float</code> and <code>tool_calls: list[str]</code>.</li>
+                        <li><strong>Step ② &mdash; Model Selection (<code>model_id</code>):</strong> Resolves the target Bedrock model ID, defaulting to <code>"amazon.nova-lite-v1:0"</code>.</li>
                         <li><strong>Async Tool &mdash; <code>@tool async def check_warehouse_inventory(product_id: str, warehouse: str) -&gt; dict</code>:</strong>
                             <ul>
-                                <li><strong>Non-Blocking Delay (<code>await asyncio.sleep(2)</code>):</strong> Simulates a 2-second remote warehouse API or database query while yielding control back to Python's <code>asyncio</code> event loop so other warehouse lookups can run concurrently.</li>
+                                <li><strong>Non-Blocking Delay (<code>await asyncio.sleep(2)</code>):</strong> Simulates a 2-second remote warehouse API or database query while yielding control back to Python's <code>asyncio</code> event loop so other warehouse lookups can execute concurrently.</li>
                                 <li><strong>Warehouse Catalog Lookup:</strong> Looks up <code>warehouse</code> (<code>"east"</code>: 45 units of <code>PROD-123</code>, <code>"west"</code>: 30 units, <code>"central"</code>: 60 units) and returns <code>{"warehouse": warehouse, "product_id": product_id, "quantity": quantity}</code>.</li>
                             </ul>
                         </li>
-                        <li><strong>Async Service Entry Point &mdash; <code>async def run_async_tools_agent(query: str) -&gt; dict</code>:</strong>
+                        <li><strong><code>async def run_async_tools_agent(query: str) -&gt; dict</code>:</strong>
                             <ul>
                                 <li><strong>Step ③:</strong> Initializes <code>Agent(model=BedrockModel(model_id=model_id), tools=[check_warehouse_inventory])</code>.</li>
                                 <li><strong>Step ④:</strong> Records <code>start = time.time()</code>, awaits <code>response = await agent.invoke_async(query)</code> so all three warehouse tool calls emitted by Bedrock execute in parallel on the event loop, and computes <code>elapsed = time.time() - start</code>.</li>
@@ -260,26 +252,13 @@
                         </li>
                     </ul>
 
-                    <p><strong>3. Flask Route Handler in <code>src/python/app.py</code></strong></p>
-                    <ul>
-                        <li><strong><code>async_tools_route()</code> (<code>POST /api/async-tools</code>):</strong>
-                            <ul>
-                                <li><strong>Step ①:</strong> Reads <code>query</code> (or fallback <code>message</code>) from the JSON request body and returns HTTP <code>400</code> if empty.</li>
-                                <li><strong>Step ②:</strong> Bridges synchronous Flask into Python's <code>asyncio</code> runtime by calling <code>res = asyncio.run(s_async_tool.run_async_tools_agent(query))</code>, copies <code>res["response"]</code> to <code>res["result"]</code>, and returns the JSON payload.</li>
-                            </ul>
-                        </li>
-                    </ul>
-
-                    <p><strong>4. End-to-End Walkthrough: How All Entities Connect</strong></p>
+                    <p><strong>2. End-to-End AI Execution Walkthrough</strong></p>
                     <ol>
-                        <li>The user clicks <strong>Run</strong> on the <strong>⚡ Async Parallel Tools</strong> card in <code>src/index.html</code>; <code>src/js/main.js</code> sends <code>POST /api/async-tools</code> with <code>{"query": "Can we ship 100 units of PROD-123? Check all warehouses: east, west, and central."}</code>.</li>
-                        <li><code>enforce_rate_limit()</code> in <code>app.py</code> verifies the client's request quota and forwards the request to <code>async_tools_route()</code>.</li>
-                        <li><code>async_tools_route()</code> validates <code>query</code> and calls <code>asyncio.run(s_async_tool.run_async_tools_agent(query))</code>, spinning up an event loop for the request.</li>
-                        <li><code>run_async_tools_agent()</code> creates a Strands <code>Agent</code> with <code>tools=[check_warehouse_inventory]</code>, records the start timestamp, and awaits <code>agent.invoke_async(query)</code>.</li>
-                        <li>On <strong>Converse Turn 1</strong>, Bedrock sees that <code>east</code>, <code>west</code>, and <code>central</code> lookups are independent and emits <strong>three <code>toolUse</code> blocks in a single assistant message</strong>.</li>
+                        <li><code>run_async_tools_agent(query)</code> creates a Strands <code>Agent</code> with <code>tools=[check_warehouse_inventory]</code>, records the start timestamp, and awaits <code>agent.invoke_async(query)</code>.</li>
+                        <li>On <strong>Converse Turn 1</strong>, Bedrock sees that the <code>east</code>, <code>west</code>, and <code>central</code> lookups are independent and emits <strong>three <code>toolUse</code> blocks in a single assistant message</strong>.</li>
                         <li>Strands schedules all three <code>check_warehouse_inventory</code> coroutines concurrently on the event loop; all three enter <code>await asyncio.sleep(2)</code> simultaneously and finish together after ~2 seconds (instead of <code>3 &times; 2 s = 6 s</code> sequentially), returning <code>45</code>, <code>30</code>, and <code>60</code>.</li>
                         <li>On <strong>Converse Turn 2</strong>, Strands sends all three <code>toolResult</code> blocks back to Bedrock in one message; Bedrock sums <code>45 + 30 + 60 = 135 units</code> and confirms that 100 units of <code>PROD-123</code> can be shipped.</li>
-                        <li><code>run_async_tools_agent()</code> measures the total wall-clock duration (<code>parallel_duration_seconds</code>), extracts the three <code>tool_calls</code>, and returns the JSON response to the browser card.</li>
+                        <li>Step ⑤ measures the total wall-clock duration (<code>parallel_duration_seconds</code>), extracts the three <code>tool_calls</code>, and returns the dictionary.</li>
                     </ol>
                 </div>
             </section>
