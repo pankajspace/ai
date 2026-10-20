@@ -11,6 +11,7 @@
 8. [AI Systems](study/08-ai-systems/ai-systems.md) : 19-09-2026
 9. [AI Reliability](study/09-ai-reliability/ai-reliability.md) : 26-09-2026
 10. [MCP](study/10-mcp-evals/mcp-evals.md) : 03-10-2026
+11. [AI Infusion Test](study/11-ai-infusion-test/ai-infusion-test.md) : 20-10-2026
 
 # Practice
 1. [Python](practice/01-python)
