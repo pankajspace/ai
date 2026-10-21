@@ -2,7 +2,7 @@
 Source: ai-reusable-snippets.html
 Title: AI Reusable Code Snippets & Quick Revision Guide | TechToday
 Theme-color: #0b0d10
-Stylesheets: ../../style.css, ai-projects.css, ../../site-header.css
+Stylesheets: ai-snippets-study.css, ../../site-header.css
 Scripts: ai-study.js
 -->
 
