@@ -70,7 +70,7 @@ A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering 
 
 ---
 
-## 1. Python Fundamentals for AI Systems (`practice/01-python`)
+## 1. Python Fundamentals for AI Systems
 
 ### 1.1. Type Hints, Optional/Union & Unpacking
 Source: `practice/01-python/02-type-hints.py`, `practice/01-python/12-unpacking.py`
@@ -191,7 +191,7 @@ if __name__ == "__main__":
 
 ---
 
-## 2. Multi-Provider LLM Clients & LangChain Basics (`practice/02-ai-basics`)
+## 2. Multi-Provider LLM Clients & LangChain Basics
 
 ### 2.1. Multi-Provider OpenAI-Compatible Client (`OpenAI`, `Groq`, `Gemini`)
 Source: `practice/02-ai-basics/01_chat_openai.py`, `practice/02-ai-basics/02_chat_groq.py`
@@ -421,7 +421,7 @@ final_answer = messages[-1].content
 
 ---
 
-## 3. Document Chunking, Embeddings & Local RAG (`practice/03-ai-rag-chroma`)
+## 3. Document Chunking, Embeddings & Local RAG
 
 ### 3.1. Sliding-Window Document Chunking (`RecursiveCharacterTextSplitter`)
 Source: `practice/03-ai-rag-chroma/01_chunking.py`
@@ -498,7 +498,7 @@ def answer_with_local_rag(source_text: str, question: str, k: int = 3) -> str:
 
 ---
 
-## 4. ML Model Training, ChromaDB Server & Redis Memory (`practice/04-ai-model-training-chromadb`)
+## 4. ML Model Training, ChromaDB Server & Redis Memory
 
 ### 4.1. Scikit-Learn Training, `joblib` Serialization & Pydantic Inference
 Source: `practice/04-ai-model-training-chromadb/01_model_training.py`
@@ -666,7 +666,7 @@ def chat_with_session_memory(
 
 ---
 
-## 5. AWS Bedrock, Strands Agents & LangGraph (`practice/05-ai-aws-strands`)
+## 5. AWS Bedrock, Strands Agents & LangGraph
 
 ### 5.1. Minimal AWS Strands Agent on Amazon Bedrock (`BedrockModel`)
 Source: `practice/05-ai-aws-strands/01_hello_world_agent.py`
@@ -831,7 +831,7 @@ async def run_async_agent(prompt: str) -> str:
 
 ---
 
-## 6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench (`practice/06-ai-systems`)
+## 6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench
 
 ### 6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) & Answer Extraction
 Source: `practice/06-ai-systems/01_prompting_strategies.py`
@@ -1009,7 +1009,7 @@ def apply_approval_cap(approved_value: float, held_value: float, cap_limit: floa
 
 ---
 
-## 7. AI Reliability: Determinism, Schema Calibration & Error Injection (`practice/07-ai-reliability`)
+## 7. AI Reliability: Determinism, Schema Calibration & Error Injection
 
 ### 7.1. Multi-Run Stochastic Accuracy Evaluator
 Source: `practice/07-ai-reliability/01_cot_vs_direct.py`
@@ -1163,7 +1163,7 @@ def call_tool_with_error_envelope(fn: Callable[..., Any], **kwargs: Any) -> dict
 
 ---
 
-## 8. Model Context Protocol (MCP) & Agent Evals (`practice/08-ai-mcp-evals`)
+## 8. Model Context Protocol (MCP) & Agent Evals
 
 ### 8.1. FastMCP Tool Server over `stdio` (`FastMCP` & `@mcp.tool`)
 Source: `practice/08-ai-mcp-evals/cricket_server.py`
@@ -1341,7 +1341,7 @@ async def run_eval_suite(
 
 ---
 
-## 9. Docker & Compose Templates for AI Projects (`practice/*/Dockerfile`)
+## 9. Docker & Compose Templates for AI Projects
 
 ### 9.1. Layer-Cached Python 3.12 `Dockerfile`
 Source: `practice/04-ai-model-training-chromadb/Dockerfile`
