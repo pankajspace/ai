@@ -91,3 +91,12 @@ LangChain Expression Language (LCEL) pipelines, LLM classification and condition
 
 [Open project →](https://app.techtoday.click/10-shipment-exception-desk/)
 
+[ⓘ](ai-reusable-snippets.html)
+
+### AI Reusable Snippets
+
+Domain-agnostic, copy-paste-ready Python & AI engineering templates: multi-provider LLM clients, LCEL chains, local RAG, Strands agents, MCP servers, and eval suites.
+
+[Open snippets →](ai-reusable-snippets.html)
+
+

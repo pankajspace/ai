@@ -1,3 +1,13 @@
+<!--
+Source: ai-reusable-snippets.html
+Title: AI Reusable Code Snippets & Quick Revision Guide | TechToday
+Theme-color: #0b0d10
+Stylesheets: ../../style.css, ai-projects.css, ../../site-header.css
+Scripts: ai-study.js
+-->
+
+Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
+
 # AI Reusable Code Snippets & Quick Revision Guide
 
 A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering templates distilled from the `practice/` workspace modules (`01-python` through `08-ai-mcp-evals`). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.

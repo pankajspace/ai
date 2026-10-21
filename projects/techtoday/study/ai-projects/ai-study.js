@@ -153,4 +153,95 @@
             wrapper.append(table);
         }
     });
+
+    /* ------------------------------------------------ topic & part accordion */
+    const toggleCard = (card, headerSelector, forceOpen = null) => {
+        if (!card) return;
+        const header = card.querySelector(headerSelector);
+        const willOpen = forceOpen !== null ? forceOpen : card.classList.contains("is-collapsed");
+        card.classList.toggle("is-collapsed", !willOpen);
+        if (header) {
+            header.setAttribute("aria-expanded", String(willOpen));
+        }
+    };
+
+    const openAndScrollTo = (targetId) => {
+        if (!targetId) return;
+        const cleanId = targetId.startsWith("#") ? targetId.slice(1) : targetId;
+        const target = document.getElementById(decodeURIComponent(cleanId));
+        if (!target) return;
+
+        const part = target.closest(".part-section");
+        if (part) {
+            toggleCard(part, ".part-header", true);
+        }
+
+        const section = target.closest(".topic-section");
+        if (section) {
+            toggleCard(section, ".topic-header", true);
+            setTimeout(() => {
+                target.scrollIntoView({ behavior: "smooth", block: "start" });
+            }, 60);
+        } else {
+            target.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+    };
+
+    document.addEventListener("click", (e) => {
+        if (e.target.closest(".headerlink")) return;
+
+        const partHeader = e.target.closest(".part-header");
+        if (partHeader) {
+            const part = partHeader.closest(".part-section");
+            toggleCard(part, ".part-header");
+            return;
+        }
+
+        const topicHeader = e.target.closest(".topic-header");
+        if (topicHeader) {
+            const section = topicHeader.closest(".topic-section");
+            toggleCard(section, ".topic-header");
+            return;
+        }
+
+        const link = e.target.closest("a");
+        if (link) {
+            const href = link.getAttribute("href");
+            if (href && href.startsWith("#") && href.length > 1) {
+                openAndScrollTo(href);
+            }
+        }
+    });
+
+    document.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+            const partHeader = e.target.closest(".part-header");
+            if (partHeader) {
+                e.preventDefault();
+                const part = partHeader.closest(".part-section");
+                toggleCard(part, ".part-header");
+                return;
+            }
+
+            const topicHeader = e.target.closest(".topic-header");
+            if (topicHeader) {
+                e.preventDefault();
+                const section = topicHeader.closest(".topic-section");
+                toggleCard(section, ".topic-header");
+            }
+        }
+    });
+
+    document.addEventListener("click", (e) => {
+        const btn = e.target.closest("[data-course-action]");
+        if (!btn) return;
+        const action = btn.dataset.courseAction;
+        if (action === "expand-all") {
+            document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", true));
+            document.querySelectorAll(".part-section").forEach((part) => toggleCard(part, ".part-header", true));
+        } else if (action === "collapse-all") {
+            document.querySelectorAll(".topic-section").forEach((sec) => toggleCard(sec, ".topic-header", false));
+            document.querySelectorAll(".part-section").forEach((part) => toggleCard(part, ".part-header", false));
+        }
+    });
 })();

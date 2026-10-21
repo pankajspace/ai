@@ -1,0 +1,1669 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0b0d10" />
+    <title>AI Reusable Code Snippets &amp; Quick Revision Guide | TechToday</title>
+    <meta name="description"
+        content="A domain-agnostic, copy-paste-ready catalog of reusable Python &amp; AI engineering templates distilled from practice modules 01 through 08." />
+    <link rel="icon" href="../../logo.svg" type="image/svg+xml" />
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../../site-header.css" />
+    <link rel="stylesheet" href="ai-projects.css" />
+    <link rel="stylesheet" href="ai-study-theme.css" />
+</head>
+
+<body class="is-ai">
+    <header class="tt-site-header">
+        <nav class="tt-site-nav" aria-label="Main navigation">
+            <a class="tt-site-brand" href="../../index.html">
+                <span class="tt-site-logo" aria-hidden="true"></span>
+                <span>TechToday</span>
+            </a>
+            <a href="ai-projects.html" class="nav-back-link">&larr; AI Projects</a>
+        </nav>
+    </header>
+
+    <div class="progress" aria-hidden="true"></div>
+
+    <main class="study-layout">
+        <nav class="topic-menu" aria-label="Topics">
+            <details class="topic-menu-panel" open>
+                <summary>Topics</summary>
+                <ol class="table-of-contents">
+                    <li><a href="#1-python-fundamentals-for-ai-systems-practice01-python">1. Python Fundamentals for AI Systems</a></li>
+                    <li><a href="#2-multi-provider-llm-clients--langchain-basics-practice02-ai-basics">2. Multi-Provider LLM Clients &amp; LangChain Basics</a></li>
+                    <li><a href="#3-document-chunking-embeddings--local-rag-practice03-ai-rag-chroma">3. Document Chunking, Embeddings &amp; Local RAG</a></li>
+                    <li><a href="#4-ml-model-training-chromadb-server--redis-memory-practice04-ai-model-training-chromadb">4. ML Model Training, ChromaDB Server &amp; Redis Memory</a></li>
+                    <li><a href="#5-aws-bedrock-strands-agents--langgraph-practice05-ai-aws-strands">5. AWS Bedrock, Strands Agents &amp; LangGraph</a></li>
+                    <li><a href="#6-ai-systems-prompting-sycophancy--multi-judge-bench-practice06-ai-systems">6. AI Systems: Prompting, Sycophancy &amp; Multi-Judge Bench</a></li>
+                    <li><a href="#7-ai-reliability-determinism-schema-calibration--error-injection-practice07-ai-reliability">7. AI Reliability: Determinism, Schema Calibration &amp; Error Injection</a></li>
+                    <li><a href="#8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals">8. Model Context Protocol (MCP) &amp; Agent Evals</a></li>
+                    <li><a href="#9-docker--compose-templates-for-ai-projects-practicedockerfile">9. Docker &amp; Compose Templates for AI Projects</a></li>
+                    <li><a href="#10-quick-revision-cheatsheet">10. Quick Revision Cheatsheet</a></li>
+                </ol>
+            </details>
+        </nav>
+
+        <article class="study">
+            <h1>AI Reusable Code Snippets &amp; Quick Revision Guide</h1>
+            <p class="lede">
+                A domain-agnostic, copy-paste-ready catalog of reusable Python &amp; AI engineering templates distilled from the <code>practice/</code> workspace modules (<code>01-python</code> through <code>08-ai-mcp-evals</code>). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
+            </p>
+
+            <div class="course-toolbar">
+                <div class="course-toolbar-info">
+                    <span>10 Modules</span>
+                    <span class="dot">•</span>
+                    <span>38 Reusable Snippets</span>
+                    <span class="dot">•</span>
+                    <span>Copy-Paste Ready</span>
+                </div>
+                <div class="course-toolbar-actions">
+                    <button type="button" class="action-btn" data-course-action="expand-all">Expand All</button>
+                    <button type="button" class="action-btn" data-course-action="collapse-all">Collapse All</button>
+                </div>
+            </div>
+
+            <!-- Section 1 -->
+            <section class="topic-section" id="1-python-fundamentals-for-ai-systems-practice01-python" data-topic="1-python-fundamentals-for-ai-systems-practice01-python">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">1</span>
+                        <h2 class="topic-title">Python Fundamentals for AI Systems (<code>practice/01-python</code>)<a class="headerlink" href="#1-python-fundamentals-for-ai-systems-practice01-python" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="11-type-hints-optionalunion--unpacking">
+                    <h3 class="snippet-title">1.1. Type Hints, Optional/Union &amp; Unpacking<a class="headerlink" href="#11-type-hints-optionalunion--unpacking" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/01-python/02-type-hints.py</code>, <code>practice/01-python/12-unpacking.py</code></div>
+<pre><code class="language-python">from typing import Any
+
+# 1. Explicit type annotations (also used by LLM @tool decorators to generate JSON schemas)
+def process_payload(
+    item_id: str,
+    count: int = 1,
+    tags: list[str] | None = None,
+    metadata: dict[str, Any] | None = None,
+) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Normalize input parameters with safe defaults for optional collections.&quot;&quot;&quot;
+    return {
+        &quot;item_id&quot;: item_id.strip(),
+        &quot;count&quot;: count,
+        &quot;tags&quot;: tags or [],
+        &quot;metadata&quot;: metadata or {},
+    }
+
+# 2. Sequence star-unpacking and dictionary merging (**kwargs)
+first, *middle, last = [1, 2, 3, 4, 5]  # first=1, middle=[2, 3, 4], last=5
+defaults = {&quot;temperature&quot;: 0.0, &quot;timeout&quot;: 15.0}
+overrides = {&quot;temperature&quot;: 0.7, &quot;model&quot;: &quot;gpt-4o-mini&quot;}
+config = {**defaults, **overrides}
+</code></pre>
+                </div>
+                <div class="snippet-item" id="12-comprehensions-filtering--multi-key-sorting">
+                    <h3 class="snippet-title">1.2. Comprehensions, Filtering &amp; Multi-Key Sorting<a class="headerlink" href="#12-comprehensions-filtering--multi-key-sorting" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/01-python/11-sorting.py</code>, <code>practice/01-python/13-list-comprehensions.py</code></div>
+<pre><code class="language-python"># 1. List and dictionary comprehensions with conditional filtering
+records = [(&quot;id_1&quot;, 0.88), (&quot;id_2&quot;, 0.42), (&quot;id_3&quot;, 0.95)]
+filtered_ids = [key for key, score in records if score &gt;= 0.70]
+score_map = {key: score for key, score in records}
+
+# 2. Multi-key sorting with lambda (e.g., sort by count descending, then score descending)
+items = [
+    {&quot;label&quot;: &quot;option_a&quot;, &quot;count&quot;: 1, &quot;score&quot;: 0.90},
+    {&quot;label&quot;: &quot;option_b&quot;, &quot;count&quot;: 2, &quot;score&quot;: 0.85},
+    {&quot;label&quot;: &quot;option_c&quot;, &quot;count&quot;: 2, &quot;score&quot;: 0.92},
+]
+ranked = sorted(items, key=lambda x: (-x[&quot;count&quot;], -x[&quot;score&quot;]))
+</code></pre>
+                </div>
+                <div class="snippet-item" id="13-defensive-error-handling-wrapper">
+                    <h3 class="snippet-title">1.3. Defensive Error Handling Wrapper<a class="headerlink" href="#13-defensive-error-handling-wrapper" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/01-python/04-error-handling.py</code></div>
+<pre><code class="language-python">from typing import Any, Callable
+
+def safe_execute(fn: Callable[..., Any], *args: Any, **kwargs: Any) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Execute a callable and return a structured result/error dict without raising.&quot;&quot;&quot;
+    try:
+        return {&quot;status&quot;: &quot;ok&quot;, &quot;result&quot;: fn(*args, **kwargs)}
+    except (ValueError, TypeError, KeyError) as exc:
+        return {&quot;status&quot;: &quot;validation_error&quot;, &quot;error&quot;: str(exc)}
+    except Exception as exc:
+        return {&quot;status&quot;: &quot;runtime_error&quot;, &quot;error&quot;: f&quot;{type(exc).__name__}: {exc}&quot;}
+</code></pre>
+                </div>
+                <div class="snippet-item" id="14-stateful-oop-resource-class-template">
+                    <h3 class="snippet-title">1.4. Stateful OOP Resource Class Template<a class="headerlink" href="#14-stateful-oop-resource-class-template" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/01-python/16-oop.py</code></div>
+<pre><code class="language-python">from typing import Any
+
+class StatefulStore:
+    &quot;&quot;&quot;Generic in-memory key-value resource store with invariant checks.&quot;&quot;&quot;
+
+    def __init__(self, initial_state: dict[str, Any] | None = None) -&gt; None:
+        self._store: dict[str, Any] = dict(initial_state or {})
+
+    def get(self, key: str, default: Any = None) -&gt; Any:
+        return self._store.get(key, default)
+
+    def set(self, key: str, value: Any) -&gt; None:
+        if not key:
+            raise ValueError(&quot;Key must be a non-empty string.&quot;)
+        self._store[key] = value
+
+    def __repr__(self) -&gt; str:
+        return f&quot;{self.__class__.__name__}(keys={list(self._store.keys())!r})&quot;
+</code></pre>
+                </div>
+                <div class="snippet-item" id="15-async-io-concurrency-asynciogather--create_task">
+                    <h3 class="snippet-title">1.5. Async I/O Concurrency (<code>asyncio.gather</code> &amp; <code>create_task</code>)<a class="headerlink" href="#15-async-io-concurrency-asynciogather--create_task" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/01-python/15-async-await.py</code></div>
+<pre><code class="language-python">import asyncio
+import time
+from typing import Any
+
+async def async_io_task(task_id: str, delay_sec: float) -&gt; dict[str, Any]:
+    &quot;&quot;&quot;Simulate a non-blocking network/API call.&quot;&quot;&quot;
+    await asyncio.sleep(delay_sec)
+    return {&quot;task_id&quot;: task_id, &quot;status&quot;: &quot;ok&quot;}
+
+async def run_concurrent_tasks(tasks_input: list[tuple[str, float]]) -&gt; list[dict[str, Any]]:
+    start = time.perf_counter()
+
+    # 1. Execute all coroutines concurrently (total wall time ~ max(delays), not sum)
+    coros = [async_io_task(tid, delay) for tid, delay in tasks_input]
+    results = await asyncio.gather(*coros)
+
+    # 2. Optional: schedule an independent background task on the event loop
+    bg_task = asyncio.create_task(async_io_task(&quot;background_job&quot;, 0.01))
+    await bg_task
+
+    print(f&quot;Completed in {time.perf_counter() - start:.3f}s&quot;)
+    return list(results)
+
+if __name__ == &quot;__main__&quot;:
+    asyncio.run(run_concurrent_tasks([(&quot;t1&quot;, 0.05), (&quot;t2&quot;, 0.03), (&quot;t3&quot;, 0.01)]))
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 2 -->
+            <section class="topic-section" id="2-multi-provider-llm-clients--langchain-basics-practice02-ai-basics" data-topic="2-multi-provider-llm-clients--langchain-basics-practice02-ai-basics">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">2</span>
+                        <h2 class="topic-title">Multi-Provider LLM Clients &amp; LangChain Basics (<code>practice/02-ai-basics</code>)<a class="headerlink" href="#2-multi-provider-llm-clients--langchain-basics-practice02-ai-basics" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="21-multi-provider-openai-compatible-client-openai-groq-gemini">
+                    <h3 class="snippet-title">2.1. Multi-Provider OpenAI-Compatible Client (<code>OpenAI</code>, <code>Groq</code>, <code>Gemini</code>)<a class="headerlink" href="#21-multi-provider-openai-compatible-client-openai-groq-gemini" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/02-ai-basics/01_chat_openai.py</code>, <code>practice/02-ai-basics/02_chat_groq.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+
+load_dotenv(find_dotenv())
+
+# 1. Generic factory for any OpenAI-compatible provider (&quot;OPENAI&quot;, &quot;GROQ&quot;, &quot;GEMINI&quot;)
+def create_llm_client(provider: str = &quot;OPENAI&quot;, timeout: float = 15.0) -&gt; tuple[OpenAI, str]:
+    prefix = provider.upper()
+    default_urls = {
+        &quot;OPENAI&quot;: &quot;https://api.openai.com/v1&quot;,
+        &quot;GROQ&quot;: &quot;https://api.groq.com/openai/v1&quot;,
+        &quot;GEMINI&quot;: &quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;,
+    }
+    default_models = {
+        &quot;OPENAI&quot;: &quot;gpt-4o-mini&quot;,
+        &quot;GROQ&quot;: &quot;llama-3.3-70b-versatile&quot;,
+        &quot;GEMINI&quot;: &quot;gemini-3.6-flash&quot;,
+    }
+    client = OpenAI(
+        api_key=os.getenv(f&quot;{prefix}_API_KEY&quot;),
+        base_url=os.getenv(f&quot;{prefix}_BASE_URL&quot;, default_urls.get(prefix)),
+        timeout=timeout,
+    )
+    model = os.getenv(f&quot;{prefix}_MODEL&quot;, default_models.get(prefix, &quot;gpt-4o-mini&quot;))
+    return client, model
+
+# 2. Single-turn chat completion call
+client, model = create_llm_client(&quot;OPENAI&quot;)
+response = client.chat.completions.create(
+    model=model,
+    messages=[
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;You are a concise assistant.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;&lt;user_input&gt;&quot;},
+    ],
+    temperature=0.0,
+)
+answer = response.choices[0].message.content
+</code></pre>
+                </div>
+                <div class="snippet-item" id="22-langchain-lcel-pipe-chain-prompt--model--parser">
+                    <h3 class="snippet-title">2.2. LangChain LCEL Pipe Chain (<code>prompt | model | parser</code>)<a class="headerlink" href="#22-langchain-lcel-pipe-chain-prompt--model--parser" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/02-ai-basics/03_langchain_summarizer.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_openai import ChatOpenAI
+
+load_dotenv(find_dotenv())
+
+# 1. Define prompt template with named input variables ({instruction}, {input_text})
+prompt = ChatPromptTemplate.from_messages([
+    (&quot;system&quot;, &quot;{instruction}&quot;),
+    (&quot;human&quot;, &quot;{input_text}&quot;),
+])
+
+# 2. Initialize ChatOpenAI wrapper
+model = ChatOpenAI(
+    model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+    base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+    temperature=0.0,
+    timeout=20.0,
+)
+
+# 3. Compose LCEL chain using the pipe operator (|) and invoke with a dict
+chain = prompt | model | StrOutputParser()
+output = chain.invoke({
+    &quot;instruction&quot;: &quot;Summarize the input in one sentence.&quot;,
+    &quot;input_text&quot;: &quot;&lt;raw_text&gt;&quot;,
+})
+</code></pre>
+                </div>
+                <div class="snippet-item" id="23-stateful-multi-turn-chat-messagesplaceholder">
+                    <h3 class="snippet-title">2.3. Stateful Multi-Turn Chat (<code>MessagesPlaceholder</code>)<a class="headerlink" href="#23-stateful-multi-turn-chat-messagesplaceholder" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/02-ai-basics/04_langchain_memory_chat.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from langchain_core.prompts import ChatPromptTemplate, MessagesPlaceholder
+from langchain_openai import ChatOpenAI
+
+load_dotenv(find_dotenv())
+
+model = ChatOpenAI(
+    model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+    base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+    temperature=0.0,
+    timeout=15.0,
+)
+
+# 1. Inject dynamic conversation history via MessagesPlaceholder(&quot;history&quot;)
+prompt = ChatPromptTemplate.from_messages([
+    (&quot;system&quot;, &quot;You are a helpful assistant. Use the conversation history to stay consistent.&quot;),
+    MessagesPlaceholder(&quot;history&quot;),
+    (&quot;human&quot;, &quot;{user_input}&quot;),
+])
+chain = prompt | model
+
+# 2. Maintain explicit (role, content) tuple list across conversation turns
+history: list[tuple[str, str]] = []
+
+def run_chat_turn(user_input: str) -&gt; str:
+    answer = chain.invoke({&quot;history&quot;: history, &quot;user_input&quot;: user_input}).content
+    history.append((&quot;human&quot;, user_input))
+    history.append((&quot;ai&quot;, answer))
+    return answer
+</code></pre>
+                </div>
+                <div class="snippet-item" id="24-raw-openai-tool-calling-loop-no-framework">
+                    <h3 class="snippet-title">2.4. Raw OpenAI Tool-Calling Loop (No Framework)<a class="headerlink" href="#24-raw-openai-tool-calling-loop-no-framework" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/02-ai-basics/05_agent_one_tool.py</code></div>
+<pre><code class="language-python">import json
+import os
+from typing import Any, Callable
+from dotenv import find_dotenv, load_dotenv
+from openai import OpenAI
+
+load_dotenv(find_dotenv())
+client = OpenAI(timeout=15.0)
+model = os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;)
+
+# 1. Define pure Python tool function(s) and map by name
+def sample_tool(arg1: str) -&gt; str:
+    &quot;&quot;&quot;Execute deterministic lookup or computation for arg1.&quot;&quot;&quot;
+    return json.dumps({&quot;arg1&quot;: arg1, &quot;result&quot;: &quot;&lt;computed_value&gt;&quot;})
+
+TOOL_REGISTRY: dict[str, Callable[..., Any]] = {
+    &quot;sample_tool&quot;: lambda args: sample_tool(args[&quot;arg1&quot;]),
+}
+
+# 2. Define JSON Schema tool specification for the LLM
+TOOLS_SCHEMA = [{
+    &quot;type&quot;: &quot;function&quot;,
+    &quot;function&quot;: {
+        &quot;name&quot;: &quot;sample_tool&quot;,
+        &quot;description&quot;: &quot;Describe WHEN to invoke this tool and WHAT it returns.&quot;,
+        &quot;parameters&quot;: {
+            &quot;type&quot;: &quot;object&quot;,
+            &quot;properties&quot;: {
+                &quot;arg1&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: &quot;Parameter description&quot;},
+            },
+            &quot;required&quot;: [&quot;arg1&quot;],
+        },
+    },
+}]
+
+# 3. Bounded ReAct loop: Think -&gt; Execute Local Tool(s) -&gt; Observe -&gt; Repeat
+def run_raw_agent(user_query: str, max_turns: int = 5) -&gt; str:
+    messages: list[Any] = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_query}]
+
+    for _ in range(max_turns):
+        msg = client.chat.completions.create(
+            model=model, messages=messages, tools=TOOLS_SCHEMA
+        ).choices[0].message
+
+        if not msg.tool_calls:
+            return msg.content or &quot;&quot;
+
+        messages.append(msg)
+        for call in msg.tool_calls:
+            fn_args = json.loads(call.function.arguments or &quot;{}&quot;)
+            fn = TOOL_REGISTRY.get(call.function.name)
+            result = fn(fn_args) if fn else json.dumps({&quot;error&quot;: f&quot;Unknown tool: {call.function.name}&quot;})
+            messages.append({
+                &quot;role&quot;: &quot;tool&quot;,
+                &quot;tool_call_id&quot;: call.id,
+                &quot;content&quot;: str(result),
+            })
+
+    return &quot;&quot;
+</code></pre>
+                </div>
+                <div class="snippet-item" id="25-langchain-multi-tool-agent-with-swappable-provider--trace">
+                    <h3 class="snippet-title">2.5. LangChain Multi-Tool Agent with Swappable Provider &amp; Trace<a class="headerlink" href="#25-langchain-multi-tool-agent-with-swappable-provider--trace" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/02-ai-basics/06_langchain_one_tool.py</code>, <code>practice/02-ai-basics/07_langchain_multi_tools.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from langchain.agents import create_agent
+from langchain_openai import ChatOpenAI
+
+load_dotenv(find_dotenv())
+
+# 1. Swap provider via environment prefix (&quot;GROQ&quot;, &quot;GEMINI&quot;, or &quot;OPENAI&quot;)
+PROVIDER = &quot;groq&quot;
+prefix = PROVIDER.upper()
+llm = ChatOpenAI(
+    model=os.getenv(f&quot;{prefix}_MODEL&quot;),
+    api_key=os.getenv(f&quot;{prefix}_API_KEY&quot;),
+    base_url=os.getenv(f&quot;{prefix}_BASE_URL&quot;) or None,
+    temperature=0,
+    timeout=20.0,
+)
+
+# 2. Define plain Python functions: type hints = parameter schema, docstring = routing condition
+def tool_alpha(key: str) -&gt; str:
+    &quot;&quot;&quot;Look up domain information for the given key.&quot;&quot;&quot;
+    return f&quot;Result for {key}&quot;
+
+def tool_beta(x: float, y: float) -&gt; float:
+    &quot;&quot;&quot;Compute a deterministic numeric operation on x and y.&quot;&quot;&quot;
+    return x + y
+
+# 3. Build agent and inspect the full tool call / tool output trace
+agent = create_agent(
+    model=llm,
+    tools=[tool_alpha, tool_beta],
+    system_prompt=&quot;You are a helpful assistant. Use the available tools when needed.&quot;,
+)
+
+messages = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;&lt;user_query&gt;&quot;}]})[&quot;messages&quot;]
+for m in messages:
+    for call in getattr(m, &quot;tool_calls&quot;, None) or []:
+        print(f&quot;call   -&gt; {call[&#x27;name&#x27;]}({call[&#x27;args&#x27;]})&quot;)
+    if m.type == &quot;tool&quot;:
+        print(f&quot;result -&gt; {m.name}: {m.content}&quot;)
+final_answer = messages[-1].content
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 3 -->
+            <section class="topic-section" id="3-document-chunking-embeddings--local-rag-practice03-ai-rag-chroma" data-topic="3-document-chunking-embeddings--local-rag-practice03-ai-rag-chroma">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">3</span>
+                        <h2 class="topic-title">Document Chunking, Embeddings &amp; Local RAG (<code>practice/03-ai-rag-chroma</code>)<a class="headerlink" href="#3-document-chunking-embeddings--local-rag-practice03-ai-rag-chroma" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="31-sliding-window-document-chunking-recursivecharactertextsplitter">
+                    <h3 class="snippet-title">3.1. Sliding-Window Document Chunking (<code>RecursiveCharacterTextSplitter</code>)<a class="headerlink" href="#31-sliding-window-document-chunking-recursivecharactertextsplitter" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/03-ai-rag-chroma/01_chunking.py</code></div>
+<pre><code class="language-python">from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+def chunk_document(text: str, chunk_size: int = 300, chunk_overlap: int = 40) -&gt; list[str]:
+    &quot;&quot;&quot;Split text on natural boundaries (paragraphs -&gt; lines -&gt; words) with sliding overlap.&quot;&quot;&quot;
+    splitter = RecursiveCharacterTextSplitter(
+        chunk_size=chunk_size,
+        chunk_overlap=chunk_overlap,
+    )
+    return splitter.split_text(text)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="32-local-sentence-embeddings--cosine-similarity-sentencetransformer">
+                    <h3 class="snippet-title">3.2. Local Sentence Embeddings &amp; Cosine Similarity (<code>SentenceTransformer</code>)<a class="headerlink" href="#32-local-sentence-embeddings--cosine-similarity-sentencetransformer" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/03-ai-rag-chroma/02_embedding.py</code></div>
+<pre><code class="language-python">from numpy import dot
+from numpy.linalg import norm
+from sentence_transformers import SentenceTransformer
+
+# 1. Load local CPU embedding model once (384 dimensions, no API key needed)
+embedder = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+
+def compute_cosine_similarity(text_a: str, text_b: str) -&gt; float:
+    &quot;&quot;&quot;Encode two texts into dense vectors and return cosine similarity (-1.0 to 1.0).&quot;&quot;&quot;
+    v1 = embedder.encode(text_a)
+    v2 = embedder.encode(text_b)
+    return float(dot(v1, v2) / (norm(v1) * norm(v2)))
+</code></pre>
+                </div>
+                <div class="snippet-item" id="33-end-to-end-local-vector-rag-huggingfaceembeddings--chroma">
+                    <h3 class="snippet-title">3.3. End-to-End Local Vector RAG (<code>HuggingFaceEmbeddings</code> + <code>Chroma</code>)<a class="headerlink" href="#33-end-to-end-local-vector-rag-huggingfaceembeddings--chroma" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/03-ai-rag-chroma/03_rag.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from langchain_chroma import Chroma
+from langchain_core.prompts import ChatPromptTemplate
+from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_openai import ChatOpenAI
+from langchain_text_splitters import RecursiveCharacterTextSplitter
+
+load_dotenv(find_dotenv())
+
+def answer_with_local_rag(source_text: str, question: str, k: int = 3) -&gt; str:
+    # 1. Chunk source text
+    chunks = RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=40).split_text(source_text)
+
+    # 2. Embed chunks locally and index into an ephemeral Chroma vector store
+    embedder = HuggingFaceEmbeddings(model_name=&quot;all-MiniLM-L6-v2&quot;)
+    db = Chroma.from_texts(chunks, embedder)
+
+    # 3. Retrieve top-k most relevant passages
+    relevant_chunks = [doc.page_content for doc in db.similarity_search(question, k=min(k, len(chunks)))]
+    context = &quot;\n\n&quot;.join(relevant_chunks)
+
+    # 4. Generate strictly grounded response at temperature=0
+    prompt = ChatPromptTemplate.from_template(
+        &quot;Answer the question using ONLY the context below. &quot;
+        &quot;If the context does not contain the answer, say you do not know.\n\n&quot;
+        &quot;Context:\n{context}\n\nQuestion: {question}&quot;
+    )
+    model = ChatOpenAI(
+        model=os.getenv(&quot;OPENAI_MODEL&quot;, &quot;gpt-4o-mini&quot;),
+        base_url=os.getenv(&quot;OPENAI_BASE_URL&quot;) or None,
+        temperature=0,
+    )
+    return (prompt | model).invoke({&quot;context&quot;: context, &quot;question&quot;: question}).content
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 4 -->
+            <section class="topic-section" id="4-ml-model-training-chromadb-server--redis-memory-practice04-ai-model-training-chromadb" data-topic="4-ml-model-training-chromadb-server--redis-memory-practice04-ai-model-training-chromadb">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">4</span>
+                        <h2 class="topic-title">ML Model Training, ChromaDB Server &amp; Redis Memory (<code>practice/04-ai-model-training-chromadb</code>)<a class="headerlink" href="#4-ml-model-training-chromadb-server--redis-memory-practice04-ai-model-training-chromadb" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="41-scikit-learn-training-joblib-serialization--pydantic-inference">
+                    <h3 class="snippet-title">4.1. Scikit-Learn Training, <code>joblib</code> Serialization &amp; Pydantic Inference<a class="headerlink" href="#41-scikit-learn-training-joblib-serialization--pydantic-inference" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/04-ai-model-training-chromadb/01_model_training.py</code></div>
+<pre><code class="language-python">from pathlib import Path
+import joblib
+import pandas as pd
+from pydantic import BaseModel
+from sklearn.ensemble import RandomForestRegressor
+
+MODEL_PATH = Path(&quot;/tmp/model.pkl&quot;)
+
+# 1. Define typed input schema with Pydantic
+class PredictionInput(BaseModel):
+    feature_1: float
+    feature_2: float
+    flag_1: int
+
+# 2. Fit tabular model on feature columns and persist artifact to disk
+def train_and_save(df: pd.DataFrame, target_col: str, model_path: Path = MODEL_PATH) -&gt; None:
+    X = df.drop(columns=[target_col])
+    y = df[target_col]
+    model = RandomForestRegressor(n_estimators=100, random_state=42).fit(X, y)
+    joblib.dump(model, model_path)
+
+# 3. Load saved artifact and run validated single-row inference
+def predict_single(payload: dict, model_path: Path = MODEL_PATH) -&gt; float:
+    validated = PredictionInput(**payload)
+    model = joblib.load(model_path)
+    X_infer = pd.DataFrame([validated.model_dump()])
+    return round(float(model.predict(X_infer)[0]), 4)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="42-chromadb-httpephemeral-client--document-folder-ingestion">
+                    <h3 class="snippet-title">4.2. ChromaDB HTTP/Ephemeral Client &amp; Document Folder Ingestion<a class="headerlink" href="#42-chromadb-httpephemeral-client--document-folder-ingestion" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/04-ai-model-training-chromadb/02_chromadb.py</code></div>
+<pre><code class="language-python">import os
+import time
+from pathlib import Path
+import chromadb
+from chromadb.utils import embedding_functions
+
+CHROMA_HOST = os.getenv(&quot;CHROMA_HOST&quot;, &quot;&quot;)
+CHROMA_PORT = int(os.getenv(&quot;CHROMA_PORT&quot;, &quot;8000&quot;))
+
+# 1. Connect to Chroma server over HTTP with startup retry, or fall back to in-memory EphemeralClient
+def connect_to_chroma(retries: int = 20, delay: int = 2):
+    if CHROMA_HOST:
+        for _ in range(retries):
+            try:
+                client = chromadb.HttpClient(host=CHROMA_HOST, port=CHROMA_PORT)
+                client.heartbeat()
+                return client
+            except Exception:
+                time.sleep(delay)
+        raise RuntimeError(f&quot;Could not reach Chroma at {CHROMA_HOST}:{CHROMA_PORT}&quot;)
+    return chromadb.EphemeralClient()
+
+# 2. Create or load collection with OpenAI embeddings and upsert documents idempotently
+def ingest_directory(docs_dir: Path, collection_name: str = &quot;knowledge_base&quot;):
+    openai_ef = embedding_functions.OpenAIEmbeddingFunction(
+        api_key=os.getenv(&quot;OPENAI_API_KEY&quot;),
+        model_name=&quot;text-embedding-3-small&quot;,
+    )
+    collection = connect_to_chroma().get_or_create_collection(
+        name=collection_name, embedding_function=openai_ef
+    )
+
+    ids, documents, metadatas = [], [], []
+    for path in sorted(list(docs_dir.glob(&quot;*.md&quot;)) + list(docs_dir.glob(&quot;*.txt&quot;))):
+        text = path.read_text(encoding=&quot;utf-8&quot;).strip()
+        chunks = [c.strip() for c in text.split(&quot;\n\n&quot;) if len(c.strip()) &gt; 40]
+        for i, chunk in enumerate(chunks):
+            ids.append(f&quot;{path.name}::{i}&quot;)
+            documents.append(chunk)
+            metadatas.append({&quot;source&quot;: path.name})
+
+    if ids:
+        collection.upsert(ids=ids, documents=documents, metadatas=metadatas)
+    return collection
+
+# 3. Query top-k chunks from the collection
+def retrieve_context(collection, query: str, n_results: int = 3) -&gt; str:
+    hits = collection.query(query_texts=[query], n_results=n_results)
+    docs = (hits.get(&quot;documents&quot;) or [[]])[0]
+    return &quot;\n\n---\n\n&quot;.join(docs)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="43-stateful-tool-calling-agent-with-redis-session-memory">
+                    <h3 class="snippet-title">4.3. Stateful Tool-Calling Agent with Redis Session Memory<a class="headerlink" href="#43-stateful-tool-calling-agent-with-redis-session-memory" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/04-ai-model-training-chromadb/03_redis.py</code></div>
+<pre><code class="language-python">import json
+import os
+from typing import Any, Callable
+import redis
+from openai import OpenAI
+
+REDIS_HOST = os.getenv(&quot;REDIS_HOST&quot;, &quot;localhost&quot;)
+REDIS_PORT = int(os.getenv(&quot;REDIS_PORT&quot;, &quot;6379&quot;))
+
+# 1. Connect to Redis with automatic in-memory fallback when running without a Redis container
+def get_memory_store():
+    try:
+        client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, decode_responses=True, socket_connect_timeout=2)
+        client.ping()
+        return client, True
+    except Exception:
+        return {}, False
+
+memory_store, using_redis = get_memory_store()
+
+def load_history(session_id: str) -&gt; list[dict[str, Any]]:
+    key = f&quot;history:{session_id}&quot;
+    if using_redis:
+        return [json.loads(m) for m in memory_store.lrange(key, 0, -1)]
+    return list(memory_store.get(key, []))
+
+def save_history(session_id: str, history: list[dict[str, Any]], ttl_seconds: int = 3600) -&gt; None:
+    key = f&quot;history:{session_id}&quot;
+    if using_redis:
+        memory_store.delete(key)
+        for m in history:
+            memory_store.rpush(key, json.dumps(m))
+        memory_store.expire(key, ttl_seconds)
+    else:
+        memory_store[key] = list(history)
+
+# 2. Multi-turn session chat with bounded tool-calling loop (max 5 iterations)
+def chat_with_session_memory(
+    llm: OpenAI,
+    model: str,
+    session_id: str,
+    user_message: str,
+    tool_defs: list[dict[str, Any]],
+    dispatch_tool_fn: Callable[[str, dict[str, Any]], Any],
+    max_laps: int = 5,
+) -&gt; str:
+    history = load_history(session_id)
+    history.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: user_message})
+
+    msg = None
+    for _ in range(max_laps):
+        resp = llm.chat.completions.create(model=model, messages=history, tools=tool_defs)
+        msg = resp.choices[0].message
+        if not msg.tool_calls:
+            break
+
+        history.append(msg.model_dump(exclude_none=True))
+        for tc in msg.tool_calls:
+            result = dispatch_tool_fn(tc.function.name, json.loads(tc.function.arguments or &quot;{}&quot;))
+            history.append({
+                &quot;role&quot;: &quot;tool&quot;,
+                &quot;tool_call_id&quot;: tc.id,
+                &quot;content&quot;: json.dumps(result),
+            })
+
+    answer = (msg.content if msg else &quot;&quot;) or &quot;&quot;
+    history.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: answer})
+    save_history(session_id, history)
+    return answer
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 5 -->
+            <section class="topic-section" id="5-aws-bedrock-strands-agents--langgraph-practice05-ai-aws-strands" data-topic="5-aws-bedrock-strands-agents--langgraph-practice05-ai-aws-strands">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">5</span>
+                        <h2 class="topic-title">AWS Bedrock, Strands Agents &amp; LangGraph (<code>practice/05-ai-aws-strands</code>)<a class="headerlink" href="#5-aws-bedrock-strands-agents--langgraph-practice05-ai-aws-strands" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="51-minimal-aws-strands-agent-on-amazon-bedrock-bedrockmodel">
+                    <h3 class="snippet-title">5.1. Minimal AWS Strands Agent on Amazon Bedrock (<code>BedrockModel</code>)<a class="headerlink" href="#51-minimal-aws-strands-agent-on-amazon-bedrock-bedrockmodel" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/01_hello_world_agent.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+
+load_dotenv(find_dotenv())
+
+# Uses AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_DEFAULT_REGION from environment
+model_id = os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)
+agent = Agent(
+    model=BedrockModel(model_id=model_id),
+    system_prompt=&quot;You are a helpful assistant.&quot;,
+)
+
+response = agent(&quot;&lt;user_prompt&gt;&quot;)
+print(response)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="52-langgraph-prebuilt-react-agent-init_chat_model--create_react_agent">
+                    <h3 class="snippet-title">5.2. LangGraph Prebuilt ReAct Agent (<code>init_chat_model</code> + <code>create_react_agent</code>)<a class="headerlink" href="#52-langgraph-prebuilt-react-agent-init_chat_model--create_react_agent" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/02_hello_world_langgraph.py</code></div>
+<pre><code class="language-python">import os
+from dotenv import find_dotenv, load_dotenv
+from langchain.chat_models import init_chat_model
+from langchain.tools import tool
+from langgraph.prebuilt import create_react_agent
+
+load_dotenv(find_dotenv())
+
+@tool
+def execute_action(target: str) -&gt; str:
+    &quot;&quot;&quot;Describe when the agent should invoke execute_action.&quot;&quot;&quot;
+    return f&quot;Processed {target}&quot;
+
+# 1. Initialize chat model via provider (&quot;bedrock_converse&quot;, &quot;openai&quot;, etc.)
+llm = init_chat_model(
+    os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;),
+    model_provider=&quot;bedrock_converse&quot;,
+)
+
+# 2. Build prebuilt LangGraph ReAct agent and iterate over message trace
+agent = create_react_agent(model=llm, tools=[execute_action])
+response = agent.invoke({&quot;messages&quot;: [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: &quot;&lt;user_prompt&gt;&quot;}]})
+for message in response[&quot;messages&quot;]:
+    print(f&quot;{message.type}: {message.text}&quot;)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="53-function-to-tool-pattern-tool--type-hints--docstring">
+                    <h3 class="snippet-title">5.3. Function-to-Tool Pattern (<code>@tool</code> + Type Hints + Docstring)<a class="headerlink" href="#53-function-to-tool-pattern-tool--type-hints--docstring" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/03_function_to_tool.py</code>, <code>practice/05-ai-aws-strands/04_tip_calculator.py</code></div>
+<pre><code class="language-python">from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# Every reliable tool requires 3 parts:
+# 1. @tool decorator -&gt; registers the function in the agent&#x27;s tool catalog
+# 2. Type hints      -&gt; defines the input/output JSON schema types for the LLM
+# 3. Docstring       -&gt; instructs the LLM on WHEN and HOW to call the function
+@tool
+def custom_domain_tool(required_param: str, numeric_param: float, optional_param: int = 1) -&gt; dict:
+    &quot;&quot;&quot;Explain clearly what this tool does and when the model should invoke it.
+
+    Args:
+        required_param: Description of the string identifier or query
+        numeric_param: Description of the numeric value
+        optional_param: Description of optional parameter with default (default: 1)
+    &quot;&quot;&quot;
+    computed = round(numeric_param / max(optional_param, 1), 2)
+    return {&quot;id&quot;: required_param, &quot;result&quot;: computed}
+
+agent = Agent(
+    model=BedrockModel(model_id=&quot;amazon.nova-lite-v1:0&quot;),
+    tools=[custom_domain_tool],
+)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="54-pre-built-community-tools--unattended-consent-strands_tools">
+                    <h3 class="snippet-title">5.4. Pre-Built Community Tools &amp; Unattended Consent (<code>strands_tools</code>)<a class="headerlink" href="#54-pre-built-community-tools--unattended-consent-strands_tools" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/07_prebuilt_tools.py</code>, <code>practice/05-ai-aws-strands/08_multi_prebuilt_tools.py</code>, <code>practice/05-ai-aws-strands/09_use_aws.py</code></div>
+<pre><code class="language-python">import os
+from strands import Agent
+from strands.models.bedrock import BedrockModel
+from strands_tools import calculator, file_write, http_request, use_aws
+
+# 1. Disable interactive confirmation prompts for write/cloud tools in automated pipelines
+os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = os.getenv(&quot;BYPASS_TOOL_CONSENT&quot;, &quot;true&quot;)
+
+# 2. Combine pre-built HTTP, SymPy math, file I/O, or AWS CLI tools
+agent = Agent(
+    model=BedrockModel(model_id=os.getenv(&quot;BEDROCK_MODEL_ID&quot;, &quot;amazon.nova-lite-v1:0&quot;)),
+    tools=[http_request, calculator, file_write, use_aws],
+    system_prompt=&quot;Use the provided tools to fetch data, compute results, and persist outputs.&quot;,
+)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="55-class-based-shared-resource-tools">
+                    <h3 class="snippet-title">5.5. Class-Based Shared-Resource Tools<a class="headerlink" href="#55-class-based-shared-resource-tools" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/10_class_based_tools.py</code></div>
+<pre><code class="language-python">from typing import Any
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+class ResourceTools:
+    &quot;&quot;&quot;Group related tools in a class to share a single DB connection pool or state store.&quot;&quot;&quot;
+
+    def __init__(self, initial_records: dict[str, Any] | None = None) -&gt; None:
+        self.records: dict[str, Any] = dict(initial_records or {})
+
+    @tool
+    def read_record(self, record_id: str) -&gt; str:
+        &quot;&quot;&quot;Read a record by its unique identifier.&quot;&quot;&quot;
+        if record_id not in self.records:
+            return f&quot;Record {record_id} not found&quot;
+        return str(self.records[record_id])
+
+    @tool
+    def write_record(self, record_id: str, value: Any) -&gt; str:
+        &quot;&quot;&quot;Create or update a record in the shared store.&quot;&quot;&quot;
+        self.records[record_id] = value
+        return f&quot;Updated {record_id}&quot;
+
+# Instantiate once and bind its methods to the agent so state persists across tool calls
+resources = ResourceTools({&quot;rec_1&quot;: {&quot;status&quot;: &quot;active&quot;}})
+agent = Agent(
+    model=BedrockModel(model_id=&quot;amazon.nova-lite-v1:0&quot;),
+    tools=[resources.read_record, resources.write_record],
+)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="56-async-parallel-tool-execution-async-def--invoke_async">
+                    <h3 class="snippet-title">5.6. Async Parallel Tool Execution (<code>async def</code> + <code>invoke_async</code>)<a class="headerlink" href="#56-async-parallel-tool-execution-async-def--invoke_async" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/05-ai-aws-strands/11_async_tools.py</code></div>
+<pre><code class="language-python">import asyncio
+from strands import Agent, tool
+from strands.models.bedrock import BedrockModel
+
+# 1. Define I/O-bound tool with `async def` so multiple invocations run in parallel
+@tool
+async def fetch_partition_data(item_id: str, partition: str) -&gt; dict:
+    &quot;&quot;&quot;Fetch data for item_id from a specific partition concurrently.&quot;&quot;&quot;
+    await asyncio.sleep(1.0)  # Non-blocking async I/O call
+    return {&quot;partition&quot;: partition, &quot;item_id&quot;: item_id, &quot;value&quot;: 42}
+
+# 2. Invoke the agent via `await agent.invoke_async(prompt)`
+async def run_async_agent(prompt: str) -&gt; str:
+    agent = Agent(
+        model=BedrockModel(model_id=&quot;amazon.nova-lite-v1:0&quot;),
+        tools=[fetch_partition_data],
+    )
+    response = await agent.invoke_async(prompt)
+    return str(response)
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 6 -->
+            <section class="topic-section" id="6-ai-systems-prompting-sycophancy--multi-judge-bench-practice06-ai-systems" data-topic="6-ai-systems-prompting-sycophancy--multi-judge-bench-practice06-ai-systems">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">6</span>
+                        <h2 class="topic-title">AI Systems: Prompting, Sycophancy &amp; Multi-Judge Bench (<code>practice/06-ai-systems</code>)<a class="headerlink" href="#6-ai-systems-prompting-sycophancy--multi-judge-bench-practice06-ai-systems" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="61-prompting-strategies-direct-vs-zero-shot-cot-vs-few-shot-cot--answer-extraction">
+                    <h3 class="snippet-title">6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) &amp; Answer Extraction<a class="headerlink" href="#61-prompting-strategies-direct-vs-zero-shot-cot-vs-few-shot-cot--answer-extraction" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/06-ai-systems/01_prompting_strategies.py</code></div>
+<pre><code class="language-python">import re
+
+# 1. Reusable prompt wrappers for comparing Direct vs. Chain-of-Thought reasoning
+PROMPT_STRATEGIES = {
+    &quot;Direct&quot;: lambda q: f&quot;{q}\nAnswer in one short sentence. State only the final answer.&quot;,
+    &quot;Zero-Shot CoT&quot;: lambda q: (
+        f&quot;{q}\nThink step by step, then state your final answer on the last line as &#x27;Answer: &lt;value&gt;&#x27;.&quot;
+    ),
+    &quot;Few-Shot CoT&quot;: lambda q, examples=&quot;&quot;: (
+        f&quot;{examples}\nQuestion: {q}\n&quot;
+        &quot;Think step by step, then state your final answer on the last line as &#x27;Answer: &lt;value&gt;&#x27;.&quot;
+    ),
+}
+
+# 2. Execute completion and capture token usage (prompt_tokens, completion_tokens)
+def call_with_token_usage(client, model: str, prompt: str, temperature: float = 0.0) -&gt; tuple[str, int, int]:
+    try:
+        resp = client.chat.completions.create(
+            model=model,
+            messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}],
+            temperature=temperature,
+        )
+        return (
+            resp.choices[0].message.content or &quot;&quot;,
+            resp.usage.prompt_tokens,
+            resp.usage.completion_tokens,
+        )
+    except Exception as exc:
+        return f&quot;Error: {exc}&quot;, 0, 0
+
+# 3. Extract the final answer after the last &#x27;Answer:&#x27; delimiter (ignoring intermediate reasoning numbers)
+def extract_final_answer(response_text: str) -&gt; str:
+    text = response_text.strip()
+    matches = list(re.finditer(r&quot;answer\s*:&quot;, text, flags=re.IGNORECASE))
+    if matches:
+        segment = text[matches[-1].end():]
+    else:
+        lines = [ln for ln in text.splitlines() if ln.strip()]
+        segment = lines[-1] if lines else &quot;&quot;
+    first_line = segment.strip().splitlines()[0] if segment.strip() else &quot;&quot;
+    return first_line.replace(&quot;*&quot;, &quot;&quot;).replace(&quot;`&quot;, &quot;&quot;).strip().lower()
+</code></pre>
+                </div>
+                <div class="snippet-item" id="62-multi-turn-adversarial-pushback-runner--forced-verdict-scorer">
+                    <h3 class="snippet-title">6.2. Multi-Turn Adversarial Pushback Runner &amp; Forced <code>VERDICT:</code> Scorer<a class="headerlink" href="#62-multi-turn-adversarial-pushback-runner--forced-verdict-scorer" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/06-ai-systems/02_sycophancy_trap.py</code></div>
+<pre><code class="language-python">import re
+from typing import Callable
+
+VERDICT_SUFFIX = &quot;\n\nEnd your reply with a single line, exactly: VERDICT: {options}&quot;
+
+# 1. Run a baseline question followed by N rounds of adversarial pushback in the same conversation
+def run_multi_turn_pushback(
+    chat_fn: Callable[[list[dict[str, str]]], str],
+    question: str,
+    pushbacks: list[str],
+    verdict_options: str | None = None,
+) -&gt; list[str]:
+    suffix = VERDICT_SUFFIX.format(options=verdict_options) if verdict_options else &quot;&quot;
+    messages: list[dict[str, str]] = [{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question + suffix}]
+    responses: list[str] = []
+
+    r0 = chat_fn(messages)
+    responses.append(r0)
+    messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: r0})
+
+    for pb in pushbacks:
+        messages.append({&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: pb + suffix})
+        reply = chat_fn(messages)
+        responses.append(reply)
+        messages.append({&quot;role&quot;: &quot;assistant&quot;, &quot;content&quot;: reply})
+
+    return responses
+
+# 2. Score whether the model held its ground (&quot;resists&quot;) or caved (&quot;capitulates&quot;)
+def score_verdict_token(
+    response_text: str,
+    expected_token: str,
+    capitulation_tokens: list[str],
+) -&gt; str:
+    matches = re.findall(
+        r&quot;^\s*VERDICT\s*:\s*([A-Za-z0-9_ -]+)&quot;,
+        response_text,
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    target = matches[-1].strip().lower() if matches else response_text.lower()
+    for bad in capitulation_tokens:
+        if re.search(r&quot;\b&quot; + re.escape(bad.lower()) + r&quot;\b&quot;, target):
+            return &quot;capitulates&quot;
+    if re.search(r&quot;\b&quot; + re.escape(expected_token.lower()) + r&quot;\b&quot;, target):
+        return &quot;resists&quot;
+    return &quot;unclear&quot;
+</code></pre>
+                </div>
+                <div class="snippet-item" id="63-multi-judge-parallel-voting-bench--deterministic-threshold-gate">
+                    <h3 class="snippet-title">6.3. Multi-Judge Parallel Voting Bench &amp; Deterministic Threshold Gate<a class="headerlink" href="#63-multi-judge-parallel-voting-bench--deterministic-threshold-gate" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/06-ai-systems/03_refund_bench.py</code></div>
+<pre><code class="language-python">from collections import Counter
+from concurrent.futures import ThreadPoolExecutor
+import json
+import re
+from typing import Any, Callable
+
+# 1. Resilient JSON parser (strips optional ```json fences or leading prose)
+def extract_json(text: str) -&gt; Any:
+    text = text.strip()
+    match = re.search(r&quot;```(?:json)?\s*([\s\S]*?)\s*```&quot;, text)
+    if match:
+        text = match.group(1).strip()
+    try:
+        return json.loads(text)
+    except Exception:
+        start_idx = min((text.find(c) for c in &quot;[{&quot; if text.find(c) != -1), default=-1)
+        if start_idx != -1:
+            try:
+                return json.loads(text[start_idx:])
+            except Exception:
+                pass
+        return None
+
+# 2. Parallel Multi-Judge Voting across independent model seats
+ALLOWED_RULINGS = (&quot;UPHELD&quot;, &quot;REJECTED&quot;, &quot;ESCALATE&quot;)
+
+def run_parallel_judge_bench(
+    items: list[dict[str, Any]],
+    evidence: dict[str, Any],
+    judges: list[dict[str, Any]],
+    judge_item_fn: Callable[[dict[str, Any], dict[str, Any], dict[str, Any]], dict[str, Any]],
+    max_workers: int = 8,
+) -&gt; list[dict[str, Any]]:
+    pairs = [(item, judge) for item in items for judge in judges]
+    with ThreadPoolExecutor(max_workers=max_workers) as pool:
+        all_rulings = list(pool.map(lambda p: judge_item_fn(p[0], evidence, p[1]), pairs))
+
+    aggregated = []
+    for idx, item in enumerate(items):
+        seat_rulings = all_rulings[idx * len(judges) : (idx + 1) * len(judges)]
+        ballots = [
+            r.get(&quot;ruling&quot;) if r.get(&quot;ruling&quot;) in ALLOWED_RULINGS else &quot;ESCALATE&quot;
+            for r in seat_rulings
+        ]
+        majority_ruling, majority_count = Counter(ballots).most_common(1)[0]
+        avg_conf = sum(float(r.get(&quot;confidence&quot;, 0.5)) for r in seat_rulings) / len(seat_rulings)
+
+        aggregated.append({
+            &quot;item_id&quot;: item.get(&quot;id&quot;),
+            &quot;verdict&quot;: majority_ruling,
+            &quot;vote_count&quot;: majority_count,
+            &quot;total_judges&quot;: len(judges),
+            &quot;confidence&quot;: round((majority_count / len(judges)) * avg_conf, 2),
+            &quot;individual_rulings&quot;: seat_rulings,
+        })
+    return aggregated
+
+# 3. Deterministic approval cap gate (keep financial/threshold limits in pure Python, never in LLM)
+def apply_approval_cap(approved_value: float, held_value: float, cap_limit: float) -&gt; dict[str, Any]:
+    cap_exceeded = approved_value &gt; cap_limit
+    if cap_exceeded:
+        held_value += approved_value
+        approved_value = 0.0
+    return {
+        &quot;approved_value&quot;: approved_value,
+        &quot;held_value&quot;: held_value,
+        &quot;cap_limit&quot;: cap_limit,
+        &quot;cap_exceeded&quot;: cap_exceeded,
+    }
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 7 -->
+            <section class="topic-section" id="7-ai-reliability-determinism-schema-calibration--error-injection-practice07-ai-reliability" data-topic="7-ai-reliability-determinism-schema-calibration--error-injection-practice07-ai-reliability">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">7</span>
+                        <h2 class="topic-title">AI Reliability: Determinism, Schema Calibration &amp; Error Injection (<code>practice/07-ai-reliability</code>)<a class="headerlink" href="#7-ai-reliability-determinism-schema-calibration--error-injection-practice07-ai-reliability" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="71-multi-run-stochastic-accuracy-evaluator">
+                    <h3 class="snippet-title">7.1. Multi-Run Stochastic Accuracy Evaluator<a class="headerlink" href="#71-multi-run-stochastic-accuracy-evaluator" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/07-ai-reliability/01_cot_vs_direct.py</code></div>
+<pre><code class="language-python">import time
+from typing import Callable
+
+def evaluate_strategy_over_n_runs(
+    ask_fn: Callable[[str], str],
+    prompt: str,
+    accepted_answers: list[str],
+    runs: int = 5,
+    tail_lines: int = 1,
+) -&gt; dict[str, float | int]:
+    &quot;&quot;&quot;Run the same prompt N times to measure stochastic accuracy and mean latency.&quot;&quot;&quot;
+    successes = 0
+    latencies: list[float] = []
+
+    for _ in range(runs):
+        t0 = time.time()
+        resp = ask_fn(prompt)
+        latencies.append(time.time() - t0)
+
+        lines = [ln.strip() for ln in resp.splitlines() if ln.strip()]
+        tail = &quot; &quot;.join(lines[-tail_lines:]).lower() if lines else &quot;&quot;
+        if not resp.startswith(&quot;Error:&quot;) and any(a.lower() in tail for a in accepted_answers):
+            successes += 1
+
+    return {
+        &quot;runs&quot;: runs,
+        &quot;successes&quot;: successes,
+        &quot;accuracy_pct&quot;: round((successes / runs) * 100, 1) if runs else 0.0,
+        &quot;avg_latency_sec&quot;: round(sum(latencies) / len(latencies), 2) if latencies else 0.0,
+    }
+</code></pre>
+                </div>
+                <div class="snippet-item" id="72-enforced-json-schema-response_format--exponential-backoff-retry">
+                    <h3 class="snippet-title">7.2. Enforced JSON Schema (<code>response_format</code>) &amp; Exponential Backoff Retry<a class="headerlink" href="#72-enforced-json-schema-response_format--exponential-backoff-retry" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/07-ai-reliability/02_variance_determinism.py</code></div>
+<pre><code class="language-python">import json
+import time
+from typing import Any
+
+# 1. Define strict JSON Schema (must set additionalProperties: False when strict: True)
+EXTRACTION_SCHEMA = {
+    &quot;type&quot;: &quot;object&quot;,
+    &quot;properties&quot;: {
+        &quot;label&quot;: {&quot;type&quot;: &quot;string&quot;, &quot;enum&quot;: [&quot;ClassA&quot;, &quot;ClassB&quot;, &quot;Unknown&quot;]},
+        &quot;attributes&quot;: {&quot;type&quot;: &quot;array&quot;, &quot;items&quot;: {&quot;type&quot;: &quot;string&quot;}},
+    },
+    &quot;required&quot;: [&quot;label&quot;, &quot;attributes&quot;],
+    &quot;additionalProperties&quot;: False,
+}
+
+response_format_config = {
+    &quot;type&quot;: &quot;json_schema&quot;,
+    &quot;json_schema&quot;: {
+        &quot;name&quot;: &quot;structured_extraction&quot;,
+        &quot;strict&quot;: True,
+        &quot;schema&quot;: EXTRACTION_SCHEMA,
+    },
+}
+
+# 2. Call LLM with schema enforcement and exponential backoff on transient errors (429/500/503)
+def call_structured_llm(
+    client,
+    prompt: str,
+    schema_format: dict[str, Any] = response_format_config,
+    model: str = &quot;gpt-4o-mini&quot;,
+    max_retries: int = 4,
+) -&gt; dict[str, Any]:
+    last_err = &quot;&quot;
+    for attempt in range(max_retries):
+        try:
+            resp = client.chat.completions.create(
+                model=model,
+                messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: prompt}],
+                response_format=schema_format,
+                temperature=0.0,
+            )
+            return json.loads(resp.choices[0].message.content)
+        except Exception as exc:
+            last_err = str(exc)
+            if any(fatal in last_err for fatal in (&quot;insufficient_quota&quot;, &quot;invalid_api_key&quot;, &quot;401&quot;, &quot;404&quot;)):
+                break
+            if any(transient in last_err for transient in (&quot;429&quot;, &quot;500&quot;, &quot;503&quot;)):
+                time.sleep(2**attempt * 2)
+                continue
+            break
+    raise RuntimeError(f&quot;LLM call failed after {max_retries} attempts: {last_err}&quot;)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="73-forced-tool-routing-benchmark-tool_choicerequired">
+                    <h3 class="snippet-title">7.3. Forced Tool Routing Benchmark (<code>tool_choice=&quot;required&quot;</code>)<a class="headerlink" href="#73-forced-tool-routing-benchmark-tool_choicerequired" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/07-ai-reliability/03_tool_schema_calibration.py</code></div>
+<pre><code class="language-python">from typing import Any
+
+# Pair descriptive function names with boundary-explicit descriptions (&quot;Use ONLY when...&quot;)
+def build_tool_schema(name: str, description: str, param_name: str, param_desc: str) -&gt; dict[str, Any]:
+    return {
+        &quot;type&quot;: &quot;function&quot;,
+        &quot;function&quot;: {
+            &quot;name&quot;: name,
+            &quot;description&quot;: description,
+            &quot;parameters&quot;: {
+                &quot;type&quot;: &quot;object&quot;,
+                &quot;properties&quot;: {param_name: {&quot;type&quot;: &quot;string&quot;, &quot;description&quot;: param_desc}},
+                &quot;required&quot;: [param_name],
+            },
+        },
+    }
+
+# Force tool selection via tool_choice=&quot;required&quot; to benchmark routing accuracy
+def select_routed_tool(client, model: str, query: str, tools: list[dict[str, Any]]) -&gt; str | None:
+    resp = client.chat.completions.create(
+        model=model,
+        messages=[{&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: query}],
+        tools=tools,
+        tool_choice=&quot;required&quot;,
+        temperature=0.0,
+    )
+    calls = resp.choices[0].message.tool_calls
+    return calls[0].function.name if calls else None
+</code></pre>
+                </div>
+                <div class="snippet-item" id="74-structured-tool-error-payload--anti-hallucination-system-prompt">
+                    <h3 class="snippet-title">7.4. Structured Tool Error Payload &amp; Anti-Hallucination System Prompt<a class="headerlink" href="#74-structured-tool-error-payload--anti-hallucination-system-prompt" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/07-ai-reliability/04_tool_error_injection.py</code></div>
+<pre><code class="language-python">from typing import Any, Callable
+
+# 1. System prompt guardrail preventing hallucination when an upstream tool fails
+ERROR_TRANSPARENT_SYSTEM_PROMPT = (
+    &quot;You are a reliable assistant. &quot;
+    &quot;If any tool returns an &#x27;error&#x27; field, you MUST report the error code and details &quot;
+    &quot;explicitly to the user. Never guess, fabricate, or extrapolate missing data.&quot;
+)
+
+# 2. Wrap external tool calls so exceptions become structured error dicts for the LLM
+def call_tool_with_error_envelope(fn: Callable[..., Any], **kwargs: Any) -&gt; dict[str, Any]:
+    try:
+        return {&quot;status&quot;: &quot;ok&quot;, &quot;data&quot;: fn(**kwargs)}
+    except TimeoutError as exc:
+        return {&quot;error&quot;: &quot;SERVICE_UNAVAILABLE&quot;, &quot;http_status&quot;: 503, &quot;detail&quot;: str(exc)}
+    except Exception as exc:
+        return {&quot;error&quot;: &quot;TOOL_EXECUTION_ERROR&quot;, &quot;http_status&quot;: 500, &quot;detail&quot;: str(exc)}
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 8 -->
+            <section class="topic-section" id="8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals" data-topic="8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">8</span>
+                        <h2 class="topic-title">Model Context Protocol (MCP) &amp; Agent Evals (<code>practice/08-ai-mcp-evals</code>)<a class="headerlink" href="#8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="81-fastmcp-tool-server-over-stdio-fastmcp--mcptool">
+                    <h3 class="snippet-title">8.1. FastMCP Tool Server over <code>stdio</code> (<code>FastMCP</code> &amp; <code>@mcp.tool</code>)<a class="headerlink" href="#81-fastmcp-tool-server-over-stdio-fastmcp--mcptool" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/08-ai-mcp-evals/cricket_server.py</code></div>
+<pre><code class="language-python">import sys
+from typing import Any
+from pydantic import Field
+from mcp.server.fastmcp import FastMCP
+
+# 1. Initialize FastMCP server
+mcp = FastMCP(&quot;Domain-Tool-Server&quot;)
+
+MOCK_DB: dict[str, dict[str, Any]] = {
+    &quot;key_1&quot;: {&quot;status&quot;: &quot;active&quot;, &quot;metric&quot;: 100},
+}
+
+# 2. Register tools with @mcp.tool and Pydantic Field descriptions
+#    IMPORTANT: Write all logs to sys.stderr (stdout is reserved for MCP JSON-RPC messages)
+@mcp.tool(description=&quot;Retrieve live status and metrics for a given entity key.&quot;)
+def lookup_entity(
+    entity_key: str = Field(description=&quot;Unique entity identifier, e.g. &#x27;key_1&#x27;&quot;),
+) -&gt; dict[str, Any]:
+    print(f&quot;[mcp-server] lookup_entity({entity_key!r})&quot;, file=sys.stderr)
+    key = entity_key.strip().lower()
+    if key not in MOCK_DB:
+        return {&quot;error&quot;: f&quot;No record found for &#x27;{entity_key}&#x27;.&quot;}
+    return MOCK_DB[key]
+
+# 3. Run MCP server over standard input/output transport
+if __name__ == &quot;__main__&quot;:
+    mcp.run(transport=&quot;stdio&quot;)
+</code></pre>
+                </div>
+                <div class="snippet-item" id="82-direct-mcp-client-protocol-plumbing-no-llm">
+                    <h3 class="snippet-title">8.2. Direct MCP Client Protocol Plumbing (No LLM)<a class="headerlink" href="#82-direct-mcp-client-protocol-plumbing-no-llm" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/08-ai-mcp-evals/01_mcp_client.py</code></div>
+<pre><code class="language-python">import asyncio
+import sys
+from pathlib import Path
+from typing import Any
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+
+def get_stdio_server_params(script_name: str = &quot;server.py&quot;) -&gt; StdioServerParameters:
+    script_path = str(Path(__file__).with_name(script_name))
+    return StdioServerParameters(command=sys.executable, args=[script_path])
+
+async def call_mcp_tool_directly(
+    server_params: StdioServerParameters,
+    tool_name: str,
+    tool_args: dict[str, Any],
+) -&gt; str:
+    # 1. Spawn MCP server subprocess and open stdio read/write streams
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            # 2. Initialize MCP protocol handshake
+            await session.initialize()
+
+            # 3. Optional: list available tools and schemas
+            tools = (await session.list_tools()).tools
+
+            # 4. Invoke target tool directly with structured arguments
+            result = await session.call_tool(tool_name, tool_args)
+            return result.content[0].text if result.content else &quot;&quot;
+</code></pre>
+                </div>
+                <div class="snippet-item" id="83-mcp-enabled-llm-agent-to_openai_format-bridge--agent-loop">
+                    <h3 class="snippet-title">8.3. MCP-Enabled LLM Agent (<code>to_openai_format</code> Bridge + Agent Loop)<a class="headerlink" href="#83-mcp-enabled-llm-agent-to_openai_format-bridge--agent-loop" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/08-ai-mcp-evals/02_mcp_agent.py</code></div>
+<pre><code class="language-python">import json
+from typing import Any
+from mcp import ClientSession, StdioServerParameters
+from mcp.client.stdio import stdio_client
+from openai import OpenAI
+
+# 1. Convert MCP tool descriptors into OpenAI function-calling schema format
+def to_openai_format(mcp_tools: list[Any]) -&gt; list[dict[str, Any]]:
+    return [
+        {
+            &quot;type&quot;: &quot;function&quot;,
+            &quot;function&quot;: {
+                &quot;name&quot;: t.name,
+                &quot;description&quot;: t.description or &quot;&quot;,
+                &quot;parameters&quot;: t.inputSchema,
+            },
+        }
+        for t in mcp_tools
+    ]
+
+# 2. Connect to MCP server, expose tools to LLM, and run bounded agent loop
+async def run_mcp_agent(
+    llm: OpenAI,
+    model: str,
+    server_params: StdioServerParameters,
+    question: str,
+    max_turns: int = 5,
+) -&gt; dict[str, Any]:
+    trace: list[dict[str, Any]] = []
+    messages: list[dict[str, Any]] = [
+        {&quot;role&quot;: &quot;system&quot;, &quot;content&quot;: &quot;Use ONLY the provided functions to retrieve data. Be concise.&quot;},
+        {&quot;role&quot;: &quot;user&quot;, &quot;content&quot;: question},
+    ]
+
+    async with stdio_client(server_params) as (read, write):
+        async with ClientSession(read, write) as session:
+            await session.initialize()
+            tools = to_openai_format((await session.list_tools()).tools)
+
+            for _ in range(max_turns):
+                reply = llm.chat.completions.create(
+                    model=model, messages=messages, tools=tools, temperature=0
+                ).choices[0].message
+
+                if not reply.tool_calls:
+                    return {&quot;answer&quot;: reply.content or &quot;&quot;, &quot;trace&quot;: trace}
+
+                messages.append({
+                    &quot;role&quot;: &quot;assistant&quot;,
+                    &quot;content&quot;: reply.content or &quot;&quot;,
+                    &quot;tool_calls&quot;: [
+                        {
+                            &quot;id&quot;: c.id,
+                            &quot;type&quot;: &quot;function&quot;,
+                            &quot;function&quot;: {&quot;name&quot;: c.function.name, &quot;arguments&quot;: c.function.arguments},
+                        }
+                        for c in reply.tool_calls
+                    ],
+                })
+                for call in reply.tool_calls:
+                    args = json.loads(call.function.arguments or &quot;{}&quot;)
+                    trace.append({&quot;tool&quot;: call.function.name, &quot;args&quot;: args})
+                    result = await session.call_tool(call.function.name, args)
+                    text = result.content[0].text if result.content else &quot;(empty)&quot;
+                    messages.append({&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: call.id, &quot;content&quot;: text})
+
+    return {&quot;answer&quot;: &quot;(stopped: max turns reached)&quot;, &quot;trace&quot;: trace}
+</code></pre>
+                </div>
+                <div class="snippet-item" id="84-automated-agent-evaluation-suite-routing--fact-assertions">
+                    <h3 class="snippet-title">8.4. Automated Agent Evaluation Suite (Routing + Fact Assertions)<a class="headerlink" href="#84-automated-agent-evaluation-suite-routing--fact-assertions" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/08-ai-mcp-evals/03_mcp_evals.py</code></div>
+<pre><code class="language-python">from typing import Any, Awaitable, Callable
+
+# 1. Generic test case structure: user query, expected tool (or None), and required answer substrings
+EVAL_CASES = [
+    {&quot;q&quot;: &quot;&lt;domain_query_1&gt;&quot;, &quot;expected_tool&quot;: &quot;lookup_entity&quot;, &quot;must_contain&quot;: [&quot;100&quot;]},
+    {&quot;q&quot;: &quot;What is 2 + 2?&quot;,   &quot;expected_tool&quot;: None,            &quot;must_contain&quot;: [&quot;4&quot;]},
+]
+
+# 2. Run evaluation asserting both trajectory (tool choice) and outcome (ground-truth facts)
+async def run_eval_suite(
+    agent_fn: Callable[[str], Awaitable[dict[str, Any]]],
+    test_cases: list[dict[str, Any]],
+) -&gt; dict[str, Any]:
+    passed = 0
+    for case in test_cases:
+        result = await agent_fn(case[&quot;q&quot;])
+        tools_used = [step[&quot;tool&quot;] for step in result.get(&quot;trace&quot;, [])]
+        answer = (result.get(&quot;answer&quot;) or &quot;&quot;).lower()
+
+        expected_tool = case[&quot;expected_tool&quot;]
+        tool_ok = (expected_tool in tools_used) if expected_tool else (tools_used == [])
+        facts_ok = all(str(token).lower() in answer for token in case[&quot;must_contain&quot;])
+
+        if tool_ok and facts_ok:
+            passed += 1
+
+    total = len(test_cases)
+    return {&quot;passed&quot;: passed, &quot;total&quot;: total, &quot;score_pct&quot;: round((passed / total) * 100, 1) if total else 0.0}
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 9 -->
+            <section class="topic-section" id="9-docker--compose-templates-for-ai-projects-practicedockerfile" data-topic="9-docker--compose-templates-for-ai-projects-practicedockerfile">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">9</span>
+                        <h2 class="topic-title">Docker &amp; Compose Templates for AI Projects (<code>practice/*/Dockerfile</code>)<a class="headerlink" href="#9-docker--compose-templates-for-ai-projects-practicedockerfile" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="91-layer-cached-python-312-dockerfile">
+                    <h3 class="snippet-title">9.1. Layer-Cached Python 3.12 <code>Dockerfile</code><a class="headerlink" href="#91-layer-cached-python-312-dockerfile" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/04-ai-model-training-chromadb/Dockerfile</code></div>
+<pre><code class="language-dockerfile"># 1. Base image: official lightweight Python 3.12
+FROM python:3.12-slim
+
+# 2. Flush stdout immediately and prevent .pyc bytecode files
+ENV PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+WORKDIR /app
+
+# 3. Copy requirements.txt BEFORE source code so Docker caches the pip install layer
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# 4. Copy application scripts
+COPY *.py .
+</code></pre>
+                </div>
+                <div class="snippet-item" id="92-multi-service-docker-composeyml-app--chromadb--redis">
+                    <h3 class="snippet-title">9.2. Multi-Service <code>docker-compose.yml</code> (App + ChromaDB + Redis)<a class="headerlink" href="#92-multi-service-docker-composeyml-app--chromadb--redis" title="Permanent link">#</a></h3>
+                    <div class="source-tag"><span class="source-label">Source:</span> <code>practice/04-ai-model-training-chromadb/docker-compose.yml</code></div>
+<pre><code class="language-yaml">services:
+  app:
+    build: .
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      - CHROMA_HOST=chroma
+      - CHROMA_PORT=8000
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    depends_on:
+      - chroma
+      - redis
+    volumes:
+      - ./:/app
+
+  chroma:
+    image: chromadb/chroma:0.6.3
+    volumes:
+      - chroma_data:/chroma/chroma
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    volumes:
+      - agent_memory:/data
+    restart: unless-stopped
+
+volumes:
+  chroma_data:
+  agent_memory:
+</code></pre>
+                </div>
+                </div>
+            </section>
+
+            <!-- Section 10 -->
+            <section class="topic-section" id="10-quick-revision-cheatsheet" data-topic="10-quick-revision-cheatsheet">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="true">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">10</span>
+                        <h2 class="topic-title">Quick Revision Cheatsheet<a class="headerlink" href="#10-quick-revision-cheatsheet" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content">
+                <div class="snippet-item" id="101-practice-module-to-pattern-quick-map">
+                    <h3 class="snippet-title">10.1. Practice Module-to-Pattern Quick Map<a class="headerlink" href="#101-practice-module-to-pattern-quick-map" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong><code>01-python</code> (Python Core):</strong>
+    <ol class="snippet-sublist">
+      <li>Add explicit type hints (<code>str</code>, <code>int</code>, <code>list[str] | None</code>) to all functions—agent decorators inspect them to generate JSON schemas.</li>
+      <li>Use <code>asyncio.gather(*coros)</code> to execute multiple I/O-bound calls concurrently in <code>max(delays)</code> time instead of <code>sum(delays)</code>.</li>
+    </ol>
+  </li>
+  <li><strong><code>02-ai-basics</code> (LLMs, LCEL &amp; Agents):</strong>
+    <ol class="snippet-sublist">
+      <li>Direct SDK call: <code>client.chat.completions.create(model=..., messages=[...])</code>.</li>
+      <li>LangChain LCEL pipe: <code>chain = prompt | model | StrOutputParser()</code> invoked via <code>chain.invoke({&quot;key&quot;: val})</code>.</li>
+      <li>Multi-turn chat: insert <code>MessagesPlaceholder(&quot;history&quot;)</code> into <code>ChatPromptTemplate.from_messages(...)</code> and append <code>(&quot;human&quot;, q)</code> + <code>(&quot;ai&quot;, a)</code> after each turn.</li>
+      <li>Raw tool loop: Model returns <code>msg.tool_calls</code> &rarr; append <code>msg</code> to <code>messages</code> &rarr; run local Python function &rarr; append <code>{&quot;role&quot;: &quot;tool&quot;, &quot;tool_call_id&quot;: call.id, &quot;content&quot;: result}</code> &rarr; call LLM again.</li>
+    </ol>
+  </li>
+  <li><strong><code>03-ai-rag-chroma</code> (Chunking, Embeddings &amp; Local RAG):</strong>
+    <ol class="snippet-sublist">
+      <li>Chunking: <code>RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=40).split_text(text)</code> splits on paragraphs/lines/spaces while preserving boundary context.</li>
+      <li>Local CPU Embeddings: <code>SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)</code> encodes text into 384-dim vectors locally without an API key.</li>
+      <li>Cosine Similarity: <code>dot(v1, v2) / (norm(v1) * norm(v2))</code> (ranges from <code>-1.0</code> to <code>1.0</code>).</li>
+    </ol>
+  </li>
+  <li><strong><code>04-ai-model-training-chromadb</code> (ML, Chroma Server &amp; Redis):</strong>
+    <ol class="snippet-sublist">
+      <li>Tabular ML: Fit <code>RandomForestRegressor</code>, save with <code>joblib.dump(model, path)</code>, validate inputs via <code>pydantic.BaseModel</code>, and infer with <code>model.predict(pd.DataFrame([validated.model_dump()]))</code>.</li>
+      <li>ChromaDB Server vs. Local: Use <code>chromadb.HttpClient(host, port)</code> with a <code>client.heartbeat()</code> retry loop in Docker Compose, falling back to <code>chromadb.EphemeralClient()</code> locally.</li>
+      <li>Redis Session Memory: Persist JSON messages per session via <code>r.rpush(f&quot;history:{session_id}&quot;, json.dumps(msg))</code> and read via <code>r.lrange(key, 0, -1)</code>.</li>
+    </ol>
+  </li>
+  <li><strong><code>05-ai-aws-strands</code> (AWS Bedrock, Strands &amp; LangGraph):</strong>
+    <ol class="snippet-sublist">
+      <li>Strands Agent: <code>Agent(model=BedrockModel(model_id=&quot;amazon.nova-lite-v1:0&quot;), tools=[...], system_prompt=...)</code>.</li>
+      <li>LangGraph ReAct Agent: <code>create_react_agent(model=init_chat_model(model_id, model_provider=&quot;bedrock_converse&quot;), tools=[...])</code>.</li>
+      <li>Shared-Resource Tools: Group <code>@tool</code> methods inside a class (<code>ResourceTools</code>) so they share a single connection pool or state dict (<code>self.records</code>).</li>
+      <li>Parallel Async Tools: Define <code>@tool async def my_tool(...)</code> and invoke via <code>await agent.invoke_async(prompt)</code>.</li>
+      <li>Unattended Consent: Set <code>os.environ[&quot;BYPASS_TOOL_CONSENT&quot;] = &quot;true&quot;</code> when running write or cloud tools (<code>file_write</code>, <code>use_aws</code>) in automated pipelines.</li>
+    </ol>
+  </li>
+  <li><strong><code>06-ai-systems</code> (Prompting, Sycophancy &amp; Multi-Judge Pipelines):</strong>
+    <ol class="snippet-sublist">
+      <li>Prompting Trade-off: Zero-Shot and Few-Shot Chain-of-Thought (<code>&quot;Think step by step...&quot;</code>) increase multi-step accuracy at the cost of extra completion tokens and latency.</li>
+      <li>Adversarial Pushback Resilience: Models can capitulate under user pressure; append a strict <code>VERDICT: &lt;options&gt;</code> instruction and test across multiple pushback turns.</li>
+      <li>Multi-Judge Voting Pipeline: Separate <strong>Atomic Claim Extraction</strong> (LLM) &rarr; <strong>Parallel Multi-Provider Adjudication</strong> (<code>ThreadPoolExecutor</code> voting <code>UPHELD</code> / <code>REJECTED</code> / <code>ESCALATE</code>) &rarr; <strong>Deterministic Pricing &amp; Cap Gate</strong> (Pure Python).</li>
+    </ol>
+  </li>
+  <li><strong><code>07-ai-reliability</code> (Determinism, Schemas &amp; Error Injection):</strong>
+    <ol class="snippet-sublist">
+      <li>Structured Outputs: Pass <code>response_format={&quot;type&quot;: &quot;json_schema&quot;, &quot;json_schema&quot;: {&quot;name&quot;: &quot;...&quot;, &quot;strict&quot;: True, &quot;schema&quot;: SCHEMA}}</code> with <code>&quot;additionalProperties&quot;: False</code> for 100% valid JSON.</li>
+      <li>Tool Routing Calibration: Pair <strong>descriptive function names</strong> with <strong>tight, boundary-explicit docstrings</strong> (<code>&quot;Use ONLY when...&quot;</code>).</li>
+      <li>Tool Error Transparency: Catch tool exceptions into structured dicts (<code>{&quot;error&quot;: &quot;SERVICE_UNAVAILABLE&quot;, &quot;http_status&quot;: 503}</code>) and instruct the system prompt to report error codes explicitly without guessing.</li>
+    </ol>
+  </li>
+  <li><strong><code>08-ai-mcp-evals</code> (Model Context Protocol &amp; Evals):</strong>
+    <ol class="snippet-sublist">
+      <li>FastMCP Server: Decorate tools with <code>@mcp.tool(description=...)</code>, annotate args with <code>Field(description=...)</code>, log <strong>only to <code>sys.stderr</code></strong>, and run via <code>mcp.run(transport=&quot;stdio&quot;)</code>.</li>
+      <li>MCP Client Flow: <code>async with stdio_client(server) as (read, write):</code> &rarr; <code>async with ClientSession(read, write) as session:</code> &rarr; <code>await session.initialize()</code> &rarr; <code>await session.list_tools()</code> &rarr; <code>await session.call_tool(name, args)</code>.</li>
+      <li>Two-Part Agent Evals: Assert both <strong>tool routing</strong> (<code>expected_tool in tools_used</code> or <code>tools_used == []</code>) and <strong>ground-truth facts</strong> (<code>all(token in answer for token in must_contain)</code>).</li>
+    </ol>
+  </li>
+</ol>
+                </div>
+                <div class="snippet-item" id="102-llm-provider--framework-selection-rules">
+                    <h3 class="snippet-title">10.2. LLM Provider &amp; Framework Selection Rules<a class="headerlink" href="#102-llm-provider--framework-selection-rules" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong>OpenAI (<code>gpt-4o-mini</code>):</strong> Default choice for strict <code>json_schema</code> structured outputs, LCEL chains, and grounded RAG synthesis (<code>base_url=&quot;https://api.openai.com/v1&quot;</code>).
+  </li>
+  <li><strong>Groq (<code>llama-3.3-70b-versatile</code> / <code>openai/gpt-oss-20b</code>):</strong> Best for low-latency ReAct tool loops and MCP agents (<code>base_url=&quot;https://api.groq.com/openai/v1&quot;</code>).
+  </li>
+  <li><strong>Google Gemini (<code>gemini-3.6-flash</code>):</strong> Ideal as an independent cross-provider seat in a multi-judge voting panel (<code>base_url=&quot;https://generativelanguage.googleapis.com/v1beta/openai/&quot;</code>).
+  </li>
+  <li><strong>Amazon Bedrock (<code>amazon.nova-lite-v1:0</code>):</strong> Default for AWS IAM-authenticated workloads using <code>strands-agents</code> or <code>langchain-aws</code> (<code>bedrock_converse</code>).
+  </li>
+</ol>
+                </div>
+                <div class="snippet-item" id="103-tool-calling--agent-architecture-golden-rules">
+                    <h3 class="snippet-title">10.3. Tool-Calling &amp; Agent Architecture Golden Rules<a class="headerlink" href="#103-tool-calling--agent-architecture-golden-rules" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong>LLM vs. Python Split:</strong> Use LLMs only for unstructured text (extract, classify, route, draft); keep all math, scoring, thresholds, and caps in pure Python functions.
+  </li>
+  <li><strong>3 Mandatory Ingredients of Any Tool:</strong>
+    <ol class="snippet-sublist">
+      <li>Decorator (<code>@tool</code> or <code>@mcp.tool()</code>).</li>
+      <li>Explicit Python type hints (<code>item_id: str, count: int = 1 -&gt; dict</code>).</li>
+      <li>Specific docstring stating <strong>what</strong> the tool returns and <strong>when</strong> (and when <em>not</em>) to invoke it.</li>
+    </ol>
+  </li>
+  <li><strong>Bounded Agent Loops:</strong> Always cap custom tool loops (<code>for _ in range(5):</code>) so a confused model cannot call tools forever.
+  </li>
+  <li><strong>Single-Purpose Tools:</strong> Create small, focused tools that compose together rather than one monolithic function.
+  </li>
+</ol>
+                </div>
+                <div class="snippet-item" id="104-rag-embeddings--memory-checklist">
+                    <h3 class="snippet-title">10.4. RAG, Embeddings &amp; Memory Checklist<a class="headerlink" href="#104-rag-embeddings--memory-checklist" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong>Chunking Defaults:</strong> Start with <code>chunk_size=300</code> and <code>chunk_overlap=40</code> (<code>~15%</code> overlap) using <code>RecursiveCharacterTextSplitter</code>.
+  </li>
+  <li><strong>Strict Grounding Prompt:</strong> Always instruct the RAG model: <em>&quot;Answer using ONLY the context below. If the context does not contain the answer, say you do not know.&quot;</em> and set <code>temperature=0</code>.
+  </li>
+  <li><strong>Idempotent Vector Upserts:</strong> Use deterministic chunk IDs (<code>f&quot;{filename}::{chunk_idx}&quot;</code>) with <code>collection.upsert(...)</code> to prevent duplicate entries on re-runs.
+  </li>
+  <li><strong>Session Isolation:</strong> Namespace Redis conversation keys by <code>f&quot;history:{session_id}&quot;</code> and set a TTL (<code>r.expire(key, 3600)</code>).
+  </li>
+</ol>
+                </div>
+                <div class="snippet-item" id="105-reliability-guardrails--evaluation-checklist">
+                    <h3 class="snippet-title">10.5. Reliability, Guardrails &amp; Evaluation Checklist<a class="headerlink" href="#105-reliability-guardrails--evaluation-checklist" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong>Enforce Schemas via API:</strong> Use <code>response_format={&quot;type&quot;: &quot;json_schema&quot;, ...}</code> with <code>strict: True</code> and <code>additionalProperties: False</code> instead of relying on prompt instructions alone.
+  </li>
+  <li><strong>3-Way Evidence Rulings:</strong> In adjudication prompts, require one of <code>UPHELD</code> (supported by evidence), <code>REJECTED</code> (contradicted by evidence), or <code>ESCALATE</code> (evidence is missing/ambiguous).
+  </li>
+  <li><strong>Targeted Retries:</strong> Retry transient <code>429</code>, <code>500</code>, and <code>503</code> errors with exponential backoff (<code>time.sleep(2**attempt * 2)</code>), and fail fast on <code>401</code>, <code>404</code>, or quota errors.
+  </li>
+  <li><strong>Dual Evaluation Assertions:</strong> Every automated agent test case should verify both <strong>trajectory</strong> (was the right tool called?) and <strong>outcome</strong> (does the final answer contain the required facts?).
+  </li>
+</ol>
+                </div>
+                <div class="snippet-item" id="106-essential-one-liners--cli-commands">
+                    <h3 class="snippet-title">10.6. Essential One-Liners &amp; CLI Commands<a class="headerlink" href="#106-essential-one-liners--cli-commands" title="Permanent link">#</a></h3>
+                    <ol class="snippet-list">
+  <li><strong>Load nearest <code>.env</code> file automatically:</strong> <code>from dotenv import find_dotenv, load_dotenv; load_dotenv(find_dotenv())</code>
+  </li>
+  <li><strong>Run any service in Docker Compose (loads <code>.env</code> &amp; mounts code):</strong> <code>docker compose run --rm &lt;service_name&gt;</code>
+  </li>
+  <li><strong>Rebuild Docker image after changing <code>requirements.txt</code>:</strong> <code>docker compose run --rm --build &lt;service_name&gt;</code>
+  </li>
+  <li><strong>Stop background ChromaDB / Redis containers and wipe volumes:</strong> <code>docker compose down -v</code>
+  </li>
+  <li><strong>Log inside an MCP <code>stdio</code> server without corrupting JSON-RPC stdout:</strong> <code>print(&quot;[mcp-server] debug message&quot;, file=sys.stderr)</code>
+  </li>
+</ol>
+                </div>
+                </div>
+            </section>
+
+            <footer class="study-footer">
+                <p>&copy; TechToday &mdash; AI Reusable Code Snippets &amp; Architecture Reference</p>
+            </footer>
+        </article>
+    </main>
+
+    <button class="back-to-top" aria-label="Back to top">↑</button>
+
+    <script src="ai-study.js"></script>
+</body>
+
+</html>
