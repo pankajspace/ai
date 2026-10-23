@@ -1833,7 +1833,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. [ ] Whole words are always cheaper to process than tokens
    3. [ ] Sub-word tokens eliminate the need for a context window
    4. [ ] Sub-word tokens make the model completely bug-free
-   5. **Why Option 1 is correct & others are wrong:** Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (`"token"` + `"ization"`), keeping the vocabulary compact (~50k–100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.
+   **Explanation:** Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (`"token"` + `"ization"`), keeping the vocabulary compact (~50k–100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.
 
 ### 11.5. MCQ 2: Chain vs. Agent
 
@@ -1842,7 +1842,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. [ ] An agent always needs a vector database, a chain never does
    3. **[x] A chain follows a fixed sequence of steps; an agent decides on its own, at runtime, whether to call a tool** *(Correct)*
    4. [ ] There is no real difference — they are just two names for the same thing
-   5. **Why Option 3 is correct & others are wrong:** A **chain** is a deterministic, developer-hardcoded pipeline (`prompt | llm | output_parser`) where every input flows through the exact same sequence. An **agent** uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).
+   **Explanation:** A **chain** is a deterministic, developer-hardcoded pipeline (`prompt | llm | output_parser`) where every input flows through the exact same sequence. An **agent** uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).
 
 ### 11.6. MCQ 3: Output Parser (`StrOutputParser`)
 
@@ -1851,7 +1851,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. [ ] It stores conversation memory across sessions
    3. [ ] It converts a prompt template's blanks into actual text
    4. **[x] It unwraps the model's response package and hands back just the plain text string** *(Correct)*
-   5. **Why Option 4 is correct & others are wrong:** Chat models return a rich message object (`AIMessage`) containing `.content` plus metadata, token counts, and tool calls. `StrOutputParser` at the end of `prompt | llm | StrOutputParser()` extracts just the plain `.content` string. Document loaders fetch websites, memory/checkpointers store history, and `ChatPromptTemplate` fills template variables at the start of the chain.
+   **Explanation:** Chat models return a rich message object (`AIMessage`) containing `.content` plus metadata, token counts, and tool calls. `StrOutputParser` at the end of `prompt | llm | StrOutputParser()` extracts just the plain `.content` string. Document loaders fetch websites, memory/checkpointers store history, and `ChatPromptTemplate` fills template variables at the start of the chain.
 
 ### 11.7. MCQ 4: Chunk Overlap Boundary (`chunk_overlap`)
 
@@ -1860,7 +1860,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. **[x] To ensure a sentence sitting at a chunk boundary isn't split and missed entirely** *(Correct)*
    3. [ ] To reduce the number of tokens billed per API call
    4. [ ] To automatically translate text into multiple languages
-   5. **Why Option 2 is correct & others are wrong:** Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. `chunk_overlap` slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).
+   **Explanation:** Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. `chunk_overlap` slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).
 
 ### 11.8. MCQ 5: Cloud LLM Access (Three Gates)
 
@@ -1869,7 +1869,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. [ ] Internet connection, RAM, and CPU speed
    3. [ ] Python version, pip version, and OS type
    4. [ ] Framework version, UI library version, and API key
-   5. **Why Option 1 is correct & others are wrong:** Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: **Gate 1 — Credentials** (authentication proving identity), **Gate 2 — IAM Permission** (authorization policy such as `bedrock:InvokeModel` / `bedrock:Converse`), and **Gate 3 — Model Access** (per-region model subscription enabled in the target AWS region).
+   **Explanation:** Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: **Gate 1 — Credentials** (authentication proving identity), **Gate 2 — IAM Permission** (authorization policy such as `bedrock:InvokeModel` / `bedrock:Converse`), and **Gate 3 — Model Access** (per-region model subscription enabled in the target AWS region).
 
 ### 11.9. MCQ 6: Function to Tool (`@tool`)
 
@@ -1878,7 +1878,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    2. [ ] An API key, a region name, and a session object
    3. [ ] A Gradio interface, a vector store, and an embedding model
    4. **[x] A decorator marking it as a tool, type hints, and a clear docstring** *(Correct)*
-   5. **Why Option 4 is correct & others are wrong:** Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the `@tool` decorator to register the function, (2) **type hints** (`param: str -> dict`) to auto-generate the JSON Schema of parameter names and types, and (3) a **clear docstring** (`"""..."""`) injected into the model prompt so the LLM knows *what* the tool does and *when* to call it.
+   **Explanation:** Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the `@tool` decorator to register the function, (2) **type hints** (`param: str -> dict`) to auto-generate the JSON Schema of parameter names and types, and (3) a **clear docstring** (`"""..."""`) injected into the model prompt so the LLM knows *what* the tool does and *when* to call it.
 
 ### 11.10. MCQ 7: Bi-Encoder vs. Cross-Encoder Reranking
 
@@ -1888,7 +1888,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    3. **[x] Cross-encoders process the query and document together, giving higher accuracy but at slower speed** *(Correct)*
    4. [ ] Bi-encoders always produce more accurate rankings than cross-encoders
    5. **[x] Cross-encoder scores cannot be precomputed because each score is pair-specific** *(Correct)*
-   6. **Explanation:** **Bi-encoders ("5-Second Resume Scan")** embed documents once offline into a vector DB and quickly retrieve the initial top 50–100 candidates via cosine similarity. **Cross-encoders ("30-Minute In-Depth Interview")** pass `[CLS] query [SEP] document [SEP]` jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every `(query, doc)` pair requires a live forward pass, scores cannot be precomputed and are only run on the 50–100 candidate shortlist.
+   **Explanation:** **Bi-encoders ("5-Second Resume Scan")** embed documents once offline into a vector DB and quickly retrieve the initial top 50–100 candidates via cosine similarity. **Cross-encoders ("30-Minute In-Depth Interview")** pass `[CLS] query [SEP] document [SEP]` jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every `(query, doc)` pair requires a live forward pass, scores cannot be precomputed and are only run on the 50–100 candidate shortlist.
 
 ### 11.11. MCQ 8: Hybrid Search (BM25 + Vector Search & RRF)
 
@@ -1898,7 +1898,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    3. [ ] Hybrid search eliminates the need for an LLM in the final answer generation step
    4. **[x] Reciprocal Rank Fusion (RRF) merges the two ranked lists into one combined ranking** *(Correct)*
    5. [ ] BM25 is better than vector search at understanding synonyms
-   6. **Explanation:** **BM25 ("Keyword Librarian")** uses lexical TF-IDF matching that shines on exact strings (`SKU-9981`, error codes, legal clauses) but fails on synonyms. **Vector search ("Meaning Librarian")** maps paraphrases and synonyms close together in embedding space. **Reciprocal Rank Fusion (RRF)** combines both ranked lists by rank position ($\sum \frac{1}{k + \text{rank}}$), and the LLM is still required at the end to synthesize the final grounded answer.
+   **Explanation:** **BM25 ("Keyword Librarian")** uses lexical TF-IDF matching that shines on exact strings (`SKU-9981`, error codes, legal clauses) but fails on synonyms. **Vector search ("Meaning Librarian")** maps paraphrases and synonyms close together in embedding space. **Reciprocal Rank Fusion (RRF)** combines both ranked lists by rank position ($\sum \frac{1}{k + \text{rank}}$), and the LLM is still required at the end to synthesize the final grounded answer.
 
 ### 11.12. MCQ 9: Retrieval-Based Chatbot vs. True Agent
 
@@ -1908,4 +1908,4 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
    3. [ ] A retrieval-based chatbot can also directly modify a database record when asked
    4. [ ] An agent cannot use retrieval as part of its workflow
    5. **[x] Retrieval answers questions; agents accomplish goals** *(Correct)*
-   6. **Explanation:** A **retrieval-based chatbot (RAG)** is a read-only pipeline that fetches documents to answer questions. A **true agent** runs an autonomous **ReAct loop** (`reason -> act -> observe -> repeat`), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (**Agentic RAG**) to accomplish multi-step goals.
+   **Explanation:** A **retrieval-based chatbot (RAG)** is a read-only pipeline that fetches documents to answer questions. A **true agent** runs an autonomous **ReAct loop** (`reason -> act -> observe -> repeat`), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (**Agentic RAG**) to accomplish multi-step goals.

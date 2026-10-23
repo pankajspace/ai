@@ -2947,8 +2947,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] Whole words are always cheaper to process than tokens</li>
                                         <li>[ ] Sub-word tokens eliminate the need for a context window</li>
                                         <li>[ ] Sub-word tokens make the model completely bug-free</li>
-                                        <li><strong>Why Option 1 is correct &amp; others are wrong:</strong> Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (<code>&quot;token&quot;</code> + <code>&quot;ization&quot;</code>), keeping the vocabulary compact (~50k&ndash;100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (<code>&quot;token&quot;</code> + <code>&quot;ization&quot;</code>), keeping the vocabulary compact (~50k&ndash;100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -2980,8 +2982,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] An agent always needs a vector database, a chain never does</li>
                                         <li><strong>[x] A chain follows a fixed sequence of steps; an agent decides on its own, at runtime, whether to call a tool</strong> <em>(Correct)</em></li>
                                         <li>[ ] There is no real difference &mdash; they are just two names for the same thing</li>
-                                        <li><strong>Why Option 3 is correct &amp; others are wrong:</strong> A <strong>chain</strong> is a deterministic, developer-hardcoded pipeline (<code>prompt | llm | output_parser</code>) where every input flows through the exact same sequence. An <strong>agent</strong> uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> A <strong>chain</strong> is a deterministic, developer-hardcoded pipeline (<code>prompt | llm | output_parser</code>) where every input flows through the exact same sequence. An <strong>agent</strong> uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3013,8 +3017,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] It stores conversation memory across sessions</li>
                                         <li>[ ] It converts a prompt template&#x27;s blanks into actual text</li>
                                         <li><strong>[x] It unwraps the model&#x27;s response package and hands back just the plain text string</strong> <em>(Correct)</em></li>
-                                        <li><strong>Why Option 4 is correct &amp; others are wrong:</strong> Chat models return a rich message object (<code>AIMessage</code>) containing <code>.content</code> plus metadata, token counts, and tool calls. <code>StrOutputParser</code> at the end of <code>prompt | llm | StrOutputParser()</code> extracts just the plain <code>.content</code> string. Document loaders fetch websites, memory/checkpointers store history, and <code>ChatPromptTemplate</code> fills template variables at the start of the chain.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> Chat models return a rich message object (<code>AIMessage</code>) containing <code>.content</code> plus metadata, token counts, and tool calls. <code>StrOutputParser</code> at the end of <code>prompt | llm | StrOutputParser()</code> extracts just the plain <code>.content</code> string. Document loaders fetch websites, memory/checkpointers store history, and <code>ChatPromptTemplate</code> fills template variables at the start of the chain.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3046,8 +3052,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li><strong>[x] To ensure a sentence sitting at a chunk boundary isn&#x27;t split and missed entirely</strong> <em>(Correct)</em></li>
                                         <li>[ ] To reduce the number of tokens billed per API call</li>
                                         <li>[ ] To automatically translate text into multiple languages</li>
-                                        <li><strong>Why Option 2 is correct &amp; others are wrong:</strong> Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. <code>chunk_overlap</code> slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. <code>chunk_overlap</code> slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3079,8 +3087,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] Internet connection, RAM, and CPU speed</li>
                                         <li>[ ] Python version, pip version, and OS type</li>
                                         <li>[ ] Framework version, UI library version, and API key</li>
-                                        <li><strong>Why Option 1 is correct &amp; others are wrong:</strong> Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: <strong>Gate 1 &mdash; Credentials</strong> (authentication proving identity), <strong>Gate 2 &mdash; IAM Permission</strong> (authorization policy such as <code>bedrock:InvokeModel</code> / <code>bedrock:Converse</code>), and <strong>Gate 3 &mdash; Model Access</strong> (per-region model subscription enabled in the target AWS region).</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: <strong>Gate 1 &mdash; Credentials</strong> (authentication proving identity), <strong>Gate 2 &mdash; IAM Permission</strong> (authorization policy such as <code>bedrock:InvokeModel</code> / <code>bedrock:Converse</code>), and <strong>Gate 3 &mdash; Model Access</strong> (per-region model subscription enabled in the target AWS region).</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3112,8 +3122,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] An API key, a region name, and a session object</li>
                                         <li>[ ] A Gradio interface, a vector store, and an embedding model</li>
                                         <li><strong>[x] A decorator marking it as a tool, type hints, and a clear docstring</strong> <em>(Correct)</em></li>
-                                        <li><strong>Why Option 4 is correct &amp; others are wrong:</strong> Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the <code>@tool</code> decorator to register the function, (2) <strong>type hints</strong> (<code>param: str -&gt; dict</code>) to auto-generate the JSON Schema of parameter names and types, and (3) a <strong>clear docstring</strong> (<code>&quot;&quot;&quot;...&quot;&quot;&quot;</code>) injected into the model prompt so the LLM knows <em>what</em> the tool does and <em>when</em> to call it.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the <code>@tool</code> decorator to register the function, (2) <strong>type hints</strong> (<code>param: str -&gt; dict</code>) to auto-generate the JSON Schema of parameter names and types, and (3) a <strong>clear docstring</strong> (<code>&quot;&quot;&quot;...&quot;&quot;&quot;</code>) injected into the model prompt so the LLM knows <em>what</em> the tool does and <em>when</em> to call it.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3146,8 +3158,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li><strong>[x] Cross-encoders process the query and document together, giving higher accuracy but at slower speed</strong> <em>(Correct)</em></li>
                                         <li>[ ] Bi-encoders always produce more accurate rankings than cross-encoders</li>
                                         <li><strong>[x] Cross-encoder scores cannot be precomputed because each score is pair-specific</strong> <em>(Correct)</em></li>
-                                        <li><strong>Explanation:</strong> <strong>Bi-encoders (&quot;5-Second Resume Scan&quot;)</strong> embed documents once offline into a vector DB and quickly retrieve the initial top 50&ndash;100 candidates via cosine similarity. <strong>Cross-encoders (&quot;30-Minute In-Depth Interview&quot;)</strong> pass <code>[CLS] query [SEP] document [SEP]</code> jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every <code>(query, doc)</code> pair requires a live forward pass, scores cannot be precomputed and are only run on the 50&ndash;100 candidate shortlist.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> <strong>Bi-encoders (&quot;5-Second Resume Scan&quot;)</strong> embed documents once offline into a vector DB and quickly retrieve the initial top 50&ndash;100 candidates via cosine similarity. <strong>Cross-encoders (&quot;30-Minute In-Depth Interview&quot;)</strong> pass <code>[CLS] query [SEP] document [SEP]</code> jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every <code>(query, doc)</code> pair requires a live forward pass, scores cannot be precomputed and are only run on the 50&ndash;100 candidate shortlist.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3180,8 +3194,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] Hybrid search eliminates the need for an LLM in the final answer generation step</li>
                                         <li><strong>[x] Reciprocal Rank Fusion (RRF) merges the two ranked lists into one combined ranking</strong> <em>(Correct)</em></li>
                                         <li>[ ] BM25 is better than vector search at understanding synonyms</li>
-                                        <li><strong>Explanation:</strong> <strong>BM25 (&quot;Keyword Librarian&quot;)</strong> uses lexical TF-IDF matching that shines on exact strings (<code>SKU-9981</code>, error codes, legal clauses) but fails on synonyms. <strong>Vector search (&quot;Meaning Librarian&quot;)</strong> maps paraphrases and synonyms close together in embedding space. <strong>Reciprocal Rank Fusion (RRF)</strong> combines both ranked lists by rank position (<code>sum(1 / (k + rank))</code>), and the LLM is still required at the end to synthesize the final grounded answer.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> <strong>BM25 (&quot;Keyword Librarian&quot;)</strong> uses lexical TF-IDF matching that shines on exact strings (<code>SKU-9981</code>, error codes, legal clauses) but fails on synonyms. <strong>Vector search (&quot;Meaning Librarian&quot;)</strong> maps paraphrases and synonyms close together in embedding space. <strong>Reciprocal Rank Fusion (RRF)</strong> combines both ranked lists by rank position (<code>sum(1 / (k + rank))</code>), and the LLM is still required at the end to synthesize the final grounded answer.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
@@ -3214,8 +3230,10 @@ def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
                                         <li>[ ] A retrieval-based chatbot can also directly modify a database record when asked</li>
                                         <li>[ ] An agent cannot use retrieval as part of its workflow</li>
                                         <li><strong>[x] Retrieval answers questions; agents accomplish goals</strong> <em>(Correct)</em></li>
-                                        <li><strong>Explanation:</strong> A <strong>retrieval-based chatbot (RAG)</strong> is a read-only pipeline that fetches documents to answer questions. A <strong>true agent</strong> runs an autonomous <strong>ReAct loop</strong> (<code>reason -&gt; act -&gt; observe -&gt; repeat</code>), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (<strong>Agentic RAG</strong>) to accomplish multi-step goals.</li>
-                                    </ol>
+                                        </ol>
+                                    <div class="callout callout-tip">
+                                        <p><strong>Explanation:</strong> A <strong>retrieval-based chatbot (RAG)</strong> is a read-only pipeline that fetches documents to answer questions. A <strong>true agent</strong> runs an autonomous <strong>ReAct loop</strong> (<code>reason -&gt; act -&gt; observe -&gt; repeat</code>), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (<strong>Agentic RAG</strong>) to accomplish multi-step goals.</p>
+                                    </div>
                                 </li>
                             </ol>
                         </div>
