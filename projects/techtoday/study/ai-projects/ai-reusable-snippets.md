@@ -90,6 +90,8 @@ A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering 
 
 ### 1.1. Type Hints, Optional/Union & Unpacking
 
+Source: `02-type-hints.py`, `12-unpacking.py`
+
 ```python
 from typing import Any
 
@@ -117,6 +119,8 @@ config = {**defaults, **overrides}
 
 ### 1.2. Comprehensions, Filtering & Multi-Key Sorting
 
+Source: `11-sorting.py`, `13-list-comprehensions.py`
+
 ```python
 # 1. List and dictionary comprehensions with conditional filtering
 records = [("id_1", 0.88), ("id_2", 0.42), ("id_3", 0.95)]
@@ -134,6 +138,8 @@ ranked = sorted(items, key=lambda x: (-x["count"], -x["score"]))
 
 ### 1.3. Defensive Error Handling Wrapper
 
+Source: `04-error-handling.py`
+
 ```python
 from typing import Any, Callable
 
@@ -148,6 +154,8 @@ def safe_execute(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> dict[str,
 ```
 
 ### 1.4. Stateful OOP Resource Class Template
+
+Source: `16-oop.py`
 
 ```python
 from typing import Any
@@ -171,6 +179,8 @@ class StatefulStore:
 ```
 
 ### 1.5. Async I/O Concurrency (`asyncio.gather` & `create_task`)
+
+Source: `15-async-await.py`
 
 ```python
 import asyncio
@@ -205,6 +215,8 @@ if __name__ == "__main__":
 ## 2. Multi-Provider LLM Clients & LangChain Basics
 
 ### 2.1. Multi-Provider OpenAI-Compatible Client (`OpenAI`, `Groq`, `Gemini`)
+
+Source: `01_chat_openai.py`, `02_chat_groq.py`
 
 ```python
 import os
@@ -249,6 +261,8 @@ answer = response.choices[0].message.content
 
 ### 2.2. LangChain LCEL Pipe Chain (`prompt | model | parser`)
 
+Source: `03_langchain_summarizer.py`
+
 ```python
 import os
 from dotenv import find_dotenv, load_dotenv
@@ -281,6 +295,8 @@ output = chain.invoke({
 ```
 
 ### 2.3. Stateful Multi-Turn Chat (`MessagesPlaceholder`)
+
+Source: `04_langchain_memory_chat.py`
 
 ```python
 import os
@@ -316,6 +332,8 @@ def run_chat_turn(user_input: str) -> str:
 ```
 
 ### 2.4. Raw OpenAI Tool-Calling Loop (No Framework)
+
+Source: `05_agent_one_tool.py`
 
 ```python
 import json
@@ -380,6 +398,8 @@ def run_raw_agent(user_query: str, max_turns: int = 5) -> str:
 ```
 
 ### 2.5. LangChain Multi-Tool Agent with Swappable Provider & Trace
+
+Source: `06_langchain_one_tool.py`, `07_langchain_multi_tools.py`
 
 ```python
 import os
@@ -451,6 +471,8 @@ def estimate_token_cost(text: str, price_per_million: float) -> dict:
 
 ### 3.1. Sliding-Window Document Chunking (`RecursiveCharacterTextSplitter`)
 
+Source: `01_chunking.py`
+
 ```python
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 
@@ -464,6 +486,8 @@ def chunk_document(text: str, chunk_size: int = 300, chunk_overlap: int = 40) ->
 ```
 
 ### 3.2. Local Sentence Embeddings & Cosine Similarity (`SentenceTransformer`)
+
+Source: `02_embedding.py`
 
 ```python
 from numpy import dot
@@ -481,6 +505,8 @@ def compute_cosine_similarity(text_a: str, text_b: str) -> float:
 ```
 
 ### 3.3. End-to-End Local Vector RAG (`HuggingFaceEmbeddings` + `Chroma`)
+
+Source: `03_rag.py`
 
 ```python
 import os
@@ -577,6 +603,8 @@ def reciprocal_rank_fusion(
 
 ### 4.1. Scikit-Learn Training, `joblib` Serialization & Pydantic Inference
 
+Source: `01_model_training.py`
+
 ```python
 from pathlib import Path
 import joblib
@@ -608,6 +636,8 @@ def predict_single(payload: dict, model_path: Path = MODEL_PATH) -> float:
 ```
 
 ### 4.2. ChromaDB HTTP/Ephemeral Client & Document Folder Ingestion
+
+Source: `02_chromadb.py`
 
 ```python
 import os
@@ -663,6 +693,8 @@ def retrieve_context(collection, query: str, n_results: int = 3) -> str:
 ```
 
 ### 4.3. Stateful Tool-Calling Agent with Redis Session Memory
+
+Source: `03_redis.py`
 
 ```python
 import json
@@ -742,6 +774,8 @@ def chat_with_session_memory(
 
 ### 5.1. Minimal AWS Strands Agent on Amazon Bedrock (`BedrockModel`)
 
+Source: `01_hello_world_agent.py`
+
 ```python
 import os
 from dotenv import find_dotenv, load_dotenv
@@ -762,6 +796,8 @@ print(response)
 ```
 
 ### 5.2. LangGraph Prebuilt ReAct Agent (`init_chat_model` + `create_react_agent`)
+
+Source: `02_hello_world_langgraph.py`
 
 ```python
 import os
@@ -792,6 +828,8 @@ for message in response["messages"]:
 
 ### 5.3. Function-to-Tool Pattern (`@tool` + Type Hints + Docstring)
 
+Source: `03_function_to_tool.py`, `04_tip_calculator.py`
+
 ```python
 from strands import Agent, tool
 from strands.models.bedrock import BedrockModel
@@ -820,6 +858,8 @@ agent = Agent(
 
 ### 5.4. Pre-Built Community Tools & Unattended Consent (`strands_tools`)
 
+Source: `07_prebuilt_tools.py`, `08_multi_prebuilt_tools.py`, `09_use_aws.py`
+
 ```python
 import os
 from strands import Agent
@@ -838,6 +878,8 @@ agent = Agent(
 ```
 
 ### 5.5. Class-Based Shared-Resource Tools
+
+Source: `10_class_based_tools.py`
 
 ```python
 from typing import Any
@@ -873,6 +915,8 @@ agent = Agent(
 
 ### 5.6. Async Parallel Tool Execution (`async def` + `invoke_async`)
 
+Source: `11_async_tools.py`
+
 ```python
 import asyncio
 from strands import Agent, tool
@@ -900,6 +944,8 @@ async def run_async_agent(prompt: str) -> str:
 ## 6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench
 
 ### 6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) & Answer Extraction
+
+Source: `01_prompting_strategies.py`
 
 ```python
 import re
@@ -946,6 +992,8 @@ def extract_final_answer(response_text: str) -> str:
 ```
 
 ### 6.2. Multi-Turn Adversarial Pushback Runner & Forced `VERDICT:` Scorer
+
+Source: `02_sycophancy_trap.py`
 
 ```python
 import re
@@ -997,6 +1045,8 @@ def score_verdict_token(
 ```
 
 ### 6.3. Multi-Judge Parallel Voting Bench & Deterministic Threshold Gate
+
+Source: `03_refund_bench.py`
 
 ```python
 from collections import Counter
@@ -1076,6 +1126,8 @@ def apply_approval_cap(approved_value: float, held_value: float, cap_limit: floa
 
 ### 7.1. Multi-Run Stochastic Accuracy Evaluator
 
+Source: `01_cot_vs_direct.py`
+
 ```python
 import time
 from typing import Callable
@@ -1110,6 +1162,8 @@ def evaluate_strategy_over_n_runs(
 ```
 
 ### 7.2. Enforced JSON Schema (`response_format`) & Exponential Backoff Retry
+
+Source: `02_variance_determinism.py`
 
 ```python
 import json
@@ -1167,6 +1221,8 @@ def call_structured_llm(
 
 ### 7.3. Forced Tool Routing Benchmark (`tool_choice="required"`)
 
+Source: `03_tool_schema_calibration.py`
+
 ```python
 from typing import Any
 
@@ -1200,6 +1256,8 @@ def select_routed_tool(client, model: str, query: str, tools: list[dict[str, Any
 
 ### 7.4. Structured Tool Error Payload & Anti-Hallucination System Prompt
 
+Source: `04_tool_error_injection.py`
+
 ```python
 from typing import Any, Callable
 
@@ -1225,6 +1283,8 @@ def call_tool_with_error_envelope(fn: Callable[..., Any], **kwargs: Any) -> dict
 ## 8. Model Context Protocol (MCP) & Agent Evals
 
 ### 8.1. FastMCP Tool Server over `stdio` (`FastMCP` & `@mcp.tool`)
+
+Source: `cricket_server.py`
 
 ```python
 import sys
@@ -1258,6 +1318,8 @@ if __name__ == "__main__":
 
 ### 8.2. Direct MCP Client Protocol Plumbing (No LLM)
 
+Source: `01_mcp_client.py`
+
 ```python
 import asyncio
 import sys
@@ -1290,6 +1352,8 @@ async def call_mcp_tool_directly(
 ```
 
 ### 8.3. MCP-Enabled LLM Agent (`to_openai_format` Bridge + Agent Loop)
+
+Source: `02_mcp_agent.py`
 
 ```python
 import json
@@ -1362,6 +1426,8 @@ async def run_mcp_agent(
 ```
 
 ### 8.4. Automated Agent Evaluation Suite (Routing + Fact Assertions)
+
+Source: `03_mcp_evals.py`
 
 ```python
 from typing import Any, Awaitable, Callable
