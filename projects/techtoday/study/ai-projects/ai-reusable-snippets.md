@@ -1,5 +1,4 @@
 <!--
-Source: ai-reusable-snippets.html
 Title: AI Reusable Code Snippets & Quick Revision Guide | TechToday
 Theme-color: #0b0d10
 Stylesheets: ai-snippets-study.css, ../../site-header.css
@@ -10,81 +9,86 @@ Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
 
 # AI Reusable Code Snippets & Quick Revision Guide
 
-A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering templates distilled from the `practice/` workspace modules (`01-python` through `08-ai-mcp-evals`) and the AI Infusion Test (`study/11-ai-infusion-test`). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
+A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering templates covering core Python idioms, LLM clients, LCEL chains, local RAG pipelines, agents, reliability testing, and evaluation patterns. All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
 
 ---
 
 ## Table of Contents (Index)
 
-1. [1. Python Fundamentals for AI Systems (`practice/01-python`)](#1-python-fundamentals-for-ai-systems)
+1. [1. Python Fundamentals for AI Systems](#1-python-fundamentals-for-ai-systems)
    1. [1.1. Type Hints, Optional/Union & Unpacking](#11-type-hints-optionalunion--unpacking)
    2. [1.2. Comprehensions, Filtering & Multi-Key Sorting](#12-comprehensions-filtering--multi-key-sorting)
    3. [1.3. Defensive Error Handling Wrapper](#13-defensive-error-handling-wrapper)
    4. [1.4. Stateful OOP Resource Class Template](#14-stateful-oop-resource-class-template)
    5. [1.5. Async I/O Concurrency (`asyncio.gather` & `create_task`)](#15-async-io-concurrency-asynciogather--create_task)
-2. [2. Multi-Provider LLM Clients & LangChain Basics (`practice/02-ai-basics`)](#2-multi-provider-llm-clients--langchain-basics)
+2. [2. Multi-Provider LLM Clients & LangChain Basics](#2-multi-provider-llm-clients--langchain-basics)
    1. [2.1. Multi-Provider OpenAI-Compatible Client (`OpenAI`, `Groq`, `Gemini`)](#21-multi-provider-openai-compatible-client-openai-groq-gemini)
    2. [2.2. LangChain LCEL Pipe Chain (`prompt | model | parser`)](#22-langchain-lcel-pipe-chain-prompt--model--parser)
    3. [2.3. Stateful Multi-Turn Chat (`MessagesPlaceholder`)](#23-stateful-multi-turn-chat-messagesplaceholder)
    4. [2.4. Raw OpenAI Tool-Calling Loop (No Framework)](#24-raw-openai-tool-calling-loop-no-framework)
    5. [2.5. LangChain Multi-Tool Agent with Swappable Provider & Trace](#25-langchain-multi-tool-agent-with-swappable-provider--trace)
    6. [2.6. Token Cost Estimator (`estimate_token_cost`)](#26-token-cost-estimator-estimate_token_cost)
-3. [3. Document Chunking, Embeddings & Local RAG (`practice/03-ai-rag-chroma`)](#3-document-chunking-embeddings--local-rag)
+3. [3. Document Chunking, Embeddings & Local RAG](#3-document-chunking-embeddings--local-rag)
    1. [3.1. Sliding-Window Document Chunking (`RecursiveCharacterTextSplitter`)](#31-sliding-window-document-chunking-recursivecharactertextsplitter)
    2. [3.2. Local Sentence Embeddings & Cosine Similarity (`SentenceTransformer`)](#32-local-sentence-embeddings--cosine-similarity-sentencetransformer)
    3. [3.3. End-to-End Local Vector RAG (`HuggingFaceEmbeddings` + `Chroma`)](#33-end-to-end-local-vector-rag-huggingfaceembeddings--chroma)
    4. [3.4. Top-K Semantic Similarity Search (`SentenceTransformer` & `util.cos_sim`)](#34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim)
    5. [3.5. Hybrid Search Reciprocal Rank Fusion (`reciprocal_rank_fusion`)](#35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion)
-4. [4. ML Model Training, ChromaDB Server & Redis Memory (`practice/04-ai-model-training-chromadb`)](#4-ml-model-training-chromadb-server--redis-memory)
+4. [4. ML Model Training, ChromaDB Server & Redis Memory](#4-ml-model-training-chromadb-server--redis-memory)
    1. [4.1. Scikit-Learn Training, `joblib` Serialization & Pydantic Inference](#41-scikit-learn-training-joblib-serialization--pydantic-inference)
    2. [4.2. ChromaDB HTTP/Ephemeral Client & Document Folder Ingestion](#42-chromadb-httpephemeral-client--document-folder-ingestion)
    3. [4.3. Stateful Tool-Calling Agent with Redis Session Memory](#43-stateful-tool-calling-agent-with-redis-session-memory)
-5. [5. AWS Bedrock, Strands Agents & LangGraph (`practice/05-ai-aws-strands`)](#5-aws-bedrock-strands-agents--langgraph)
+5. [5. AWS Bedrock, Strands Agents & LangGraph](#5-aws-bedrock-strands-agents--langgraph)
    1. [5.1. Minimal AWS Strands Agent on Amazon Bedrock (`BedrockModel`)](#51-minimal-aws-strands-agent-on-amazon-bedrock-bedrockmodel)
    2. [5.2. LangGraph Prebuilt ReAct Agent (`init_chat_model` + `create_react_agent`)](#52-langgraph-prebuilt-react-agent-init_chat_model--create_react_agent)
    3. [5.3. Function-to-Tool Pattern (`@tool` + Type Hints + Docstring)](#53-function-to-tool-pattern-tool--type-hints--docstring)
    4. [5.4. Pre-Built Community Tools & Unattended Consent (`strands_tools`)](#54-pre-built-community-tools--unattended-consent-strands_tools)
    5. [5.5. Class-Based Shared-Resource Tools](#55-class-based-shared-resource-tools)
    6. [5.6. Async Parallel Tool Execution (`async def` + `invoke_async`)](#56-async-parallel-tool-execution-async-def--invoke_async)
-6. [6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench (`practice/06-ai-systems`)](#6-ai-systems-prompting-sycophancy--multi-judge-bench)
+6. [6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench](#6-ai-systems-prompting-sycophancy--multi-judge-bench)
    1. [6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) & Answer Extraction](#61-prompting-strategies-direct-vs-zero-shot-cot-vs-few-shot-cot--answer-extraction)
    2. [6.2. Multi-Turn Adversarial Pushback Runner & Forced `VERDICT:` Scorer](#62-multi-turn-adversarial-pushback-runner--forced-verdict-scorer)
    3. [6.3. Multi-Judge Parallel Voting Bench & Deterministic Threshold Gate](#63-multi-judge-parallel-voting-bench--deterministic-threshold-gate)
-7. [7. AI Reliability: Determinism, Schema Calibration & Error Injection (`practice/07-ai-reliability`)](#7-ai-reliability-determinism-schema-calibration--error-injection)
+7. [7. AI Reliability: Determinism, Schema Calibration & Error Injection](#7-ai-reliability-determinism-schema-calibration--error-injection)
    1. [7.1. Multi-Run Stochastic Accuracy Evaluator](#71-multi-run-stochastic-accuracy-evaluator)
    2. [7.2. Enforced JSON Schema (`response_format`) & Exponential Backoff Retry](#72-enforced-json-schema-response_format--exponential-backoff-retry)
    3. [7.3. Forced Tool Routing Benchmark (`tool_choice="required"`)](#73-forced-tool-routing-benchmark-tool_choicerequired)
    4. [7.4. Structured Tool Error Payload & Anti-Hallucination System Prompt](#74-structured-tool-error-payload--anti-hallucination-system-prompt)
-8. [8. Model Context Protocol (MCP) & Agent Evals (`practice/08-ai-mcp-evals`)](#8-model-context-protocol-mcp--agent-evals)
+8. [8. Model Context Protocol (MCP) & Agent Evals](#8-model-context-protocol-mcp--agent-evals)
    1. [8.1. FastMCP Tool Server over `stdio` (`FastMCP` & `@mcp.tool`)](#81-fastmcp-tool-server-over-stdio-fastmcp--mcptool)
    2. [8.2. Direct MCP Client Protocol Plumbing (No LLM)](#82-direct-mcp-client-protocol-plumbing-no-llm)
    3. [8.3. MCP-Enabled LLM Agent (`to_openai_format` Bridge + Agent Loop)](#83-mcp-enabled-llm-agent-to_openai_format-bridge--agent-loop)
    4. [8.4. Automated Agent Evaluation Suite (Routing + Fact Assertions)](#84-automated-agent-evaluation-suite-routing--fact-assertions)
-9. [9. Docker & Compose Templates for AI Projects (`practice/*/Dockerfile`)](#9-docker--compose-templates-for-ai-projects)
+9. [9. Docker & Compose Templates for AI Projects](#9-docker--compose-templates-for-ai-projects)
    1. [9.1. Layer-Cached Python 3.12 `Dockerfile`](#91-layer-cached-python-312-dockerfile)
    2. [9.2. Multi-Service `docker-compose.yml` (App + ChromaDB + Redis)](#92-multi-service-docker-composeyml-app--chromadb--redis)
 10. [10. Quick Revision Cheatsheet](#10-quick-revision-cheatsheet)
-    1. [10.1. Practice Module-to-Pattern Quick Map](#101-practice-module-to-pattern-quick-map)
+    1. [10.1. Architecture Pattern Quick Map](#101-architecture-pattern-quick-map)
     2. [10.2. LLM Provider & Framework Selection Rules](#102-llm-provider--framework-selection-rules)
     3. [10.3. Tool-Calling & Agent Architecture Golden Rules](#103-tool-calling--agent-architecture-golden-rules)
     4. [10.4. RAG, Embeddings & Memory Checklist](#104-rag-embeddings--memory-checklist)
     5. [10.5. Reliability, Guardrails & Evaluation Checklist](#105-reliability-guardrails--evaluation-checklist)
     6. [10.6. Essential One-Liners & CLI Commands](#106-essential-one-liners--cli-commands)
     7. [10.7. Python Shorthands & Idioms for AI Coding Tests](#107-python-shorthands--idioms-for-ai-coding-tests)
-11. [11. AI Infusion Test: Coding Solutions, Python Idioms & MCQs (`study/11-ai-infusion-test`)](#11-ai-infusion-test-coding-solutions-python-idioms--mcqs)
+11. [11. AI Infusion Test: Coding Solutions, Python Idioms & MCQs](#11-ai-infusion-test-coding-solutions-python-idioms--mcqs)
     1. [11.1. Coding 1: Token Cost Estimator (`estimate_token_cost`) & Python Shorthands](#111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands)
     2. [11.2. Coding 2: Hybrid Search Rank Fusion (`reciprocal_rank_fusion`) & Python Shorthands](#112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands)
     3. [11.3. Coding 3: Semantic Similarity Search (`semantic_search`) & Python Shorthands](#113-coding-3-semantic-similarity-search-semantic_search--python-shorthands)
-    4. [11.4. MCQs 1–3: Tokenizer Logic (BPE), Chain vs. Agent & Output Parser (`StrOutputParser`)](#114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser)
-    5. [11.5. MCQs 4–6: Chunk Overlap Boundary, Cloud LLM Three Gates & Function-to-Tool (`@tool`)](#115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool)
-    6. [11.6. MCQs 7–9: Bi-Encoder vs. Cross-Encoder Reranking, Hybrid Search (BM25 + RRF) & Retrieval vs. Agents](#116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents)
+    4. [11.4. MCQ 1: Tokenizer Logic (BPE)](#114-mcq-1-tokenizer-logic-bpe)
+    5. [11.5. MCQ 2: Chain vs. Agent](#115-mcq-2-chain-vs-agent)
+    6. [11.6. MCQ 3: Output Parser (`StrOutputParser`)](#116-mcq-3-output-parser-stroutputparser)
+    7. [11.7. MCQ 4: Chunk Overlap Boundary (`chunk_overlap`)](#117-mcq-4-chunk-overlap-boundary-chunk_overlap)
+    8. [11.8. MCQ 5: Cloud LLM Access (Three Gates)](#118-mcq-5-cloud-llm-access-three-gates)
+    9. [11.9. MCQ 6: Function to Tool (`@tool`)](#119-mcq-6-function-to-tool-tool)
+    10. [11.10. MCQ 7: Bi-Encoder vs. Cross-Encoder Reranking](#1110-mcq-7-bi-encoder-vs-cross-encoder-reranking)
+    11. [11.11. MCQ 8: Hybrid Search (BM25 + Vector Search & RRF)](#1111-mcq-8-hybrid-search-bm25--vector-search--rrf)
+    12. [11.12. MCQ 9: Retrieval-Based Chatbot vs. True Agent](#1112-mcq-9-retrieval-based-chatbot-vs-true-agent)
 
 ---
 
 ## 1. Python Fundamentals for AI Systems
 
 ### 1.1. Type Hints, Optional/Union & Unpacking
-Source: `practice/01-python/02-type-hints.py`, `practice/01-python/12-unpacking.py`
 
 ```python
 from typing import Any
@@ -112,7 +116,6 @@ config = {**defaults, **overrides}
 ```
 
 ### 1.2. Comprehensions, Filtering & Multi-Key Sorting
-Source: `practice/01-python/11-sorting.py`, `practice/01-python/13-list-comprehensions.py`
 
 ```python
 # 1. List and dictionary comprehensions with conditional filtering
@@ -130,7 +133,6 @@ ranked = sorted(items, key=lambda x: (-x["count"], -x["score"]))
 ```
 
 ### 1.3. Defensive Error Handling Wrapper
-Source: `practice/01-python/04-error-handling.py`
 
 ```python
 from typing import Any, Callable
@@ -146,7 +148,6 @@ def safe_execute(fn: Callable[..., Any], *args: Any, **kwargs: Any) -> dict[str,
 ```
 
 ### 1.4. Stateful OOP Resource Class Template
-Source: `practice/01-python/16-oop.py`
 
 ```python
 from typing import Any
@@ -170,7 +171,6 @@ class StatefulStore:
 ```
 
 ### 1.5. Async I/O Concurrency (`asyncio.gather` & `create_task`)
-Source: `practice/01-python/15-async-await.py`
 
 ```python
 import asyncio
@@ -205,7 +205,6 @@ if __name__ == "__main__":
 ## 2. Multi-Provider LLM Clients & LangChain Basics
 
 ### 2.1. Multi-Provider OpenAI-Compatible Client (`OpenAI`, `Groq`, `Gemini`)
-Source: `practice/02-ai-basics/01_chat_openai.py`, `practice/02-ai-basics/02_chat_groq.py`
 
 ```python
 import os
@@ -249,7 +248,6 @@ answer = response.choices[0].message.content
 ```
 
 ### 2.2. LangChain LCEL Pipe Chain (`prompt | model | parser`)
-Source: `practice/02-ai-basics/03_langchain_summarizer.py`
 
 ```python
 import os
@@ -283,7 +281,6 @@ output = chain.invoke({
 ```
 
 ### 2.3. Stateful Multi-Turn Chat (`MessagesPlaceholder`)
-Source: `practice/02-ai-basics/04_langchain_memory_chat.py`
 
 ```python
 import os
@@ -319,7 +316,6 @@ def run_chat_turn(user_input: str) -> str:
 ```
 
 ### 2.4. Raw OpenAI Tool-Calling Loop (No Framework)
-Source: `practice/02-ai-basics/05_agent_one_tool.py`
 
 ```python
 import json
@@ -384,7 +380,6 @@ def run_raw_agent(user_query: str, max_turns: int = 5) -> str:
 ```
 
 ### 2.5. LangChain Multi-Tool Agent with Swappable Provider & Trace
-Source: `practice/02-ai-basics/06_langchain_one_tool.py`, `practice/02-ai-basics/07_langchain_multi_tools.py`
 
 ```python
 import os
@@ -431,7 +426,6 @@ final_answer = messages[-1].content
 ```
 
 ### 2.6. Token Cost Estimator (`estimate_token_cost`)
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 ```python
 def estimate_token_cost(text: str, price_per_million: float) -> dict:
@@ -456,7 +450,6 @@ def estimate_token_cost(text: str, price_per_million: float) -> dict:
 ## 3. Document Chunking, Embeddings & Local RAG
 
 ### 3.1. Sliding-Window Document Chunking (`RecursiveCharacterTextSplitter`)
-Source: `practice/03-ai-rag-chroma/01_chunking.py`
 
 ```python
 from langchain_text_splitters import RecursiveCharacterTextSplitter
@@ -471,7 +464,6 @@ def chunk_document(text: str, chunk_size: int = 300, chunk_overlap: int = 40) ->
 ```
 
 ### 3.2. Local Sentence Embeddings & Cosine Similarity (`SentenceTransformer`)
-Source: `practice/03-ai-rag-chroma/02_embedding.py`
 
 ```python
 from numpy import dot
@@ -489,7 +481,6 @@ def compute_cosine_similarity(text_a: str, text_b: str) -> float:
 ```
 
 ### 3.3. End-to-End Local Vector RAG (`HuggingFaceEmbeddings` + `Chroma`)
-Source: `practice/03-ai-rag-chroma/03_rag.py`
 
 ```python
 import os
@@ -529,7 +520,6 @@ def answer_with_local_rag(source_text: str, question: str, k: int = 3) -> str:
 ```
 
 ### 3.4. Top-K Semantic Similarity Search (`SentenceTransformer` & `util.cos_sim`)
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 ```python
 from sentence_transformers import SentenceTransformer, util
@@ -555,7 +545,6 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
 ```
 
 ### 3.5. Hybrid Search Reciprocal Rank Fusion (`reciprocal_rank_fusion`)
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 ```python
 def reciprocal_rank_fusion(
@@ -587,7 +576,6 @@ def reciprocal_rank_fusion(
 ## 4. ML Model Training, ChromaDB Server & Redis Memory
 
 ### 4.1. Scikit-Learn Training, `joblib` Serialization & Pydantic Inference
-Source: `practice/04-ai-model-training-chromadb/01_model_training.py`
 
 ```python
 from pathlib import Path
@@ -620,7 +608,6 @@ def predict_single(payload: dict, model_path: Path = MODEL_PATH) -> float:
 ```
 
 ### 4.2. ChromaDB HTTP/Ephemeral Client & Document Folder Ingestion
-Source: `practice/04-ai-model-training-chromadb/02_chromadb.py`
 
 ```python
 import os
@@ -676,7 +663,6 @@ def retrieve_context(collection, query: str, n_results: int = 3) -> str:
 ```
 
 ### 4.3. Stateful Tool-Calling Agent with Redis Session Memory
-Source: `practice/04-ai-model-training-chromadb/03_redis.py`
 
 ```python
 import json
@@ -755,7 +741,6 @@ def chat_with_session_memory(
 ## 5. AWS Bedrock, Strands Agents & LangGraph
 
 ### 5.1. Minimal AWS Strands Agent on Amazon Bedrock (`BedrockModel`)
-Source: `practice/05-ai-aws-strands/01_hello_world_agent.py`
 
 ```python
 import os
@@ -777,7 +762,6 @@ print(response)
 ```
 
 ### 5.2. LangGraph Prebuilt ReAct Agent (`init_chat_model` + `create_react_agent`)
-Source: `practice/05-ai-aws-strands/02_hello_world_langgraph.py`
 
 ```python
 import os
@@ -807,7 +791,6 @@ for message in response["messages"]:
 ```
 
 ### 5.3. Function-to-Tool Pattern (`@tool` + Type Hints + Docstring)
-Source: `practice/05-ai-aws-strands/03_function_to_tool.py`, `practice/05-ai-aws-strands/04_tip_calculator.py`
 
 ```python
 from strands import Agent, tool
@@ -836,7 +819,6 @@ agent = Agent(
 ```
 
 ### 5.4. Pre-Built Community Tools & Unattended Consent (`strands_tools`)
-Source: `practice/05-ai-aws-strands/07_prebuilt_tools.py`, `practice/05-ai-aws-strands/08_multi_prebuilt_tools.py`, `practice/05-ai-aws-strands/09_use_aws.py`
 
 ```python
 import os
@@ -856,7 +838,6 @@ agent = Agent(
 ```
 
 ### 5.5. Class-Based Shared-Resource Tools
-Source: `practice/05-ai-aws-strands/10_class_based_tools.py`
 
 ```python
 from typing import Any
@@ -891,7 +872,6 @@ agent = Agent(
 ```
 
 ### 5.6. Async Parallel Tool Execution (`async def` + `invoke_async`)
-Source: `practice/05-ai-aws-strands/11_async_tools.py`
 
 ```python
 import asyncio
@@ -920,7 +900,6 @@ async def run_async_agent(prompt: str) -> str:
 ## 6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench
 
 ### 6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) & Answer Extraction
-Source: `practice/06-ai-systems/01_prompting_strategies.py`
 
 ```python
 import re
@@ -967,7 +946,6 @@ def extract_final_answer(response_text: str) -> str:
 ```
 
 ### 6.2. Multi-Turn Adversarial Pushback Runner & Forced `VERDICT:` Scorer
-Source: `practice/06-ai-systems/02_sycophancy_trap.py`
 
 ```python
 import re
@@ -1019,7 +997,6 @@ def score_verdict_token(
 ```
 
 ### 6.3. Multi-Judge Parallel Voting Bench & Deterministic Threshold Gate
-Source: `practice/06-ai-systems/03_refund_bench.py`
 
 ```python
 from collections import Counter
@@ -1098,7 +1075,6 @@ def apply_approval_cap(approved_value: float, held_value: float, cap_limit: floa
 ## 7. AI Reliability: Determinism, Schema Calibration & Error Injection
 
 ### 7.1. Multi-Run Stochastic Accuracy Evaluator
-Source: `practice/07-ai-reliability/01_cot_vs_direct.py`
 
 ```python
 import time
@@ -1134,7 +1110,6 @@ def evaluate_strategy_over_n_runs(
 ```
 
 ### 7.2. Enforced JSON Schema (`response_format`) & Exponential Backoff Retry
-Source: `practice/07-ai-reliability/02_variance_determinism.py`
 
 ```python
 import json
@@ -1191,7 +1166,6 @@ def call_structured_llm(
 ```
 
 ### 7.3. Forced Tool Routing Benchmark (`tool_choice="required"`)
-Source: `practice/07-ai-reliability/03_tool_schema_calibration.py`
 
 ```python
 from typing import Any
@@ -1225,7 +1199,6 @@ def select_routed_tool(client, model: str, query: str, tools: list[dict[str, Any
 ```
 
 ### 7.4. Structured Tool Error Payload & Anti-Hallucination System Prompt
-Source: `practice/07-ai-reliability/04_tool_error_injection.py`
 
 ```python
 from typing import Any, Callable
@@ -1252,7 +1225,6 @@ def call_tool_with_error_envelope(fn: Callable[..., Any], **kwargs: Any) -> dict
 ## 8. Model Context Protocol (MCP) & Agent Evals
 
 ### 8.1. FastMCP Tool Server over `stdio` (`FastMCP` & `@mcp.tool`)
-Source: `practice/08-ai-mcp-evals/cricket_server.py`
 
 ```python
 import sys
@@ -1285,7 +1257,6 @@ if __name__ == "__main__":
 ```
 
 ### 8.2. Direct MCP Client Protocol Plumbing (No LLM)
-Source: `practice/08-ai-mcp-evals/01_mcp_client.py`
 
 ```python
 import asyncio
@@ -1319,7 +1290,6 @@ async def call_mcp_tool_directly(
 ```
 
 ### 8.3. MCP-Enabled LLM Agent (`to_openai_format` Bridge + Agent Loop)
-Source: `practice/08-ai-mcp-evals/02_mcp_agent.py`
 
 ```python
 import json
@@ -1392,7 +1362,6 @@ async def run_mcp_agent(
 ```
 
 ### 8.4. Automated Agent Evaluation Suite (Routing + Fact Assertions)
-Source: `practice/08-ai-mcp-evals/03_mcp_evals.py`
 
 ```python
 from typing import Any, Awaitable, Callable
@@ -1430,7 +1399,6 @@ async def run_eval_suite(
 ## 9. Docker & Compose Templates for AI Projects
 
 ### 9.1. Layer-Cached Python 3.12 `Dockerfile`
-Source: `practice/04-ai-model-training-chromadb/Dockerfile`
 
 ```dockerfile
 # 1. Base image: official lightweight Python 3.12
@@ -1451,7 +1419,6 @@ COPY *.py .
 ```
 
 ### 9.2. Multi-Service `docker-compose.yml` (App + ChromaDB + Redis)
-Source: `practice/04-ai-model-training-chromadb/docker-compose.yml`
 
 ```yaml
 services:
@@ -1492,42 +1459,42 @@ volumes:
 
 ## 10. Quick Revision Cheatsheet
 
-### 10.1. Practice Module-to-Pattern Quick Map
-1. **`01-python` (Python Core):**
+### 10.1. Architecture Pattern Quick Map
+1. **Python Core Fundamentals:**
    1. Add explicit type hints (`str`, `int`, `list[str] | None`) to all functions—agent decorators inspect them to generate JSON schemas.
    2. Use `asyncio.gather(*coros)` to execute multiple I/O-bound calls concurrently in `max(delays)` time instead of `sum(delays)`.
-2. **`02-ai-basics` (LLMs, LCEL & Agents):**
+2. **LLMs, LCEL & Tool-Calling Agents:**
    1. Direct SDK call: `client.chat.completions.create(model=..., messages=[...])`.
    2. LangChain LCEL pipe: `chain = prompt | model | StrOutputParser()` invoked via `chain.invoke({"key": val})`.
    3. Multi-turn chat: insert `MessagesPlaceholder("history")` into `ChatPromptTemplate.from_messages(...)` and append `("human", q)` + `("ai", a)` after each turn.
    4. Raw tool loop: Model returns `msg.tool_calls` $\rightarrow$ append `msg` to `messages` $\rightarrow$ run local Python function $\rightarrow$ append `{"role": "tool", "tool_call_id": call.id, "content": result}` $\rightarrow$ call LLM again.
-3. **`03-ai-rag-chroma` (Chunking, Embeddings & Local RAG):**
+3. **Document Chunking, Embeddings & Local RAG:**
    1. Chunking: `RecursiveCharacterTextSplitter(chunk_size=300, chunk_overlap=40).split_text(text)` splits on paragraphs/lines/spaces while preserving boundary context.
    2. Local CPU Embeddings: `SentenceTransformer("all-MiniLM-L6-v2")` encodes text into 384-dim vectors locally without an API key.
    3. Cosine Similarity: `dot(v1, v2) / (norm(v1) * norm(v2))` (ranges from `-1.0` to `1.0`).
-4. **`04-ai-model-training-chromadb` (ML, Chroma Server & Redis):**
+4. **ML Models, Chroma Server & Redis Session Memory:**
    1. Tabular ML: Fit `RandomForestRegressor`, save with `joblib.dump(model, path)`, validate inputs via `pydantic.BaseModel`, and infer with `model.predict(pd.DataFrame([validated.model_dump()]))`.
    2. ChromaDB Server vs. Local: Use `chromadb.HttpClient(host, port)` with a `client.heartbeat()` retry loop in Docker Compose, falling back to `chromadb.EphemeralClient()` locally.
    3. Redis Session Memory: Persist JSON messages per session via `r.rpush(f"history:{session_id}", json.dumps(msg))` and read via `r.lrange(key, 0, -1)`.
-5. **`05-ai-aws-strands` (AWS Bedrock, Strands & LangGraph):**
+5. **AWS Bedrock, Strands Agents & LangGraph:**
    1. Strands Agent: `Agent(model=BedrockModel(model_id="amazon.nova-lite-v1:0"), tools=[...], system_prompt=...)`.
    2. LangGraph ReAct Agent: `create_react_agent(model=init_chat_model(model_id, model_provider="bedrock_converse"), tools=[...])`.
    3. Shared-Resource Tools: Group `@tool` methods inside a class (`ResourceTools`) so they share a single connection pool or state dict (`self.records`).
    4. Parallel Async Tools: Define `@tool async def my_tool(...)` and invoke via `await agent.invoke_async(prompt)`.
    5. Unattended Consent: Set `os.environ["BYPASS_TOOL_CONSENT"] = "true"` when running write or cloud tools (`file_write`, `use_aws`) in automated pipelines.
-6. **`06-ai-systems` (Prompting, Sycophancy & Multi-Judge Pipelines):**
+6. **Prompting Strategies, Sycophancy & Multi-Judge Bench:**
    1. Prompting Trade-off: Zero-Shot and Few-Shot Chain-of-Thought (`"Think step by step..."`) increase multi-step accuracy at the cost of extra completion tokens and latency.
    2. Adversarial Pushback Resilience: Models can capitulate under user pressure; append a strict `VERDICT: <options>` instruction and test across multiple pushback turns.
    3. Multi-Judge Voting Pipeline: Separate **Atomic Claim Extraction** (LLM) $\rightarrow$ **Parallel Multi-Provider Adjudication** (`ThreadPoolExecutor` voting `UPHELD` / `REJECTED` / `ESCALATE`) $\rightarrow$ **Deterministic Pricing & Cap Gate** (Pure Python).
-7. **`07-ai-reliability` (Determinism, Schemas & Error Injection):**
+7. **AI Reliability, Determinism & Tool Error Injection:**
    1. Structured Outputs: Pass `response_format={"type": "json_schema", "json_schema": {"name": "...", "strict": True, "schema": SCHEMA}}` with `"additionalProperties": False` for 100% valid JSON.
    2. Tool Routing Calibration: Pair **descriptive function names** with **tight, boundary-explicit docstrings** (`"Use ONLY when..."`).
    3. Tool Error Transparency: Catch tool exceptions into structured dicts (`{"error": "SERVICE_UNAVAILABLE", "http_status": 503}`) and instruct the system prompt to report error codes explicitly without guessing.
-8. **`08-ai-mcp-evals` (Model Context Protocol & Evals):**
+8. **Model Context Protocol (MCP) & Agent Evals:**
    1. FastMCP Server: Decorate tools with `@mcp.tool(description=...)`, annotate args with `Field(description=...)`, log **only to `sys.stderr`**, and run via `mcp.run(transport="stdio")`.
    2. MCP Client Flow: `async with stdio_client(server) as (read, write):` $\rightarrow$ `async with ClientSession(read, write) as session:` $\rightarrow$ `await session.initialize()` $\rightarrow$ `await session.list_tools()` $\rightarrow$ `await session.call_tool(name, args)`.
    3. Two-Part Agent Evals: Assert both **tool routing** (`expected_tool in tools_used` or `tools_used == []`) and **ground-truth facts** (`all(token in answer for token in must_contain)`).
-9. **`11-ai-infusion-test` (Token Pricing, Hybrid RRF, Semantic Search & Core Concepts):**
+9. **Token Pricing, Hybrid Search RRF & Semantic Similarity:**
    1. Token Cost Estimation: Sub-word BPE tokenization gives a compact vocabulary (~100k chunks) with zero out-of-vocabulary failures; estimate tokens via `0 if len(text) == 0 else max(1, round(len(text) / 4))` and cost via `round((tokens / 1_000_000) * price_per_million, 6)`.
    2. Hybrid Search Rank Fusion (RRF): Merge 1-based BM25 (exact SKU/ID/keyword match) and dense vector (semantic meaning/paraphrase) rankings via $\text{RRF}(d) = \sum \frac{1}{k + \text{rank}(d)}$ using `enumerate(ranking, start=1)` and `rrf_scores.get(doc_id, 0.0)`.
    3. Batch Semantic Search: Encode query and documents with `SentenceTransformer("all-MiniLM-L6-v2").encode(..., convert_to_tensor=True)`, compute `util.cos_sim(query_embedding, doc_embeddings)[0]`, sort `(i, float(scores[i]))` descending, and slice `[:top_k]`.
@@ -1609,7 +1576,6 @@ volumes:
 ## 11. AI Infusion Test: Coding Solutions, Python Idioms & MCQs
 
 ### 11.1. Coding 1: Token Cost Estimator (`estimate_token_cost`) & Python Shorthands
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 #### Context & Problem Statement
 1. **Context:** LLMs charge per token, not per character or word. Before shipping any AI feature, an engineer needs a quick way to estimate how many tokens a piece of text will consume and what that will cost against a given pricing rate.
@@ -1662,7 +1628,6 @@ def estimate_token_cost(text: str, price_per_million: float) -> dict:
    1. Python allows underscores inside numbers (`1_000_000`) purely for human readability so you don't miscount zeros; Python treats `1_000_000` identically to `1000000`.
 
 ### 11.2. Coding 2: Hybrid Search Rank Fusion (`reciprocal_rank_fusion`) & Python Shorthands
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 #### Context & Problem Statement
 1. **Context:** Pure keyword search (BM25) and pure semantic search (vector similarity) each catch things the other misses. Production RAG systems merge both rankings into one using **Reciprocal Rank Fusion (RRF)** — a formula that rewards documents ranked highly by either method without needing to re-scale raw scores.
@@ -1735,7 +1700,6 @@ def reciprocal_rank_fusion(
    1. Takes at most the first `top_n` elements from the sorted list.
 
 ### 11.3. Coding 3: Semantic Similarity Search (`semantic_search`) & Python Shorthands
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
 
 #### Context & Problem Statement
 1. **Context:** Before reranking or hybrid tricks are added, the core of every RAG system is single-stage semantic search: encode a query and documents into vectors and find which documents are closest in meaning using cosine similarity.
@@ -1796,8 +1760,7 @@ def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
 4. **`{idx: round(score, 2) for idx, score in ranked[:top_k]}` (Dict Comprehension + Slicing + Unpacking):**
    1. Slices the top `top_k` tuples, unpacks `idx, score`, and builds the rounded output dictionary in a single return statement.
 
-### 11.4. MCQs 1–3: Tokenizer Logic (BPE), Chain vs. Agent & Output Parser (`StrOutputParser`)
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+### 11.4. MCQ 1: Tokenizer Logic (BPE)
 
 1. **Question 01 — Tokenizer Logic:** *Why do LLMs use sub-word tokens instead of whole-word or single-letter tokens? (Select any ONE)*
    1. **[x] Tokens give a compact vocabulary (~100k chunks) while still being able to spell out any unseen word from familiar pieces** *(Correct)*
@@ -1805,21 +1768,26 @@ Source: `study/11-ai-infusion-test/ai-infusion-test.md`
    3. [ ] Sub-word tokens eliminate the need for a context window
    4. [ ] Sub-word tokens make the model completely bug-free
    5. **Why Option 1 is correct & others are wrong:** Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (`"token"` + `"ization"`), keeping the vocabulary compact (~50k–100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.
-2. **Question 02 — Chain vs. Agent:** *What is the key difference between a "chain" and an "agent"? (Select any ONE)*
+
+### 11.5. MCQ 2: Chain vs. Agent
+
+1. **Question 02 — Chain vs. Agent:** *What is the key difference between a "chain" and an "agent"? (Select any ONE)*
    1. [ ] A chain uses a web UI library while an agent does not
    2. [ ] An agent always needs a vector database, a chain never does
    3. **[x] A chain follows a fixed sequence of steps; an agent decides on its own, at runtime, whether to call a tool** *(Correct)*
    4. [ ] There is no real difference — they are just two names for the same thing
    5. **Why Option 3 is correct & others are wrong:** A **chain** is a deterministic, developer-hardcoded pipeline (`prompt | llm | output_parser`) where every input flows through the exact same sequence. An **agent** uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).
-3. **Question 03 — The Package Opener (`StrOutputParser`):** *What does an output parser (like `StrOutputParser`) actually do in a chain? (Select any ONE)*
+
+### 11.6. MCQ 3: Output Parser (`StrOutputParser`)
+
+1. **Question 03 — The Package Opener (`StrOutputParser`):** *What does an output parser (like `StrOutputParser`) actually do in a chain? (Select any ONE)*
    1. [ ] It fetches website content for summarization
    2. [ ] It stores conversation memory across sessions
    3. [ ] It converts a prompt template's blanks into actual text
    4. **[x] It unwraps the model's response package and hands back just the plain text string** *(Correct)*
    5. **Why Option 4 is correct & others are wrong:** Chat models return a rich message object (`AIMessage`) containing `.content` plus metadata, token counts, and tool calls. `StrOutputParser` at the end of `prompt | llm | StrOutputParser()` extracts just the plain `.content` string. Document loaders fetch websites, memory/checkpointers store history, and `ChatPromptTemplate` fills template variables at the start of the chain.
 
-### 11.5. MCQs 4–6: Chunk Overlap Boundary, Cloud LLM Three Gates & Function-to-Tool (`@tool`)
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+### 11.7. MCQ 4: Chunk Overlap Boundary (`chunk_overlap`)
 
 1. **Question 04 — The Boundary Problem (`chunk_overlap`):** *Why is `"chunk_overlap"` used when splitting documents into chunks for retrieval? (Select any ONE)*
    1. [ ] To make the vector database run faster
@@ -1827,21 +1795,26 @@ Source: `study/11-ai-infusion-test/ai-infusion-test.md`
    3. [ ] To reduce the number of tokens billed per API call
    4. [ ] To automatically translate text into multiple languages
    5. **Why Option 2 is correct & others are wrong:** Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. `chunk_overlap` slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).
-2. **Question 05 — The Three Gates (Cloud LLM Access):** *What are the three independent "gates" that must all be open before an agent can successfully call a cloud-hosted model? (Select any ONE)*
+
+### 11.8. MCQ 5: Cloud LLM Access (Three Gates)
+
+1. **Question 05 — The Three Gates (Cloud LLM Access):** *What are the three independent "gates" that must all be open before an agent can successfully call a cloud-hosted model? (Select any ONE)*
    1. **[x] Credentials, IAM permission, and Model access (enabled per region)** *(Correct)*
    2. [ ] Internet connection, RAM, and CPU speed
    3. [ ] Python version, pip version, and OS type
    4. [ ] Framework version, UI library version, and API key
    5. **Why Option 1 is correct & others are wrong:** Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: **Gate 1 — Credentials** (authentication proving identity), **Gate 2 — IAM Permission** (authorization policy such as `bedrock:InvokeModel` / `bedrock:Converse`), and **Gate 3 — Model Access** (per-region model subscription enabled in the target AWS region).
-3. **Question 06 — Function to Tool:** *What three things must be added to a plain Python function to turn it into an agent-usable tool? (Select any ONE)*
+
+### 11.9. MCQ 6: Function to Tool (`@tool`)
+
+1. **Question 06 — Function to Tool:** *What three things must be added to a plain Python function to turn it into an agent-usable tool? (Select any ONE)*
    1. [ ] A class definition, a database connection, and a return statement
    2. [ ] An API key, a region name, and a session object
    3. [ ] A Gradio interface, a vector store, and an embedding model
    4. **[x] A decorator marking it as a tool, type hints, and a clear docstring** *(Correct)*
    5. **Why Option 4 is correct & others are wrong:** Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the `@tool` decorator to register the function, (2) **type hints** (`param: str -> dict`) to auto-generate the JSON Schema of parameter names and types, and (3) a **clear docstring** (`"""..."""`) injected into the model prompt so the LLM knows *what* the tool does and *when* to call it.
 
-### 11.6. MCQs 7–9: Bi-Encoder vs. Cross-Encoder Reranking, Hybrid Search (BM25 + RRF) & Retrieval vs. Agents
-Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+### 11.10. MCQ 7: Bi-Encoder vs. Cross-Encoder Reranking
 
 1. **Question 07 — Resume Scan vs. Interview (Bi-Encoders & Cross-Encoders):** *Which of the following statements are **TRUE** about bi-encoders and cross-encoders used in reranking? (Select ALL that apply)*
    1. **[x] Bi-encoders encode the query and document separately, making them fast and pre-computable** *(Correct)*
@@ -1850,14 +1823,20 @@ Source: `study/11-ai-infusion-test/ai-infusion-test.md`
    4. [ ] Bi-encoders always produce more accurate rankings than cross-encoders
    5. **[x] Cross-encoder scores cannot be precomputed because each score is pair-specific** *(Correct)*
    6. **Explanation:** **Bi-encoders ("5-Second Resume Scan")** embed documents once offline into a vector DB and quickly retrieve the initial top 50–100 candidates via cosine similarity. **Cross-encoders ("30-Minute In-Depth Interview")** pass `[CLS] query [SEP] document [SEP]` jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every `(query, doc)` pair requires a live forward pass, scores cannot be precomputed and are only run on the 50–100 candidate shortlist.
-2. **Question 08 — Two Librarians (Hybrid Search: BM25 + Vector Search):** *Which of the following are **TRUE** about hybrid search (BM25 + vector search)? (Select ALL that apply)*
+
+### 11.11. MCQ 8: Hybrid Search (BM25 + Vector Search & RRF)
+
+1. **Question 08 — Two Librarians (Hybrid Search: BM25 + Vector Search):** *Which of the following are **TRUE** about hybrid search (BM25 + vector search)? (Select ALL that apply)*
    1. **[x] BM25 excels at exact matches like SKU codes, product IDs, and legal references** *(Correct)*
    2. **[x] Vector search excels at understanding paraphrases and semantic meaning, even without exact keyword overlap** *(Correct)*
    3. [ ] Hybrid search eliminates the need for an LLM in the final answer generation step
    4. **[x] Reciprocal Rank Fusion (RRF) merges the two ranked lists into one combined ranking** *(Correct)*
    5. [ ] BM25 is better than vector search at understanding synonyms
    6. **Explanation:** **BM25 ("Keyword Librarian")** uses lexical TF-IDF matching that shines on exact strings (`SKU-9981`, error codes, legal clauses) but fails on synonyms. **Vector search ("Meaning Librarian")** maps paraphrases and synonyms close together in embedding space. **Reciprocal Rank Fusion (RRF)** combines both ranked lists by rank position ($\sum \frac{1}{k + \text{rank}}$), and the LLM is still required at the end to synthesize the final grounded answer.
-3. **Question 09 — Answers vs. Goals (Retrieval Chatbot vs. True Agent):** *Which of the following statements correctly describe the difference between a retrieval-based chatbot and a true agent? (Select ALL that apply)*
+
+### 11.12. MCQ 9: Retrieval-Based Chatbot vs. True Agent
+
+1. **Question 09 — Answers vs. Goals (Retrieval Chatbot vs. True Agent):** *Which of the following statements correctly describe the difference between a retrieval-based chatbot and a true agent? (Select ALL that apply)*
    1. **[x] A retrieval-based system grounds answers in fetched information, while an agent can act, observe results, and retry using tools** *(Correct)*
    2. **[x] An agent runs a reasoning loop (reason → act → observe → repeat) until it judges the goal is met** *(Correct)*
    3. [ ] A retrieval-based chatbot can also directly modify a database record when asked
