@@ -10,54 +10,57 @@ Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
 
 # AI Reusable Code Snippets & Quick Revision Guide
 
-A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering templates distilled from the `practice/` workspace modules (`01-python` through `08-ai-mcp-evals`). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
+A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering templates distilled from the `practice/` workspace modules (`01-python` through `08-ai-mcp-evals`) and the AI Infusion Test (`study/11-ai-infusion-test`). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
 
 ---
 
 ## Table of Contents (Index)
 
-1. [1. Python Fundamentals for AI Systems (`practice/01-python`)](#1-python-fundamentals-for-ai-systems-practice01-python)
+1. [1. Python Fundamentals for AI Systems (`practice/01-python`)](#1-python-fundamentals-for-ai-systems)
    1. [1.1. Type Hints, Optional/Union & Unpacking](#11-type-hints-optionalunion--unpacking)
    2. [1.2. Comprehensions, Filtering & Multi-Key Sorting](#12-comprehensions-filtering--multi-key-sorting)
    3. [1.3. Defensive Error Handling Wrapper](#13-defensive-error-handling-wrapper)
    4. [1.4. Stateful OOP Resource Class Template](#14-stateful-oop-resource-class-template)
    5. [1.5. Async I/O Concurrency (`asyncio.gather` & `create_task`)](#15-async-io-concurrency-asynciogather--create_task)
-2. [2. Multi-Provider LLM Clients & LangChain Basics (`practice/02-ai-basics`)](#2-multi-provider-llm-clients--langchain-basics-practice02-ai-basics)
+2. [2. Multi-Provider LLM Clients & LangChain Basics (`practice/02-ai-basics`)](#2-multi-provider-llm-clients--langchain-basics)
    1. [2.1. Multi-Provider OpenAI-Compatible Client (`OpenAI`, `Groq`, `Gemini`)](#21-multi-provider-openai-compatible-client-openai-groq-gemini)
    2. [2.2. LangChain LCEL Pipe Chain (`prompt | model | parser`)](#22-langchain-lcel-pipe-chain-prompt--model--parser)
    3. [2.3. Stateful Multi-Turn Chat (`MessagesPlaceholder`)](#23-stateful-multi-turn-chat-messagesplaceholder)
    4. [2.4. Raw OpenAI Tool-Calling Loop (No Framework)](#24-raw-openai-tool-calling-loop-no-framework)
    5. [2.5. LangChain Multi-Tool Agent with Swappable Provider & Trace](#25-langchain-multi-tool-agent-with-swappable-provider--trace)
-3. [3. Document Chunking, Embeddings & Local RAG (`practice/03-ai-rag-chroma`)](#3-document-chunking-embeddings--local-rag-practice03-ai-rag-chroma)
+   6. [2.6. Token Cost Estimator (`estimate_token_cost`)](#26-token-cost-estimator-estimate_token_cost)
+3. [3. Document Chunking, Embeddings & Local RAG (`practice/03-ai-rag-chroma`)](#3-document-chunking-embeddings--local-rag)
    1. [3.1. Sliding-Window Document Chunking (`RecursiveCharacterTextSplitter`)](#31-sliding-window-document-chunking-recursivecharactertextsplitter)
    2. [3.2. Local Sentence Embeddings & Cosine Similarity (`SentenceTransformer`)](#32-local-sentence-embeddings--cosine-similarity-sentencetransformer)
    3. [3.3. End-to-End Local Vector RAG (`HuggingFaceEmbeddings` + `Chroma`)](#33-end-to-end-local-vector-rag-huggingfaceembeddings--chroma)
-4. [4. ML Model Training, ChromaDB Server & Redis Memory (`practice/04-ai-model-training-chromadb`)](#4-ml-model-training-chromadb-server--redis-memory-practice04-ai-model-training-chromadb)
+   4. [3.4. Top-K Semantic Similarity Search (`SentenceTransformer` & `util.cos_sim`)](#34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim)
+   5. [3.5. Hybrid Search Reciprocal Rank Fusion (`reciprocal_rank_fusion`)](#35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion)
+4. [4. ML Model Training, ChromaDB Server & Redis Memory (`practice/04-ai-model-training-chromadb`)](#4-ml-model-training-chromadb-server--redis-memory)
    1. [4.1. Scikit-Learn Training, `joblib` Serialization & Pydantic Inference](#41-scikit-learn-training-joblib-serialization--pydantic-inference)
    2. [4.2. ChromaDB HTTP/Ephemeral Client & Document Folder Ingestion](#42-chromadb-httpephemeral-client--document-folder-ingestion)
    3. [4.3. Stateful Tool-Calling Agent with Redis Session Memory](#43-stateful-tool-calling-agent-with-redis-session-memory)
-5. [5. AWS Bedrock, Strands Agents & LangGraph (`practice/05-ai-aws-strands`)](#5-aws-bedrock-strands-agents--langgraph-practice05-ai-aws-strands)
+5. [5. AWS Bedrock, Strands Agents & LangGraph (`practice/05-ai-aws-strands`)](#5-aws-bedrock-strands-agents--langgraph)
    1. [5.1. Minimal AWS Strands Agent on Amazon Bedrock (`BedrockModel`)](#51-minimal-aws-strands-agent-on-amazon-bedrock-bedrockmodel)
    2. [5.2. LangGraph Prebuilt ReAct Agent (`init_chat_model` + `create_react_agent`)](#52-langgraph-prebuilt-react-agent-init_chat_model--create_react_agent)
    3. [5.3. Function-to-Tool Pattern (`@tool` + Type Hints + Docstring)](#53-function-to-tool-pattern-tool--type-hints--docstring)
    4. [5.4. Pre-Built Community Tools & Unattended Consent (`strands_tools`)](#54-pre-built-community-tools--unattended-consent-strands_tools)
    5. [5.5. Class-Based Shared-Resource Tools](#55-class-based-shared-resource-tools)
    6. [5.6. Async Parallel Tool Execution (`async def` + `invoke_async`)](#56-async-parallel-tool-execution-async-def--invoke_async)
-6. [6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench (`practice/06-ai-systems`)](#6-ai-systems-prompting-sycophancy--multi-judge-bench-practice06-ai-systems)
+6. [6. AI Systems: Prompting, Sycophancy & Multi-Judge Bench (`practice/06-ai-systems`)](#6-ai-systems-prompting-sycophancy--multi-judge-bench)
    1. [6.1. Prompting Strategies (Direct vs. Zero-Shot CoT vs. Few-Shot CoT) & Answer Extraction](#61-prompting-strategies-direct-vs-zero-shot-cot-vs-few-shot-cot--answer-extraction)
    2. [6.2. Multi-Turn Adversarial Pushback Runner & Forced `VERDICT:` Scorer](#62-multi-turn-adversarial-pushback-runner--forced-verdict-scorer)
    3. [6.3. Multi-Judge Parallel Voting Bench & Deterministic Threshold Gate](#63-multi-judge-parallel-voting-bench--deterministic-threshold-gate)
-7. [7. AI Reliability: Determinism, Schema Calibration & Error Injection (`practice/07-ai-reliability`)](#7-ai-reliability-determinism-schema-calibration--error-injection-practice07-ai-reliability)
+7. [7. AI Reliability: Determinism, Schema Calibration & Error Injection (`practice/07-ai-reliability`)](#7-ai-reliability-determinism-schema-calibration--error-injection)
    1. [7.1. Multi-Run Stochastic Accuracy Evaluator](#71-multi-run-stochastic-accuracy-evaluator)
    2. [7.2. Enforced JSON Schema (`response_format`) & Exponential Backoff Retry](#72-enforced-json-schema-response_format--exponential-backoff-retry)
    3. [7.3. Forced Tool Routing Benchmark (`tool_choice="required"`)](#73-forced-tool-routing-benchmark-tool_choicerequired)
    4. [7.4. Structured Tool Error Payload & Anti-Hallucination System Prompt](#74-structured-tool-error-payload--anti-hallucination-system-prompt)
-8. [8. Model Context Protocol (MCP) & Agent Evals (`practice/08-ai-mcp-evals`)](#8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals)
+8. [8. Model Context Protocol (MCP) & Agent Evals (`practice/08-ai-mcp-evals`)](#8-model-context-protocol-mcp--agent-evals)
    1. [8.1. FastMCP Tool Server over `stdio` (`FastMCP` & `@mcp.tool`)](#81-fastmcp-tool-server-over-stdio-fastmcp--mcptool)
    2. [8.2. Direct MCP Client Protocol Plumbing (No LLM)](#82-direct-mcp-client-protocol-plumbing-no-llm)
    3. [8.3. MCP-Enabled LLM Agent (`to_openai_format` Bridge + Agent Loop)](#83-mcp-enabled-llm-agent-to_openai_format-bridge--agent-loop)
    4. [8.4. Automated Agent Evaluation Suite (Routing + Fact Assertions)](#84-automated-agent-evaluation-suite-routing--fact-assertions)
-9. [9. Docker & Compose Templates for AI Projects (`practice/*/Dockerfile`)](#9-docker--compose-templates-for-ai-projects-practicedockerfile)
+9. [9. Docker & Compose Templates for AI Projects (`practice/*/Dockerfile`)](#9-docker--compose-templates-for-ai-projects)
    1. [9.1. Layer-Cached Python 3.12 `Dockerfile`](#91-layer-cached-python-312-dockerfile)
    2. [9.2. Multi-Service `docker-compose.yml` (App + ChromaDB + Redis)](#92-multi-service-docker-composeyml-app--chromadb--redis)
 10. [10. Quick Revision Cheatsheet](#10-quick-revision-cheatsheet)
@@ -67,6 +70,14 @@ A domain-agnostic, copy-paste-ready catalog of reusable Python & AI engineering 
     4. [10.4. RAG, Embeddings & Memory Checklist](#104-rag-embeddings--memory-checklist)
     5. [10.5. Reliability, Guardrails & Evaluation Checklist](#105-reliability-guardrails--evaluation-checklist)
     6. [10.6. Essential One-Liners & CLI Commands](#106-essential-one-liners--cli-commands)
+    7. [10.7. Python Shorthands & Idioms for AI Coding Tests](#107-python-shorthands--idioms-for-ai-coding-tests)
+11. [11. AI Infusion Test: Coding Solutions, Python Idioms & MCQs (`study/11-ai-infusion-test`)](#11-ai-infusion-test-coding-solutions-python-idioms--mcqs)
+    1. [11.1. Coding 1: Token Cost Estimator (`estimate_token_cost`) & Python Shorthands](#111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands)
+    2. [11.2. Coding 2: Hybrid Search Rank Fusion (`reciprocal_rank_fusion`) & Python Shorthands](#112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands)
+    3. [11.3. Coding 3: Semantic Similarity Search (`semantic_search`) & Python Shorthands](#113-coding-3-semantic-similarity-search-semantic_search--python-shorthands)
+    4. [11.4. MCQs 1–3: Tokenizer Logic (BPE), Chain vs. Agent & Output Parser (`StrOutputParser`)](#114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser)
+    5. [11.5. MCQs 4–6: Chunk Overlap Boundary, Cloud LLM Three Gates & Function-to-Tool (`@tool`)](#115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool)
+    6. [11.6. MCQs 7–9: Bi-Encoder vs. Cross-Encoder Reranking, Hybrid Search (BM25 + RRF) & Retrieval vs. Agents](#116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents)
 
 ---
 
@@ -419,6 +430,27 @@ for m in messages:
 final_answer = messages[-1].content
 ```
 
+### 2.6. Token Cost Estimator (`estimate_token_cost`)
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+```python
+def estimate_token_cost(text: str, price_per_million: float) -> dict:
+    """Estimate token count ('1 token ≈ 4 chars', min 1 for non-empty text) and API cost."""
+    # 1. Count total characters in input text
+    characters = len(text)
+
+    # 2. Estimate tokens using 1 token ≈ 4 characters (0 for empty string, floor of 1 otherwise)
+    if characters == 0:
+        tokens = 0
+    else:
+        tokens = max(1, round(characters / 4))
+
+    # 3. Compute cost per 1,000,000 tokens rounded to 6 decimal places
+    cost = round((tokens / 1_000_000) * price_per_million, 6)
+
+    return {"characters": characters, "tokens": tokens, "cost": cost}
+```
+
 ---
 
 ## 3. Document Chunking, Embeddings & Local RAG
@@ -494,6 +526,60 @@ def answer_with_local_rag(source_text: str, question: str, k: int = 3) -> str:
         temperature=0,
     )
     return (prompt | model).invoke({"context": context, "question": question}).content
+```
+
+### 3.4. Top-K Semantic Similarity Search (`SentenceTransformer` & `util.cos_sim`)
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+```python
+from sentence_transformers import SentenceTransformer, util
+
+def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
+    """Encode query and documents with a bi-encoder and return top_k {doc_index: cosine_score}."""
+    # 1. Load pretrained bi-encoder model (384-dimensional vectors)
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    # 2. Encode query and all documents into PyTorch tensors
+    query_embedding = model.encode(query, convert_to_tensor=True)
+    doc_embeddings = model.encode(documents, convert_to_tensor=True)
+
+    # 3. Compute cosine similarity matrix [1, N] and extract 1D row [0]
+    scores = util.cos_sim(query_embedding, doc_embeddings)[0]
+
+    # 4. Pair 0-based document index with float score and sort descending
+    ranked = [(i, float(scores[i])) for i in range(len(documents))]
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    # 5. Return top_k dictionary mapping original index -> score rounded to 2 decimal places
+    return {idx: round(score, 2) for idx, score in ranked[:top_k]}
+```
+
+### 3.5. Hybrid Search Reciprocal Rank Fusion (`reciprocal_rank_fusion`)
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+```python
+def reciprocal_rank_fusion(
+    bm25_ranking: list[int],
+    vector_ranking: list[int],
+    k_constant: int,
+    top_n: int,
+) -> dict:
+    """Merge 1-based BM25 and vector rankings via RRF: sum(1 / (k_constant + rank))."""
+    rrf_scores: dict[int, float] = {}
+
+    # 1. Accumulate RRF score from 1-based rank in BM25 keyword ranking
+    for rank, doc_id in enumerate(bm25_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # 2. Accumulate RRF score from 1-based rank in dense vector ranking
+    for rank, doc_id in enumerate(vector_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # 3. Sort documents by combined RRF score descending
+    sorted_docs = sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)
+
+    # 4. Return top_n documents with scores rounded to 4 decimal places
+    return {doc_id: round(score, 4) for doc_id, score in sorted_docs[:top_n]}
 ```
 
 ---
@@ -1441,6 +1527,10 @@ volumes:
    1. FastMCP Server: Decorate tools with `@mcp.tool(description=...)`, annotate args with `Field(description=...)`, log **only to `sys.stderr`**, and run via `mcp.run(transport="stdio")`.
    2. MCP Client Flow: `async with stdio_client(server) as (read, write):` $\rightarrow$ `async with ClientSession(read, write) as session:` $\rightarrow$ `await session.initialize()` $\rightarrow$ `await session.list_tools()` $\rightarrow$ `await session.call_tool(name, args)`.
    3. Two-Part Agent Evals: Assert both **tool routing** (`expected_tool in tools_used` or `tools_used == []`) and **ground-truth facts** (`all(token in answer for token in must_contain)`).
+9. **`11-ai-infusion-test` (Token Pricing, Hybrid RRF, Semantic Search & Core Concepts):**
+   1. Token Cost Estimation: Sub-word BPE tokenization gives a compact vocabulary (~100k chunks) with zero out-of-vocabulary failures; estimate tokens via `0 if len(text) == 0 else max(1, round(len(text) / 4))` and cost via `round((tokens / 1_000_000) * price_per_million, 6)`.
+   2. Hybrid Search Rank Fusion (RRF): Merge 1-based BM25 (exact SKU/ID/keyword match) and dense vector (semantic meaning/paraphrase) rankings via $\text{RRF}(d) = \sum \frac{1}{k + \text{rank}(d)}$ using `enumerate(ranking, start=1)` and `rrf_scores.get(doc_id, 0.0)`.
+   3. Batch Semantic Search: Encode query and documents with `SentenceTransformer("all-MiniLM-L6-v2").encode(..., convert_to_tensor=True)`, compute `util.cos_sim(query_embedding, doc_embeddings)[0]`, sort `(i, float(scores[i]))` descending, and slice `[:top_k]`.
 
 ### 10.2. LLM Provider & Framework Selection Rules
 1. **OpenAI (`gpt-4o-mini`):** Default choice for strict `json_schema` structured outputs, LCEL chains, and grounded RAG synthesis (`base_url="https://api.openai.com/v1"`).
@@ -1456,12 +1546,27 @@ volumes:
    3. Specific docstring stating **what** the tool returns and **when** (and when *not*) to invoke it.
 3. **Bounded Agent Loops:** Always cap custom tool loops (`for _ in range(5):`) so a confused model cannot call tools forever.
 4. **Single-Purpose Tools:** Create small, focused tools that compose together rather than one monolithic function.
+5. **Chain vs. Agent vs. Retrieval Chatbot:**
+   1. **Chain:** Follows a fixed, developer-hardcoded sequence of steps (`prompt | llm | StrOutputParser()`); `StrOutputParser` unwraps the `AIMessage` response package and returns just the plain `.content` string.
+   2. **Retrieval Chatbot (RAG):** Read-only system that grounds answers in fetched document chunks (*"Retrieval answers questions"*).
+   3. **True Agent:** Runs an autonomous runtime **ReAct loop** (**Re**ason $\rightarrow$ **Act** by calling a tool $\rightarrow$ **Observe** result $\rightarrow$ **Repeat**), deciding dynamically whether to call tools (including retrieval or state-modifying tools) until the goal is met (*"Agents accomplish goals"*).
+6. **The Three Cloud LLM Gates (e.g., AWS Bedrock):**
+   1. **Gate 1 — Credentials (Authentication):** Valid AWS access keys / session token proving identity.
+   2. **Gate 2 — IAM Permission (Authorization):** IAM policy granting inference permissions (`bedrock:InvokeModel` / `bedrock:Converse`).
+   3. **Gate 3 — Model Access (Per-Region Provisioning):** The target foundation model must be enabled/subscribed in the exact AWS region queried.
 
 ### 10.4. RAG, Embeddings & Memory Checklist
-1. **Chunking Defaults:** Start with `chunk_size=300` and `chunk_overlap=40` (`~15%` overlap) using `RecursiveCharacterTextSplitter`.
+1. **Chunking Defaults & Boundary Problem:** Start with `chunk_size=300` and `chunk_overlap=40` (`~15%` overlap) using `RecursiveCharacterTextSplitter`; `chunk_overlap` repeats a sliding window across boundaries so a sentence sitting at a boundary isn't sliced in half and missed during retrieval.
 2. **Strict Grounding Prompt:** Always instruct the RAG model: *"Answer using ONLY the context below. If the context does not contain the answer, say you do not know."* and set `temperature=0`.
 3. **Idempotent Vector Upserts:** Use deterministic chunk IDs (`f"{filename}::{chunk_idx}"`) with `collection.upsert(...)` to prevent duplicate entries on re-runs.
 4. **Session Isolation:** Namespace Redis conversation keys by `f"history:{session_id}"` and set a TTL (`r.expire(key, 3600)`).
+5. **Two-Stage Reranking (Bi-Encoder vs. Cross-Encoder):**
+   1. **Bi-Encoder ("5-Second Resume Scan"):** Encodes query and documents separately into fixed vectors; fast and pre-computable offline in a vector DB to grab the initial top 50–100 candidates.
+   2. **Cross-Encoder ("30-Minute In-Depth Interview"):** Processes `(query, document)` pairs jointly through full cross-attention for higher accuracy at slower speed; scores are pair-specific (cannot be precomputed) and rerank the 50–100 shortlist down to the final top 3–5.
+6. **Hybrid Search ("Two Librarians" — BM25 + Vector + RRF):**
+   1. **BM25 (Keyword Librarian):** Excels at exact lexical matches like SKU codes, product IDs, error codes, and legal references (weak on synonyms).
+   2. **Vector Search (Meaning Librarian):** Excels at paraphrases, synonyms, and semantic meaning even without keyword overlap.
+   3. **Reciprocal Rank Fusion (RRF):** Merges both ranked lists by rank position ($\sum \frac{1}{k + \text{rank}}$) without needing compatible raw score scales; the LLM is still required for final answer generation.
 
 ### 10.5. Reliability, Guardrails & Evaluation Checklist
 1. **Enforce Schemas via API:** Use `response_format={"type": "json_schema", ...}` with `strict: True` and `additionalProperties: False` instead of relying on prompt instructions alone.
@@ -1480,3 +1585,282 @@ volumes:
    `docker compose down -v`
 5. **Log inside an MCP `stdio` server without corrupting JSON-RPC stdout:**
    `print("[mcp-server] debug message", file=sys.stderr)`
+
+### 10.7. Python Shorthands & Idioms for AI Coding Tests
+1. **Floor / Clamping Shorthand (`max(1, round(characters / 4))`):**
+   Guarantees a minimum value of `1` on a single line when `round(1 / 4)` would otherwise evaluate to `0`.
+2. **Readable Numeric Literals (`1_000_000`):**
+   Python ignores underscores inside numeric literals (`1_000_000 == 1000000`), preventing off-by-one zero typos in token pricing math.
+3. **1-Based Enumeration & Unpacking (`for rank, doc_id in enumerate(ranking, start=1):`):**
+   Starts counting positions at `1` instead of `0` (matching 1-based ranking formulas like RRF) and unpacks `(rank, doc_id)` directly.
+4. **Safe Dictionary Accumulation (`scores[k] = scores.get(k, 0.0) + delta`):**
+   Returns `0.0` when `k` is missing instead of raising `KeyError`, enabling one-line score accumulation across multiple ranked lists.
+5. **Sorting a Dictionary by Value Descending (`sorted(d.items(), key=lambda item: item[1], reverse=True)`):**
+   Converts `{key: score}` into `(key, score)` tuples via `.items()`, sorts by index `1` (`score`), and orders highest-first via `reverse=True`.
+6. **Unwrapping Batch Cosine Similarity (`util.cos_sim(q_emb, doc_embs)[0]`):**
+   `util.cos_sim` returns a 2D tensor of shape `[num_queries, num_docs]`; indexing `[0]` extracts the 1D row of scores for a single query.
+7. **Index-Preserving List Comprehension (`[(i, float(scores[i])) for i in range(len(docs))]`):**
+   Glues each document's original 0-based index `i` to its scalar `float` score before sorting so the original position is never lost.
+8. **Top-K Slice + Dict Comprehension (`{idx: round(score, 2) for idx, score in ranked[:top_k]}`):**
+   Slices the top `top_k` tuples (`[:top_k]`), unpacks `idx, score`, and constructs the final rounded dictionary in one expression.
+
+---
+
+## 11. AI Infusion Test: Coding Solutions, Python Idioms & MCQs
+
+### 11.1. Coding 1: Token Cost Estimator (`estimate_token_cost`) & Python Shorthands
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+#### Context & Problem Statement
+1. **Context:** LLMs charge per token, not per character or word. Before shipping any AI feature, an engineer needs a quick way to estimate how many tokens a piece of text will consume and what that will cost against a given pricing rate.
+2. **Task — Write `estimate_token_cost(text, price_per_million)`:**
+   1. Count the total number of characters in `text`.
+   2. Estimate the token count using the rule `"1 token ≈ 4 characters"` — i.e., `tokens = round(characters / 4)`, with a minimum of `1` token for any non-empty text (and `0` for `""`).
+   3. Compute the cost as `(tokens / 1,000,000) * price_per_million`.
+   4. Return a dictionary with three keys: `"characters"` (`int`), `"tokens"` (`int`), and `"cost"` (`float`, rounded to 6 decimal places).
+
+#### Sample Input, Output & Verified Solution
+```python
+import sys
+
+
+def estimate_token_cost(text: str, price_per_million: float) -> dict:
+    # Step 1: Count the total number of characters in the input string
+    characters = len(text)
+
+    # Step 2: Estimate token count using the "1 token ≈ 4 characters" rule of thumb.
+    # - Empty strings ("") consume 0 tokens.
+    # - For any non-empty string (e.g., 1 character where round(1 / 4) == 0),
+    #   max(1, ...) acts as a floor so the token count is never less than 1.
+    if characters == 0:
+        tokens = 0
+    else:
+        tokens = max(1, round(characters / 4))
+
+    # Step 3: Calculate the API cost based on the rate per 1,000,000 tokens
+    # (1_000_000 uses Python underscores as visual thousands separators, equal to 1000000)
+    # and round to 6 decimal places as required by the specification.
+    cost = round((tokens / 1_000_000) * price_per_million, 6)
+
+    # Step 4: Return the structured summary dictionary
+    return {"characters": characters, "tokens": tokens, "cost": cost}
+
+
+# Sample Input & Output Walkthrough:
+# text = "AI Engineering is surprisingly approachable and powerful for beginners!" (len = 71)
+# price_per_million = 5.0
+# -> tokens = round(71 / 4) = round(17.75) = 18
+# -> cost = round((18 / 1_000_000) * 5.0, 6) = 0.00009
+# -> {"characters": 71, "tokens": 18, "cost": 0.00009}
+```
+
+#### Python Shorthands & Idioms Explained
+1. **`max(1, round(characters / 4))` (Clamping / Floor Shorthand):**
+   1. `round(characters / 4)` divides the character count by 4 and rounds to the nearest integer. For a 1-character string (`"a"`), `1 / 4` is `0.25`, which rounds down to `0`.
+   2. Wrapping it in `max(1, ...)` compares `1` against the rounded number and picks whichever is larger — guaranteeing a minimum of `1` token in a single line (equivalent to `tokens = round(characters / 4); if tokens < 1: tokens = 1`).
+2. **`1_000_000` (Numeric Literal Underscores):**
+   1. Python allows underscores inside numbers (`1_000_000`) purely for human readability so you don't miscount zeros; Python treats `1_000_000` identically to `1000000`.
+
+### 11.2. Coding 2: Hybrid Search Rank Fusion (`reciprocal_rank_fusion`) & Python Shorthands
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+#### Context & Problem Statement
+1. **Context:** Pure keyword search (BM25) and pure semantic search (vector similarity) each catch things the other misses. Production RAG systems merge both rankings into one using **Reciprocal Rank Fusion (RRF)** — a formula that rewards documents ranked highly by either method without needing to re-scale raw scores.
+2. **Task — Write `reciprocal_rank_fusion(bm25_ranking, vector_ranking, k_constant, top_n)`:**
+   1. `bm25_ranking` and `vector_ranking` are lists of document IDs ordered from most to least relevant (best result first).
+   2. For every document appearing in either list, compute its RRF score as the sum of `1 / (k_constant + rank)` across each list it appears in, where `rank` is its **1-based position** in that list (a document missing from a list contributes `0` from that list).
+   3. Sort all documents by their combined score, highest first.
+   4. Return a dictionary containing only the top `top_n` documents, mapping each document ID to its score rounded to 4 decimal places.
+
+#### Sample Input, Output & Verified Solution
+```python
+import sys
+
+
+def reciprocal_rank_fusion(
+    bm25_ranking: list[int],
+    vector_ranking: list[int],
+    k_constant: int,
+    top_n: int,
+) -> dict:
+    # Dictionary mapping each document ID -> its accumulated RRF score
+    rrf_scores = {}
+
+    # Step 1: Accumulate RRF contributions from the BM25 keyword ranking.
+    # - enumerate(..., start=1) yields (rank, doc_id) pairs with rank starting at 1.
+    # - rrf_scores.get(doc_id, 0.0) fetches the existing score for doc_id, or returns
+    #   0.0 if doc_id is not yet in the dictionary.
+    for rank, doc_id in enumerate(bm25_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # Step 2: Accumulate RRF contributions from the dense vector similarity ranking.
+    # Documents appearing in BOTH lists have their two scores summed together;
+    # documents appearing in only one list start at 0.0 and get this single score.
+    for rank, doc_id in enumerate(vector_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # Step 3: Sort all candidate documents by their combined RRF score (highest first).
+    # - rrf_scores.items() produces (doc_id, score) tuples, e.g., [(3, 0.0323), (1, 0.0325), ...].
+    # - key=lambda item: item[1] tells sorted() to compare each tuple by index 1 (the score)
+    #   instead of index 0 (the doc_id).
+    # - reverse=True sorts in descending order (largest score first).
+    sorted_docs = sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)
+
+    # Step 4: Slice the first top_n tuples (sorted_docs[:top_n]) and build the final
+    # dictionary with scores rounded to 4 decimal places.
+    result = {}
+    for doc_id, score in sorted_docs[:top_n]:
+        result[doc_id] = round(score, 4)
+
+    return result
+
+
+# Sample Input & Output Walkthrough (bm25=[3, 1, 4, 2], vector=[1, 2, 3, 5], k_constant=60, top_n=3):
+# - Doc 1: Rank 2 in BM25 + Rank 1 in Vector -> 1/62 + 1/61 = 0.032522 -> 0.0325
+# - Doc 3: Rank 1 in BM25 + Rank 3 in Vector -> 1/61 + 1/63 = 0.032266 -> 0.0323
+# - Doc 2: Rank 4 in BM25 + Rank 2 in Vector -> 1/64 + 1/62 = 0.031754 -> 0.0318
+# - Doc 4 (1/63 = 0.0159) and Doc 5 (1/64 = 0.0156) are excluded by top_n=3
+# -> {1: 0.0325, 3: 0.0323, 2: 0.0318}
+```
+
+#### Python Shorthands & Idioms Explained
+1. **`for rank, doc_id in enumerate(bm25_ranking, start=1):` (1-Based Enumeration & Tuple Unpacking):**
+   1. Passing `start=1` tells `enumerate()` to count positions starting from `1` (`1, 2, 3, ...`), matching the 1-based `rank` in $\frac{1}{k + \text{rank}}$.
+   2. Each iteration yields `(rank, doc_id)` which unpacks directly into `rank` and `doc_id`.
+2. **`rrf_scores.get(doc_id, 0.0)` (Safe Dictionary Lookup with Default):**
+   1. Avoids `KeyError` on unseen document IDs by returning `0.0` when `doc_id` is not yet in `rrf_scores`.
+3. **`sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)` (Sorting a Dictionary by Value):**
+   1. `.items()` converts the dict into `(doc_id, score)` tuples; `key=lambda item: item[1]` sorts by the score at index `1`; `reverse=True` orders highest score first.
+4. **`sorted_docs[:top_n]` (List Slicing):**
+   1. Takes at most the first `top_n` elements from the sorted list.
+
+### 11.3. Coding 3: Semantic Similarity Search (`semantic_search`) & Python Shorthands
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+#### Context & Problem Statement
+1. **Context:** Before reranking or hybrid tricks are added, the core of every RAG system is single-stage semantic search: encode a query and documents into vectors and find which documents are closest in meaning using cosine similarity.
+2. **Task — Write `semantic_search(query, documents, top_k)`:**
+   1. Use `SentenceTransformer('all-MiniLM-L6-v2')` to encode `query` and every string in `documents` into embeddings.
+   2. Compute the cosine similarity between the query embedding and each document embedding.
+   3. Rank the documents by similarity score, highest first, and select the top `top_k` documents.
+   4. Return a dictionary mapping the **0-based index** of each selected document in `documents` to its cosine similarity score rounded to 2 decimal places.
+
+#### Sample Input, Output & Verified Solution
+```python
+import sys
+from sentence_transformers import SentenceTransformer, util
+
+
+def semantic_search(query: str, documents: list[str], top_k: int) -> dict:
+    # Step 1: Load the pretrained bi-encoder embedding model (384-dimensional vectors)
+    model = SentenceTransformer("all-MiniLM-L6-v2")
+
+    # Step 2: Encode the query string and all document strings into PyTorch tensors
+    # so they can be compared directly using vector math.
+    query_embedding = model.encode(query, convert_to_tensor=True)
+    doc_embeddings = model.encode(documents, convert_to_tensor=True)
+
+    # Step 3: Compute cosine similarity between the query (shape: [1, 384]) and all
+    # documents (shape: [N, 384]). util.cos_sim returns a 2D tensor of shape [1, N],
+    # so indexing [0] extracts the 1D row of N similarity scores for our single query.
+    scores = util.cos_sim(query_embedding, doc_embeddings)[0]
+
+    # Step 4: Build a list of (doc_index, similarity_score) tuples using a list
+    # comprehension, then sort the list in-place from highest score to lowest score.
+    ranked = [(i, float(scores[i])) for i in range(len(documents))]
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    # Step 5: Use a dictionary comprehension over the top_k slice to return
+    # {doc_index: rounded_score} rounded to 2 decimal places.
+    return {idx: round(score, 2) for idx, score in ranked[:top_k]}
+
+
+# Sample Input & Output Walkthrough:
+# query = "How do I reset my router?"
+# documents = [
+#   0: "To pay your bill, visit the billing portal.",
+#   1: "Unplug the router for 30 seconds, then plug it back in to reset it.",
+#   2: "Our new internet plans are faster than ever.",
+#   3: "A factory reset can be done by holding the pinhole button for 10 seconds."
+# ]
+# top_k = 2 -> {1: 0.83, 3: 0.48}
+```
+
+#### Python Shorthands & Idioms Explained
+1. **`scores = util.cos_sim(query_embedding, doc_embeddings)[0]` (2D Matrix Row Indexing):**
+   1. `util.cos_sim(A, B)` compares batches of queries against batches of documents, returning shape `[num_queries, num_documents]` (here `[1, 4]`). Indexing `[0]` unwraps the first row into a 1D tensor of 4 scores.
+2. **`ranked = [(i, float(scores[i])) for i in range(len(documents))]` (Index-Preserving List Comprehension):**
+   1. Pairing `(i, float(scores[i]))` keeps the original 0-based document index `i` attached to its score during sorting, while `float(...)` converts the PyTorch scalar tensor into a standard Python `float`.
+3. **`ranked.sort(key=lambda x: x[1], reverse=True)` (In-Place List Sort vs. `sorted()`):**
+   1. Orders the `(doc_index, score)` tuples in-place by `x[1]` (the score) descending.
+4. **`{idx: round(score, 2) for idx, score in ranked[:top_k]}` (Dict Comprehension + Slicing + Unpacking):**
+   1. Slices the top `top_k` tuples, unpacks `idx, score`, and builds the rounded output dictionary in a single return statement.
+
+### 11.4. MCQs 1–3: Tokenizer Logic (BPE), Chain vs. Agent & Output Parser (`StrOutputParser`)
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+1. **Question 01 — Tokenizer Logic:** *Why do LLMs use sub-word tokens instead of whole-word or single-letter tokens? (Select any ONE)*
+   1. **[x] Tokens give a compact vocabulary (~100k chunks) while still being able to spell out any unseen word from familiar pieces** *(Correct)*
+   2. [ ] Whole words are always cheaper to process than tokens
+   3. [ ] Sub-word tokens eliminate the need for a context window
+   4. [ ] Sub-word tokens make the model completely bug-free
+   5. **Why Option 1 is correct & others are wrong:** Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (`"token"` + `"ization"`), keeping the vocabulary compact (~50k–100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.
+2. **Question 02 — Chain vs. Agent:** *What is the key difference between a "chain" and an "agent"? (Select any ONE)*
+   1. [ ] A chain uses a web UI library while an agent does not
+   2. [ ] An agent always needs a vector database, a chain never does
+   3. **[x] A chain follows a fixed sequence of steps; an agent decides on its own, at runtime, whether to call a tool** *(Correct)*
+   4. [ ] There is no real difference — they are just two names for the same thing
+   5. **Why Option 3 is correct & others are wrong:** A **chain** is a deterministic, developer-hardcoded pipeline (`prompt | llm | output_parser`) where every input flows through the exact same sequence. An **agent** uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).
+3. **Question 03 — The Package Opener (`StrOutputParser`):** *What does an output parser (like `StrOutputParser`) actually do in a chain? (Select any ONE)*
+   1. [ ] It fetches website content for summarization
+   2. [ ] It stores conversation memory across sessions
+   3. [ ] It converts a prompt template's blanks into actual text
+   4. **[x] It unwraps the model's response package and hands back just the plain text string** *(Correct)*
+   5. **Why Option 4 is correct & others are wrong:** Chat models return a rich message object (`AIMessage`) containing `.content` plus metadata, token counts, and tool calls. `StrOutputParser` at the end of `prompt | llm | StrOutputParser()` extracts just the plain `.content` string. Document loaders fetch websites, memory/checkpointers store history, and `ChatPromptTemplate` fills template variables at the start of the chain.
+
+### 11.5. MCQs 4–6: Chunk Overlap Boundary, Cloud LLM Three Gates & Function-to-Tool (`@tool`)
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+1. **Question 04 — The Boundary Problem (`chunk_overlap`):** *Why is `"chunk_overlap"` used when splitting documents into chunks for retrieval? (Select any ONE)*
+   1. [ ] To make the vector database run faster
+   2. **[x] To ensure a sentence sitting at a chunk boundary isn't split and missed entirely** *(Correct)*
+   3. [ ] To reduce the number of tokens billed per API call
+   4. [ ] To automatically translate text into multiple languages
+   5. **Why Option 2 is correct & others are wrong:** Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. `chunk_overlap` slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).
+2. **Question 05 — The Three Gates (Cloud LLM Access):** *What are the three independent "gates" that must all be open before an agent can successfully call a cloud-hosted model? (Select any ONE)*
+   1. **[x] Credentials, IAM permission, and Model access (enabled per region)** *(Correct)*
+   2. [ ] Internet connection, RAM, and CPU speed
+   3. [ ] Python version, pip version, and OS type
+   4. [ ] Framework version, UI library version, and API key
+   5. **Why Option 1 is correct & others are wrong:** Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: **Gate 1 — Credentials** (authentication proving identity), **Gate 2 — IAM Permission** (authorization policy such as `bedrock:InvokeModel` / `bedrock:Converse`), and **Gate 3 — Model Access** (per-region model subscription enabled in the target AWS region).
+3. **Question 06 — Function to Tool:** *What three things must be added to a plain Python function to turn it into an agent-usable tool? (Select any ONE)*
+   1. [ ] A class definition, a database connection, and a return statement
+   2. [ ] An API key, a region name, and a session object
+   3. [ ] A Gradio interface, a vector store, and an embedding model
+   4. **[x] A decorator marking it as a tool, type hints, and a clear docstring** *(Correct)*
+   5. **Why Option 4 is correct & others are wrong:** Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the `@tool` decorator to register the function, (2) **type hints** (`param: str -> dict`) to auto-generate the JSON Schema of parameter names and types, and (3) a **clear docstring** (`"""..."""`) injected into the model prompt so the LLM knows *what* the tool does and *when* to call it.
+
+### 11.6. MCQs 7–9: Bi-Encoder vs. Cross-Encoder Reranking, Hybrid Search (BM25 + RRF) & Retrieval vs. Agents
+Source: `study/11-ai-infusion-test/ai-infusion-test.md`
+
+1. **Question 07 — Resume Scan vs. Interview (Bi-Encoders & Cross-Encoders):** *Which of the following statements are **TRUE** about bi-encoders and cross-encoders used in reranking? (Select ALL that apply)*
+   1. **[x] Bi-encoders encode the query and document separately, making them fast and pre-computable** *(Correct)*
+   2. [ ] Cross-encoders are used to grab the initial top 50–100 candidates from millions of chunks
+   3. **[x] Cross-encoders process the query and document together, giving higher accuracy but at slower speed** *(Correct)*
+   4. [ ] Bi-encoders always produce more accurate rankings than cross-encoders
+   5. **[x] Cross-encoder scores cannot be precomputed because each score is pair-specific** *(Correct)*
+   6. **Explanation:** **Bi-encoders ("5-Second Resume Scan")** embed documents once offline into a vector DB and quickly retrieve the initial top 50–100 candidates via cosine similarity. **Cross-encoders ("30-Minute In-Depth Interview")** pass `[CLS] query [SEP] document [SEP]` jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every `(query, doc)` pair requires a live forward pass, scores cannot be precomputed and are only run on the 50–100 candidate shortlist.
+2. **Question 08 — Two Librarians (Hybrid Search: BM25 + Vector Search):** *Which of the following are **TRUE** about hybrid search (BM25 + vector search)? (Select ALL that apply)*
+   1. **[x] BM25 excels at exact matches like SKU codes, product IDs, and legal references** *(Correct)*
+   2. **[x] Vector search excels at understanding paraphrases and semantic meaning, even without exact keyword overlap** *(Correct)*
+   3. [ ] Hybrid search eliminates the need for an LLM in the final answer generation step
+   4. **[x] Reciprocal Rank Fusion (RRF) merges the two ranked lists into one combined ranking** *(Correct)*
+   5. [ ] BM25 is better than vector search at understanding synonyms
+   6. **Explanation:** **BM25 ("Keyword Librarian")** uses lexical TF-IDF matching that shines on exact strings (`SKU-9981`, error codes, legal clauses) but fails on synonyms. **Vector search ("Meaning Librarian")** maps paraphrases and synonyms close together in embedding space. **Reciprocal Rank Fusion (RRF)** combines both ranked lists by rank position ($\sum \frac{1}{k + \text{rank}}$), and the LLM is still required at the end to synthesize the final grounded answer.
+3. **Question 09 — Answers vs. Goals (Retrieval Chatbot vs. True Agent):** *Which of the following statements correctly describe the difference between a retrieval-based chatbot and a true agent? (Select ALL that apply)*
+   1. **[x] A retrieval-based system grounds answers in fetched information, while an agent can act, observe results, and retry using tools** *(Correct)*
+   2. **[x] An agent runs a reasoning loop (reason → act → observe → repeat) until it judges the goal is met** *(Correct)*
+   3. [ ] A retrieval-based chatbot can also directly modify a database record when asked
+   4. [ ] An agent cannot use retrieval as part of its workflow
+   5. **[x] Retrieval answers questions; agents accomplish goals** *(Correct)*
+   6. **Explanation:** A **retrieval-based chatbot (RAG)** is a read-only pipeline that fetches documents to answer questions. A **true agent** runs an autonomous **ReAct loop** (`reason -> act -> observe -> repeat`), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (**Agentic RAG**) to accomplish multi-step goals.

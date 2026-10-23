@@ -41,6 +41,7 @@
                     <li><a href="#8-model-context-protocol-mcp--agent-evals-practice08-ai-mcp-evals">8. Model Context Protocol (MCP) &amp; Agent Evals</a></li>
                     <li><a href="#9-docker--compose-templates-for-ai-projects-practicedockerfile">9. Docker &amp; Compose Templates for AI Projects</a></li>
                     <li><a href="#10-quick-revision-cheatsheet">10. Quick Revision Cheatsheet</a></li>
+                    <li><a href="#11-ai-infusion-test-coding-solutions-python-idioms--mcqs">11. AI Infusion Test: Coding Solutions, Python Idioms &amp; MCQs</a></li>
                 </ol>
             </details>
         </nav>
@@ -48,14 +49,14 @@
         <article class="study">
             <h1>AI Reusable Code Snippets &amp; Quick Revision Guide</h1>
             <p class="lede">
-                A domain-agnostic, copy-paste-ready catalog of reusable Python &amp; AI engineering templates distilled from the <code>practice/</code> workspace modules (<code>01-python</code> through <code>08-ai-mcp-evals</code>). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
+                A domain-agnostic, copy-paste-ready catalog of reusable Python &amp; AI engineering templates distilled from the <code>practice/</code> workspace modules (<code>01-python</code> through <code>08-ai-mcp-evals</code>) and the AI Infusion Test (<code>study/11-ai-infusion-test</code>). All domain-specific business logic has been replaced with generic, plug-and-play skeletons.
             </p>
 
             <div class="course-toolbar">
                 <div class="course-toolbar-info">
-                    <span>10 Modules</span>
+                    <span>11 Modules</span>
                     <span class="dot">•</span>
-                    <span>38 Reusable Snippets</span>
+                    <span>48 Reusable Snippets</span>
                     <span class="dot">•</span>
                     <span>Copy-Paste Ready</span>
                 </div>
@@ -621,6 +622,45 @@ final_answer = messages[-1].content
 </code></pre>
                         </div>
                     </div>
+
+                    <!-- Subtopic 2.6 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-26-token-cost-estimator-estimate_token_cost">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-26-token-cost-estimator-estimate_token_cost">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-assignments"></span>
+                                <h3 class="part-heading" id="26-token-cost-estimator-estimate_token_cost">
+                                    2.6. Token Cost Estimator (<code>estimate_token_cost</code>)
+                                    <a class="headerlink" href="#26-token-cost-estimator-estimate_token_cost" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-26-token-cost-estimator-estimate_token_cost">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+<pre><code class="language-python" data-lang="python">def estimate_token_cost(text: str, price_per_million: float) -&gt; dict:
+    &quot;&quot;&quot;Estimate token count (&#x27;1 token ≈ 4 chars&#x27;, min 1 for non-empty text) and API cost.&quot;&quot;&quot;
+    # 1. Count total characters in input text
+    characters = len(text)
+
+    # 2. Estimate tokens using 1 token ≈ 4 characters (0 for empty string, floor of 1 otherwise)
+    if characters == 0:
+        tokens = 0
+    else:
+        tokens = max(1, round(characters / 4))
+
+    # 3. Compute cost per 1,000,000 tokens rounded to 6 decimal places
+    cost = round((tokens / 1_000_000) * price_per_million, 6)
+
+    return {&quot;characters&quot;: characters, &quot;tokens&quot;: tokens, &quot;cost&quot;: cost}
+</code></pre>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -763,6 +803,96 @@ def answer_with_local_rag(source_text: str, question: str, k: int = 3) -&gt; str
         temperature=0,
     )
     return (prompt | model).invoke({&quot;context&quot;: context, &quot;question&quot;: question}).content
+</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 3.4 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim">
+                                    3.4. Top-K Semantic Similarity Search (<code>SentenceTransformer</code> &amp; <code>util.cos_sim</code>)
+                                    <a class="headerlink" href="#34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-34-top-k-semantic-similarity-search-sentencetransformer--utilcos_sim">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+<pre><code class="language-python" data-lang="python">from sentence_transformers import SentenceTransformer, util
+
+def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
+    &quot;&quot;&quot;Encode query and documents with a bi-encoder and return top_k {doc_index: cosine_score}.&quot;&quot;&quot;
+    # 1. Load pretrained bi-encoder model (384-dimensional vectors)
+    model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+
+    # 2. Encode query and all documents into PyTorch tensors
+    query_embedding = model.encode(query, convert_to_tensor=True)
+    doc_embeddings = model.encode(documents, convert_to_tensor=True)
+
+    # 3. Compute cosine similarity matrix [1, N] and extract 1D row [0]
+    scores = util.cos_sim(query_embedding, doc_embeddings)[0]
+
+    # 4. Pair 0-based document index with float score and sort descending
+    ranked = [(i, float(scores[i])) for i in range(len(documents))]
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    # 5. Return top_k dictionary mapping original index -&gt; score rounded to 2 decimal places
+    return {idx: round(score, 2) for idx, score in ranked[:top_k]}
+</code></pre>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 3.5 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-assignments"></span>
+                                <h3 class="part-heading" id="35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion">
+                                    3.5. Hybrid Search Reciprocal Rank Fusion (<code>reciprocal_rank_fusion</code>)
+                                    <a class="headerlink" href="#35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-35-hybrid-search-reciprocal-rank-fusion-reciprocal_rank_fusion">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+<pre><code class="language-python" data-lang="python">def reciprocal_rank_fusion(
+    bm25_ranking: list[int],
+    vector_ranking: list[int],
+    k_constant: int,
+    top_n: int,
+) -&gt; dict:
+    &quot;&quot;&quot;Merge 1-based BM25 and vector rankings via RRF: sum(1 / (k_constant + rank)).&quot;&quot;&quot;
+    rrf_scores: dict[int, float] = {}
+
+    # 1. Accumulate RRF score from 1-based rank in BM25 keyword ranking
+    for rank, doc_id in enumerate(bm25_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # 2. Accumulate RRF score from 1-based rank in dense vector ranking
+    for rank, doc_id in enumerate(vector_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # 3. Sort documents by combined RRF score descending
+    sorted_docs = sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)
+
+    # 4. Return top_n documents with scores rounded to 4 decimal places
+    return {doc_id: round(score, 4) for doc_id, score in sorted_docs[:top_n]}
 </code></pre>
                         </div>
                     </div>
@@ -2249,6 +2379,13 @@ volumes:
       <li>Two-Part Agent Evals: Assert both <strong>tool routing</strong> (<code>expected_tool in tools_used</code> or <code>tools_used == []</code>) and <strong>ground-truth facts</strong> (<code>all(token in answer for token in must_contain)</code>).</li>
     </ol>
   </li>
+  <li><strong><code>11-ai-infusion-test</code> (Token Pricing, Hybrid RRF, Semantic Search &amp; Core Concepts):</strong>
+    <ol class="snippet-sublist">
+      <li>Token Cost Estimation: Sub-word BPE tokenization gives a compact vocabulary (~100k chunks) with zero out-of-vocabulary failures; estimate tokens via <code>0 if len(text) == 0 else max(1, round(len(text) / 4))</code> and cost via <code>round((tokens / 1_000_000) * price_per_million, 6)</code>.</li>
+      <li>Hybrid Search Rank Fusion (RRF): Merge 1-based BM25 (exact SKU/ID/keyword match) and dense vector (semantic meaning/paraphrase) rankings via <code>sum(1 / (k + rank))</code> using <code>enumerate(ranking, start=1)</code> and <code>rrf_scores.get(doc_id, 0.0)</code>.</li>
+      <li>Batch Semantic Search: Encode query and documents with <code>SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;).encode(..., convert_to_tensor=True)</code>, compute <code>util.cos_sim(query_embedding, doc_embeddings)[0]</code>, sort <code>(i, float(scores[i]))</code> descending, and slice <code>[:top_k]</code>.</li>
+    </ol>
+  </li>
 </ol>
                         </div>
                     </div>
@@ -2318,6 +2455,20 @@ volumes:
   </li>
   <li><strong>Single-Purpose Tools:</strong> Create small, focused tools that compose together rather than one monolithic function.
   </li>
+  <li><strong>Chain vs. Agent vs. Retrieval Chatbot:</strong>
+    <ol class="snippet-sublist">
+      <li><strong>Chain:</strong> Follows a fixed, developer-hardcoded sequence of steps (<code>prompt | llm | StrOutputParser()</code>); <code>StrOutputParser</code> unwraps the <code>AIMessage</code> response package and returns just the plain <code>.content</code> string.</li>
+      <li><strong>Retrieval Chatbot (RAG):</strong> Read-only system that grounds answers in fetched document chunks (<em>&quot;Retrieval answers questions&quot;</em>).</li>
+      <li><strong>True Agent:</strong> Runs an autonomous runtime <strong>ReAct loop</strong> (<strong>Re</strong>ason &rarr; <strong>Act</strong> by calling a tool &rarr; <strong>Observe</strong> result &rarr; <strong>Repeat</strong>), deciding dynamically whether to call tools (including retrieval or state-modifying tools) until the goal is met (<em>&quot;Agents accomplish goals&quot;</em>).</li>
+    </ol>
+  </li>
+  <li><strong>The Three Cloud LLM Gates (e.g., AWS Bedrock):</strong>
+    <ol class="snippet-sublist">
+      <li><strong>Gate 1 &mdash; Credentials (Authentication):</strong> Valid AWS access keys / session token proving identity.</li>
+      <li><strong>Gate 2 &mdash; IAM Permission (Authorization):</strong> IAM policy granting inference permissions (<code>bedrock:InvokeModel</code> / <code>bedrock:Converse</code>).</li>
+      <li><strong>Gate 3 &mdash; Model Access (Per-Region Provisioning):</strong> The target foundation model must be enabled/subscribed in the exact AWS region queried.</li>
+    </ol>
+  </li>
 </ol>
                         </div>
                     </div>
@@ -2342,13 +2493,26 @@ volumes:
                         </div>
                         <div class="part-body" id="body-104-rag-embeddings--memory-checklist">
                             <ol class="snippet-list">
-  <li><strong>Chunking Defaults:</strong> Start with <code>chunk_size=300</code> and <code>chunk_overlap=40</code> (<code>~15%</code> overlap) using <code>RecursiveCharacterTextSplitter</code>.
+  <li><strong>Chunking Defaults &amp; Boundary Problem:</strong> Start with <code>chunk_size=300</code> and <code>chunk_overlap=40</code> (<code>~15%</code> overlap) using <code>RecursiveCharacterTextSplitter</code>; <code>chunk_overlap</code> repeats a sliding window across boundaries so a sentence sitting at a boundary isn&#x27;t sliced in half and missed during retrieval.
   </li>
   <li><strong>Strict Grounding Prompt:</strong> Always instruct the RAG model: <em>&quot;Answer using ONLY the context below. If the context does not contain the answer, say you do not know.&quot;</em> and set <code>temperature=0</code>.
   </li>
   <li><strong>Idempotent Vector Upserts:</strong> Use deterministic chunk IDs (<code>f&quot;{filename}::{chunk_idx}&quot;</code>) with <code>collection.upsert(...)</code> to prevent duplicate entries on re-runs.
   </li>
   <li><strong>Session Isolation:</strong> Namespace Redis conversation keys by <code>f&quot;history:{session_id}&quot;</code> and set a TTL (<code>r.expire(key, 3600)</code>).
+  </li>
+  <li><strong>Two-Stage Reranking (Bi-Encoder vs. Cross-Encoder):</strong>
+    <ol class="snippet-sublist">
+      <li><strong>Bi-Encoder (&quot;5-Second Resume Scan&quot;):</strong> Encodes query and documents separately into fixed vectors; fast and pre-computable offline in a vector DB to grab the initial top 50&ndash;100 candidates.</li>
+      <li><strong>Cross-Encoder (&quot;30-Minute In-Depth Interview&quot;):</strong> Processes <code>(query, document)</code> pairs jointly through full cross-attention for higher accuracy at slower speed; scores are pair-specific (cannot be precomputed) and rerank the 50&ndash;100 shortlist down to the final top 3&ndash;5.</li>
+    </ol>
+  </li>
+  <li><strong>Hybrid Search (&quot;Two Librarians&quot; &mdash; BM25 + Vector + RRF):</strong>
+    <ol class="snippet-sublist">
+      <li><strong>BM25 (Keyword Librarian):</strong> Excels at exact lexical matches like SKU codes, product IDs, error codes, and legal references (weak on synonyms).</li>
+      <li><strong>Vector Search (Meaning Librarian):</strong> Excels at paraphrases, synonyms, and semantic meaning even without keyword overlap.</li>
+      <li><strong>Reciprocal Rank Fusion (RRF):</strong> Merges both ranked lists by rank position (<code>sum(1 / (k + rank))</code>) without needing compatible raw score scales; the LLM is still required for final answer generation.</li>
+    </ol>
   </li>
 </ol>
                         </div>
@@ -2417,6 +2581,510 @@ volumes:
   <li><strong>Log inside an MCP <code>stdio</code> server without corrupting JSON-RPC stdout:</strong> <code>print(&quot;[mcp-server] debug message&quot;, file=sys.stderr)</code>
   </li>
 </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 10.7 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-107-python-shorthands--idioms-for-ai-coding-tests">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-107-python-shorthands--idioms-for-ai-coding-tests">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-problems"></span>
+                                <h3 class="part-heading" id="107-python-shorthands--idioms-for-ai-coding-tests">
+                                    10.7. Python Shorthands &amp; Idioms for AI Coding Tests
+                                    <a class="headerlink" href="#107-python-shorthands--idioms-for-ai-coding-tests" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-107-python-shorthands--idioms-for-ai-coding-tests">
+                            <ol class="snippet-list">
+  <li><strong>Floor / Clamping Shorthand (<code>max(1, round(characters / 4))</code>):</strong> Guarantees a minimum value of <code>1</code> on a single line when <code>round(1 / 4)</code> would otherwise evaluate to <code>0</code>.
+  </li>
+  <li><strong>Readable Numeric Literals (<code>1_000_000</code>):</strong> Python ignores underscores inside numeric literals (<code>1_000_000 == 1000000</code>), preventing off-by-one zero typos in token pricing math.
+  </li>
+  <li><strong>1-Based Enumeration &amp; Unpacking (<code>for rank, doc_id in enumerate(ranking, start=1):</code>):</strong> Starts counting positions at <code>1</code> instead of <code>0</code> (matching 1-based ranking formulas like RRF) and unpacks <code>(rank, doc_id)</code> directly.
+  </li>
+  <li><strong>Safe Dictionary Accumulation (<code>scores[k] = scores.get(k, 0.0) + delta</code>):</strong> Returns <code>0.0</code> when <code>k</code> is missing instead of raising <code>KeyError</code>, enabling one-line score accumulation across multiple ranked lists.
+  </li>
+  <li><strong>Sorting a Dictionary by Value Descending (<code>sorted(d.items(), key=lambda item: item[1], reverse=True)</code>):</strong> Converts <code>{key: score}</code> into <code>(key, score)</code> tuples via <code>.items()</code>, sorts by index <code>1</code> (<code>score</code>), and orders highest-first via <code>reverse=True</code>.
+  </li>
+  <li><strong>Unwrapping Batch Cosine Similarity (<code>util.cos_sim(q_emb, doc_embs)[0]</code>):</strong> <code>util.cos_sim</code> returns a 2D tensor of shape <code>[num_queries, num_docs]</code>; indexing <code>[0]</code> extracts the 1D row of scores for a single query.
+  </li>
+  <li><strong>Index-Preserving List Comprehension (<code>[(i, float(scores[i])) for i in range(len(docs))]</code>):</strong> Glues each document&#x27;s original 0-based index <code>i</code> to its scalar <code>float</code> score before sorting so the original position is never lost.
+  </li>
+  <li><strong>Top-K Slice + Dict Comprehension (<code>{idx: round(score, 2) for idx, score in ranked[:top_k]}</code>):</strong> Slices the top <code>top_k</code> tuples (<code>[:top_k]</code>), unpacks <code>idx, score</code>, and constructs the final rounded dictionary in one expression.
+  </li>
+</ol>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section 11 -->
+            <section class="topic-section is-collapsed" id="11-ai-infusion-test-coding-solutions-python-idioms--mcqs" data-topic="11-ai-infusion-test-coding-solutions-python-idioms--mcqs">
+                <div class="topic-header" role="button" tabindex="0" aria-expanded="false" aria-controls="content-11-ai-infusion-test-coding-solutions-python-idioms--mcqs">
+                    <div class="topic-header-main">
+                        <span class="topic-badge">11</span>
+                        <h2 class="topic-title">AI Infusion Test: Coding Solutions, Python Idioms &amp; MCQs<a class="headerlink" href="#11-ai-infusion-test-coding-solutions-python-idioms--mcqs" title="Permanent link">#</a></h2>
+                    </div>
+                    <div class="topic-header-meta">
+                        <span class="topic-chevron" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                <polyline points="6 9 12 15 18 9"></polyline>
+                            </svg>
+                        </span>
+                    </div>
+                </div>
+                <div class="topic-content" id="content-11-ai-infusion-test-coding-solutions-python-idioms--mcqs">
+                    <!-- Subtopic 11.1 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-problems"></span>
+                                <h3 class="part-heading" id="111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands">
+                                    11.1. Coding 1: Token Cost Estimator (<code>estimate_token_cost</code>) &amp; Python Shorthands
+                                    <a class="headerlink" href="#111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-111-coding-1-token-cost-estimator-estimate_token_cost--python-shorthands">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <h4 class="theory-subheading">Context &amp; Problem Statement</h4>
+                            <ol class="snippet-list">
+                                <li><strong>Context:</strong> LLMs charge per token, not per character or word. Before shipping any AI feature, an engineer needs a quick way to estimate how many tokens a piece of text will consume and what that will cost against a given pricing rate.</li>
+                                <li><strong>Task &mdash; Write <code>estimate_token_cost(text, price_per_million)</code>:</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Count the total number of characters in <code>text</code>.</li>
+                                        <li>Estimate the token count using the rule <code>&quot;1 token &approx; 4 characters&quot;</code> &mdash; i.e., <code>tokens = round(characters / 4)</code>, with a minimum of <code>1</code> token for any non-empty text (and <code>0</code> for <code>&quot;&quot;</code>).</li>
+                                        <li>Compute the cost as <code>(tokens / 1,000,000) * price_per_million</code>.</li>
+                                        <li>Return a dictionary with three keys: <code>&quot;characters&quot;</code> (<code>int</code>), <code>&quot;tokens&quot;</code> (<code>int</code>), and <code>&quot;cost&quot;</code> (<code>float</code>, rounded to 6 decimal places).</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <h4 class="theory-subheading">Sample Input, Output &amp; Verified Solution</h4>
+<pre><code class="language-python" data-lang="python">import sys
+
+
+def estimate_token_cost(text: str, price_per_million: float) -&gt; dict:
+    # Step 1: Count the total number of characters in the input string
+    characters = len(text)
+
+    # Step 2: Estimate token count using the &quot;1 token ≈ 4 characters&quot; rule of thumb.
+    # - Empty strings (&quot;&quot;) consume 0 tokens.
+    # - For any non-empty string (e.g., 1 character where round(1 / 4) == 0),
+    #   max(1, ...) acts as a floor so the token count is never less than 1.
+    if characters == 0:
+        tokens = 0
+    else:
+        tokens = max(1, round(characters / 4))
+
+    # Step 3: Calculate the API cost based on the rate per 1,000,000 tokens
+    # (1_000_000 uses Python underscores as visual thousands separators, equal to 1000000)
+    # and round to 6 decimal places as required by the specification.
+    cost = round((tokens / 1_000_000) * price_per_million, 6)
+
+    # Step 4: Return the structured summary dictionary
+    return {&quot;characters&quot;: characters, &quot;tokens&quot;: tokens, &quot;cost&quot;: cost}
+
+
+# Sample Input &amp; Output Walkthrough:
+# text = &quot;AI Engineering is surprisingly approachable and powerful for beginners!&quot; (len = 71)
+# price_per_million = 5.0
+# -&gt; tokens = round(71 / 4) = round(17.75) = 18
+# -&gt; cost = round((18 / 1_000_000) * 5.0, 6) = 0.00009
+# -&gt; {&quot;characters&quot;: 71, &quot;tokens&quot;: 18, &quot;cost&quot;: 0.00009}
+</code></pre>
+                            <h4 class="theory-subheading">Python Shorthands &amp; Idioms Explained</h4>
+                            <ol class="snippet-list">
+                                <li><strong><code>max(1, round(characters / 4))</code> (Clamping / Floor Shorthand):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li><code>round(characters / 4)</code> divides the character count by 4 and rounds to the nearest integer. For a 1-character string (<code>&quot;a&quot;</code>), <code>1 / 4</code> is <code>0.25</code>, which rounds down to <code>0</code>.</li>
+                                        <li>Wrapping it in <code>max(1, ...)</code> compares <code>1</code> against the rounded number and picks whichever is larger &mdash; guaranteeing a minimum of <code>1</code> token in a single line (equivalent to <code>tokens = round(characters / 4); if tokens &lt; 1: tokens = 1</code>).</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>1_000_000</code> (Numeric Literal Underscores):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Python allows underscores inside numbers (<code>1_000_000</code>) purely for human readability so you don&#x27;t miscount zeros; Python treats <code>1_000_000</code> identically to <code>1000000</code>.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 11.2 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-assignments"></span>
+                                <h3 class="part-heading" id="112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands">
+                                    11.2. Coding 2: Hybrid Search Rank Fusion (<code>reciprocal_rank_fusion</code>) &amp; Python Shorthands
+                                    <a class="headerlink" href="#112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-112-coding-2-hybrid-search-rank-fusion-reciprocal_rank_fusion--python-shorthands">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <h4 class="theory-subheading">Context &amp; Problem Statement</h4>
+                            <ol class="snippet-list">
+                                <li><strong>Context:</strong> Pure keyword search (BM25) and pure semantic search (vector similarity) each catch things the other misses. Production RAG systems merge both rankings into one using <strong>Reciprocal Rank Fusion (RRF)</strong> &mdash; a formula that rewards documents ranked highly by either method without needing to re-scale raw scores.</li>
+                                <li><strong>Task &mdash; Write <code>reciprocal_rank_fusion(bm25_ranking, vector_ranking, k_constant, top_n)</code>:</strong>
+                                    <ol class="snippet-sublist">
+                                        <li><code>bm25_ranking</code> and <code>vector_ranking</code> are lists of document IDs ordered from most to least relevant (best result first).</li>
+                                        <li>For every document appearing in either list, compute its RRF score as the sum of <code>1 / (k_constant + rank)</code> across each list it appears in, where <code>rank</code> is its <strong>1-based position</strong> in that list (a document missing from a list contributes <code>0</code> from that list).</li>
+                                        <li>Sort all documents by their combined score, highest first.</li>
+                                        <li>Return a dictionary containing only the top <code>top_n</code> documents, mapping each document ID to its score rounded to 4 decimal places.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <h4 class="theory-subheading">Sample Input, Output &amp; Verified Solution</h4>
+<pre><code class="language-python" data-lang="python">import sys
+
+
+def reciprocal_rank_fusion(
+    bm25_ranking: list[int],
+    vector_ranking: list[int],
+    k_constant: int,
+    top_n: int,
+) -&gt; dict:
+    # Dictionary mapping each document ID -&gt; its accumulated RRF score
+    rrf_scores = {}
+
+    # Step 1: Accumulate RRF contributions from the BM25 keyword ranking.
+    # - enumerate(..., start=1) yields (rank, doc_id) pairs with rank starting at 1.
+    # - rrf_scores.get(doc_id, 0.0) fetches the existing score for doc_id, or returns
+    #   0.0 if doc_id is not yet in the dictionary.
+    for rank, doc_id in enumerate(bm25_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # Step 2: Accumulate RRF contributions from the dense vector similarity ranking.
+    # Documents appearing in BOTH lists have their two scores summed together;
+    # documents appearing in only one list start at 0.0 and get this single score.
+    for rank, doc_id in enumerate(vector_ranking, start=1):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k_constant + rank))
+
+    # Step 3: Sort all candidate documents by their combined RRF score (highest first).
+    # - rrf_scores.items() produces (doc_id, score) tuples, e.g., [(3, 0.0323), (1, 0.0325), ...].
+    # - key=lambda item: item[1] tells sorted() to compare each tuple by index 1 (the score)
+    #   instead of index 0 (the doc_id).
+    # - reverse=True sorts in descending order (largest score first).
+    sorted_docs = sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)
+
+    # Step 4: Slice the first top_n tuples (sorted_docs[:top_n]) and build the final
+    # dictionary with scores rounded to 4 decimal places.
+    result = {}
+    for doc_id, score in sorted_docs[:top_n]:
+        result[doc_id] = round(score, 4)
+
+    return result
+
+
+# Sample Input &amp; Output Walkthrough (bm25=[3, 1, 4, 2], vector=[1, 2, 3, 5], k_constant=60, top_n=3):
+# - Doc 1: Rank 2 in BM25 + Rank 1 in Vector -&gt; 1/62 + 1/61 = 0.032522 -&gt; 0.0325
+# - Doc 3: Rank 1 in BM25 + Rank 3 in Vector -&gt; 1/61 + 1/63 = 0.032266 -&gt; 0.0323
+# - Doc 2: Rank 4 in BM25 + Rank 2 in Vector -&gt; 1/64 + 1/62 = 0.031754 -&gt; 0.0318
+# - Doc 4 (1/63 = 0.0159) and Doc 5 (1/64 = 0.0156) are excluded by top_n=3
+# -&gt; {1: 0.0325, 3: 0.0323, 2: 0.0318}
+</code></pre>
+                            <h4 class="theory-subheading">Python Shorthands &amp; Idioms Explained</h4>
+                            <ol class="snippet-list">
+                                <li><strong><code>for rank, doc_id in enumerate(bm25_ranking, start=1):</code> (1-Based Enumeration &amp; Tuple Unpacking):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Passing <code>start=1</code> tells <code>enumerate()</code> to count positions starting from <code>1</code> (<code>1, 2, 3, ...</code>), matching the 1-based <code>rank</code> in <code>1 / (k + rank)</code>.</li>
+                                        <li>Each iteration yields <code>(rank, doc_id)</code> which unpacks directly into <code>rank</code> and <code>doc_id</code>.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>rrf_scores.get(doc_id, 0.0)</code> (Safe Dictionary Lookup with Default):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Avoids <code>KeyError</code> on unseen document IDs by returning <code>0.0</code> when <code>doc_id</code> is not yet in <code>rrf_scores</code>.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>sorted(rrf_scores.items(), key=lambda item: item[1], reverse=True)</code> (Sorting a Dictionary by Value):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li><code>.items()</code> converts the dict into <code>(doc_id, score)</code> tuples; <code>key=lambda item: item[1]</code> sorts by the score at index <code>1</code>; <code>reverse=True</code> orders highest score first.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>sorted_docs[:top_n]</code> (List Slicing):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Takes at most the first <code>top_n</code> elements from the sorted list.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 11.3 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-113-coding-3-semantic-similarity-search-semantic_search--python-shorthands">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-113-coding-3-semantic-similarity-search-semantic_search--python-shorthands">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading" id="113-coding-3-semantic-similarity-search-semantic_search--python-shorthands">
+                                    11.3. Coding 3: Semantic Similarity Search (<code>semantic_search</code>) &amp; Python Shorthands
+                                    <a class="headerlink" href="#113-coding-3-semantic-similarity-search-semantic_search--python-shorthands" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-113-coding-3-semantic-similarity-search-semantic_search--python-shorthands">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <h4 class="theory-subheading">Context &amp; Problem Statement</h4>
+                            <ol class="snippet-list">
+                                <li><strong>Context:</strong> Before reranking or hybrid tricks are added, the core of every RAG system is single-stage semantic search: encode a query and documents into vectors and find which documents are closest in meaning using cosine similarity.</li>
+                                <li><strong>Task &mdash; Write <code>semantic_search(query, documents, top_k)</code>:</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Use <code>SentenceTransformer(&#x27;all-MiniLM-L6-v2&#x27;)</code> to encode <code>query</code> and every string in <code>documents</code> into embeddings.</li>
+                                        <li>Compute the cosine similarity between the query embedding and each document embedding.</li>
+                                        <li>Rank the documents by similarity score, highest first, and select the top <code>top_k</code> documents.</li>
+                                        <li>Return a dictionary mapping the <strong>0-based index</strong> of each selected document in <code>documents</code> to its cosine similarity score rounded to 2 decimal places.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                            <h4 class="theory-subheading">Sample Input, Output &amp; Verified Solution</h4>
+<pre><code class="language-python" data-lang="python">import sys
+from sentence_transformers import SentenceTransformer, util
+
+
+def semantic_search(query: str, documents: list[str], top_k: int) -&gt; dict:
+    # Step 1: Load the pretrained bi-encoder embedding model (384-dimensional vectors)
+    model = SentenceTransformer(&quot;all-MiniLM-L6-v2&quot;)
+
+    # Step 2: Encode the query string and all document strings into PyTorch tensors
+    # so they can be compared directly using vector math.
+    query_embedding = model.encode(query, convert_to_tensor=True)
+    doc_embeddings = model.encode(documents, convert_to_tensor=True)
+
+    # Step 3: Compute cosine similarity between the query (shape: [1, 384]) and all
+    # documents (shape: [N, 384]). util.cos_sim returns a 2D tensor of shape [1, N],
+    # so indexing [0] extracts the 1D row of N similarity scores for our single query.
+    scores = util.cos_sim(query_embedding, doc_embeddings)[0]
+
+    # Step 4: Build a list of (doc_index, similarity_score) tuples using a list
+    # comprehension, then sort the list in-place from highest score to lowest score.
+    ranked = [(i, float(scores[i])) for i in range(len(documents))]
+    ranked.sort(key=lambda x: x[1], reverse=True)
+
+    # Step 5: Use a dictionary comprehension over the top_k slice to return
+    # {doc_index: rounded_score} rounded to 2 decimal places.
+    return {idx: round(score, 2) for idx, score in ranked[:top_k]}
+
+
+# Sample Input &amp; Output Walkthrough:
+# query = &quot;How do I reset my router?&quot;
+# documents = [
+#   0: &quot;To pay your bill, visit the billing portal.&quot;,
+#   1: &quot;Unplug the router for 30 seconds, then plug it back in to reset it.&quot;,
+#   2: &quot;Our new internet plans are faster than ever.&quot;,
+#   3: &quot;A factory reset can be done by holding the pinhole button for 10 seconds.&quot;
+# ]
+# top_k = 2 -&gt; {1: 0.83, 3: 0.48}
+</code></pre>
+                            <h4 class="theory-subheading">Python Shorthands &amp; Idioms Explained</h4>
+                            <ol class="snippet-list">
+                                <li><strong><code>scores = util.cos_sim(query_embedding, doc_embeddings)[0]</code> (2D Matrix Row Indexing):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li><code>util.cos_sim(A, B)</code> compares batches of queries against batches of documents, returning shape <code>[num_queries, num_documents]</code> (here <code>[1, 4]</code>). Indexing <code>[0]</code> unwraps the first row into a 1D tensor of 4 scores.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>ranked = [(i, float(scores[i])) for i in range(len(documents))]</code> (Index-Preserving List Comprehension):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Pairing <code>(i, float(scores[i]))</code> keeps the original 0-based document index <code>i</code> attached to its score during sorting, while <code>float(...)</code> converts the PyTorch scalar tensor into a standard Python <code>float</code>.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>ranked.sort(key=lambda x: x[1], reverse=True)</code> (In-Place List Sort vs. <code>sorted()</code>):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Orders the <code>(doc_index, score)</code> tuples in-place by <code>x[1]</code> (the score) descending.</li>
+                                    </ol>
+                                </li>
+                                <li><strong><code>{idx: round(score, 2) for idx, score in ranked[:top_k]}</code> (Dict Comprehension + Slicing + Unpacking):</strong>
+                                    <ol class="snippet-sublist">
+                                        <li>Slices the top <code>top_k</code> tuples, unpacks <code>idx, score</code>, and builds the rounded output dictionary in a single return statement.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 11.4 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-theory"></span>
+                                <h3 class="part-heading" id="114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser">
+                                    11.4. MCQs 1&ndash;3: Tokenizer Logic (BPE), Chain vs. Agent &amp; Output Parser (<code>StrOutputParser</code>)
+                                    <a class="headerlink" href="#114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-114-mcqs-13-tokenizer-logic-bpe-chain-vs-agent--output-parser-stroutputparser">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <ol class="snippet-list">
+                                <li><strong>Question 01 &mdash; Tokenizer Logic:</strong> <em>Why do LLMs use sub-word tokens instead of whole-word or single-letter tokens? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li><strong>[x] Tokens give a compact vocabulary (~100k chunks) while still being able to spell out any unseen word from familiar pieces</strong> <em>(Correct)</em></li>
+                                        <li>[ ] Whole words are always cheaper to process than tokens</li>
+                                        <li>[ ] Sub-word tokens eliminate the need for a context window</li>
+                                        <li>[ ] Sub-word tokens make the model completely bug-free</li>
+                                        <li><strong>Why Option 1 is correct &amp; others are wrong:</strong> Sub-word algorithms (like Byte-Pair Encoding, BPE) keep common words intact as single tokens while splitting rare, compound, or unseen words into smaller known pieces (<code>&quot;token&quot;</code> + <code>&quot;ization&quot;</code>), keeping the vocabulary compact (~50k&ndash;100k) with zero out-of-vocabulary (OOV) failures. Whole-word vocabularies would explode embedding matrix sizes and fail on typos/new words; transformers still have a finite context window; and tokenization is purely text-to-integer preprocessing.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 02 &mdash; Chain vs. Agent:</strong> <em>What is the key difference between a &quot;chain&quot; and an &quot;agent&quot;? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li>[ ] A chain uses a web UI library while an agent does not</li>
+                                        <li>[ ] An agent always needs a vector database, a chain never does</li>
+                                        <li><strong>[x] A chain follows a fixed sequence of steps; an agent decides on its own, at runtime, whether to call a tool</strong> <em>(Correct)</em></li>
+                                        <li>[ ] There is no real difference &mdash; they are just two names for the same thing</li>
+                                        <li><strong>Why Option 3 is correct &amp; others are wrong:</strong> A <strong>chain</strong> is a deterministic, developer-hardcoded pipeline (<code>prompt | llm | output_parser</code>) where every input flows through the exact same sequence. An <strong>agent</strong> uses the LLM as a runtime reasoning engine to dynamically choose which tool to call, with what arguments, and when to stop. Both are backend patterns independent of UI libraries, and chains routinely use vector databases (standard RAG is a fixed chain).</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 03 &mdash; The Package Opener (<code>StrOutputParser</code>):</strong> <em>What does an output parser (like <code>StrOutputParser</code>) actually do in a chain? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li>[ ] It fetches website content for summarization</li>
+                                        <li>[ ] It stores conversation memory across sessions</li>
+                                        <li>[ ] It converts a prompt template&#x27;s blanks into actual text</li>
+                                        <li><strong>[x] It unwraps the model&#x27;s response package and hands back just the plain text string</strong> <em>(Correct)</em></li>
+                                        <li><strong>Why Option 4 is correct &amp; others are wrong:</strong> Chat models return a rich message object (<code>AIMessage</code>) containing <code>.content</code> plus metadata, token counts, and tool calls. <code>StrOutputParser</code> at the end of <code>prompt | llm | StrOutputParser()</code> extracts just the plain <code>.content</code> string. Document loaders fetch websites, memory/checkpointers store history, and <code>ChatPromptTemplate</code> fills template variables at the start of the chain.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 11.5 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-assignments"></span>
+                                <h3 class="part-heading" id="115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool">
+                                    11.5. MCQs 4&ndash;6: Chunk Overlap Boundary, Cloud LLM Three Gates &amp; Function-to-Tool (<code>@tool</code>)
+                                    <a class="headerlink" href="#115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-115-mcqs-46-chunk-overlap-boundary-cloud-llm-three-gates--function-to-tool-tool">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <ol class="snippet-list">
+                                <li><strong>Question 04 &mdash; The Boundary Problem (<code>chunk_overlap</code>):</strong> <em>Why is <code>&quot;chunk_overlap&quot;</code> used when splitting documents into chunks for retrieval? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li>[ ] To make the vector database run faster</li>
+                                        <li><strong>[x] To ensure a sentence sitting at a chunk boundary isn&#x27;t split and missed entirely</strong> <em>(Correct)</em></li>
+                                        <li>[ ] To reduce the number of tokens billed per API call</li>
+                                        <li>[ ] To automatically translate text into multiple languages</li>
+                                        <li><strong>Why Option 2 is correct &amp; others are wrong:</strong> Fixed-size splitting can slice a key sentence in half right at the boundary so neither chunk alone matches the query. <code>chunk_overlap</code> slides the window back so the tail of Chunk 1 repeats at the start of Chunk 2, preserving boundary context (slightly increasing total chunks/tokens rather than speeding up search or reducing cost).</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 05 &mdash; The Three Gates (Cloud LLM Access):</strong> <em>What are the three independent &quot;gates&quot; that must all be open before an agent can successfully call a cloud-hosted model? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li><strong>[x] Credentials, IAM permission, and Model access (enabled per region)</strong> <em>(Correct)</em></li>
+                                        <li>[ ] Internet connection, RAM, and CPU speed</li>
+                                        <li>[ ] Python version, pip version, and OS type</li>
+                                        <li>[ ] Framework version, UI library version, and API key</li>
+                                        <li><strong>Why Option 1 is correct &amp; others are wrong:</strong> Calling a managed enterprise cloud LLM (such as AWS Bedrock) requires passing three independent cloud gates: <strong>Gate 1 &mdash; Credentials</strong> (authentication proving identity), <strong>Gate 2 &mdash; IAM Permission</strong> (authorization policy such as <code>bedrock:InvokeModel</code> / <code>bedrock:Converse</code>), and <strong>Gate 3 &mdash; Model Access</strong> (per-region model subscription enabled in the target AWS region).</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 06 &mdash; Function to Tool:</strong> <em>What three things must be added to a plain Python function to turn it into an agent-usable tool? (Select any ONE)</em>
+                                    <ol class="snippet-sublist">
+                                        <li>[ ] A class definition, a database connection, and a return statement</li>
+                                        <li>[ ] An API key, a region name, and a session object</li>
+                                        <li>[ ] A Gradio interface, a vector store, and an embedding model</li>
+                                        <li><strong>[x] A decorator marking it as a tool, type hints, and a clear docstring</strong> <em>(Correct)</em></li>
+                                        <li><strong>Why Option 4 is correct &amp; others are wrong:</strong> Agent frameworks (AWS Strands, LangChain) inspect three elements: (1) the <code>@tool</code> decorator to register the function, (2) <strong>type hints</strong> (<code>param: str -&gt; dict</code>) to auto-generate the JSON Schema of parameter names and types, and (3) a <strong>clear docstring</strong> (<code>&quot;&quot;&quot;...&quot;&quot;&quot;</code>) injected into the model prompt so the LLM knows <em>what</em> the tool does and <em>when</em> to call it.</li>
+                                    </ol>
+                                </li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <!-- Subtopic 11.6 Accordion -->
+                    <div class="part-section is-collapsed" id="sec-116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents">
+                        <div class="part-header" role="button" tabindex="0" aria-expanded="false" aria-controls="body-116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents">
+                            <div class="part-header-left">
+                                <span class="part-indicator ind-questions"></span>
+                                <h3 class="part-heading" id="116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents">
+                                    11.6. MCQs 7&ndash;9: Bi-Encoder vs. Cross-Encoder Reranking, Hybrid Search (BM25 + RRF) &amp; Retrieval vs. Agents
+                                    <a class="headerlink" href="#116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents" title="Permanent link">#</a>
+                                </h3>
+                            </div>
+                            <div class="part-header-right">
+                                <span class="part-arrow" aria-hidden="true">
+                                    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="part-body" id="body-116-mcqs-79-bi-encoder-vs-cross-encoder-reranking-hybrid-search-bm25--rrf--retrieval-vs-agents">
+                            <div class="source-tag"><span class="source-label">Source:</span> <code>study/11-ai-infusion-test/ai-infusion-test.md</code></div>
+                            <ol class="snippet-list">
+                                <li><strong>Question 07 &mdash; Resume Scan vs. Interview (Bi-Encoders &amp; Cross-Encoders):</strong> <em>Which of the following statements are <strong>TRUE</strong> about bi-encoders and cross-encoders used in reranking? (Select ALL that apply)</em>
+                                    <ol class="snippet-sublist">
+                                        <li><strong>[x] Bi-encoders encode the query and document separately, making them fast and pre-computable</strong> <em>(Correct)</em></li>
+                                        <li>[ ] Cross-encoders are used to grab the initial top 50&ndash;100 candidates from millions of chunks</li>
+                                        <li><strong>[x] Cross-encoders process the query and document together, giving higher accuracy but at slower speed</strong> <em>(Correct)</em></li>
+                                        <li>[ ] Bi-encoders always produce more accurate rankings than cross-encoders</li>
+                                        <li><strong>[x] Cross-encoder scores cannot be precomputed because each score is pair-specific</strong> <em>(Correct)</em></li>
+                                        <li><strong>Explanation:</strong> <strong>Bi-encoders (&quot;5-Second Resume Scan&quot;)</strong> embed documents once offline into a vector DB and quickly retrieve the initial top 50&ndash;100 candidates via cosine similarity. <strong>Cross-encoders (&quot;30-Minute In-Depth Interview&quot;)</strong> pass <code>[CLS] query [SEP] document [SEP]</code> jointly through every self-attention layer, capturing fine-grained relevance much more accurately than bi-encoders, but since every <code>(query, doc)</code> pair requires a live forward pass, scores cannot be precomputed and are only run on the 50&ndash;100 candidate shortlist.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 08 &mdash; Two Librarians (Hybrid Search: BM25 + Vector Search):</strong> <em>Which of the following are <strong>TRUE</strong> about hybrid search (BM25 + vector search)? (Select ALL that apply)</em>
+                                    <ol class="snippet-sublist">
+                                        <li><strong>[x] BM25 excels at exact matches like SKU codes, product IDs, and legal references</strong> <em>(Correct)</em></li>
+                                        <li><strong>[x] Vector search excels at understanding paraphrases and semantic meaning, even without exact keyword overlap</strong> <em>(Correct)</em></li>
+                                        <li>[ ] Hybrid search eliminates the need for an LLM in the final answer generation step</li>
+                                        <li><strong>[x] Reciprocal Rank Fusion (RRF) merges the two ranked lists into one combined ranking</strong> <em>(Correct)</em></li>
+                                        <li>[ ] BM25 is better than vector search at understanding synonyms</li>
+                                        <li><strong>Explanation:</strong> <strong>BM25 (&quot;Keyword Librarian&quot;)</strong> uses lexical TF-IDF matching that shines on exact strings (<code>SKU-9981</code>, error codes, legal clauses) but fails on synonyms. <strong>Vector search (&quot;Meaning Librarian&quot;)</strong> maps paraphrases and synonyms close together in embedding space. <strong>Reciprocal Rank Fusion (RRF)</strong> combines both ranked lists by rank position (<code>sum(1 / (k + rank))</code>), and the LLM is still required at the end to synthesize the final grounded answer.</li>
+                                    </ol>
+                                </li>
+                                <li><strong>Question 09 &mdash; Answers vs. Goals (Retrieval Chatbot vs. True Agent):</strong> <em>Which of the following statements correctly describe the difference between a retrieval-based chatbot and a true agent? (Select ALL that apply)</em>
+                                    <ol class="snippet-sublist">
+                                        <li><strong>[x] A retrieval-based system grounds answers in fetched information, while an agent can act, observe results, and retry using tools</strong> <em>(Correct)</em></li>
+                                        <li><strong>[x] An agent runs a reasoning loop (reason &rarr; act &rarr; observe &rarr; repeat) until it judges the goal is met</strong> <em>(Correct)</em></li>
+                                        <li>[ ] A retrieval-based chatbot can also directly modify a database record when asked</li>
+                                        <li>[ ] An agent cannot use retrieval as part of its workflow</li>
+                                        <li><strong>[x] Retrieval answers questions; agents accomplish goals</strong> <em>(Correct)</em></li>
+                                        <li><strong>Explanation:</strong> A <strong>retrieval-based chatbot (RAG)</strong> is a read-only pipeline that fetches documents to answer questions. A <strong>true agent</strong> runs an autonomous <strong>ReAct loop</strong> (<code>reason -&gt; act -&gt; observe -&gt; repeat</code>), can call action tools that modify external state (databases, APIs, emails), and can also use retrieval as one of its tools (<strong>Agentic RAG</strong>) to accomplish multi-step goals.</li>
+                                    </ol>
+                                </li>
+                            </ol>
                         </div>
                     </div>
                 </div>
