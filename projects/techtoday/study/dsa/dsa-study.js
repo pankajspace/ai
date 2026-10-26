@@ -582,7 +582,7 @@ document.querySelectorAll("pre").forEach((block) => {
 
 /* -------------------------------------------------------------- code tabs */
 
-const LANG_LABEL = { python: "Python", javascript: "JavaScript", text: "Output" };
+const LANG_LABEL = { python: "Python", javascript: "JavaScript", java: "Java", text: "Output" };
 const LANG_KEY = "tt-dsa-lang";
 const tabGroups = [];
 
