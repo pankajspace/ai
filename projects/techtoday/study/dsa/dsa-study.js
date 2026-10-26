@@ -136,6 +136,19 @@ const JS_BUILTIN = new Set(
         "NaN console parseInt parseFloat isNaN BigInt Int32Array Uint8Array structuredClone").split(" ")
 );
 
+const JAVA_KW = new Set(
+    ("abstract assert boolean break byte case catch char class const continue default do double else " +
+        "enum extends final finally float for goto if implements import instanceof int interface long " +
+        "native new package private protected public return short static strictfp super switch " +
+        "synchronized this throw throws transient try void volatile while record yield sealed permits " +
+        "true false null").split(" ")
+);
+const JAVA_BUILTIN = new Set(
+    ("String Integer Long Double Float Boolean Character Byte Short Object Math System Arrays " +
+        "Collections List ArrayList LinkedList Map HashMap TreeMap Set HashSet TreeSet Queue Deque " +
+        "ArrayDeque PriorityQueue StringBuilder StringBuffer Comparable Comparator Optional").split(" ")
+);
+
 const SH_KW = new Set(
     ("case do done elif else esac fi for function if in select then time until while export local " +
         "readonly return set unset source sudo trap exec").split(" ")
@@ -160,6 +173,7 @@ const JSON_BUILTIN = new Set();
 const LANG_SPEC = {
     python: [PY_KW, PY_BUILTIN],
     javascript: [JS_KW, JS_BUILTIN],
+    java: [JAVA_KW, JAVA_BUILTIN],
     bash: [SH_KW, SH_BUILTIN],
     yaml: [YAML_KW, YAML_BUILTIN],
     json: [JSON_KW, JSON_BUILTIN],

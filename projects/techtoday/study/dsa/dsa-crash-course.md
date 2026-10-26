@@ -1,7 +1,7 @@
 <!--
 Source: dsa-crash-course.html
 Title: DSA Crash Course | TechToday
-Description: A visual crash course in data structures and algorithms — every structure explained with a real-world mental model, animated, and shown in Python and JavaScript.
+Description: A visual crash course in data structures and algorithms — every structure explained with a real-world mental model, animated, and shown in Python, JavaScript, and Java.
 Theme-color: #0b0d10
 Stylesheets: dsa-study.css, ../../site-header.css
 Scripts: dsa-study.js
@@ -136,6 +136,27 @@ const grid3 = [...Array(3)].map(() => new Array(4).fill(0)); // correct
 const wrong = new Array(3).fill(new Array(4).fill(0)); // wrong: only one row is created
 ```
 
+```java
+// Fixed-size primitive array
+int[] seatsArr = {10, 20, 30, 40, 50};
+int val = seatsArr[2];               // 30   O(1) - straight there
+
+// Resizable array (ArrayList)
+List<Integer> seats = new ArrayList<>(List.of(10, 20, 30, 40, 50));
+
+seats.get(2);                        // 30   O(1)
+seats.add(60);                       // O(1) amortised - adding at end is cheap
+seats.add(2, 25);                    // O(n) - shifts everything after index 2 right
+seats.remove(0);                     // O(n) - shifts everything left
+seats.contains(30);                  // O(n) - linear scan
+
+// 2-D grids:
+int[][] grid = new int[3][4];        // correct: 3 rows, 4 columns (all 0)
+// Gotcha: Arrays.fill with an array reference shares that same row
+int[][] wrong = new int[3][];
+Arrays.fill(wrong, new int[4]);      // wrong: 3 references to the same row
+```
+
 <a id="why-append-is-cheap"></a>
 
 #### Why appending is cheap
@@ -180,6 +201,24 @@ moveZeroes(data);
 console.log(data);                  // [3, 5, 9, 2, 0, 0, 0]
 ```
 
+```java
+public static void moveZeroes(int[] nums) { // O(n) time, O(1) space
+    int write = 0;                   // next slot a non-zero should land in
+    for (int read = 0; read < nums.length; read++) { // read scans every element once
+        if (nums[read] != 0) {
+            int temp = nums[write];
+            nums[write] = nums[read];
+            nums[read] = temp;
+            write++;
+        }
+    }
+}
+
+int[] data = {0, 3, 0, 5, 9, 0, 2};
+moveZeroes(data);
+System.out.println(Arrays.toString(data)); // [3, 5, 9, 2, 0, 0, 0]
+```
+
 **Top Interview Question 2**
 
 *You are given an array where `prices[i]` is the stock price on day `i`. You may complete only one transaction — buy on one day, sell on a later day. Return the maximum profit, or `0` if none is possible.*
@@ -213,6 +252,20 @@ function maxProfit(prices) {            // O(n) time, O(1) space
 }
 
 console.log(maxProfit([7, 1, 5, 3, 6, 4]));   // 5
+```
+
+```java
+public static int maxProfit(int[] prices) { // O(n) time, O(1) space
+    int minPrice = Integer.MAX_VALUE;
+    int best = 0;
+    for (int price : prices) {
+        minPrice = Math.min(minPrice, price);      // cheapest day to have bought
+        best = Math.max(best, price - minPrice);   // profit if sold today
+    }
+    return best;
+}
+
+System.out.println(maxProfit(new int[]{7, 1, 5, 3, 6, 4})); // 5 (buy at 1, sell at 6)
 ```
 
 **Top Interview Question 3**
@@ -253,6 +306,25 @@ function removeDuplicates(nums) {       // O(n) time, O(1) space
 const data = [0, 0, 1, 1, 1, 2, 2, 3, 3, 4];
 const k = removeDuplicates(data);
 console.log(k, data.slice(0, k));       // 5 [0, 1, 2, 3, 4]
+```
+
+```java
+public static int removeDuplicates(int[] nums) { // O(n) time, O(1) space
+    if (nums.length == 0) return 0;
+    int write = 1;                         // first element is always unique
+    for (int read = 1; read < nums.length; read++) {
+        if (nums[read] != nums[write - 1]) {
+            nums[write] = nums[read];      // a genuinely new value
+            write++;
+        }
+    }
+    return write;
+}
+
+int[] data = {0, 0, 1, 1, 1, 2, 2, 3, 3, 4};
+int k = removeDuplicates(data);
+System.out.println(k);                     // 5
+System.out.println(Arrays.toString(Arrays.copyOf(data, k))); // [0, 1, 2, 3, 4]
 ```
 
 <a id="strings"></a>
@@ -336,6 +408,40 @@ const freq = new Map();
 for (const ch of "mississippi") freq.set(ch, (freq.get(ch) ?? 0) + 1);
 ```
 
+```java
+String s = "Hello, World";
+
+s.charAt(0);                // 'H'   O(1)
+s.toLowerCase();            // O(n) - a NEW string, s is unchanged
+s.split(", ");              // ["Hello", "World"]
+s.indexOf("World");         // 7, or -1 if absent
+new StringBuilder(s).reverse().toString(); // "dlroW ,olleH"
+
+// BAD: each += copies everything so far -> O(n^2)
+String outBad = "";
+for (String w : List.of("a", "b", "c")) {
+    outBad += w;
+}
+
+// GOOD: StringBuilder allocates once and resizes exponentially -> O(n)
+StringBuilder sb = new StringBuilder();
+for (String w : List.of("a", "b", "c")) {
+    sb.append(w);
+}
+String out = sb.toString();
+
+// When you must overwrite characters, use char[] and build a String once.
+char[] chars = "hello".toCharArray();
+chars[0] = 'H';
+System.out.println(new String(chars)); // "Hello"
+
+// Counting characters solves a huge share of string problems.
+Map<Character, Integer> counts = new HashMap<>();
+for (char ch : "mississippi".toCharArray()) {
+    counts.put(ch, counts.getOrDefault(ch, 0) + 1);
+}
+```
+
 > **Tip**
 >
 > **Characters are not bytes.** JavaScript strings are UTF-16, so an emoji takes two slots and `"😀".length === 2`. Reversing with `s.split("")` corrupts it; `[...s]` walks whole code points and is safe.
@@ -385,6 +491,29 @@ console.log(isPalindrome("A man, a plan, a canal: Panama"));   // true
 console.log(isPalindrome("race a car"));                       // false
 ```
 
+```java
+public static boolean isPalindrome(String s) { // O(n) time, O(1) space
+    int left = 0, right = s.length() - 1;
+    while (left < right) {
+        while (left < right && !Character.isLetterOrDigit(s.charAt(left))) {
+            left++;                         // skip junk on the left
+        }
+        while (left < right && !Character.isLetterOrDigit(s.charAt(right))) {
+            right--;                        // skip junk on the right
+        }
+        if (Character.toLowerCase(s.charAt(left)) != Character.toLowerCase(s.charAt(right))) {
+            return false;
+        }
+        left++;
+        right--;
+    }
+    return true;
+}
+
+System.out.println(isPalindrome("A man, a plan, a canal: Panama")); // true
+System.out.println(isPalindrome("race a car"));                     // false
+```
+
 **Top Interview Question 2**
 
 *Given two strings, decide whether the second is an anagram of the first — the same letters, the same number of times, in any order. `"anagram"` and `"nagaram"` are; `"rat"` and `"car"` are not.*
@@ -423,6 +552,24 @@ console.log(isAnagram("anagram", "nagaram"));   // true
 console.log(isAnagram("rat", "car"));           // false
 ```
 
+```java
+public static boolean isAnagram(String s, String t) { // O(n) time, O(1) space
+    if (s.length() != t.length()) return false;
+    int[] counts = new int[26];
+    for (int i = 0; i < s.length(); i++) {
+        counts[s.charAt(i) - 'a']++;
+        counts[t.charAt(i) - 'a']--;
+    }
+    for (int count : counts) {
+        if (count != 0) return false;       // counts must balance to 0
+    }
+    return true;
+}
+
+System.out.println(isAnagram("anagram", "nagaram")); // true
+System.out.println(isAnagram("rat", "car"));         // false
+```
+
 **Top Interview Question 3**
 
 *Find the index of the first character in a string that does not repeat anywhere else in it. Return `-1` if every character repeats. `"leetcode"` → `0` (the `l`); `"loveleetcode"` → `2` (the `v`).*
@@ -458,6 +605,24 @@ function firstUniqChar(s) {              // O(n) time, O(1) space
 
 console.log(firstUniqChar("leetcode"));       // 0
 console.log(firstUniqChar("loveleetcode"));   // 2
+```
+
+```java
+public static int firstUniqChar(String s) { // O(n) time, O(1) space (26 letters)
+    int[] counts = new int[26];
+    for (int i = 0; i < s.length(); i++) {
+        counts[s.charAt(i) - 'a']++;
+    }
+    for (int i = 0; i < s.length(); i++) {
+        if (counts[s.charAt(i) - 'a'] == 1) {
+            return i;                       // first character seen only once
+        }
+    }
+    return -1;
+}
+
+System.out.println(firstUniqChar("leetcode"));     // 0
+System.out.println(firstUniqChar("loveleetcode")); // 2
 ```
 
 <a id="2-linked-lists"></a>
@@ -530,6 +695,25 @@ function walk(node) {
 }
 ```
 
+```java
+static class Node {
+    int value;
+    Node next;
+    Node(int value) { this.value = value; }
+    Node(int value, Node next) { this.value = value; this.next = next; }
+}
+
+// Chain three nodes: 10 -> 20 -> 30 -> null
+Node head = new Node(10, new Node(20, new Node(30)));
+
+public static void walk(Node head) {
+    while (head != null) {                  // the treasure hunt, one clue at a time
+        System.out.println(head.value);
+        head = head.next;
+    }
+}
+```
+
 **Top Interview Question 1**
 
 *How do you reverse a singly linked list in place?*
@@ -560,6 +744,27 @@ function reverse(head) {        // O(n) time, O(1) space
     cur = next;
   }
   return prev;                  // old tail becomes the new head
+}
+```
+
+```java
+static class Node {
+    int value;
+    Node next;
+    Node(int value) { this.value = value; }
+    Node(int value, Node next) { this.value = value; this.next = next; }
+}
+
+public static Node reverse(Node head) {     // O(n) time, O(1) space
+    Node prev = null;
+    Node curr = head;
+    while (curr != null) {
+        Node next = curr.next;              // remember where we were going
+        curr.next = prev;                   // flip this link backwards
+        prev = curr;                        // step both pointers forward
+        curr = next;
+    }
+    return prev;                            // the old tail is the new head
 }
 ```
 
@@ -626,6 +831,42 @@ while (node) { out.push(node.value); node = node.next; }
 console.log(out);                       // [1, 2, 3, 4, 5, 6]
 ```
 
+```java
+static class Node {
+    int value;
+    Node next;
+    Node(int value) { this.value = value; }
+    Node(int value, Node next) { this.value = value; this.next = next; }
+}
+
+public static Node mergeTwoLists(Node a, Node b) { // O(n + m) time, O(1) space
+    Node dummy = new Node(0);               // placeholder so head needs no special case
+    Node tail = dummy;
+    while (a != null && b != null) {
+        if (a.value <= b.value) {
+            tail.next = a;
+            a = a.next;
+        } else {
+            tail.next = b;
+            b = b.next;
+        }
+        tail = tail.next;
+    }
+    tail.next = (a != null) ? a : b;        // the rest is already sorted
+    return dummy.next;
+}
+
+Node a = new Node(1, new Node(3, new Node(5)));
+Node b = new Node(2, new Node(4, new Node(6)));
+Node result = mergeTwoLists(a, b);
+List<Integer> out = new ArrayList<>();
+while (result != null) {
+    out.add(result.value);
+    result = result.next;
+}
+System.out.println(out);                    // [1, 2, 3, 4, 5, 6]
+```
+
 **Top Interview Question 3**
 
 *Given the head of a linked list, determine whether it contains a cycle — some node's `next` pointer loops back to an earlier node instead of eventually reaching `None`.*
@@ -680,6 +921,34 @@ const n3 = new Node(3, n2);
 const head = new Node(1, n2);
 n2.next = n3;                       // 1 -> 2 -> 3 -> back to 2
 console.log(hasCycle(head));        // true
+```
+
+```java
+static class Node {
+    int value;
+    Node next;
+    Node(int value) { this.value = value; }
+    Node(int value, Node next) { this.value = value; this.next = next; }
+}
+
+public static boolean hasCycle(Node head) { // O(n) time, O(1) space
+    Node slow = head;
+    Node fast = head;
+    while (fast != null && fast.next != null) {
+        slow = slow.next;                   // one step
+        fast = fast.next.next;              // two steps
+        if (slow == fast) {
+            return true;                    // the hare lapped the tortoise
+        }
+    }
+    return false;                           // fast reached the end - no loop
+}
+
+Node n2 = new Node(2);
+Node n3 = new Node(3, n2);
+Node head = new Node(1, n2);
+n2.next = n3;                               // 1 -> 2 -> 3 -> back to 2
+System.out.println(hasCycle(head));         // true
 ```
 
 <a id="3-stacks"></a>
@@ -750,6 +1019,28 @@ console.log(isBalanced("{[()]}"));      // true
 console.log(isBalanced("{[(])}"));      // false
 ```
 
+```java
+public static boolean isBalanced(String s) {
+    Map<Character, Character> pairs = Map.of(')', '(', ']', '[', '}', '{');
+    Deque<Character> stack = new ArrayDeque<>();
+
+    for (char ch : s.toCharArray()) {
+        if (ch == '(' || ch == '[' || ch == '{') {
+            stack.push(ch);                 // remember what must be closed
+        } else if (pairs.containsKey(ch)) {
+            // Must close the MOST RECENT opener - that is the LIFO rule
+            if (stack.isEmpty() || stack.pop() != pairs.get(ch)) {
+                return false;
+            }
+        }
+    }
+    return stack.isEmpty();                 // nothing may be left open
+}
+
+System.out.println(isBalanced("{[()]}"));   // true
+System.out.println(isBalanced("{[(])}"));   // false - right count, wrong nesting
+```
+
 **Top Interview Question 2**
 
 *You are keeping a running record of a baseball game from a list of operations: an integer is a new score, `"+"` records the sum of the previous two scores, `"D"` records double the previous score, and `"C"` invalidates and removes the previous score. Return the sum of the scores left on the record.*
@@ -791,6 +1082,30 @@ function calPoints(ops) {               // O(n) time, O(n) space
 console.log(calPoints(["5", "2", "C", "D", "+"]));   // 30
 ```
 
+```java
+public static int calPoints(String[] ops) { // O(n) time, O(n) space
+    Deque<Integer> record = new ArrayDeque<>();
+    for (String op : ops) {
+        switch (op) {
+            case "+" -> {
+                int top = record.pop();
+                int newTop = top + record.peek();
+                record.push(top);
+                record.push(newTop);
+            }
+            case "D" -> record.push(2 * record.peek());
+            case "C" -> record.pop();       // the last score never happened
+            default -> record.push(Integer.parseInt(op));
+        }
+    }
+    int total = 0;
+    for (int score : record) total += score;
+    return total;
+}
+
+System.out.println(calPoints(new String[]{"5", "2", "C", "D", "+"})); // 30
+```
+
 **Top Interview Question 3**
 
 *Repeatedly remove any two adjacent, identical letters from a string until none remain, then return the result. `"abbaca"` becomes `"ca"`.*
@@ -824,6 +1139,23 @@ function removeDuplicates(s) {       // O(n) time, O(n) space
 }
 
 console.log(removeDuplicates("abbaca"));   // 'ca'
+```
+
+```java
+public static String removeDuplicates(String s) { // O(n) time, O(n) space
+    StringBuilder stack = new StringBuilder();
+    for (char ch : s.toCharArray()) {
+        int len = stack.length();
+        if (len > 0 && stack.charAt(len - 1) == ch) {
+            stack.deleteCharAt(len - 1);    // cancels the adjacent duplicate pair
+        } else {
+            stack.append(ch);
+        }
+    }
+    return stack.toString();
+}
+
+System.out.println(removeDuplicates("abbaca")); // "ca" 
 ```
 
 <a id="4-queues"></a>
@@ -900,6 +1232,20 @@ class Queue {
     return this.items.length - this.head;
   }
 }
+```
+
+```java
+// ArrayDeque implements both Queue (FIFO) and Deque (double-ended queue)
+Deque<String> q = new ArrayDeque<>();
+
+q.offerLast("a");       // enqueue at the back     O(1)
+q.offerLast("b");
+q.pollFirst();          // dequeue from the front  O(1) -> "a"
+
+q.offerFirst("z");      // deque powers: both ends are O(1)
+q.pollLast();
+
+// NEVER use ArrayList.remove(0) as a queue - it shifts every element, O(n).
 ```
 
 <a id="priority-queue-heap"></a>
@@ -1033,6 +1379,41 @@ A **heap** is the usual implementation. It answers exactly one question fast —
 
 ```
 
+```java
+// PriorityQueue is a MIN-heap by default: O(n) heapify from collection
+PriorityQueue<Integer> nums = new PriorityQueue<>(List.of(5, 1, 8, 3, 9, 2));
+nums.offer(0);                              // O(log n)
+int smallest = nums.poll();                 // O(log n) -> 0
+int peek = nums.peek();                     // O(1)
+
+// Top-k without sorting everything: O(n log k) time, O(k) space.
+public static List<Integer> topK(int[] nums, int k) {
+    PriorityQueue<Integer> heap = new PriorityQueue<>(); // min-heap of size k
+    for (int x : nums) {
+        heap.offer(x);
+        if (heap.size() > k) {
+            heap.poll();                    // evict smallest; keep the k largest
+        }
+    }
+    List<Integer> result = new ArrayList<>(heap);
+    result.sort(Collections.reverseOrder());
+    return result;
+}
+
+// For a MAX-heap, use Collections.reverseOrder()
+PriorityQueue<Integer> maxHeap = new PriorityQueue<>(Collections.reverseOrder());
+
+// Priority queues with custom comparator / record
+record Task(int priority, String name) {}
+
+PriorityQueue<Task> tasks = new PriorityQueue<>(Comparator.comparingInt(Task::priority));
+tasks.offer(new Task(2, "write tests"));
+tasks.offer(new Task(1, "fix outage"));
+System.out.println(tasks.poll().name());    // "fix outage"
+
+System.out.println(topK(new int[]{7, 2, 9, 4, 1, 8}, 3)); // [9, 8, 7]
+```
+
 **Top Interview Question 1**
 
 *Implement a FIFO queue using only two stacks. You may only use push, pop, peek and "is empty".*
@@ -1103,6 +1484,40 @@ q.enqueue(1); q.enqueue(2); q.enqueue(3);
 console.log(q.dequeue(), q.dequeue(), q.dequeue());   // 1 2 3
 ```
 
+```java
+static class QueueFromStacks {
+    private final Deque<Integer> inbox = new ArrayDeque<>();  // newest items land here
+    private final Deque<Integer> outbox = new ArrayDeque<>(); // reversed, oldest on top
+
+    public void enqueue(int x) {
+        inbox.push(x);                      // always O(1)
+    }
+
+    private void shift() {
+        // ONLY refill when outbox is empty, or the order breaks.
+        if (outbox.isEmpty()) {
+            while (!inbox.isEmpty()) {
+                outbox.push(inbox.pop());   // reverse into outbox
+            }
+        }
+    }
+
+    public Integer dequeue() {
+        shift();
+        return outbox.isEmpty() ? null : outbox.pop();
+    }
+
+    public Integer peek() {
+        shift();
+        return outbox.isEmpty() ? null : outbox.peek();
+    }
+}
+
+QueueFromStacks q = new QueueFromStacks();
+q.enqueue(1); q.enqueue(2); q.enqueue(3);
+System.out.println(q.dequeue() + " " + q.dequeue() + " " + q.dequeue()); // 1 2 3 - FIFO preserved
+```
+
 **Top Interview Question 2**
 
 *Implement a LIFO stack using only queue operations (enqueue, dequeue, peek at the front, is-empty).*
@@ -1169,6 +1584,36 @@ s.push(1); s.push(2); s.push(3);
 console.log(s.pop(), s.pop(), s.pop());   // 3 2 1
 ```
 
+```java
+static class StackFromQueue {
+    private final Queue<Integer> q = new ArrayDeque<>();
+
+    public void push(int x) {
+        // O(n): rotate the queue so the new item ends up at the front
+        q.offer(x);
+        for (int i = 0; i < q.size() - 1; i++) {
+            q.offer(q.poll());
+        }
+    }
+
+    public int pop() {
+        return q.poll();                    // O(1) - front is always newest push
+    }
+
+    public int top() {
+        return q.peek();                    // O(1)
+    }
+
+    public boolean empty() {
+        return q.isEmpty();
+    }
+}
+
+StackFromQueue s = new StackFromQueue();
+s.push(1); s.push(2); s.push(3);
+System.out.println(s.pop() + " " + s.pop() + " " + s.pop()); // 3 2 1 - LIFO preserved
+```
+
 **Top Interview Question 3**
 
 *Implement a counter where each call `ping(t)` (with a strictly increasing timestamp `t` in milliseconds) returns how many calls, including this one, occurred in the trailing window `[t - 3000, t]`.*
@@ -1213,6 +1658,25 @@ class RecentCounter {
 const counter = new RecentCounter();
 console.log(counter.ping(1), counter.ping(100), counter.ping(3001), counter.ping(3002));
 // 1 2 3 3
+```
+
+```java
+static class RecentCounter {
+    private final Queue<Integer> times = new ArrayDeque<>();
+
+    public int ping(int t) {
+        // Amortised O(1). Each timestamp enters and leaves queue exactly once.
+        times.offer(t);
+        while (!times.isEmpty() && times.peek() < t - 3000) {
+            times.poll();                   // drop calls outside the trailing window
+        }
+        return times.size();
+    }
+}
+
+RecentCounter counter = new RecentCounter();
+System.out.println(counter.ping(1) + " " + counter.ping(100) + " " +
+                   counter.ping(3001) + " " + counter.ping(3002)); // 1 2 3 3
 ```
 
 ---
@@ -1301,6 +1765,32 @@ function twoSum(nums, target) {     // O(n) instead of O(n^2)
 console.log(twoSum([2, 7, 11, 15], 9));   // [0, 1]
 ```
 
+```java
+// HashMap and HashSet
+Map<String, Integer> ages = new HashMap<>(Map.of("ada", 36, "alan", 41));
+ages.put("grace", 45);                      // O(1) insert
+ages.getOrDefault("linus", 0);              // 0 - no exception
+ages.containsKey("ada");                    // O(1) membership
+
+Set<Integer> seen = new HashSet<>(Set.of(1, 2, 3));
+seen.add(3);                                // still [1, 2, 3]
+
+public static int[] twoSum(int[] nums, int target) {
+    // Find two numbers adding to target. O(n) instead of O(n^2).
+    Map<Integer, Integer> seenMap = new HashMap<>(); // value -> index
+    for (int i = 0; i < nums.length; i++) {
+        int complement = target - nums[i];
+        if (seenMap.containsKey(complement)) {       // is partner already here?
+            return new int[]{seenMap.get(complement), i};
+        }
+        seenMap.put(nums[i], i);
+    }
+    return new int[0];
+}
+
+System.out.println(Arrays.toString(twoSum(new int[]{2, 7, 11, 15}, 9))); // [0, 1]
+```
+
 **Top Interview Question 1**
 
 *Given two strings `ransom_note` and `magazine`, decide whether the note can be built from the magazine's letters, using each magazine letter at most once. `"aa"` from `"aab"` works; `"aa"` from `"ab"` does not.*
@@ -1340,6 +1830,27 @@ console.log(canConstruct("aa", "aab"));   // true
 console.log(canConstruct("aa", "ab"));    // false
 ```
 
+```java
+public static boolean canConstruct(String ransomNote, String magazine) {
+    // O(n + m) time. Count magazine letters, then spend them.
+    int[] supply = new int[26];
+    for (int i = 0; i < magazine.length(); i++) {
+        supply[magazine.charAt(i) - 'a']++;
+    }
+    for (int i = 0; i < ransomNote.length(); i++) {
+        int idx = ransomNote.charAt(i) - 'a';
+        if (supply[idx] == 0) {
+            return false;                   // ran out of this letter
+        }
+        supply[idx]--;
+    }
+    return true;
+}
+
+System.out.println(canConstruct("aa", "aab")); // true
+System.out.println(canConstruct("aa", "ab"));  // false
+```
+
 **Top Interview Question 2**
 
 *Given an array of integers, determine whether any value appears at least twice.*
@@ -1376,6 +1887,21 @@ console.log(containsDuplicate([1, 2, 3, 1]));   // true
 console.log(containsDuplicate([1, 2, 3, 4]));   // false
 ```
 
+```java
+public static boolean containsDuplicate(int[] nums) { // O(n) time, O(n) space
+    Set<Integer> seen = new HashSet<>();
+    for (int x : nums) {
+        if (!seen.add(x)) {                 // add returns false if already present
+            return true;
+        }
+    }
+    return false;
+}
+
+System.out.println(containsDuplicate(new int[]{1, 2, 3, 1})); // true
+System.out.println(containsDuplicate(new int[]{1, 2, 3, 4})); // false
+```
+
 **Top Interview Question 3**
 
 *Given two integer arrays, return the unique values that appear in both, in any order.*
@@ -1404,6 +1930,27 @@ function intersection(nums1, nums2) {     // O(n + m) time
 }
 
 console.log(intersection([1, 2, 2, 1], [2, 2]).sort());   // [2]
+```
+
+```java
+public static int[] intersection(int[] nums1, int[] nums2) { // O(n + m) time
+    Set<Integer> first = new HashSet<>();
+    for (int x : nums1) first.add(x);
+
+    Set<Integer> resultSet = new HashSet<>();
+    for (int x : nums2) {
+        if (first.contains(x)) {
+            resultSet.add(x);               // dedupes automatically
+        }
+    }
+
+    int[] result = new int[resultSet.size()];
+    int i = 0;
+    for (int x : resultSet) result[i++] = x;
+    return result;
+}
+
+System.out.println(Arrays.toString(intersection(new int[]{1, 2, 2, 1}, new int[]{2, 2}))); // [2]
 ```
 
 <a id="6-trees"></a>
@@ -1576,6 +2123,81 @@ A **BST** adds one rule: every value in the left subtree is smaller than its par
 
 ```
 
+```java
+static class BST {
+    static class Node {
+        int value;
+        Node left, right;
+        Node(int value) { this.value = value; }
+    }
+
+    Node root;
+
+    public void insert(int value) {         // O(h). Duplicates ignored.
+        root = insert(root, value);
+    }
+
+    private Node insert(Node node, int value) {
+        if (node == null) return new Node(value);
+        if (value < node.value) node.left = insert(node.left, value);
+        else if (value > node.value) node.right = insert(node.right, value);
+        return node;
+    }
+
+    public boolean contains(int value) {    // O(h), iterative
+        Node curr = root;
+        while (curr != null) {
+            if (value == curr.value) return true;
+            curr = value < curr.value ? curr.left : curr.right;
+        }
+        return false;
+    }
+
+    public void delete(int value) {         // Three cases
+        root = delete(root, value);
+    }
+
+    private Node delete(Node node, int value) {
+        if (node == null) return null;
+        if (value < node.value) node.left = delete(node.left, value);
+        else if (value > node.value) node.right = delete(node.right, value);
+        else {
+            // Case 1 & 2: 0 or 1 child
+            if (node.left == null) return node.right;
+            if (node.right == null) return node.left;
+            // Case 3: two children. Replace with in-order successor
+            Node successor = node.right;
+            while (successor.left != null) successor = successor.left;
+            node.value = successor.value;
+            node.right = delete(node.right, successor.value);
+        }
+        return node;
+    }
+
+    public List<Integer> inOrder() {        // Sorted iteration: O(n)
+        List<Integer> result = new ArrayList<>();
+        Deque<Node> stack = new ArrayDeque<>();
+        Node curr = root;
+        while (curr != null || !stack.isEmpty()) {
+            while (curr != null) {
+                stack.push(curr);
+                curr = curr.left;
+            }
+            curr = stack.pop();
+            result.add(curr.value);
+            curr = curr.right;
+        }
+        return result;
+    }
+}
+
+BST tree = new BST();
+for (int v : List.of(8, 3, 10, 1, 6, 14, 4, 7, 13)) tree.insert(v);
+System.out.println(tree.inOrder());         // [1, 3, 4, 6, 7, 8, 10, 13, 14]
+tree.delete(3);
+System.out.println(tree.inOrder());         // [1, 4, 6, 7, 8, 10, 13, 14]
+```
+
 > **Warning**
 >
 > **The BST's fatal flaw:** insert `1, 2, 3, 4, 5` in order and every node becomes a right child. You now have a linked list wearing a tree costume, and every operation degrades to `O(n)`. Sorted input is not rare — it is *normal* for timestamps and IDs. Hence the next idea.
@@ -1715,6 +2337,71 @@ These trees notice when they are becoming lopsided and **rotate** — a constant
             for (const v of [10, 20, 30, 40, 50]) root = avlInsert(root, v);
             console.log(root.value, root.height);   // 20 3
 
+```
+
+```java
+static class AVLNode {
+    int value, height = 1;
+    AVLNode left, right;
+    AVLNode(int value) { this.value = value; }
+}
+
+public static int h(AVLNode node) {
+    return node == null ? 0 : node.height;
+}
+
+public static void update(AVLNode node) {
+    node.height = 1 + Math.max(h(node.left), h(node.right));
+}
+
+public static int balanceFactor(AVLNode node) {
+    return node == null ? 0 : h(node.left) - h(node.right);
+}
+
+public static AVLNode rotateRight(AVLNode y) {
+    AVLNode x = y.left;
+    y.left = x.right;
+    x.right = y;
+    update(y);
+    update(x);
+    return x;                               // x is new subtree root
+}
+
+public static AVLNode rotateLeft(AVLNode x) {
+    AVLNode y = x.right;
+    x.right = y.left;
+    y.left = x;
+    update(x);
+    update(y);
+    return y;
+}
+
+public static AVLNode avlInsert(AVLNode node, int value) {
+    // Ordinary BST insert, then rebalance on unwind. O(log n).
+    if (node == null) return new AVLNode(value);
+    if (value < node.value) node.left = avlInsert(node.left, value);
+    else if (value > node.value) node.right = avlInsert(node.right, value);
+    else return node;
+
+    update(node);
+    int bf = balanceFactor(node);
+
+    if (bf > 1 && value < node.left.value) return rotateRight(node);     // Left-Left
+    if (bf < -1 && value > node.right.value) return rotateLeft(node);    // Right-Right
+    if (bf > 1) {                                                        // Left-Right
+        node.left = rotateLeft(node.left);
+        return rotateRight(node);
+    }
+    if (bf < -1) {                                                       // Right-Left
+        node.right = rotateRight(node.right);
+        return rotateLeft(node);
+    }
+    return node;
+}
+
+AVLNode root = null;
+for (int v : List.of(10, 20, 30, 40, 50)) root = avlInsert(root, v);
+System.out.println(root.value + " " + root.height); // 20 3 (height 3 instead of 5)
 ```
 
 <a id="tries"></a>
@@ -1860,6 +2547,76 @@ A **trie** (prefix tree) stores words along the *edges* rather than in the nodes
 
 ```
 
+```java
+static class Trie {
+    static class TrieNode {
+        Map<Character, TrieNode> children = new TreeMap<>(); // sorted for autocomplete
+        boolean isWord = false;
+        int count = 0;                      // how many words pass through
+    }
+
+    private final TrieNode root = new TrieNode();
+
+    public void insert(String word) {       // O(len(word))
+        TrieNode curr = root;
+        for (char ch : word.toCharArray()) {
+            curr = curr.children.computeIfAbsent(ch, c -> new TrieNode());
+            curr.count++;
+        }
+        curr.isWord = true;
+    }
+
+    private TrieNode walk(String prefix) {
+        TrieNode curr = root;
+        for (char ch : prefix.toCharArray()) {
+            curr = curr.children.get(ch);
+            if (curr == null) return null;
+        }
+        return curr;
+    }
+
+    public boolean search(String word) {
+        TrieNode node = walk(word);
+        return node != null && node.isWord;
+    }
+
+    public boolean startsWith(String prefix) {
+        return walk(prefix) != null;
+    }
+
+    public int countPrefix(String prefix) { // O(len(prefix))
+        TrieNode node = walk(prefix);
+        return node != null ? node.count : 0;
+    }
+
+    public List<String> autocomplete(String prefix, int limit) {
+        TrieNode start = walk(prefix);
+        if (start == null) return List.of();
+        List<String> out = new ArrayList<>();
+        dfs(start, new StringBuilder(prefix), out, limit);
+        return out;
+    }
+
+    private void dfs(TrieNode node, StringBuilder path, List<String> out, int limit) {
+        if (out.size() >= limit) return;
+        if (node.isWord) out.add(path.toString());
+        for (var entry : node.children.entrySet()) {
+            path.append(entry.getKey());
+            dfs(entry.getValue(), path, out, limit);
+            path.deleteCharAt(path.length() - 1);
+        }
+    }
+}
+
+Trie trie = new Trie();
+for (String w : List.of("car", "card", "care", "cat", "dog")) trie.insert(w);
+System.out.println(trie.search("car"));         // true
+System.out.println(trie.search("ca"));          // false - prefix is not a word
+System.out.println(trie.startsWith("ca"));      // true
+System.out.println(trie.countPrefix("car"));    // 3
+System.out.println(trie.autocomplete("car", 10)); // [car, card, care]
+```
+
 **Top Interview Question 1**
 
 *Find the maximum depth of a binary tree — the number of nodes on the longest path from the root down to a leaf.*
@@ -1909,6 +2666,30 @@ function maxDepth(node) {           // O(n) time, O(h) stack space
 const tree = new TreeNode(3, new TreeNode(9),
                              new TreeNode(20, new TreeNode(15), new TreeNode(7)));
 console.log(maxDepth(tree));        // 3
+```
+
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static int maxDepth(TreeNode root) { // O(n) time, O(h) call stack
+    if (root == null) return 0;             // empty tree has depth 0
+    return 1 + Math.max(maxDepth(root.left), maxDepth(root.right));
+}
+
+TreeNode tree = new TreeNode(3,
+    new TreeNode(9),
+    new TreeNode(20, new TreeNode(15), new TreeNode(7))
+);
+System.out.println(maxDepth(tree));         // 3
 ```
 
 **Top Interview Question 2**
@@ -1968,6 +2749,35 @@ invertTree(tree);
 console.log(tree.left.value, tree.right.value);   // 7 2
 ```
 
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static TreeNode invertTree(TreeNode node) { // O(n) time, O(h) stack space
+    if (node == null) return null;
+    TreeNode left = invertTree(node.left);
+    TreeNode right = invertTree(node.right);
+    node.left = right;                      // swap the (already inverted) children
+    node.right = left;
+    return node;
+}
+
+TreeNode tree = new TreeNode(4,
+    new TreeNode(2, new TreeNode(1), new TreeNode(3)),
+    new TreeNode(7, new TreeNode(6), new TreeNode(9))
+);
+invertTree(tree);
+System.out.println(tree.left.value + " " + tree.right.value); // 7 2
+```
+
 **Top Interview Question 3**
 
 *Given the root of a binary tree, check whether it is a mirror of itself — the left and right subtrees are reflections of each other.*
@@ -2023,6 +2833,35 @@ function isSymmetric(root) {            // O(n) time, O(h) stack space
 const tree = new TreeNode(1, new TreeNode(2, new TreeNode(3), new TreeNode(4)),
                               new TreeNode(2, new TreeNode(4), new TreeNode(3)));
 console.log(isSymmetric(tree));         // true
+```
+
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static boolean isSymmetric(TreeNode root) { // O(n) time, O(h) stack space
+    return root == null || mirror(root.left, root.right);
+}
+
+private static boolean mirror(TreeNode a, TreeNode b) {
+    if (a == null && b == null) return true;
+    if (a == null || b == null || a.value != b.value) return false;
+    return mirror(a.left, b.right) && mirror(a.right, b.left); // diagonal pairs
+}
+
+TreeNode tree = new TreeNode(1,
+    new TreeNode(2, new TreeNode(3), new TreeNode(4)),
+    new TreeNode(2, new TreeNode(4), new TreeNode(3))
+);
+System.out.println(isSymmetric(tree));      // true
 ```
 
 <a id="tree-traversals"></a>
@@ -2120,6 +2959,52 @@ Visits both children before the parent. Essential for bottom-up calculations, di
 
 ```
 
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+// Pre-order:  root -> left -> right (cloning / serialising)
+public static void preOrder(TreeNode node, List<Integer> out) {
+    if (node == null) return;
+    out.add(node.value);
+    preOrder(node.left, out);
+    preOrder(node.right, out);
+}
+
+// In-order:   left -> root -> right (BST sorted output)
+public static void inOrder(TreeNode node, List<Integer> out) {
+    if (node == null) return;
+    inOrder(node.left, out);
+    out.add(node.value);
+    inOrder(node.right, out);
+}
+
+// Post-order: left -> right -> root (deleting / bottom-up stats)
+public static void postOrder(TreeNode node, List<Integer> out) {
+    if (node == null) return;
+    postOrder(node.left, out);
+    postOrder(node.right, out);
+    out.add(node.value);
+}
+
+TreeNode tree = new TreeNode(1,
+    new TreeNode(2, new TreeNode(4), new TreeNode(5)),
+    new TreeNode(3)
+);
+List<Integer> pre = new ArrayList<>(), in = new ArrayList<>(), post = new ArrayList<>();
+preOrder(tree, pre);   // [1, 2, 4, 5, 3]
+inOrder(tree, in);     // [4, 2, 5, 1, 3]
+postOrder(tree, post); // [4, 5, 2, 3, 1]
+```
+
 #### Level-order traversal (BFS)
 
 Visits nodes row by row from top to bottom using a FIFO queue.
@@ -2167,6 +3052,46 @@ Visits nodes row by row from top to bottom using a FIFO queue.
               return levels;
             }
 
+```
+
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static List<List<Integer>> levelOrder(TreeNode root) {
+    // Level-order: queue groups nodes row by row. O(n) time, O(w) space.
+    if (root == null) return List.of();
+    List<List<Integer>> levels = new ArrayList<>();
+    Queue<TreeNode> q = new ArrayDeque<>();
+    q.offer(root);
+
+    while (!q.isEmpty()) {
+        int levelSize = q.size();       // snapshot current level's breadth
+        List<Integer> level = new ArrayList<>(levelSize);
+        for (int i = 0; i < levelSize; i++) {
+            TreeNode node = q.poll();
+            level.add(node.value);
+            if (node.left != null) q.offer(node.left);
+            if (node.right != null) q.offer(node.right);
+        }
+        levels.add(level);
+    }
+    return levels;
+}
+
+TreeNode tree = new TreeNode(3,
+    new TreeNode(9),
+    new TreeNode(20, new TreeNode(15), new TreeNode(7))
+);
+System.out.println(levelOrder(tree));   // [[3], [9, 20], [15, 7]]
 ```
 
 <a id="7-graphs"></a>
@@ -2235,6 +3160,30 @@ console.log(friends.get("ada"));    // ['alan', 'grace']
 const DIRECTIONS = [[-1, 0], [1, 0], [0, -1], [0, 1]];   // grid neighbours
 ```
 
+```java
+public static Map<String, List<String>> build(List<String[]> edges, boolean directed) {
+    Map<String, List<String>> graph = new HashMap<>();
+    for (String[] edge : edges) {
+        String a = edge[0], b = edge[1];
+        graph.computeIfAbsent(a, k -> new ArrayList<>()).add(b);
+        if (!directed) {
+            graph.computeIfAbsent(b, k -> new ArrayList<>()).add(a); // undirected
+        }
+    }
+    return graph;
+}
+
+Map<String, List<String>> friends = build(List.of(
+    new String[]{"ada", "alan"},
+    new String[]{"alan", "grace"},
+    new String[]{"ada", "grace"}
+), false);
+System.out.println(friends.get("ada"));      // [alan, grace]
+
+// A grid is a graph too: 4 cardinal directions
+int[][] DIRECTIONS = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+```
+
 **Top Interview Question 1**
 
 *Given a grid of `1` (land) and `0` (water) containing exactly one island — land connected horizontally or vertically — return the island's perimeter.*
@@ -2283,6 +3232,31 @@ console.log(islandPerimeter([[0, 1, 0, 0],
                              [1, 1, 1, 0],
                              [0, 1, 0, 0],
                              [1, 1, 0, 0]]));   // 16
+```
+
+```java
+public static int islandPerimeter(int[][] grid) { // O(rows * cols)
+    int land = 0, shared = 0;
+    int rows = grid.length, cols = grid[0].length;
+    for (int r = 0; r < rows; r++) {
+        for (int c = 0; c < cols; c++) {
+            if (grid[r][c] == 1) {
+                land++;
+                if (r > 0 && grid[r - 1][c] == 1) shared++; // touches land above
+                if (c > 0 && grid[r][c - 1] == 1) shared++; // touches land to left
+            }
+        }
+    }
+    return 4 * land - 2 * shared;           // each shared side hides two edges
+}
+
+int[][] grid = {
+    {0, 1, 0, 0},
+    {1, 1, 1, 0},
+    {0, 1, 0, 0},
+    {1, 1, 0, 0}
+};
+System.out.println(islandPerimeter(grid));  // 16
 ```
 
 **Top Interview Question 2**
@@ -2335,6 +3309,31 @@ function floodFill(grid, sr, sc, newColor) {   // O(rows * cols)
 
 const image = [[1, 1, 1], [1, 1, 0], [1, 0, 1]];
 console.log(floodFill(image, 1, 1, 2));  // [[2,2,2],[2,2,0],[2,0,1]]
+```
+
+```java
+public static int[][] floodFill(int[][] grid, int sr, int sc, int newColor) {
+    // O(rows * cols) - each cell repainted/visited at most once
+    int oldColor = grid[sr][sc];
+    if (oldColor == newColor) return grid;  // avoid infinite recursion
+    fill(grid, sr, sc, oldColor, newColor);
+    return grid;
+}
+
+private static void fill(int[][] grid, int r, int c, int oldColor, int newColor) {
+    if (r < 0 || r >= grid.length || c < 0 || c >= grid[0].length || grid[r][c] != oldColor) {
+        return;                             // off grid or different colour
+    }
+    grid[r][c] = newColor;
+    fill(grid, r + 1, c, oldColor, newColor);
+    fill(grid, r - 1, c, oldColor, newColor);
+    fill(grid, r, c + 1, oldColor, newColor);
+    fill(grid, r, c - 1, oldColor, newColor);
+}
+
+int[][] canvas = {{1, 1, 1}, {1, 1, 0}, {1, 0, 1}};
+floodFill(canvas, 1, 1, 2);
+for (int[] row : canvas) System.out.println(Arrays.toString(row));
 ```
 
 **Top Interview Question 3**
@@ -2399,6 +3398,37 @@ function validPath(n, edges, source, destination) {   // O(V + E) time
 
 console.log(validPath(6, [[0,1],[0,2],[3,5],[5,4],[4,3]], 0, 5));                 // false
 console.log(validPath(6, [[0,1],[0,2],[1,2],[2,3],[3,5],[5,4],[4,3]], 0, 5));     // true
+```
+
+```java
+public static boolean validPath(int n, int[][] edges, int source, int destination) {
+    // O(V + E) time. Plain BFS reachability - no distances needed.
+    if (source == destination) return true;
+    Map<Integer, List<Integer>> graph = new HashMap<>();
+    for (int[] edge : edges) {
+        graph.computeIfAbsent(edge[0], k -> new ArrayList<>()).add(edge[1]);
+        graph.computeIfAbsent(edge[1], k -> new ArrayList<>()).add(edge[0]);
+    }
+
+    Set<Integer> visited = new HashSet<>();
+    Queue<Integer> queue = new ArrayDeque<>();
+    visited.add(source);
+    queue.offer(source);
+
+    while (!queue.isEmpty()) {
+        int node = queue.poll();
+        if (node == destination) return true;
+        for (int neighbour : graph.getOrDefault(node, List.of())) {
+            if (visited.add(neighbour)) {
+                queue.offer(neighbour);
+            }
+        }
+    }
+    return false;
+}
+
+int[][] edges = {{0, 1}, {1, 2}, {2, 0}};
+System.out.println(validPath(3, edges, 0, 2)); // true
 ```
 
 <a id="graph-traversals"></a>
@@ -2469,6 +3499,38 @@ function bfs(graph, start) {            // queue -> level by level
 }
 ```
 
+```java
+public static List<String> bfs(Map<String, List<String>> graph, String start) {
+    // Queue -> oldest first -> explores level by level. O(V + E).
+    Set<String> visited = new HashSet<>();
+    Queue<String> q = new ArrayDeque<>();
+    List<String> order = new ArrayList<>();
+
+    visited.add(start);
+    q.offer(start);
+
+    while (!q.isEmpty()) {
+        String node = q.poll();             // OLDEST first
+        order.add(node);
+        for (String neighbour : graph.getOrDefault(node, List.of())) {
+            if (visited.add(neighbour)) {
+                q.offer(neighbour);
+            }
+        }
+    }
+    return order;
+}
+
+Map<String, List<String>> network = Map.of(
+    "A", List.of("B", "C"),
+    "B", List.of("A", "D"),
+    "C", List.of("A", "D", "E"),
+    "D", List.of("B", "C"),
+    "E", List.of("C")
+);
+System.out.println(bfs(network, "A"));      // [A, B, C, D, E]
+```
+
 **Question**
 
 *How do you traverse deep into a graph iteratively using a stack (DFS)?*
@@ -2516,6 +3578,40 @@ function dfsIterative(graph, start) {       // stack -> dive deep
   }
   return order;
 }
+```
+
+```java
+public static List<String> dfsIterative(Map<String, List<String>> graph, String start) {
+    // Stack -> newest first -> dives down one branch. O(V + E).
+    Set<String> visited = new HashSet<>();
+    Deque<String> stack = new ArrayDeque<>();
+    List<String> order = new ArrayList<>();
+
+    stack.push(start);
+
+    while (!stack.isEmpty()) {
+        String node = stack.pop();          // NEWEST first
+        if (!visited.add(node)) continue;
+        order.add(node);
+
+        List<String> neighbours = graph.getOrDefault(node, List.of());
+        for (int i = neighbours.size() - 1; i >= 0; i--) {
+            String neighbour = neighbours.get(i);
+            if (!visited.contains(neighbour)) {
+                stack.push(neighbour);
+            }
+        }
+    }
+    return order;
+}
+
+Map<String, List<String>> treeNet = Map.of(
+    "A", List.of("B", "C"),
+    "B", List.of("D", "E"),
+    "C", List.of("F"),
+    "D", List.of(), "E", List.of(), "F", List.of()
+);
+System.out.println(dfsIterative(treeNet, "A")); // [A, B, D, E, C, F]
 ```
 
 <a id="dijkstra"></a>
@@ -2637,6 +3733,50 @@ BFS finds the fewest *hops*. When edges have costs — kilometres, minutes, mone
 
 ```
 
+```java
+record Edge(String to, int weight) {}
+record NodeDist(String node, int dist) implements Comparable<NodeDist> {
+    @Override
+    public int compareTo(NodeDist o) {
+        return Integer.compare(this.dist, o.dist);
+    }
+}
+
+public static Map<String, Integer> dijkstra(Map<String, List<Edge>> graph, String start) {
+    // Dijkstra with min-heap: O((V + E) log V)
+    Map<String, Integer> dist = new HashMap<>();
+    dist.put(start, 0);
+    Set<String> visited = new HashSet<>();
+    PriorityQueue<NodeDist> pq = new PriorityQueue<>();
+    pq.offer(new NodeDist(start, 0));
+
+    while (!pq.isEmpty()) {
+        NodeDist curr = pq.poll();
+        String node = curr.node();
+        int d = curr.dist();
+
+        if (!visited.add(node)) continue;   // stale entry from worse path
+
+        for (Edge edge : graph.getOrDefault(node, List.of())) {
+            int candidate = d + edge.weight();
+            if (candidate < dist.getOrDefault(edge.to(), Integer.MAX_VALUE)) {
+                dist.put(edge.to(), candidate);
+                pq.offer(new NodeDist(edge.to(), candidate));
+            }
+        }
+    }
+    return dist;
+}
+
+Map<String, List<Edge>> graph = Map.of(
+    "A", List.of(new Edge("B", 4), new Edge("C", 2)),
+    "C", List.of(new Edge("B", 1), new Edge("D", 5)),
+    "B", List.of(new Edge("D", 1)),
+    "D", List.of()
+);
+System.out.println(dijkstra(graph, "A"));   // {A=0, B=3, C=2, D=4}
+```
+
 ---
 
 <a id="unit-3"></a>
@@ -2701,6 +3841,23 @@ function binarySearch(nums, target) {   // needs a SORTED array
 console.log(binarySearch([2, 5, 8, 12, 16, 23, 38, 56, 72, 91], 72));  // 8
 ```
 
+```java
+public static int binarySearch(int[] nums, int target) {
+    // Index of target, or -1. Requires a SORTED array. O(log n) time, O(1) space.
+    int lo = 0, hi = nums.length - 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;       // overflow-safe midpoint
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return -1;
+}
+
+System.out.println(binarySearch(new int[]{-1, 0, 3, 5, 9, 12}, 9)); // 4
+System.out.println(binarySearch(new int[]{-1, 0, 3, 5, 9, 12}, 2)); // -1
+```
+
 **Top Interview Question 1**
 
 *Given a sorted list of lowercase letters and a `target` letter, return the smallest letter in the list that is strictly greater than `target`. If there is none, wrap around and return the first letter. `["c", "f", "j"]` with `"c"` → `"f"`; with `"j"` → `"c"`.*
@@ -2740,6 +3897,24 @@ function nextGreatestLetter(letters, target) {   // O(log n)
 console.log(nextGreatestLetter(["c", "f", "j"], "a"));   // c
 console.log(nextGreatestLetter(["c", "f", "j"], "c"));   // f
 console.log(nextGreatestLetter(["c", "f", "j"], "j"));   // c
+```
+
+```java
+public static char nextGreatestLetter(char[] letters, char target) { // O(log n)
+    int lo = 0, hi = letters.length;
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (letters[mid] <= target) {
+            lo = mid + 1;                   // mid is too small
+        } else {
+            hi = mid;                       // mid might BE the answer
+        }
+    }
+    return letters[lo % letters.length];    // off the end wraps to first letter
+}
+
+System.out.println(nextGreatestLetter(new char[]{'c', 'f', 'j'}, 'a')); // 'c'
+System.out.println(nextGreatestLetter(new char[]{'c', 'f', 'j'}, 'c')); // 'f'
 ```
 
 **Top Interview Question 2**
@@ -2784,6 +3959,23 @@ console.log(searchInsert([1, 3, 5, 6], 5));   // 2
 console.log(searchInsert([1, 3, 5, 6], 2));   // 1
 ```
 
+```java
+public static int searchInsert(int[] nums, int target) { // O(log n)
+    int lo = 0, hi = nums.length - 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (nums[mid] == target) return mid;
+        if (nums[mid] < target) lo = mid + 1;
+        else hi = mid - 1;
+    }
+    return lo;                              // lo lands on insertion point
+}
+
+System.out.println(searchInsert(new int[]{1, 3, 5, 6}, 5)); // 2
+System.out.println(searchInsert(new int[]{1, 3, 5, 6}, 2)); // 1
+System.out.println(searchInsert(new int[]{1, 3, 5, 6}, 7)); // 4
+```
+
 **Top Interview Question 3**
 
 *You call a remote `is_bad_version(version)` check that returns whether a given version is bad. Every version after the first bad one is bad too. Find the first bad version while calling the check as few times as possible.*
@@ -2820,6 +4012,25 @@ function firstBadVersion(n, isBadVersion) {   // O(log n) calls
 }
 
 console.log(firstBadVersion(6, (v) => v >= 4));   // 4
+```
+
+```java
+public static int firstBadVersion(int n, java.util.function.IntPredicate isBadVersion) {
+    // O(log n) calls. Binary search over monotonic answer space.
+    int lo = 1, hi = n;
+    while (lo < hi) {
+        int mid = lo + (hi - lo) / 2;
+        if (isBadVersion.test(mid)) {
+            hi = mid;                       // mid might BE first bad version
+        } else {
+            lo = mid + 1;                   // mid is good, answer is after it
+        }
+    }
+    return lo;
+}
+
+java.util.function.IntPredicate isBad = v -> v >= 4;
+System.out.println(firstBadVersion(6, isBad)); // 4
 ```
 
 <a id="9-sorting"></a>
@@ -2873,6 +4084,29 @@ function bubbleSort(nums) {             // O(n^2) worst, O(n) best, stable
 console.log(bubbleSort([38, 12, 47, 5, 29]));      // [5, 12, 29, 38, 47]
 ```
 
+```java
+public static void bubbleSort(int[] nums) { // O(n^2) worst/avg, O(n) best. In-place, stable.
+    int n = nums.length;
+    boolean swapped = true;
+    while (swapped) {
+        swapped = false;
+        for (int i = 0; i < n - 1; i++) {
+            if (nums[i] > nums[i + 1]) {
+                int temp = nums[i];
+                nums[i] = nums[i + 1];
+                nums[i + 1] = temp;
+                swapped = true;
+            }
+        }
+        n--;
+    }
+}
+
+int[] nums = {38, 12, 47, 5, 29};
+bubbleSort(nums);
+System.out.println(Arrays.toString(nums));  // [5, 12, 29, 38, 47]
+```
+
 #### 2. Selection sort
 
 Repeatedly find the minimum element in the unsorted suffix and swap it into place. Exactly `n - 1` swaps total — the fewest writes of any comparison sort. Always `O(n²)` comparisons, but `O(n)` writes.
@@ -2913,6 +4147,27 @@ function selectionSort(nums) {          // O(n^2) comparisons, O(n) swaps
 console.log(selectionSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
 ```
 
+```java
+public static void selectionSort(int[] nums) { // O(n^2) comparisons, O(n) swaps. In place.
+    int n = nums.length;
+    for (int i = 0; i < n - 1; i++) {
+        int minIdx = i;
+        for (int j = i + 1; j < n; j++) {
+            if (nums[j] < nums[minIdx]) minIdx = j;
+        }
+        if (minIdx != i) {
+            int temp = nums[i];
+            nums[i] = nums[minIdx];
+            nums[minIdx] = temp;
+        }
+    }
+}
+
+int[] nums = {38, 12, 47, 5, 29};
+selectionSort(nums);
+System.out.println(Arrays.toString(nums));  // [5, 12, 29, 38, 47]
+```
+
 #### 3. Insertion sort
 
 Build the sorted array one element at a time, sliding each new item leftward into its proper position like cards in your hand. `O(n²)` worst, but `O(n)` on nearly-sorted data with small constants.
@@ -2951,6 +4206,24 @@ function insertionSort(nums) {          // O(n^2) worst, O(n) on sorted, stable
 }
 
 console.log(insertionSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
+```
+
+```java
+public static void insertionSort(int[] nums) { // O(n^2) worst, O(n) adaptive. In place, stable.
+    for (int i = 1; i < nums.length; i++) {
+        int key = nums[i];
+        int j = i - 1;
+        while (j >= 0 && nums[j] > key) {
+            nums[j + 1] = nums[j];
+            j--;
+        }
+        nums[j + 1] = key;
+    }
+}
+
+int[] nums = {38, 12, 47, 5, 29};
+insertionSort(nums);
+System.out.println(Arrays.toString(nums));  // [5, 12, 29, 38, 47]
 ```
 
 #### 4. Merge sort
@@ -3001,6 +4274,28 @@ function mergeSort(nums) {              // O(n log n) always, stable
 console.log(mergeSort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
 ```
 
+```java
+public static int[] mergeSort(int[] nums) { // Divide & conquer. O(n log n) always. Stable.
+    if (nums.length <= 1) return nums;
+    int mid = nums.length / 2;
+    int[] left = mergeSort(Arrays.copyOfRange(nums, 0, mid));
+    int[] right = mergeSort(Arrays.copyOfRange(nums, mid, nums.length));
+
+    int[] out = new int[nums.length];
+    int i = 0, j = 0, k = 0;
+    while (i < left.length && j < right.length) {
+        if (left[i] <= right[j]) out[k++] = left[i++];
+        else out[k++] = right[j++];
+    }
+    while (i < left.length) out[k++] = left[i++];
+    while (j < right.length) out[k++] = right[j++];
+    return out;
+}
+
+int[] sorted = mergeSort(new int[]{38, 12, 47, 5, 29});
+System.out.println(Arrays.toString(sorted)); // [5, 12, 29, 38, 47]
+```
+
 #### 5. Quicksort
 
 Pick a pivot element, partition smaller elements to its left and larger elements to its right, and recurse on each side. Average `O(n log n)` with excellent cache performance and in-place partitioning, worst-case `O(n²)`.
@@ -3034,6 +4329,32 @@ function quicksort(nums) {              // average O(n log n)
 }
 
 console.log(quicksort([38, 12, 47, 5, 29]));   // [5, 12, 29, 38, 47]
+```
+
+```java
+public static void quicksort(int[] nums) { // Average O(n log n), in place
+    quicksort(nums, 0, nums.length - 1);
+}
+
+private static void quicksort(int[] nums, int lo, int hi) {
+    if (lo >= hi) return;
+    int pivot = nums[lo + (hi - lo) / 2];
+    int i = lo, j = hi;
+    while (i <= j) {
+        while (nums[i] < pivot) i++;
+        while (nums[j] > pivot) j--;
+        if (i <= j) {
+            int temp = nums[i]; nums[i] = nums[j]; nums[j] = temp;
+            i++; j--;
+        }
+    }
+    quicksort(nums, lo, j);
+    quicksort(nums, i, hi);
+}
+
+int[] nums = {38, 12, 47, 5, 29};
+quicksort(nums);
+System.out.println(Arrays.toString(nums));  // [5, 12, 29, 38, 47]
 ```
 
 #### 6. Heapsort
@@ -3096,6 +4417,36 @@ function heapSort(nums) {               // O(n log n) always, O(1) space
 console.log(heapSort([38, 12, 47, 5, 29]));        // [5, 12, 29, 38, 47]
 ```
 
+```java
+public static void heapsort(int[] nums) { // O(n log n) always, O(1) auxiliary space
+    int n = nums.length;
+    // Build max-heap in place: O(n)
+    for (int i = n / 2 - 1; i >= 0; i--) siftDown(nums, n, i);
+
+    // Repeatedly move root (largest) to the end
+    for (int end = n - 1; end > 0; end--) {
+        int temp = nums[0]; nums[0] = nums[end]; nums[end] = temp;
+        siftDown(nums, end, 0);
+    }
+}
+
+private static void siftDown(int[] nums, int n, int i) {
+    while (true) {
+        int largest = i;
+        int l = 2 * i + 1, r = 2 * i + 2;
+        if (l < n && nums[l] > nums[largest]) largest = l;
+        if (r < n && nums[r] > nums[largest]) largest = r;
+        if (largest == i) break;
+        int temp = nums[i]; nums[i] = nums[largest]; nums[largest] = temp;
+        i = largest;
+    }
+}
+
+int[] nums = {38, 12, 47, 5, 29};
+heapsort(nums);
+System.out.println(Arrays.toString(nums));  // [5, 12, 29, 38, 47]
+```
+
 Two words get used constantly when comparing sorts. A sort is **stable** if items that compare equal keep their original relative order — that is what lets you sort by surname, then by department, and still have surnames ordered within each department. It is **in place** if it needs only `O(1)` extra memory rather than a second array. Merge sort is stable but not in place; quicksort is in place but not stable.
 
 > **Tip**
@@ -3138,6 +4489,25 @@ function sortArrayByParity(nums) {      // O(n) time, O(1) space
 console.log(sortArrayByParity([3, 1, 2, 4]));   // [2, 4, 3, 1]
 ```
 
+```java
+public static int[] sortArrayByParity(int[] nums) { // O(n) time, O(1) space
+    int write = 0;                          // everything before write is even
+    for (int i = 0; i < nums.length; i++) {
+        if (nums[i] % 2 == 0) {
+            int temp = nums[write];
+            nums[write] = nums[i];
+            nums[i] = temp;
+            write++;
+        }
+    }
+    return nums;
+}
+
+int[] nums = {3, 1, 2, 4};
+sortArrayByParity(nums);
+System.out.println(Arrays.toString(nums));  // [2, 4, 3, 1]
+```
+
 **Top Interview Question 2**
 
 *`nums1` has length `m + n`, with the first `m` slots holding sorted values and the last `n` slots empty (zero-filled). Merge `nums2`'s `n` sorted values into `nums1` in place so the whole array ends up sorted.*
@@ -3174,6 +4544,23 @@ function merge(nums1, m, nums2, n) {     // O(m + n) time, O(1) space
 const nums1 = [1, 2, 3, 0, 0, 0];
 merge(nums1, 3, [2, 5, 6], 3);
 console.log(nums1);                      // [1, 2, 2, 3, 5, 6]
+```
+
+```java
+public static void merge(int[] nums1, int m, int[] nums2, int n) { // O(m + n) time, O(1) space
+    int i = m - 1, j = n - 1, write = m + n - 1;
+    while (j >= 0) {                        // fill backwards so nothing gets overwritten
+        if (i >= 0 && nums1[i] > nums2[j]) {
+            nums1[write--] = nums1[i--];
+        } else {
+            nums1[write--] = nums2[j--];
+        }
+    }
+}
+
+int[] nums1 = {1, 2, 3, 0, 0, 0};
+merge(nums1, 3, new int[]{2, 5, 6}, 3);
+System.out.println(Arrays.toString(nums1)); // [1, 2, 2, 3, 5, 6]
 ```
 
 **Top Interview Question 3**
@@ -3218,6 +4605,26 @@ function sortedSquares(nums) {           // O(n) time, O(n) space
 }
 
 console.log(sortedSquares([-4, -1, 0, 3, 10]));   // [0, 1, 9, 16, 100]
+```
+
+```java
+public static int[] sortedSquares(int[] nums) { // O(n) time, O(n) space
+    int n = nums.length;
+    int[] result = new int[n];
+    int left = 0, right = n - 1;
+    for (int write = n - 1; write >= 0; write--) {
+        if (Math.abs(nums[left]) > Math.abs(nums[right])) {
+            result[write] = nums[left] * nums[left];
+            left++;
+        } else {
+            result[write] = nums[right] * nums[right];
+            right--;
+        }
+    }
+    return result;
+}
+
+System.out.println(Arrays.toString(sortedSquares(new int[]{-4, -1, 0, 3, 10}))); // [0, 1, 9, 16, 100]
 ```
 
 <a id="10-the-four-problem-solving-philosophies"></a>
@@ -3283,6 +4690,23 @@ console.log(maximumUnits([[1, 3], [2, 2], [3, 1]], 4));             // 8
 console.log(maximumUnits([[5, 10], [2, 5], [4, 7], [3, 9]], 10));   // 91
 ```
 
+```java
+public static int maximumUnits(int[][] boxTypes, int truckSize) { // O(n log n)
+    Arrays.sort(boxTypes, (a, b) -> Integer.compare(b[1], a[1])); // sort by units per box desc
+    int units = 0;
+    for (int[] box : boxTypes) {
+        int take = Math.min(box[0], truckSize);
+        units += take * box[1];
+        truckSize -= take;
+        if (truckSize == 0) break;          // truck is full
+    }
+    return units;
+}
+
+System.out.println(maximumUnits(new int[][]{{1, 3}, {2, 2}, {3, 1}}, 4)); // 8
+System.out.println(maximumUnits(new int[][]{{5, 10}, {2, 5}, {4, 7}, {3, 9}}, 10)); // 91
+```
+
 **Top Interview Question 2**
 
 *Each child `i` has a greed factor `g[i]` — the minimum cookie size that will content them. Each cookie `j` has a size `s[j]`. Each child gets at most one cookie. Maximise the number of content children.*
@@ -3320,6 +4744,24 @@ function findContentChildren(g, s) {    // O(n log n) time (sorting dominates)
 
 console.log(findContentChildren([1, 2, 3], [1, 1]));   // 1
 console.log(findContentChildren([1, 2], [1, 2, 3]));   // 2
+```
+
+```java
+public static int findContentChildren(int[] g, int[] s) { // O(n log n)
+    Arrays.sort(g);
+    Arrays.sort(s);
+    int child = 0, cookie = 0;
+    while (child < g.length && cookie < s.length) {
+        if (s[cookie] >= g[child]) {
+            child++;                        // this cookie satisfies this child
+        }
+        cookie++;                           // either way, cookie is consumed
+    }
+    return child;
+}
+
+System.out.println(findContentChildren(new int[]{1, 2, 3}, new int[]{1, 1}));    // 1
+System.out.println(findContentChildren(new int[]{1, 2}, new int[]{1, 2, 3}));    // 2
 ```
 
 **Top Interview Question 3**
@@ -3373,6 +4815,33 @@ function lemonadeChange(bills) {         // O(n) time, O(1) space
 
 console.log(lemonadeChange([5, 5, 5, 10, 20]));    // true
 console.log(lemonadeChange([5, 5, 10, 10, 20]));   // false
+```
+
+```java
+public static boolean lemonadeChange(int[] bills) { // O(n) time, O(1) space
+    int fives = 0, tens = 0;
+    for (int bill : bills) {
+        if (bill == 5) {
+            fives++;
+        } else if (bill == 10) {
+            if (fives == 0) return false;
+            fives--;
+            tens++;
+        } else {                            // bill == 20
+            if (tens > 0 && fives > 0) {
+                tens--; fives--;            // prefer $10 + $5 to keep $5s in reserve
+            } else if (fives >= 3) {
+                fives -= 3;
+            } else {
+                return false;
+            }
+        }
+    }
+    return true;
+}
+
+System.out.println(lemonadeChange(new int[]{5, 5, 5, 10, 20})); // true
+System.out.println(lemonadeChange(new int[]{5, 5, 10, 10, 20})); // false
 ```
 
 <a id="divide-and-conquer"></a>
@@ -3453,6 +4922,35 @@ console.log(root.value);      // 0
 console.log(inorder(root));   // [-10, -3, 0, 5, 9]
 ```
 
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static TreeNode sortedArrayToBST(int[] nums) { // O(n) time, O(log n) stack
+    return build(nums, 0, nums.length - 1);
+}
+
+private static TreeNode build(int[] nums, int lo, int hi) {
+    if (lo > hi) return null;
+    int mid = lo + (hi - lo) / 2;           // middle element becomes the root
+    return new TreeNode(nums[mid],
+        build(nums, lo, mid - 1),           // left half: all smaller
+        build(nums, mid + 1, hi)            // right half: all larger
+    );
+}
+
+TreeNode bst = sortedArrayToBST(new int[]{-10, -3, 0, 5, 9});
+System.out.println(bst.value);              // 0
+```
+
 **Top Interview Question 2**
 
 *Given an array of size `n`, find the element that appears more than `⌊n / 2⌋` times. It is guaranteed to exist.*
@@ -3504,6 +5002,30 @@ function majorityElement(nums) {        // O(n log n) time
 console.log(majorityElement([2, 2, 1, 1, 1, 2, 2]));   // 2
 ```
 
+```java
+public static int majorityElement(int[] nums) { // O(n log n) time
+    return go(nums, 0, nums.length - 1);
+}
+
+private static int go(int[] nums, int lo, int hi) {
+    if (lo == hi) return nums[lo];          // base case: one element
+    int mid = lo + (hi - lo) / 2;
+    int left = go(nums, lo, mid);
+    int right = go(nums, mid + 1, hi);
+    if (left == right) return left;         // both halves agree
+
+    // Disagreement: count each candidate across the WHOLE range
+    int leftCount = 0, rightCount = 0;
+    for (int i = lo; i <= hi; i++) {
+        if (nums[i] == left) leftCount++;
+        if (nums[i] == right) rightCount++;
+    }
+    return leftCount > rightCount ? left : right;
+}
+
+System.out.println(majorityElement(new int[]{2, 2, 1, 1, 1, 2, 2})); // 2
+```
+
 **Top Interview Question 3**
 
 *Given a non-negative integer `x`, return the integer square root — the largest integer `r` such that `r * r <= x` — without using a built-in power or sqrt function.*
@@ -3545,6 +5067,27 @@ console.log(mySqrt(8));    // 2
 console.log(mySqrt(16));   // 4
 ```
 
+```java
+public static int mySqrt(int x) { // O(log x). Binary search over ANSWER space [0, x].
+    if (x < 2) return x;
+    int lo = 1, hi = x / 2;
+    int ans = 1;
+    while (lo <= hi) {
+        int mid = lo + (hi - lo) / 2;
+        if ((long) mid * mid <= x) {
+            ans = mid;                      // candidate answer, try larger
+            lo = mid + 1;
+        } else {
+            hi = mid - 1;
+        }
+    }
+    return ans;
+}
+
+System.out.println(mySqrt(8));              // 2
+System.out.println(mySqrt(16));             // 4
+```
+
 <a id="dynamic-programming"></a>
 
 ### 3. Dynamic Programming
@@ -3584,6 +5127,16 @@ function fibSlow(n) {                   // O(2^n)
 }
 ```
 
+```java
+public static long fibSlow(int n) { // O(2^n) - recomputes identical subproblems
+    if (n <= 1) return n;
+    return fibSlow(n - 1) + fibSlow(n - 2);
+}
+
+System.out.println(fibSlow(10));            // 55
+// fibSlow(50) would run for years
+```
+
 **Question**
 
 *How does top-down memoization optimize recursive overlapping subproblems?*
@@ -3618,6 +5171,23 @@ function fibFast(n) {                   // O(n) - the Map is the diary
 console.log(fibFast(90));               // use BigInt past 2^53 - 1
 ```
 
+```java
+// O(n) time, O(n) space - caches every computed answer
+public static long fibMemo(int n) {
+    return fibMemo(n, new HashMap<>());
+}
+
+private static long fibMemo(int n, Map<Integer, Long> memo) {
+    if (n <= 1) return n;
+    if (memo.containsKey(n)) return memo.get(n);
+    long res = fibMemo(n - 1, memo) + fibMemo(n - 2, memo);
+    memo.put(n, res);
+    return res;
+}
+
+System.out.println(fibMemo(50));            // 12586269025L
+```
+
 **Question**
 
 *How do you convert top-down recursion into space-optimized bottom-up dynamic programming?*
@@ -3645,6 +5215,21 @@ function fibIterative(n) {              // O(n) time, O(1) space
 }
 
 console.log(fibIterative(90));          // use BigInt past 2^53 - 1
+```
+
+```java
+public static long fibIterative(int n) { // O(n) time, O(1) space - no recursion
+    if (n <= 0) return 0;
+    long a = 0, b = 1;
+    for (int i = 0; i < n; i++) {
+        long temp = a + b;
+        a = b;
+        b = temp;
+    }
+    return a;
+}
+
+System.out.println(fibIterative(90));       // 2880067194370816120L
 ```
 
 **Top Interview Question 1**
@@ -3676,6 +5261,20 @@ function climbStairs(n) {           // O(n) time, O(1) space
 }
 
 console.log(climbStairs(5));        // 8
+```
+
+```java
+public static int climbStairs(int n) { // O(n) time, O(1) space
+    int oneBack = 1, twoBack = 1;      // ways(1) = 1, ways(0) = 1
+    for (int i = 2; i <= n; i++) {
+        int temp = oneBack + twoBack;
+        twoBack = oneBack;
+        oneBack = temp;
+    }
+    return oneBack;
+}
+
+System.out.println(climbStairs(5));         // 8
 ```
 
 **Top Interview Question 2**
@@ -3723,6 +5322,34 @@ console.log(generate(5));
 // [[1],[1,1],[1,2,1],[1,3,3,1],[1,4,6,4,1]]
 ```
 
+```java
+public static List<List<Integer>> generate(int numRows) { // O(numRows^2) time
+    List<List<Integer>> triangle = new ArrayList<>();
+    for (int r = 0; r < numRows; r++) {
+        List<Integer> row = new ArrayList<>();
+        for (int c = 0; c <= r; c++) {
+            if (c == 0 || c == r) {
+                row.add(1);                 // edges are always 1
+            } else {
+                int val = triangle.get(r - 1).get(c - 1) + triangle.get(r - 1).get(c);
+                row.add(val);
+            }
+        }
+        triangle.add(row);
+    }
+    return triangle;
+}
+
+for (List<Integer> row : generate(5)) {
+    System.out.println(row);
+}
+// [1]
+// [1, 1]
+// [1, 2, 1]
+// [1, 3, 3, 1]
+// [1, 4, 6, 4, 1]
+```
+
 **Top Interview Question 3**
 
 *Each step `i` of a staircase has a cost `cost[i]`. From step `i` you may climb 1 or 2 steps, paying `cost[i]` each time you leave a step. You may start at step 0 or step 1. Find the minimum cost to reach just past the top.*
@@ -3753,6 +5380,21 @@ function minCostClimbingStairs(cost) {  // O(n) time, O(1) space
 }
 
 console.log(minCostClimbingStairs([10, 15, 20]));   // 15
+```
+
+```java
+public static int minCostClimbingStairs(int[] cost) { // O(n) time, O(1) space
+    int oneBack = 0, twoBack = 0;           // cost to reach the step just past index i
+    for (int i = 2; i <= cost.length; i++) {
+        int current = Math.min(oneBack + cost[i - 1], twoBack + cost[i - 2]);
+        twoBack = oneBack;
+        oneBack = current;
+    }
+    return oneBack;
+}
+
+System.out.println(minCostClimbingStairs(new int[]{10, 15, 20}));                         // 15
+System.out.println(minCostClimbingStairs(new int[]{1, 100, 1, 1, 1, 100, 1, 1, 100, 1})); // 6
 ```
 
 <a id="backtracking"></a>
@@ -3834,6 +5476,32 @@ function subsets(nums) {                // all 2^n subsets
 console.log(subsets([1, 2, 3]).length); // 8
 ```
 
+```java
+public static List<List<Integer>> subsets(int[] nums) { // All 2^n subsets
+    List<List<Integer>> out = new ArrayList<>();
+    List<Integer> path = new ArrayList<>();
+    backtrack(nums, 0, path, out);
+    return out;
+}
+
+private static void backtrack(int[] nums, int i, List<Integer> path, List<List<Integer>> out) {
+    if (i == nums.length) {
+        out.add(new ArrayList<>(path));     // copy - path keeps mutating
+        return;
+    }
+    // Decision 1: skip nums[i]
+    backtrack(nums, i + 1, path, out);
+
+    // Decision 2: take nums[i]
+    path.add(nums[i]);                      // 1. choose
+    backtrack(nums, i + 1, path, out);      // 2. explore
+    path.remove(path.size() - 1);           // 3. un-choose
+}
+
+System.out.println(subsets(new int[]{1, 2, 3}));
+// [[], [3], [2], [2, 3], [1], [1, 3], [1, 2], [1, 2, 3]]
+```
+
 **Top Interview Question 1**
 
 *Given the root of a binary tree, return every root-to-leaf path as a string, such as `"1->2->5"`.*
@@ -3907,6 +5575,45 @@ const tree = new TreeNode(1, new TreeNode(2, null, new TreeNode(5)), new TreeNod
 console.log(binaryTreePaths(tree));   // ['1->2->5', '1->3']
 ```
 
+```java
+static class TreeNode {
+    int value;
+    TreeNode left, right;
+    TreeNode(int value) { this.value = value; }
+    TreeNode(int value, TreeNode left, TreeNode right) {
+        this.value = value;
+        this.left = left;
+        this.right = right;
+    }
+}
+
+public static List<String> binaryTreePaths(TreeNode root) {
+    // Every root-to-leaf path. Choose the node, explore children, un-choose.
+    List<String> paths = new ArrayList<>();
+    List<String> path = new ArrayList<>();
+    dfs(root, path, paths);
+    return paths;
+}
+
+private static void dfs(TreeNode node, List<String> path, List<String> paths) {
+    if (node == null) return;
+    path.add(String.valueOf(node.value));   // 1. choose
+    if (node.left == null && node.right == null) {
+        paths.add(String.join("->", path)); // leaf reached
+    } else {
+        dfs(node.left, path, paths);        // 2. explore
+        dfs(node.right, path, paths);
+    }
+    path.remove(path.size() - 1);           // 3. un-choose
+}
+
+TreeNode tree = new TreeNode(1,
+    new TreeNode(2, null, new TreeNode(5)),
+    new TreeNode(3)
+);
+System.out.println(binaryTreePaths(tree));  // ["1->2->5", "1->3"]
+```
+
 **Top Interview Question 2**
 
 *A binary watch has 4 LEDs for hours (0–11) and 6 LEDs for minutes (0–59). Given a number of LEDs that are lit, return every possible time the watch could be showing.*
@@ -3965,6 +5672,34 @@ console.log(readBinaryWatch(1).sort());
 // ['0:01','0:02','0:04','0:08','0:16','0:32','1:00','2:00','4:00','8:00']
 ```
 
+```java
+public static List<String> readBinaryWatch(int turnedOn) {
+    // Backtrack over which of the 10 LEDs are lit (4 for hours, 6 for mins)
+    List<String> times = new ArrayList<>();
+    int[] hours = {1, 2, 4, 8};
+    int[] mins = {1, 2, 4, 8, 16, 32};
+    backtrack(0, 0, 0, turnedOn, hours, mins, times);
+    return times;
+}
+
+private static void backtrack(int idx, int h, int m, int count, int[] hours, int[] mins, List<String> times) {
+    if (h > 11 || m > 59) return;
+    if (count == 0) {
+        times.add(String.format("%d:%02d", h, m));
+        return;
+    }
+    for (int i = idx; i < 10; i++) {
+        if (i < 4) {
+            backtrack(i + 1, h + hours[i], m, count - 1, hours, mins, times);
+        } else {
+            backtrack(i + 1, h, m + mins[i - 4], count - 1, hours, mins, times);
+        }
+    }
+}
+
+System.out.println(readBinaryWatch(1)); // [0:01, 0:02, 0:04, 0:08, 0:16, 0:32, 1:00, 2:00, 4:00, 8:00]
+```
+
 **Top Interview Question 3**
 
 *For an array, the XOR total of a subset is the XOR of all its elements (`0` for the empty subset). Return the sum of the XOR totals of every possible subset.*
@@ -4012,6 +5747,25 @@ function subsetXORSum(nums) {           // O(2^n) time
 
 console.log(subsetXORSum([1, 3]));      // 6
 console.log(subsetXORSum([5, 1, 6]));   // 28
+```
+
+```java
+public static int subsetXORSum(int[] nums) {
+    // O(2^n) time - the power-set backtracking skeleton, folding XOR
+    return backtrack(nums, 0, 0);
+}
+
+private static int backtrack(int[] nums, int i, int currentXor) {
+    if (i == nums.length) {
+        return currentXor;                  // every subset's XOR contributes once
+    }
+    // Sum of: skipping nums[i] + choosing nums[i]
+    return backtrack(nums, i + 1, currentXor) +
+           backtrack(nums, i + 1, currentXor ^ nums[i]);
+}
+
+System.out.println(subsetXORSum(new int[]{1, 3}));    // 6
+System.out.println(subsetXORSum(new int[]{5, 1, 6})); // 28
 ```
 
 > **Tip**
