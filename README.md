@@ -101,8 +101,8 @@
 4. [04. Agents That Work Together](projects/techtoday/study/ai-bootcamp/04-agents-that-work-together.html)
 5. [05. How Agents Talk](projects/techtoday/study/ai-bootcamp/05-how-agents-talk.html)
 6. [06. Shipping Agents to Production](projects/techtoday/study/ai-bootcamp/06-shipping-agents-to-production.html)
-7. [Project: AI Agents in Finance](projects/techtoday/study/ai-bootcamp/project-ai-agents-in-finance.html)
-8. [Project: NPS Analyst in a Box](projects/techtoday/study/ai-bootcamp/project-nps-analyst-in-a-box.html)
+7. [Project 01: AI Agents in Finance](projects/techtoday/study/ai-bootcamp/project-01-ai-agents-in-finance.html)
+8. [Project 02: NPS Analyst in a Box](projects/techtoday/study/ai-bootcamp/project-02-nps-analyst-in-a-box.html)
 
 ## Forward Deployed Engineer
 1. [FDE Crash Course](projects/techtoday/study/fde/fde-crash-course.html)

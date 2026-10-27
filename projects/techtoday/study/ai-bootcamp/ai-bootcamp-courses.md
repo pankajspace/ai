@@ -17,8 +17,8 @@ Hands-on Agentic AI on AWS & real-world financial agent systems
 4. **[04. Agents That Work Together](04-agents-that-work-together.html)** — Multi-agent patterns with Strands Agents on Amazon Bedrock: supervisor-worker, agent-as-tool, sequential, parallel and collaborative communication, and swarm and graph orchestration.
 5. **[05. How Agents Talk](05-how-agents-talk.html)** — Model Context Protocol (MCP) for connecting agents to tools, resources, and prompts, and the Agent-to-Agent (A2A) protocol for connecting agents to each other with FastMCP and Bedrock labs.
 6. **[06. Shipping Agents to Production](06-shipping-agents-to-production.html)** — Taking Strands agents from laptop to production on AWS Lambda, Amazon ECS on Fargate, and Amazon Bedrock AgentCore (Runtime, Gateway, Identity), plus enterprise integration patterns.
-7. **[Project: AI Agents in Finance](project-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
-8. **[Project: NPS Analyst in a Box](project-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
+7. **[Project 01: AI Agents in Finance](project-01-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
+8. **[Project 02: NPS Analyst in a Box](project-02-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
 
 ---
 
