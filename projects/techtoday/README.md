@@ -129,6 +129,7 @@ projects/techtoday/
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
 └── study/
+    ├── ai-bootcamp/             ← ai-bootcamp-courses.html catalog + 6 Agentic AI on AWS sections + 2 Finance projects
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
     ├── ai-projects/             ← ai-projects.html catalog (10 container projects) + shared study theme/scripts
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
@@ -154,7 +155,7 @@ projects/techtoday/
 
 1. **Dark theme** — background `#121212`, elevated surfaces `#1e1e1e`, accent `#90caf9` (Material Blue 200), with blue (`#90caf9`) accents and borders on homepage course tiles.
 2. **No frameworks** — zero runtime dependencies; no Node.js, no bundler.
-3. **Hub Tile Grid** — 23 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, AI POCs, AI Projects, Forward Deployed Engineer). Thirteen are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
+3. **Hub Tile Grid** — 23 category tiles on the homepage (Operating Systems, Networking, Programming, DSA, Design Patterns, LLD, HLD, Git, DevOps, AWS, Databases, HTML & CSS, React Stack, MERN, Distributed Communication Patterns, Software Architecture, Software Projects, Web Performance, Web Security, AI Engineering, AI Projects, AI Bootcamp, Forward Deployed Engineer). Fourteen are populated with crash/detailed courses or active projects; the rest are placeholders awaiting content.
 4. **Responsive** — grid reorganizes cleanly from 3 columns on desktop to 2 columns on tablet and 1 column on mobile devices.
 5. **Accessible** — semantic HTML5 landmarks and structured hierarchy.
 

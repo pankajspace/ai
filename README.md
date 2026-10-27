@@ -94,6 +94,16 @@
 1. [AI Engineering Crash Course](projects/techtoday/study/ai-engineering/ai-engineering-crash-course.html)
 2. [AI Engineering Detailed Course](projects/techtoday/study/ai-engineering/ai-engineering-detailed-course.html)
 
+## AI Bootcamp
+1. [01. Your First AI Agent](projects/techtoday/study/ai-bootcamp/01-your-first-ai-agent.html)
+2. [02. Giving Agents Tools](projects/techtoday/study/ai-bootcamp/02-giving-agents-tools.html)
+3. [03. Agents That Remember](projects/techtoday/study/ai-bootcamp/03-agents-that-remember.html)
+4. [04. Agents That Work Together](projects/techtoday/study/ai-bootcamp/04-agents-that-work-together.html)
+5. [05. How Agents Talk](projects/techtoday/study/ai-bootcamp/05-how-agents-talk.html)
+6. [06. Shipping Agents to Production](projects/techtoday/study/ai-bootcamp/06-shipping-agents-to-production.html)
+7. [Project: AI Agents in Finance](projects/techtoday/study/ai-bootcamp/project-ai-agents-in-finance.html)
+8. [Project: NPS Analyst in a Box](projects/techtoday/study/ai-bootcamp/project-nps-analyst-in-a-box.html)
+
 ## Forward Deployed Engineer
 1. [FDE Crash Course](projects/techtoday/study/fde/fde-crash-course.html)
 2. [FDE Detailed Course](projects/techtoday/study/fde/fde-detailed-course.html)
