@@ -18,8 +18,9 @@ Hands-on Agentic AI on AWS & real-world financial agent systems
 5. **[05. How Agents Talk](05-how-agents-talk.html)** — Model Context Protocol (MCP) for connecting agents to tools, resources, and prompts, and the Agent-to-Agent (A2A) protocol for connecting agents to each other with FastMCP and Bedrock labs.
 6. **[06. Shipping Agents to Production](06-shipping-agents-to-production.html)** — Taking Strands agents from laptop to production on AWS Lambda, Amazon ECS on Fargate, and Amazon Bedrock AgentCore (Runtime, Gateway, Identity), plus enterprise integration patterns.
 7. **[07. Evals, Observability and Governance](07-evals-observability-and-governance.html)** — Evaluate agents with AgentCore Evaluations and LLM-as-a-judge, trace with OpenTelemetry into Jaeger and Langfuse, and govern with Bedrock Guardrails and Cedar.
-8. **[Project 01: AI Agents in Finance](project-01-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
-9. **[Project 02: NPS Analyst in a Box](project-02-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
+8. **[08. AI Engineering — Interview Workshop](08-AI Engineering — Interview Workshop.html)** — Four real-world AI engineering project walkthroughs with 24 follow-up questions and 50 practice questions covering architecture trade-offs, RAG, agents, memory, and senior interview prep.
+9. **[Project 01: AI Agents in Finance](project-01-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
+10. **[Project 02: NPS Analyst in a Box](project-02-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
 
 ---
 
