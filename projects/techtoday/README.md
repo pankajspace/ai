@@ -129,7 +129,7 @@ projects/techtoday/
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
 └── study/
-    ├── ai-bootcamp/             ← ai-bootcamp-courses.html catalog + 6 Agentic AI on AWS sections + 2 Finance projects
+    ├── ai-bootcamp/             ← ai-bootcamp-courses.html catalog + 7 Agentic AI on AWS sections + 2 Finance projects
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
     ├── ai-projects/             ← ai-projects.html catalog (10 container projects) + shared study theme/scripts
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
