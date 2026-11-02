@@ -479,13 +479,23 @@ body{margin:0; background:var(--bg); color:var(--ink); font-family:Inter,system-
 a{color:var(--accent)}
 #progress{position:fixed; top:0; left:0; height:3px; width:0; background:var(--accent); z-index:60}
 
-/* top bar */
-.topbar{position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:12px; padding:10px 20px; background:color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter:blur(8px); border-bottom:1px solid var(--line)}
-.brand{font-weight:800; letter-spacing:-.01em; font-size:15px}
-.brand span{color:var(--accent)}
-.brand em{font-style:normal}
-.iconbtn{white-space:nowrap; display:inline-flex; align-items:center; gap:6px}
-.iconbtn svg{width:15px; height:15px}
+/* layout variables mapping */
+:root {
+  --paper: var(--bg);
+  --card: var(--surface);
+  --card-2: var(--surface-2);
+  --rule: var(--line);
+  --rule-2: var(--line);
+  --ink-2: var(--muted);
+  --font-body: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-head: Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --data-t: var(--accent-soft);
+  --data-ink: var(--accent);
+  --tool: var(--accent);
+  --brain: var(--gold);
+}
+
+/* components used in content */
 input[type=range]{accent-color:var(--accent)}
 .svgwrap svg{display:block; width:100%; height:auto; color:var(--ink)}
 .trail{display:flex; flex-wrap:wrap; align-items:center; gap:4px 4px; margin:6px 0 2px; font:11.5px/1.3 "JetBrains Mono",ui-monospace,monospace}
@@ -494,29 +504,62 @@ input[type=range]{accent-color:var(--accent)}
 .trail span.c.now{background:var(--gold-soft); color:var(--gold); border-color:var(--gold); font-weight:700}
 .trail i{font-style:normal; color:var(--muted)}
 .trail b.day{font:700 10.5px Inter,system-ui,sans-serif; letter-spacing:.06em; text-transform:uppercase; color:var(--accent); padding:0 4px}
-.topbar .sp{flex:1}
-.iconbtn{font:inherit; font-size:14px; font-weight:600; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:999px; padding:6px 14px; cursor:pointer}
-.iconbtn:hover{border-color:var(--accent)}
-#tocBtn{display:none}
 
-/* layout */
-.layout{display:grid; grid-template-columns:260px minmax(0,1fr); gap:40px; max-width:1240px; margin:0 auto; padding:0 24px}
-.toc{position:sticky; top:64px; align-self:start; max-height:calc(100vh - 80px); overflow:auto; padding:24px 0 40px; font-size:14px; line-height:1.45}
-.toc h4{margin:0 0 8px; font-size:12px; letter-spacing:.08em; text-transform:uppercase; color:var(--muted)}
-.toc a{display:block; padding:5px 10px; border-radius:8px; color:var(--muted); text-decoration:none; border-left:2px solid transparent}
-.toc a.lvl2{padding-left:22px; font-size:13.5px}
-.toc a:hover{color:var(--ink); background:var(--surface-2)}
-.toc a.active{color:var(--accent); border-left-color:var(--accent); background:var(--accent-soft); font-weight:600}
-.toc .grp{margin-top:16px}
+/* Layout */
+.shell{display:grid;grid-template-columns:280px minmax(0,1fr);min-height:100vh}
+.side{position:sticky;top:0;height:100vh;overflow:auto;border-right:1px solid var(--rule);background:var(--card);padding:28px 22px 40px}
+.main{min-width:0}
+.wrap{max-width:72rem;margin:0 auto;padding:0 40px}
 main{min-width:0; max-width:880px; padding:28px 0 80px}
 
 @media (max-width:1100px){
-  .layout{grid-template-columns:minmax(0,1fr); padding:0 16px}
-  #tocBtn{display:inline-block}
-  .toc{position:fixed; top:56px; left:0; right:0; max-height:70vh; background:var(--surface); border-bottom:1px solid var(--line); padding:16px 20px; display:none; z-index:45; box-shadow:0 12px 30px rgba(0,0,0,.15)}
-  .toc.open{display:block}
+  .shell{grid-template-columns:1fr}
+  .side{position:fixed;inset:0 auto 0 0;width:min(320px,86vw);z-index:60;transform:translateX(-102%);transition:transform .25s ease;box-shadow:0 0 0 100vmax rgba(10,14,30,0)}
+  .side.open{transform:none;box-shadow:0 0 0 100vmax rgba(10,14,30,.45)}
+  .wrap{padding:0 24px}
   main{padding-top:16px}
 }
+@media (max-width:640px){
+  .wrap{padding:0 16px}
+}
+
+/* Top bar */
+.topbar{position:sticky;top:0;z-index:50;background:color-mix(in srgb,var(--paper) 88%,transparent);backdrop-filter:blur(8px);border-bottom:1px solid var(--rule)}
+.topbar .wrap{display:flex;align-items:center;gap:14px;height:60px;max-width:72rem;margin:0 auto;padding:0 40px}
+.topbar .where{font-weight:600;color:var(--ink-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;font-size:15px}
+.progress{position:absolute;left:0;bottom:-1px;height:3px;background:var(--tool);width:0}
+.icon-btn{border:1px solid var(--rule);background:var(--card);color:var(--ink);border-radius:10px;height:40px;min-width:40px;padding:0 12px;font:600 .95rem var(--font-body);cursor:pointer;display:inline-flex;align-items:center;gap:8px}
+.icon-btn:hover{border-color:var(--ink-2)}
+.menu-btn{display:none}
+@media (max-width:1100px){
+  .menu-btn{display:inline-flex}
+  .topbar .wrap{padding:0 24px;height:54px}
+}
+@media (max-width:640px){
+  .topbar .wrap{padding:0 16px}
+}
+
+/* Sidebar */
+.brand{display:flex;gap:12px;align-items:center;margin-bottom:22px}
+.brand-mark{width:42px;height:42px;flex:none}
+.brand b{display:block;font-family:var(--font-head);font-weight:700;font-size:1.05rem;line-height:1.15;color:var(--ink)}
+.brand span{font-size:.86rem;color:var(--muted)}
+.toc{list-style:none;padding:0;margin:0;counter-reset:none}
+.toc li{margin:0}
+.toc li.grp{margin:18px 0 6px 10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.toc a{display:grid;grid-template-columns:2.9rem 1fr;gap:4px;padding:8px 10px;border-radius:10px;color:var(--ink-2);text-decoration:none;font-size:.97rem;line-height:1.3}
+.toc a .n{color:var(--muted);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.toc a:hover{background:var(--card-2);color:var(--ink)}
+.toc a.active{background:var(--data-t);color:var(--ink);font-weight:600}
+.toc a.active .n{color:var(--data-ink)}
+.toc a.done .n{color:var(--tool)}
+.toc .sub a{grid-template-columns:2.9rem 1fr;padding:5px 10px 5px 10px;font-size:.9rem;color:var(--muted)}
+.toc .sub a .n{color:var(--muted);font-weight:400}
+.side-foot{margin-top:24px;font-size:.88rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
+.legend-mini{display:grid;gap:6px;margin-top:10px}
+.legend-mini span{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--ink-2)}
+.sw{width:14px;height:14px;border-radius:4px;border:2px solid;flex:none}
+footer{border-top:1px solid var(--rule); padding:48px 0 80px; text-align:center; color:var(--muted); font-size:14px}
 
 /* type */
 h1,h2,h3,h4{line-height:1.25; letter-spacing:-.015em}
@@ -842,10 +885,8 @@ table.wf td.best{font-weight:800;color:var(--accent);background:var(--accent-sof
 <style>
   .tt-site-header ~ .shell .side { top: 53px; height: calc(100vh - 53px); }
   .tt-site-header ~ .shell .topbar { top: 53px; }
-  .tt-site-header ~ .layout .toc { top: 117px; max-height: calc(100vh - 133px); }
   @media (max-width: 1100px) {
     .tt-site-header ~ .shell .side { top: 0; height: 100vh; }
-    .tt-site-header ~ .layout .toc { top: 109px; }
   }
 </style>
 </head>
@@ -859,30 +900,58 @@ table.wf td.best{font-weight:800;color:var(--accent);background:var(--accent-sof
     <a href="ai-bootcamp-courses.html" class="nav-back-link">&larr; AI Bootcamp</a>
   </nav>
 </header>
-<div id="progress" style="width: 0%;"></div>
+<div class="shell">
+<aside class="side" id="side" aria-label="Section contents">
+  <div class="brand">
+    <svg class="brand-mark" viewBox="0 0 48 48" aria-hidden="true">
+      <rect x="1" y="1" width="46" height="46" rx="12" fill="var(--ink)"></rect>
+      <path d="M33 15a12 12 0 1 0 3.2 12.6" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round"></path>
+      <path d="M30.5 10.5 L35 15.5 L28.6 17.4" fill="none" stroke="var(--gold)" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"></path>
+      <circle cx="24" cy="24" r="4.5" fill="var(--accent)"></circle>
+    </svg>
+    <div><b>Future with Shivank</b><span>NPS Analyst in a Box</span></div>
+  </div>
+  <nav>
+  <ol class="toc" id="toc">
+    <li><a href="#start" class="active"><span class="n">·</span><span>Start here</span></a></li>
+    <li><a href="#p-problem"><span class="n">·</span><span>The problem, in 10 customers</span></a></li>
+    <li class="grp">Understand it</li>
+    <li><a href="#p-ask"><span class="n">P.1</span><span>The ask</span></a></li>
+    <li class="sub"><a href="#p-nps"><span class="n">P.2</span><span>Just-enough NPS</span></a></li>
+    <li class="sub"><a href="#p-money"><span class="n">P.3</span><span>NPS is a money number</span></a></li>
+    <li class="sub"><a href="#p-arch"><span class="n">P.4</span><span>The architecture</span></a></li>
+    <li class="grp">Build it</li>
+    <li><a href="#p-setup"><span class="n">P.5</span><span>Setup, folders &amp; data</span></a></li>
+    <li class="grp">Own it</li>
+    <li><a href="#p-project"><span class="n">P.6</span><span>Milestones &amp; rubric</span></a></li>
+    <li class="grp">Finish</li>
+    <li><a href="#wrap"><span class="n">·</span><span>Wrap-up</span></a></li>
+  </ol>
+  </nav>
+  <div class="side-foot">
+    <div>Colour code used in diagrams</div>
+    <div class="legend-mini">
+      <span><i class="sw" style="background:var(--accent-soft);border-color:var(--accent)"></i>Analogy &amp; concepts</span>
+      <span><i class="sw" style="background:var(--gold-soft);border-color:var(--gold)"></i>Finance corner</span>
+      <span><i class="sw" style="background:var(--warn-soft);border-color:var(--warn)"></i>Watch out &amp; gotchas</span>
+      <span><i class="sw" style="background:var(--blue-soft);border-color:var(--blue)"></i>Already covered</span>
+      <span><i class="sw" style="background:var(--good-soft);border-color:var(--good)"></i>Simulations &amp; tools</span>
+      <span><i class="sw" style="background:var(--ink);border-color:var(--ink)"></i>The agent itself</span>
+    </div>
+  </div>
+</aside>
+
+<div class="main">
 <header class="topbar">
-  <div class="brand">Future with <span>Shivank</span><em> · AI Agents in Finance · Project: NPS analyst</em></div>
-  <div class="sp"></div>
-  <button class="iconbtn" id="tocBtn" aria-controls="toc" aria-expanded="false">Contents</button>
-  <button class="iconbtn" id="themeBtn" aria-label="Switch light or dark theme"><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.5" fill="none" stroke="currentColor" stroke-width="1.5"></circle><path d="M8 1.5a6.5 6.5 0 0 1 0 13z" fill="currentColor"></path></svg><span class="lbl">Theme</span></button>
+  <div class="wrap">
+    <button class="icon-btn menu-btn" id="menuBtn" aria-controls="side" aria-expanded="false">☰ Contents</button>
+    <div class="where" id="where">Start here</div>
+    <button class="icon-btn" id="themeBtn" aria-label="Switch between light and dark theme"><svg class="theme-ico" viewBox="0 0 20 20" aria-hidden="true" style="width:16px;height:16px;flex:none"><circle cx="10" cy="10" r="8" fill="none" stroke="currentColor" stroke-width="2"></circle><path d="M10 2a8 8 0 0 1 0 16z" fill="currentColor"></path></svg>Theme</button>
+  </div>
+  <div class="progress" id="progress" style="width: 0%;"></div>
 </header>
-<div class="layout">
-<nav class="toc" id="toc" aria-label="Contents">
-  <h4>On this page</h4>
-  <a href="#start" class="active">Start here</a>
-  <a href="#p-problem" class="">The problem, in 10 customers</a>
-  <div class="grp"><h4>Understand it</h4></div>
-  <a class="lvl2" href="#p-ask">P1 The ask</a>
-  <a class="lvl2" href="#p-nps">P2 Just-enough NPS</a>
-  <a class="lvl2" href="#p-money">P3 NPS is a money number</a>
-  <a class="lvl2" href="#p-arch">P4 The architecture</a>
-  <div class="grp"><h4>Build it</h4></div>
-  <a class="lvl2" href="#p-setup">P5 Setup, folders &amp; data</a>
-  <div class="grp"><h4>Own it</h4></div>
-  <a class="lvl2" href="#p-project">P6 Milestones &amp; rubric</a>
-  <div class="grp"></div>
-  <a href="#wrap" class="">Wrap-up</a>
-</nav>
+
+<div class="wrap">
 <main id="main">
 <section class="hero" id="start">
   <p class="kicker">Future with Shivank · Hands-on project · Learner brief</p>
@@ -1209,11 +1278,13 @@ OPENAI_API_KEY=sk-...
 
 </section>
 </main>
-</div>
 <footer>
   <strong>Future with Shivank</strong> · AI Agents in Finance · Project: NPS analyst in a box<br>
   Fictional bank, generated data, for learning only. Agent wording varies run to run; the numbers come from code.
 </footer>
+</div><!-- /wrap -->
+</div><!-- /main -->
+</div><!-- /shell -->
 <script>
 var _self="undefined"!=typeof window?window:"undefined"!=typeof WorkerGlobalScope&&self instanceof WorkerGlobalScope?self:{},Prism=function(e){var n=/(?:^|\s)lang(?:uage)?-([\w-]+)(?=\s|$)/i,t=0,r={},a={manual:e.Prism&&e.Prism.manual,disableWorkerMessageHandler:e.Prism&&e.Prism.disableWorkerMessageHandler,util:{encode:function e(n){return n instanceof i?new i(n.type,e(n.content),n.alias):Array.isArray(n)?n.map(e):n.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\u00a0/g," ")},type:function(e){return Object.prototype.toString.call(e).slice(8,-1)},objId:function(e){return e.__id||Object.defineProperty(e,"__id",{value:++t}),e.__id},clone:function e(n,t){var r,i;switch(t=t||{},a.util.type(n)){case"Object":if(i=a.util.objId(n),t[i])return t[i];for(var l in r={},t[i]=r,n)n.hasOwnProperty(l)&&(r[l]=e(n[l],t));return r;case"Array":return i=a.util.objId(n),t[i]?t[i]:(r=[],t[i]=r,n.forEach((function(n,a){r[a]=e(n,t)})),r);default:return n}},getLanguage:function(e){for(;e;){var t=n.exec(e.className);if(t)return t[1].toLowerCase();e=e.parentElement}return"none"},setLanguage:function(e,t){e.className=e.className.replace(RegExp(n,"gi"),""),e.classList.add("language-"+t)},currentScript:function(){if("undefined"==typeof document)return null;if("currentScript"in document)return document.currentScript;try{throw new Error}catch(r){var e=(/at [^(\r\n]*\((.*):[^:]+:[^:]+\)$/i.exec(r.stack)||[])[1];if(e){var n=document.getElementsByTagName("script");for(var t in n)if(n[t].src==e)return n[t]}return null}},isActive:function(e,n,t){for(var r="no-"+n;e;){var a=e.classList;if(a.contains(n))return!0;if(a.contains(r))return!1;e=e.parentElement}return!!t}},languages:{plain:r,plaintext:r,text:r,txt:r,extend:function(e,n){var t=a.util.clone(a.languages[e]);for(var r in n)t[r]=n[r];return t},insertBefore:function(e,n,t,r){var i=(r=r||a.languages)[e],l={};for(var o in i)if(i.hasOwnProperty(o)){if(o==n)for(var s in t)t.hasOwnProperty(s)&&(l[s]=t[s]);t.hasOwnProperty(o)||(l[o]=i[o])}var u=r[e];return r[e]=l,a.languages.DFS(a.languages,(function(n,t){t===u&&n!=e&&(this[n]=l)})),l},DFS:function e(n,t,r,i){i=i||{};var l=a.util.objId;for(var o in n)if(n.hasOwnProperty(o)){t.call(n,o,n[o],r||o);var s=n[o],u=a.util.type(s);"Object"!==u||i[l(s)]?"Array"!==u||i[l(s)]||(i[l(s)]=!0,e(s,t,o,i)):(i[l(s)]=!0,e(s,t,null,i))}}},plugins:{},highlightAll:function(e,n){a.highlightAllUnder(document,e,n)},highlightAllUnder:function(e,n,t){var r={callback:t,container:e,selector:'code[class*="language-"], [class*="language-"] code, code[class*="lang-"], [class*="lang-"] code'};a.hooks.run("before-highlightall",r),r.elements=Array.prototype.slice.apply(r.container.querySelectorAll(r.selector)),a.hooks.run("before-all-elements-highlight",r);for(var i,l=0;i=r.elements[l++];)a.highlightElement(i,!0===n,r.callback)},highlightElement:function(n,t,r){var i=a.util.getLanguage(n),l=a.languages[i];a.util.setLanguage(n,i);var o=n.parentElement;o&&"pre"===o.nodeName.toLowerCase()&&a.util.setLanguage(o,i);var s={element:n,language:i,grammar:l,code:n.textContent};function u(e){s.highlightedCode=e,a.hooks.run("before-insert",s),s.element.innerHTML=s.highlightedCode,a.hooks.run("after-highlight",s),a.hooks.run("complete",s),r&&r.call(s.element)}if(a.hooks.run("before-sanity-check",s),(o=s.element.parentElement)&&"pre"===o.nodeName.toLowerCase()&&!o.hasAttribute("tabindex")&&o.setAttribute("tabindex","0"),!s.code)return a.hooks.run("complete",s),void(r&&r.call(s.element));if(a.hooks.run("before-highlight",s),s.grammar)if(t&&e.Worker){var c=new Worker(a.filename);c.onmessage=function(e){u(e.data)},c.postMessage(JSON.stringify({language:s.language,code:s.code,immediateClose:!0}))}else u(a.highlight(s.code,s.grammar,s.language));else u(a.util.encode(s.code))},highlight:function(e,n,t){var r={code:e,grammar:n,language:t};if(a.hooks.run("before-tokenize",r),!r.grammar)throw new Error('The language "'+r.language+'" has no grammar.');return r.tokens=a.tokenize(r.code,r.grammar),a.hooks.run("after-tokenize",r),i.stringify(a.util.encode(r.tokens),r.language)},tokenize:function(e,n){var t=n.rest;if(t){for(var r in t)n[r]=t[r];delete n.rest}var a=new s;return u(a,a.head,e),o(e,a,n,a.head,0),function(e){for(var n=[],t=e.head.next;t!==e.tail;)n.push(t.value),t=t.next;return n}(a)},hooks:{all:{},add:function(e,n){var t=a.hooks.all;t[e]=t[e]||[],t[e].push(n)},run:function(e,n){var t=a.hooks.all[e];if(t&&t.length)for(var r,i=0;r=t[i++];)r(n)}},Token:i};function i(e,n,t,r){this.type=e,this.content=n,this.alias=t,this.length=0|(r||"").length}function l(e,n,t,r){e.lastIndex=n;var a=e.exec(t);if(a&&r&&a[1]){var i=a[1].length;a.index+=i,a[0]=a[0].slice(i)}return a}function o(e,n,t,r,s,g){for(var f in t)if(t.hasOwnProperty(f)&&t[f]){var h=t[f];h=Array.isArray(h)?h:[h];for(var d=0;d<h.length;++d){if(g&&g.cause==f+","+d)return;var v=h[d],p=v.inside,m=!!v.lookbehind,y=!!v.greedy,k=v.alias;if(y&&!v.pattern.global){var x=v.pattern.toString().match(/[imsuy]*$/)[0];v.pattern=RegExp(v.pattern.source,x+"g")}for(var b=v.pattern||v,w=r.next,A=s;w!==n.tail&&!(g&&A>=g.reach);A+=w.value.length,w=w.next){var E=w.value;if(n.length>e.length)return;if(!(E instanceof i)){var P,L=1;if(y){if(!(P=l(b,A,e,m))||P.index>=e.length)break;var S=P.index,O=P.index+P[0].length,j=A;for(j+=w.value.length;S>=j;)j+=(w=w.next).value.length;if(A=j-=w.value.length,w.value instanceof i)continue;for(var C=w;C!==n.tail&&(j<O||"string"==typeof C.value);C=C.next)L++,j+=C.value.length;L--,E=e.slice(A,j),P.index-=A}else if(!(P=l(b,0,E,m)))continue;S=P.index;var N=P[0],_=E.slice(0,S),M=E.slice(S+N.length),W=A+E.length;g&&W>g.reach&&(g.reach=W);var z=w.prev;if(_&&(z=u(n,z,_),A+=_.length),c(n,z,L),w=u(n,z,new i(f,p?a.tokenize(N,p):N,k,N)),M&&u(n,w,M),L>1){var I={cause:f+","+d,reach:W};o(e,n,t,w.prev,A,I),g&&I.reach>g.reach&&(g.reach=I.reach)}}}}}}function s(){var e={value:null,prev:null,next:null},n={value:null,prev:e,next:null};e.next=n,this.head=e,this.tail=n,this.length=0}function u(e,n,t){var r=n.next,a={value:t,prev:n,next:r};return n.next=a,r.prev=a,e.length++,a}function c(e,n,t){for(var r=n.next,a=0;a<t&&r!==e.tail;a++)r=r.next;n.next=r,r.prev=n,e.length-=a}if(e.Prism=a,i.stringify=function e(n,t){if("string"==typeof n)return n;if(Array.isArray(n)){var r="";return n.forEach((function(n){r+=e(n,t)})),r}var i={type:n.type,content:e(n.content,t),tag:"span",classes:["token",n.type],attributes:{},language:t},l=n.alias;l&&(Array.isArray(l)?Array.prototype.push.apply(i.classes,l):i.classes.push(l)),a.hooks.run("wrap",i);var o="";for(var s in i.attributes)o+=" "+s+'="'+(i.attributes[s]||"").replace(/"/g,"&quot;")+'"';return"<"+i.tag+' class="'+i.classes.join(" ")+'"'+o+">"+i.content+"</"+i.tag+">"},!e.document)return e.addEventListener?(a.disableWorkerMessageHandler||e.addEventListener("message",(function(n){var t=JSON.parse(n.data),r=t.language,i=t.code,l=t.immediateClose;e.postMessage(a.highlight(i,a.languages[r],r)),l&&e.close()}),!1),a):a;var g=a.util.currentScript();function f(){a.manual||a.highlightAll()}if(g&&(a.filename=g.src,g.hasAttribute("data-manual")&&(a.manual=!0)),!a.manual){var h=document.readyState;"loading"===h||"interactive"===h&&g&&g.defer?document.addEventListener("DOMContentLoaded",f):window.requestAnimationFrame?window.requestAnimationFrame(f):window.setTimeout(f,16)}return a}(_self);"undefined"!=typeof module&&module.exports&&(module.exports=Prism),"undefined"!=typeof global&&(global.Prism=Prism);
 Prism.languages.python={comment:{pattern:/(^|[^\\])#.*/,lookbehind:!0,greedy:!0},"string-interpolation":{pattern:/(?:f|fr|rf)(?:("""|''')[\s\S]*?\1|("|')(?:\\.|(?!\2)[^\\\r\n])*\2)/i,greedy:!0,inside:{interpolation:{pattern:/((?:^|[^{])(?:\{\{)*)\{(?!\{)(?:[^{}]|\{(?!\{)(?:[^{}]|\{(?!\{)(?:[^{}])+\})+\})+\}/,lookbehind:!0,inside:{"format-spec":{pattern:/(:)[^:(){}]+(?=\}$)/,lookbehind:!0},"conversion-option":{pattern:/![sra](?=[:}]$)/,alias:"punctuation"},rest:null}},string:/[\s\S]+/}},"triple-quoted-string":{pattern:/(?:[rub]|br|rb)?("""|''')[\s\S]*?\1/i,greedy:!0,alias:"string"},string:{pattern:/(?:[rub]|br|rb)?("|')(?:\\.|(?!\1)[^\\\r\n])*\1/i,greedy:!0},function:{pattern:/((?:^|\s)def[ \t]+)[a-zA-Z_]\w*(?=\s*\()/g,lookbehind:!0},"class-name":{pattern:/(\bclass\s+)\w+/i,lookbehind:!0},decorator:{pattern:/(^[\t ]*)@\w+(?:\.\w+)*/m,lookbehind:!0,alias:["annotation","punctuation"],inside:{punctuation:/\./}},keyword:/\b(?:_(?=\s*:)|and|as|assert|async|await|break|case|class|continue|def|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|match|nonlocal|not|or|pass|print|raise|return|try|while|with|yield)\b/,builtin:/\b(?:__import__|abs|all|any|apply|ascii|basestring|bin|bool|buffer|bytearray|bytes|callable|chr|classmethod|cmp|coerce|compile|complex|delattr|dict|dir|divmod|enumerate|eval|execfile|file|filter|float|format|frozenset|getattr|globals|hasattr|hash|help|hex|id|input|int|intern|isinstance|issubclass|iter|len|list|locals|long|map|max|memoryview|min|next|object|oct|open|ord|pow|property|range|raw_input|reduce|reload|repr|reversed|round|set|setattr|slice|sorted|staticmethod|str|sum|super|tuple|type|unichr|unicode|vars|xrange|zip)\b/,boolean:/\b(?:False|None|True)\b/,number:/\b0(?:b(?:_?[01])+|o(?:_?[0-7])+|x(?:_?[a-f0-9])+)\b|(?:\b\d+(?:_\d+)*(?:\.(?:\d+(?:_\d+)*)?)?|\B\.\d+(?:_\d+)*)(?:e[+-]?\d+(?:_\d+)*)?j?(?!\w)/i,operator:/[-+%=]=?|!=|:=|\*\*?=?|\/\/?=?|<[<=>]?|>[=>]?|[&|^~]/,punctuation:/[{}[\];(),.:]/},Prism.languages.python["string-interpolation"].inside.interpolation.inside.rest=Prism.languages.python,Prism.languages.py=Prism.languages.python;
@@ -1230,34 +1301,70 @@ Prism.languages.json={property:{pattern:/(^|[^\\])"(?:\\.|[^\\"\r\n])*"(?=\s*:)/
 
   /* ---------- theme ---------- */
   var root = document.documentElement;
-  $("#themeBtn").addEventListener("click", function () {
-    var cur = root.getAttribute("data-theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-    var next = cur === "dark" ? "light" : "dark";
-    root.setAttribute("data-theme", next);
-    try { localStorage.setItem("fws-theme", next); } catch (e) {}
-  });
-
-  /* ---------- mobile contents ---------- */
-  var toc = $("#toc"), tocBtn = $("#tocBtn");
-  tocBtn.addEventListener("click", function () {
-    var open = toc.classList.toggle("open");
-    tocBtn.setAttribute("aria-expanded", open ? "true" : "false");
-  });
-  $$("#toc a").forEach(function (a) { a.addEventListener("click", function () { toc.classList.remove("open"); tocBtn.setAttribute("aria-expanded", "false"); }); });
-
-  /* ---------- progress + active toc ---------- */
-  var bar = $("#progress");
-  window.addEventListener("scroll", function () {
-    var h = document.documentElement.scrollHeight - innerHeight;
-    bar.style.width = (h > 0 ? (scrollY / h) * 100 : 0) + "%";
-  }, { passive: true });
-  var links = $$("#toc a"), targets = links.map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); });
-  function setActive() {
-    var y = scrollY + Math.min(260, innerHeight * 0.35), idx = 0;
-    targets.forEach(function (t, i) { if (t && t.getBoundingClientRect().top + scrollY <= y) idx = i; });
-    links.forEach(function (a, i) { a.classList.toggle("active", i === idx); });
+  try {
+    var saved = localStorage.getItem("fws-theme");
+    if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
+  } catch (e) {}
+  var themeBtn = $("#themeBtn");
+  if (themeBtn) {
+    themeBtn.addEventListener("click", function () {
+      var cur = root.getAttribute("data-theme") || (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+      var next = cur === "dark" ? "light" : "dark";
+      root.setAttribute("data-theme", next);
+      try { localStorage.setItem("fws-theme", next); } catch (e) {}
+    });
   }
-  window.addEventListener("scroll", setActive, { passive: true }); setActive();
+
+  /* ---------- mobile menu ---------- */
+  var side = $("#side"), menuBtn = $("#menuBtn");
+  if (menuBtn && side) {
+    menuBtn.addEventListener("click", function () {
+      var o = side.classList.toggle("open");
+      menuBtn.setAttribute("aria-expanded", o ? "true" : "false");
+    });
+    $$("#toc a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        side.classList.remove("open");
+        menuBtn.setAttribute("aria-expanded", "false");
+      });
+    });
+    document.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") side.classList.remove("open");
+    });
+    document.addEventListener("click", function (e) {
+      if (side.classList.contains("open") && !side.contains(e.target) && e.target !== menuBtn) {
+        side.classList.remove("open");
+      }
+    });
+  }
+
+  /* ---------- scrollspy + progress ---------- */
+  var links = $$("#toc a");
+  var targets = links.map(function (a) { return document.getElementById(a.getAttribute("href").slice(1)); });
+  var where = $("#where"), prog = $("#progress");
+  function onScroll() {
+    var h = document.documentElement;
+    var max = h.scrollHeight - innerHeight;
+    if (prog) prog.style.width = (max > 0 ? (window.scrollY / max * 100) : 0) + "%";
+    var cur = 0, y = 110;
+    targets.forEach(function (t, i) {
+      if (t && t.getBoundingClientRect().top <= y) cur = i;
+    });
+    links.forEach(function (a, i) {
+      a.classList.toggle("active", i === cur);
+      a.classList.toggle("done", i < cur && !a.parentElement.classList.contains("sub"));
+    });
+    var a = links[cur];
+    if (a && where) {
+      var nEl = a.querySelector(".n");
+      var n = nEl ? nEl.textContent.trim() : "";
+      var textEls = a.querySelectorAll("span");
+      var t = textEls.length > 1 ? textEls[1].textContent : a.textContent;
+      where.textContent = (n === "·" || !n ? "" : n + "  ") + t;
+    }
+  }
+  window.addEventListener("scroll", onScroll, { passive: true });
+  onScroll();
 
   /* ---------- copy buttons ---------- */
   $$(".code").forEach(function (box) {
