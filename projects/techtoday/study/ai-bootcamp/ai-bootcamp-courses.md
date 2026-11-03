@@ -18,11 +18,14 @@ Hands-on Agentic AI on AWS & real-world financial agent systems
 5. **[05. How Agents Talk](05-how-agents-talk.html)** — Model Context Protocol (MCP) for connecting agents to tools, resources, and prompts, and the Agent-to-Agent (A2A) protocol for connecting agents to each other with FastMCP and Bedrock labs.
 6. **[06. Shipping Agents to Production](06-shipping-agents-to-production.html)** — Taking Strands agents from laptop to production on AWS Lambda, Amazon ECS on Fargate, and Amazon Bedrock AgentCore (Runtime, Gateway, Identity), plus enterprise integration patterns.
 7. **[07. Evals, Observability and Governance](07-evals-observability-and-governance.html)** — Evaluate agents with AgentCore Evaluations and LLM-as-a-judge, trace with OpenTelemetry into Jaeger and Langfuse, and govern with Bedrock Guardrails and Cedar.
-8. **[08. AI Engineering — Interview Workshop](08-AI Engineering — Interview Workshop.html)** — Four real-world AI engineering project walkthroughs with 24 follow-up questions and 50 practice questions covering architecture trade-offs, RAG, agents, memory, and senior interview prep.
-9. **[Project 01: AI Agents in Finance](project-01-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
-10. **[Project 02: NPS Analyst in a Box](project-02-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
+8. **[08. AI Engineering — Interview Workshop](08-ai-engineering-interview-workshop.html)** — Four real-world AI engineering project walkthroughs with 24 follow-up questions and 50 practice questions covering architecture trade-offs, RAG, agents, memory, and senior interview prep.
+9. **[09. Production RAG from Scratch](09-Production_RAG_Course_Shivank_Agrawal.html)** — From a 60-line demo to a production-ready RAG system: document ingestion, PDF text extraction and OCR, chunking strategies, embeddings, hybrid retrieval, reranking, and grounded evaluation.
+10. **[10. Agentic RAG Guide](10-Agentic_RAG_Guide.html)** — Build an AI team that answers questions from your PDF, routes to the internet when answers are missing, checks hallucination graders, and corrects its own work with line-by-line walkthroughs.
+11. **[11. Deep Search Agents](11-Deep-Search-Agents-Shivank-Agrawal.html)** — Design and build multi-agent deep research systems: query planning, parallel web exploration, source credibility checking, cross-referencing conflicting facts, and synthesising cited reports.
+12. **[Project 01: AI Agents in Finance](project-01-ai-agents-in-finance.html)** — Finance domain concepts and hands-on agent labs: earnings-call JSON summariser, live price agent, financial ratio retriever, rebalancing assistant with memory, and Buy/Hold/Sell pipeline.
+13. **[Project 02: NPS Analyst in a Box](project-02-nps-analyst-in-a-box.html)** — A five-agent Net Promoter Score (NPS) analyst for banking: promoters, passives and detractors, revenue at risk, root-cause theme clustering, and leadership action briefs.
+14. **[Project 03: AI Vendor Risk Assessor](project-03-AI-Vendor-Risk-Assessor-Shivank-Agrawal.html)** — End-to-end capstone system: automated vendor risk assessment combining a production RAG policy library, multi-agent router with graders, real-time web deep research, and human-in-the-loop review.
 
 ---
 
 © 2026 TechToday.
-
