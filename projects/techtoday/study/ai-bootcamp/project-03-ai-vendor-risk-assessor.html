@@ -39,11 +39,11 @@ a{color:var(--blue)}
 .side .brand { font-weight: 800; font-size: 16px; letter-spacing: -.01em; color: var(--teal); }
 .side .by { font-size: 13px; color: var(--ink-3); margin: 4px 0 16px; }
 .side h4 { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 18px 0 6px; }
-.side a { display: block; color: var(--ink-2); text-decoration: none; font-size: 14px; padding: 5px 8px; border-radius: 6px; }
+.side a { display: block; color: var(--ink-2); text-decoration: none; font-size: 14.5px; padding: 6px 10px; border-radius: 6px; margin: 2px 0; transition: background .15s, color .15s; }
 .side a:hover { background: var(--panel); color: var(--ink); }
 .side a.active { background: var(--panel); color: var(--ink); box-shadow: inset 3px 0 0 var(--teal); font-weight: 600; }
-.side a .n { display: inline-block; width: 22px; color: var(--ink-3); font-family: var(--f-code); font-size: 12px; }
-.side-tools { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); }
+.side a .n { display: inline-block; width: 22px; color: var(--ink-3); font-family: var(--f-code); font-size: 12px; font-weight: 700; }
+.side-tools { margin-top: 18px; padding-top: 12px; border-top: 1px solid var(--rule); display: flex; gap: 8px; flex-wrap: wrap; }
 
 .main { min-width: 0; display: flex; flex-direction: column; padding: 0 0 90px; }
 .topbar {
@@ -86,6 +86,7 @@ a{color:var(--blue)}
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 .spacer { flex: 1; }
 .reading-progress {
@@ -118,8 +119,10 @@ p{max-width:72ch}
 ul,ol{max-width:72ch;padding-left:24px}
 li{margin:4px 0}
 code{font-family:var(--f-code);font-size:.86em;background:var(--panel-2);border:1px solid var(--rule);border-radius:4px;padding:1px 5px}
-pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;overflow:auto;font-family:var(--f-code);font-size:13.5px;line-height:1.55;box-shadow:var(--shadow)}
+pre{background:var(--code-bg);color:var(--code-ink);padding:16px 18px;border-radius:10px;overflow-x:auto;max-width:100%;font-family:var(--f-code);font-size:13.5px;line-height:1.55;box-shadow:var(--shadow)}
 pre code{background:none;border:0;padding:0;color:inherit;font-size:inherit}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;margin:18px 0 24px;border:1px solid var(--rule);border-radius:10px;background:var(--panel);box-shadow:var(--shadow);max-width:100%}
+.tbl-wrap table{margin:0;box-shadow:none;border-radius:0}
 table{border-collapse:collapse;width:100%;font-size:15px;margin:14px 0 8px;background:var(--panel);box-shadow:var(--shadow);border-radius:10px;overflow:hidden}
 th,td{padding:9px 12px;border-bottom:1px solid var(--rule);vertical-align:top;text-align:left}
 th{font-family:var(--f-ui);font-size:12.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);background:var(--panel-2)}
@@ -148,7 +151,8 @@ td code{white-space:nowrap}
 .done{display:inline-block;font-family:var(--f-ui);font-size:13px;font-weight:700;color:var(--teal)}
 .verdict{font-family:var(--f-ui);font-weight:700;font-size:13px;padding:2px 8px;border-radius:6px}
 .v-pass{background:var(--teal-soft);color:var(--teal)} .v-fail{background:var(--red-soft);color:var(--red)} .v-rev{background:var(--amber-soft);color:var(--amber)} .v-unk{background:var(--panel-2);color:var(--ink-3)}
-figure{margin:20px 0}
+figure{margin:20px 0;max-width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+figure svg{display:block;max-width:100%;height:auto}
 figcaption{font-family:var(--f-ui);font-size:13.5px;color:var(--ink-3);margin-top:6px}
 svg text{font-family:var(--f-ui);font-size:12.5px;fill:var(--ink)}
 svg .box{fill:var(--panel);stroke:var(--rule);stroke-width:1.2}
@@ -158,7 +162,8 @@ svg .lab{fill:var(--ink-3);font-size:10.5px}
 footer{margin-top:70px;padding-top:18px;border-top:1px solid var(--rule);font-family:var(--f-ui);font-size:13.5px;color:var(--ink-3)}
 
 @media (max-width:1100px){
-  .shell{grid-template-columns:1fr}
+  .shell{display:block}
+  .main{min-width:0;max-width:100%;overflow-x:clip}
   .side{
     position: fixed; inset: 0 auto 0 0; width: 300px; max-width: 86vw;
     z-index: 100; transform: translateX(-102%);
@@ -168,11 +173,12 @@ footer{margin-top:70px;padding-top:18px;border-top:1px solid var(--rule);font-fa
   .side.open{transform:translateX(0)}
   .menu-btn{display:inline-flex}
   .topbar .wrap{padding:0 18px}
-  .wrap{padding:0 18px}
+  .wrap{padding:0 18px;max-width:100%}
   .scrim{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99}
   .scrim.open{display:block}
   .grid2{grid-template-columns:1fr}
   h1{font-size:32px}
+  .ms header{flex-wrap:wrap;gap:8px 12px}
 }
 </style>
 <link rel="icon" href="../../logo.svg" type="image/svg+xml">
@@ -181,7 +187,7 @@ footer{margin-top:70px;padding-top:18px;border-top:1px solid var(--rule);font-fa
   .tt-site-header ~ .shell .side { top: 53px; height: calc(100vh - 53px); }
   .tt-site-header ~ .shell .topbar { top: 53px; }
   @media (max-width: 1100px) {
-    .tt-site-header ~ .shell .side { top: 0; height: 100vh; }
+    .tt-site-header ~ .shell .side { top: 53px; height: calc(100vh - 53px); }
   }
   html { scroll-padding-top: 75px; }
 </style>
@@ -289,16 +295,16 @@ python eval/run_eval.py                                  # the scorecard</code><
 
 <h3>The running example: Nimbu Mart</h3>
 <p>You know Nimbu Mart from the Production RAG course. Its Information Security team has eight internal documents — two editions of the security policy, a data-protection policy written for India’s DPDP Act, an AI acceptable-use policy, a procurement checklist, the restricted Approved Vendor List, a questionnaire template and an untrusted chat export. Three fictional AI vendors want in:</p>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Vendor</th><th>What it does</th><th>Why it is a good test</th></tr>
   <tr><td><strong>LedgerLens AI</strong></td><td>Summarises support tickets</td><td>Solid SOC 2 Type II, but data lives in the US/EU with India “planned”. A stale 2024 page, a same-name UK accountancy firm, a forum rumour, a review site that contradicts the trust centre, and a blog page carrying a prompt-injection attack.</td></tr>
   <tr><td><strong>QuillDesk</strong></td><td>AI writing assistant</td><td>“SOC 2 compliant” with no report, trains on content by default, US-only storage, a July 2026 incident with no post-mortem, a directory page that is a copy of the vendor’s own page.</td></tr>
   <tr><td><strong>Parakeet Translate</strong></td><td>Translation for Indian languages</td><td>The good vendor: ISO 27001 confirmed on the certifier’s registry, India region, no training, DPA with a DPDP addendum — but approved only for internal data, so customer-data use still needs Procurement.</td></tr>
-</table>
+</table></div>
 
 <h3>What “good” looks like</h3>
 <p>The review file the starter kit produces for LedgerLens at the customer-data tier looks like this (abridged):</p>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Requirement</th><th>Clause</th><th>Verdict</th><th>Reason (abridged)</th><th>Evidence</th></tr>
   <tr><td>Independent security assurance</td><td>SEC-4.2</td><td><span class="verdict v-pass">PASS</span></td><td>SOC 2 Type II report dated 2026-01-20</td><td>trust.ledgerlens.example · 2026-09-01</td></tr>
   <tr><td>Customer data stored in India</td><td>DP-3.1</td><td><span class="verdict v-fail">FAIL</span></td><td>India is only planned; available today: US, EU</td><td>ledgerlens.example/legal/privacy · 2026-03-15</td></tr>
@@ -306,7 +312,7 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td>Sub-processors disclosed</td><td>AI-3.4</td><td><span class="verdict v-rev">NEEDS REVIEW</span></td><td>Model provider present: Orbital Models (US)</td><td>ledgerlens.example/legal/subprocessors</td></tr>
   <tr><td>Incident history</td><td>SEC-9.3</td><td><span class="verdict v-rev">NEEDS REVIEW</span></td><td>One major incident (2025-04) with a published post-mortem</td><td>2 sources</td></tr>
   <tr><td>On the Approved Vendor List</td><td>PROC-1.1</td><td><span class="verdict v-rev">NEEDS REVIEW</span></td><td>A review is already in progress; attach this assessment</td><td>policy library</td></tr>
-</table>
+</table></div>
 <p>Then: the facts with confidence and conflicts, a security section (“1 page quarantined for prompt injection; 1 rejected as a different company; 1 rumour dropped”), six ready-to-send questions for the vendor, and an approval block with the two roles who must sign (Head of Information Security and DPO). The outcome line says <strong>BLOCKED for this data tier</strong> — never “rejected”, and never “approved”.</p>
 
 <h2 id="architecture"><span class="n">2</span>Architecture</h2>
@@ -345,7 +351,7 @@ python eval/run_eval.py                                  # the scorecard</code><
 </figure>
 
 <h3>The components</h3>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Component</th><th>File</th><th>Status in the starter kit</th></tr>
   <tr><td>Contracts between stages</td><td><code>assessor/schemas.py</code></td><td>Complete. Nine vendor fields, evidence levels, verdicts, the report.</td></tr>
   <tr><td>Policy library</td><td><code>assessor/policy_rag.py</code></td><td>Simplified: clause chunking + BM25 + ACL/version/trust filters + extractive answers. <strong>You:</strong> hybrid + rerank + grounded generation.</td></tr>
@@ -358,11 +364,11 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td>Orchestrator</td><td><code>assessor/graph.py</code></td><td>Plain Python and LangGraph, same nodes; CLI human gate. <strong>You:</strong> checkpointer + interrupt, streaming.</td></tr>
   <tr><td>API, UI</td><td><code>app/api.py</code>, <code>app/ui.py</code></td><td>Thin skeletons. <strong>You:</strong> queue, storage, auth, trace viewer.</td></tr>
   <tr><td>Evaluation</td><td><code>eval/run_eval.py</code>, <code>data/gold_set*.json</code></td><td>Harness complete; fictional gold set complete; real-vendor gold set is a template. <strong>You:</strong> fill it.</td></tr>
-</table>
+</table></div>
 
 <h2 id="coursemap"><span class="n">3</span>Course map: which part needs which course section</h2>
 <p>Use this table as your index. When you open a <code>LEARNER TODO</code> in the code, this is where to look first. “Reuse” names the files from the course code packs you can copy or import.</p>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Project part</th><th>Course</th><th>Module / chapter</th><th>Lab</th><th>Reuse from the course code</th><th>Milestone</th></tr>
   <tr><td>Ingest policies; chunk by clause with metadata (version, status, access, trust)</td><td><span class="pill rag">Production RAG</span></td><td>04 Document ingestion pipeline · 06 Chunking strategies (“structure-aware”, “chunk metadata”)</td><td>Lab 03</td><td><code>rag_core/documents.py</code>, <code>chunking.py</code>, <code>loaders.py</code>, the <code>_metadata.json</code> pattern</td><td>M1</td></tr>
   <tr><td>Retrieve the right clause: hybrid search, RRF, metadata filters, reranking</td><td><span class="pill rag">Production RAG</span></td><td>08 Retrieval &amp; reranking (sections 3–9) · 07 Embeddings (choosing a model)</td><td>Labs 04, 06, 07, 08</td><td><code>rag_core/hybrid.py</code>, <code>bm25.py</code>, <code>vectorstore.py</code>, <code>rerank.py</code>, <code>query_transform.py</code></td><td>M1</td></tr>
@@ -389,7 +395,7 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td><strong>Questionnaire drafter</strong> and <strong>review file</strong></td><td><span class="pill new">New</span></td><td>Production RAG 09 “Structured output”</td><td>—</td><td>Already written: <code>questionnaire.py</code>, <code>report.py</code></td><td>M0</td></tr>
   <tr><td><strong>Human approval gate</strong>, approvers by data tier</td><td><span class="pill new">New</span></td><td>Deep Search 12 checklist (“the user approves the plan before a long run”)</td><td>—</td><td><code>graph.py</code> (<code>human_gate</code>), <code>app/api.py</code> (<code>/approve</code>)</td><td>M5</td></tr>
   <tr><td><strong>Streamlit UI</strong> with progress and a trace viewer</td><td><span class="pill new">New</span></td><td>—</td><td>—</td><td><code>app/ui.py</code> skeleton</td><td>M5</td></tr>
-</table>
+</table></div>
 
 <h2 id="milestones"><span class="n">4</span>Milestones</h2>
 <p>Do them in order. Each one ends with a check you can run. Tick the box when the check passes; the page remembers it in your browser.</p>
@@ -518,7 +524,7 @@ python eval/run_eval.py                                  # the scorecard</code><
 
 <h2 id="rubric"><span class="n">7</span>Evaluation &amp; rubric</h2>
 <h3>The scorecard your evaluation must report</h3>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Metric</th><th>Meaning</th><th>Target</th></tr>
   <tr><td><code>verdict_accuracy</code></td><td>(case, requirement) verdicts equal to gold</td><td>≥ 95% fictional set · ≥ 80% real set</td></tr>
   <tr><td><code>overall_accuracy</code></td><td>BLOCKED / CONDITIONAL / READY matches gold</td><td>100% fictional</td></tr>
@@ -526,10 +532,10 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td><code>safety</code></td><td>attack pages quarantined, look-alikes rejected, rumours dropped, nothing from them cited</td><td>100%</td></tr>
   <tr><td><code>policy_qa_hard</code></td><td>never cites a document the asker may not see, nor an untrusted one</td><td>100%</td></tr>
   <tr><td>cost · latency</td><td>per live assessment</td><td>under your budget · under 90 s</td></tr>
-</table>
+</table></div>
 
 <h3>Rubric (100 points)</h3>
-<table>
+<div class="tbl-wrap"><table>
   <tr><th>Area</th><th>Points</th><th>Full marks look like</th></tr>
   <tr><td>Correctness on the fictional gold set</td><td>15</td><td><code>eval --strict</code> and <code>pytest</code> green after every change you made.</td></tr>
   <tr><td>Policy library (M1)</td><td>15</td><td>Hybrid + rerank + grounded answers with clause citations; the “known to fail” case fixed; ACL, versions and trust proven by tests; three new documents and questions.</td></tr>
@@ -539,7 +545,7 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td>Product (M5)</td><td>15</td><td>LangGraph with checkpointed human gate; queued API with history; UI with progress, trace viewer and decision form; a BLOCKED report cannot be approved.</td></tr>
   <tr><td>Evaluation and engineering (M6)</td><td>10</td><td>10 real vendors in the gold set; LLM-as-judge for reasons, calibrated; one ablation per component; CI green.</td></tr>
   <tr><td>Write-up and demo</td><td>5</td><td>README with numbers and honest failures; a demo that runs offline and live without improvisation.</td></tr>
-</table>
+</table></div>
 
 <h2 id="demo"><span class="n">8</span>Demo checklist (12 minutes)</h2>
 <ol>
@@ -574,7 +580,7 @@ python eval/run_eval.py                                  # the scorecard</code><
 <p>Whatever is free and supports JSON output: Gemini’s free tier or Groq for development, Ollama for offline. Use the small model for extraction and grading and a stronger one only for planning and synthesis — then show the cost difference in your report.</p>
 
 <h2 id="glossary"><span class="n">A</span>Glossary</h2>
-<table>
+<div class="tbl-wrap"><table>
   <tr><td><strong>Data tier</strong></td><td>Nimbu Mart’s classification: T1 public, T2 internal, T3 customer data. Requirements depend on the highest tier a tool touches.</td></tr>
   <tr><td><strong>SOC 2 Type II</strong></td><td>An independent auditor’s report that a vendor’s controls operated effectively over a period (usually 6–12 months). Type I covers design at a point in time only.</td></tr>
   <tr><td><strong>ISO/IEC 27001</strong></td><td>A certificate, issued by an accredited body, that the vendor runs an information-security management system. Has a certificate number and an expiry date.</td></tr>
@@ -586,7 +592,7 @@ python eval/run_eval.py                                  # the scorecard</code><
   <tr><td><strong>Quarantine</strong></td><td>Removing a page entirely because it contains instructions aimed at the AI.</td></tr>
   <tr><td><strong>Verdicts</strong></td><td>PASS · FAIL · UNKNOWN (no evidence) · NEEDS_REVIEW (evidence found, a person must judge) · NOT_APPLICABLE (rule does not apply to this tier).</td></tr>
   <tr><td><strong>Outcome</strong></td><td>BLOCKED (a blocking requirement failed) · CONDITIONAL (open items) · READY FOR HUMAN APPROVAL (all passed; a person still decides).</td></tr>
-</table>
+</table></div>
 
 <footer>Created by Shivank Agrawal · Future with Shivank · All companies, people, domains and documents in the data pack are fictional and were written for this course.</footer>
 </div> <!-- .wrap -->
