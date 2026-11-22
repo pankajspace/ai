@@ -182,7 +182,7 @@ Update the project's `README.md` project-structure listing and module-responsibi
 
 ## 7. Project-level explainer in a container project
 
-Some projects also get one "how the whole project works" page housed directly inside the container project under `projects/<project-name>/src/explanation/<project-name>.html`, linked from their card in the AI Projects catalog (`https://app.techtoday.click/<project-name>/explanation/<project-name>.html`). Use this for projects without per-card explainers (`09-interviewiq`, `10-shipment-exception-desk`) or when the project needs an overview across all its demos.
+Some projects also get one "how the whole project works" page housed directly inside the container project under `projects/<project-name>/src/explanation/<project-name>.html`, linked from their card in the AI Demos catalog (`https://app.techtoday.click/<project-name>/explanation/<project-name>.html`). Use this for projects without per-card explainers (`09-interviewiq`, `10-shipment-exception-desk`) or when the project needs an overview across all its demos.
 
 1. **Location** — `projects/<project-name>/src/explanation/<project-name>.html`, using the project's own copies `../css/info.css` and `../js/info.js` served via Flask `@bp.route("/explanation/<path:filename>")`.
 2. **Shell** — same as a demo page (§4): the brand links to `../`, the back link is `<a href="../" class="nav-back-link">&larr; Back to <Project></a>`, the `<h1 id="how-it-works">` is the project's emoji + name, the lede lists what it covers, and the footer reads `<Project> &mdash; <emoji> <Project> &middot; How it works`.

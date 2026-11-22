@@ -1,6 +1,6 @@
 # Class Notes (Theory) Page
 
-Part of the `create-container-project` skill. This is the "Theory" page a project's card links to from the AI Projects catalog, housed inside each container project under `src/theory/`.
+Part of the `create-container-project` skill. This is the "Theory" page a project's card links to from the AI Demos catalog, housed inside each container project under `src/theory/`.
 
 Rewrite one class-notes HTML page into the same simple design as the DSA courses, in plain, simple language, without losing teaching content. Replace every interactive example with static information, then regenerate the companion Markdown file.
 
@@ -52,7 +52,7 @@ Reword all prose (paragraphs, list items, callouts, analogies, captions, card te
 1. **Head:** keep the meta tags, title and icon (`../css/logo.svg` in container projects, `../../logo.svg` in legacy paths). Delete the legacy base-href `<script>` (the one that rewrites `<base>` when the path ends in `/ai`); it was removed from every AI Projects page. In container projects (`projects/<project-name>/src/theory/`), link `../css/dsa-study.css`, `../css/site-header.css`, and `../css/ai-projects.css`. In legacy TechToday study paths, link `../dsa/dsa-study.css`, `../../site-header.css`, and `ai-projects.css`. Drop the old bespoke `<style>`, `ai-study-theme.css`, `ai-study.js` and Google-font links. Create and link a companion `<name>.css` file, copied from the reference, holding only the static-example helpers you actually use (e.g. token chips, probability bars). Do not use inline `<style>` tags. Delete styles that only served removed interactive widgets.
 2. **Body:** `<body class="is-ai">`. Set the h1 eyebrow inside your `<name>.css` file using `body.is-ai .study>h1:first-child::before { content: "<original kicker text, minus the class number>"; }`.
 3. **Layout** (same as the DSA courses), in this order:
-   - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../` and `<a href="../" class="nav-back-link">&larr; Back to App</a>` (or `<a href="ai-projects.html" class="nav-back-link">&larr; AI Projects</a>` in the root study catalog)
+   - site header: `header.tt-site-header > nav.tt-site-nav` with the `tt-site-brand` link to `../` and `<a href="../" class="nav-back-link">&larr; Back to App</a>` (or `<a href="ai-projects.html" class="nav-back-link">&larr; AI Demos</a>` in the root study catalog)
    - `.progress`
    - `main.study-layout`, containing:
      - `nav.topic-menu` with a numbered `ol.table-of-contents`. Its links point at the topic `h2` ids.
@@ -107,14 +107,14 @@ Class-notes pages have no interactive examples. Turn each one into static conten
 
    Do not redeclare `dsa-study.js` globals (`progress`, `esc`, `copyText`, `VIZ`, …).
 6. Reword the text around the widget. "Type anything", "drag the slider", "click Play" and "try it" become "Here is an example" or "The cards show".
-7. Add `<footer class="study-footer">TechToday Study Library &mdash; AI Projects</footer>` and the `.back-to-top` button.
+7. Add `<footer class="study-footer">TechToday Study Library &mdash; AI Demos</footer>` and the `.back-to-top` button.
 
 ## 6. Write the files
 
 1. Create `<name>.new.html` with the full rewritten page, then `mv` it over the original. Use the terminal only for the move.
 2. Regenerate the companion `<name>.md` the same way (`.new.md` → `mv`). Mirror the new HTML exactly:
    - header comment with Source, Title, Theme-color, `Stylesheets: ../css/dsa-study.css, ../css/site-header.css, ../css/ai-projects.css, <name>.css` and `Scripts: ../js/dsa-study.js, <name>.js` (or `../dsa/dsa-study.css, ../../site-header.css, ai-projects.css` and `../dsa/dsa-study.js` in legacy paths)
-   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)` (or `Navigation: [<Project>](../) · [← Back to App](../)` in container projects), eyebrow, `# h1`, lede, chips, Table of Contents
+   - navigation line `Navigation: [TechToday](../../index.html) · [← AI Demos](ai-projects.html)` (or `Navigation: [<Project>](../) · [← Back to App](../)` in container projects), eyebrow, `# h1`, lede, chips, Table of Contents
    - `<a id="…"></a>` anchors before every `##` topic and `###` part
    - analogies as `> **Analogy** <icon> — **Title**` blockquotes, callouts as `> <icon> **Title.** …`
    - fenced code with the same language tag as the HTML `data-lang` (```` ```bash ````, ```` ```yaml ````, ```` ```python ````, ```` ```text ```` only for output/prompts/diagrams); diagrams as ```` ```mermaid ```` blocks

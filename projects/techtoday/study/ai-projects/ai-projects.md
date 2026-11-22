@@ -1,13 +1,13 @@
 <!--
 Source: ai-projects.html
-Title: TechToday - AI Projects
+Title: TechToday - AI Demos
 Description: TechToday is a set of small, hands-on AI and software projects. Each one shows what you can build with modern tools.
 Stylesheets: ../../style.css, ai-projects.css
 -->
 
 Navigation: [TechToday](../../index.html) · [← Home](../../index.html)
 
-# AI Projects
+# AI Demos
 
 Small projects that show big AI ideas
 

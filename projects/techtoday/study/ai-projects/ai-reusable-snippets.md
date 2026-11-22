@@ -5,7 +5,7 @@ Stylesheets: ai-snippets-study.css, ../../site-header.css
 Scripts: ai-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
+Navigation: [TechToday](../../index.html) · [← AI Demos](ai-projects.html)
 
 # AI Reusable Code Snippets & Quick Revision Guide
 

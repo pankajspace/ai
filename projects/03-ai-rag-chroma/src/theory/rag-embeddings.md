@@ -6,7 +6,7 @@ Stylesheets: ../dsa/dsa-study.css, ../../site-header.css, ai-projects.css
 Scripts: ../dsa/dsa-study.js
 -->
 
-Navigation: [TechToday](../../index.html) · [← AI Projects](ai-projects.html)
+Navigation: [TechToday](../../index.html) · [← AI Demos](ai-projects.html)
 
 RAG · Talk to your own documents
 
@@ -1393,4 +1393,4 @@ The RAG you just built always retrieves. But sometimes you don't need to (small 
 
 ---
 
-TechToday Study Library — AI Projects
+TechToday Study Library — AI Demos
