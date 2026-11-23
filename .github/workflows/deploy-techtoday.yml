@@ -138,8 +138,9 @@ jobs:
           }
 
           # Regex location takes precedence over per-project prefix locations (e.g. /01-ai-basics/),
-          # while preserving ^~ legacy redirects (/ai-projects, /ai-pocs, /ai-demos).
-          location ~ "^/[0-9][0-9]-[^/]+(/|$)" {
+          # while preserving ^~ legacy redirects (/ai-projects, /ai-pocs, /ai-demos) and allowing
+          # static info pages (/theory/, /explanation/) plus their /css/ and /js/ assets through.
+          location ~ "^/[0-9][0-9]-[^/]+(?:/(?!(?:theory|explanation|css|js)(?:/|$)).*)?$" {
               add_header Retry-After 3600 always;
               error_page 503 /projects-unavailable.html;
               return 503;
