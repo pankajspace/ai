@@ -1,0 +1,140 @@
+# AI Projects
+
+## 1. 🚀 Environment Setup
+
+### 1. Create and Activate Virtual Environment (`venv`)
+
+Create a virtual environment:
+```bash
+python3 -m venv .venv
+```
+
+### 2. Activate the Virtual Environment
+- **Linux / macOS**:
+  ```bash
+  source .venv/bin/activate
+  ```
+- **Windows (Command Prompt / PowerShell)**:
+  ```bash
+  .venv\Scripts\activate
+  ```
+
+*(To exit the virtual environment later, simply run `deactivate`)*
+
+---
+
+## 2. 📦 Installing Requirements
+
+Once your virtual environment is active, install the dependencies:
+
+### Option A: Install everything across all sections (Recommended)
+```bash
+pip install -r requirements.txt
+```
+
+### Option B: Install section-by-section
+- **Day 1 · Section 1 (Foundations & Chains):**
+  ```bash
+  pip install -r day1/section1/requirements.txt
+  ```
+- **Day 1 · Section 2 (Agents, Tools & Structured Output):**
+  ```bash
+  pip install -r day1/section2/requirements.txt
+  ```
+- **Project 01 · Fundamental Equity Analysis System:**
+  ```bash
+  pip install -r projects/01-fundamental-analysis/requirements.txt
+  ```
+- **Project 05 · AI Vendor Risk Assessor:**
+  ```bash
+  pip install -r projects/05-vendor-risk-assessor/requirements.txt
+  ```
+- **Weekend Sessions (per section, Bedrock or Groq edition):**
+  ```bash
+  pip install -r weekend-sessions-main/<section-folder>/requirements.txt
+  # or for Groq editions:
+  pip install -r weekend-sessions-main/<section-folder>/requirements-groq.txt
+  ```
+
+---
+
+## 3. ⚙️ Configuration (`.env`)
+
+Before running API-based scripts, ensure you have your `.env` configured in the project root:
+
+```bash
+cp .env.example .env
+```
+
+Add your API keys to `.env`:
+```env
+OPENAI_API_KEY=your_openai_api_key_here
+TAVILY_API_KEY=your_tavily_api_key_here
+
+# Optional: LangSmith Tracing
+LANGSMITH_TRACING=true
+LANGSMITH_API_KEY=your_langsmith_api_key_here
+LANGSMITH_PROJECT=section-01-langchain-foundations
+# If using APAC region for LangSmith, uncomment:
+# LANGSMITH_ENDPOINT=https://apac.api.smith.langchain.com
+```
+
+---
+
+## 4. ▶️ Running Python Scripts
+
+### Method 1: With Activated `venv` (Standard)
+```bash
+source .venv/bin/activate
+python day1/section1/01_hello_world_env_setup.py
+python day1/section1/02_summary_chain_openai.py
+```
+
+### Method 2: Direct Execution (Without Activating)
+You can directly invoke Python using the virtual environment's binary:
+```bash
+.venv/bin/python day1/section1/01_hello_world_env_setup.py
+.venv/bin/python day1/section1/02_summary_chain_openai.py
+```
+
+---
+
+## 5. 🦙 Running Local Models (Ollama)
+
+For scripts that use local models (e.g. `day1/section1/03_summary_chain_ollama.py`):
+
+1. **Install and start Ollama**:
+   ```bash
+   ollama serve
+   ```
+2. **Download the model**:
+   ```bash
+   ollama pull gemma3:270m
+   ```
+3. **Run the script**:
+   ```bash
+   python day1/section1/03_summary_chain_ollama.py
+   ```
+
+---
+
+# 📚 Reference Material
+1. [AI Reusable Snippets](my-snippets/ai-reusable-snippets.md)
+
+## 🗺️ Project Maps
+1. [Production RAG — Project Map](all-study-material/05-production-rag/01-Production_RAG_Project_Map.md)
+2. [Agentic RAG — Project Map](all-study-material/06-agentic-rag/02-Agentic_RAG_Project_Map.md)
+3. [Deep Search Agents — Project Map](all-study-material/07-deep-search-agent/03-Deep-Search-Agents_Project_Map.md)
+4. [Capstone: AI Vendor Risk Assessor — Project Map](all-study-material/08-vendor-risk-assessor/Capstone-AI-Vendor-Risk-Assessor_Project_Map.md)
+
+## 📝 Quick Revision Notes (with diagrams & cheat sheets)
+1. [Production RAG](all-study-material/05-production-rag/01-Production_RAG_Revision_Notes.md)
+2. [Agentic RAG](all-study-material/06-agentic-rag/02-Agentic_RAG_Revision_Notes.md)
+3. [Deep Search Agents](all-study-material/07-deep-search-agent/03-Deep-Search-Agents_Revision_Notes.md)
+4. [Capstone: AI Vendor Risk Assessor](all-study-material/08-vendor-risk-assessor/Capstone-AI-Vendor-Risk-Assessor_Revision_Notes.md)
+
+# Notes
+1. Alphavantage API key may be required for certain financial data scripts.
+2. https://site.financialmodelingprep.com/
+3. https://docs.google.com/document/d/1Re1O9cOPGeOsDKiznx-YNxl0NCrZuMf7bHujUCrIB_U/edit?tab=t.0
+4. https://strandsagents.com/docs/user-guide/migrate/langgraph/
