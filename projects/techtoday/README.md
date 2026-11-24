@@ -129,7 +129,7 @@ projects/techtoday/
 ├── js/
 │   └── info.js                  ← scripts for project explanation pages
 └── study/
-    ├── ai-bootcamp/             ← ai-bootcamp-courses.html catalog (26 numbered topics + 3 projects): 13 basics topics (LLM building blocks, memory & MCP, observability & guardrails, evals, Inventory Agent on AWS, AI Agents in Finance, RAG labs), 7 Agentic AI on AWS sections, interview workshop, Codex for Backend Engineering (codex-*.html), RAG & Deep Search sections + revision notes (ai-bootcamp-study.css/js), and 3 hands-on projects; multi-page topics open a topic catalog page (e.g. memory-and-mcp.html, codex-for-backend-engineering.html) with one tile per inner page
+    ├── ai-bootcamp/             ← ai-bootcamp-courses.html catalog (26 numbered topics + 3 projects): 7 Agentic AI on AWS sections, 13 basics topics (LLM building blocks, memory & MCP, observability & guardrails, evals, Inventory Agent on AWS, AI Agents in Finance, RAG labs), interview workshop, Codex for Backend Engineering (codex-*.html), RAG & Deep Search sections + revision notes (ai-bootcamp-study.css/js), and 3 hands-on projects; multi-page topics open a topic catalog page (e.g. memory-and-mcp.html, codex-for-backend-engineering.html) with one tile per inner page
     ├── ai-engineering/          ← ai-engineering-courses.html catalog + crash course + detailed course
     ├── ai-projects/             ← ai-projects.html catalog (10 container projects) + shared study theme/scripts
     ├── aws/                     ← aws-courses.html catalog + crash course + detailed course
