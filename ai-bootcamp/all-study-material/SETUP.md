@@ -9,6 +9,8 @@ curl -LsSf https://astral.sh/uv/install.sh | sh   # macOS / Linux (or: brew inst
 # Change to the project folder (from all-study-material/)
 cd 00-basics/01-langchain-foundation
 
+
+### Installing Dependencies STAR
 # If the folder has pyproject.toml, install dependencies
 uv sync
 
@@ -17,6 +19,7 @@ uv sync
 uv venv
 ## Install dependencies from requirements.txt
 uv pip install -r requirements.txt
+### End of Installing Dependencies
 
 # Run scripts (no activation needed; picks up the local .venv)
 uv run python 01_hello_world_env_setup.py   # or: uv run 01_hello_world_env_setup.py
