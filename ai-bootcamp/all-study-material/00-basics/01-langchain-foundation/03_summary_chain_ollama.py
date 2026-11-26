@@ -116,6 +116,7 @@ def main() -> None:
 
     # For ChatOllama `.content` is already a string; `.text` works for every
     # provider, so we use it everywhere in the course.
+    print("Ollama URL:", chain.last._client._client.base_url)
     print(response.text)
 
 
