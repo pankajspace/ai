@@ -25,7 +25,7 @@ In-depth study covering OOP, magic methods, decorators, generators, async/await,
 
 ### Python My Course
 
-Fast-track essentials covering variables, type hints, keywords, strings, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, modules, and virtual environments.
+Fast-track essentials covering variables, type hints, keywords, strings, lists, dictionaries, tuples, sets, unpacking & destructuring, comprehensions, functions, async/await, OOP, error handling, modules, virtual environments, decorators, generators, context managers & file I/O, dataclasses & Pydantic, regex, env vars & logging, pytest, and the standard library toolkit.
 
 [Start learning →](python/python-my-course.html)
 
