@@ -21,9 +21,9 @@
 1. [Senior AI Engineer Interview](https://scaler-content.github.io/senior-ai-engineer-interview/)
 
 ## Basics
-1. [01 Langchain Foundation](./00-basics/01-langchain-foundation/)
-2. [02 AI Harness](./00-basics/02-ai-harness/)
-3. [03 LLM System Building Blocks](./00-basics/03-llm-system-building-blocks/)
+1. [01 LLM System Building Blocks](./00-basics/01-llm-system-building-blocks/)
+2. [02 Langchain Foundation](./00-basics/02-langchain-foundation/)
+3. [03 AI Harness](./00-basics/03-ai-harness/)
 4. [04 Agentic Bug Fixing](./00-basics/04-agentic-bug-fixing/)
 5. [05 Memory and MCP](./00-basics/05-memory-and-mcp/)
 6. [06 Observability and Guardrails](./00-basics/06-observability-and-guardrails/)

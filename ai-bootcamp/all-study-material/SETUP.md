@@ -7,7 +7,7 @@ Run all commands from inside the project folder; `uv` creates a `.venv` there.
 curl -LsSf https://astral.sh/uv/install.sh | sh   # macOS / Linux (or: brew install uv)
 
 # 2. Change to the project folder (from all-study-material/)
-cd 00-basics/01-langchain-foundation
+cd 00-basics/02-langchain-foundation
 
 
 ### 3. Installing Dependencies STAR

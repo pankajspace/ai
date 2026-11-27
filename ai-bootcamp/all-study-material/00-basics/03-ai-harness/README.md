@@ -96,4 +96,4 @@ Add `LANGSMITH_TRACING=true`, `LANGSMITH_API_KEY=...` and `LANGSMITH_PROJECT=sec
 | Very long output | That's the raw search JSON. The trace printer shortens each message to one line. |
 | `result["structured_response"]` KeyError | You're running script 03; only script 04 sets `response_format`. |
 
-**Previous:** [Section 1](../01-langchain-foundation/README.md) · **Next:** [03 LLM System Building Blocks](../03-llm-system-building-blocks/)
+**Previous:** [Section 1](../02-langchain-foundation/README.md) · **Next:** [04 Agentic Bug Fixing](../04-agentic-bug-fixing/)
