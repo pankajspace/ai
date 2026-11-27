@@ -7,26 +7,31 @@ from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.naive_bayes import MultinomialNB
 from sklearn.pipeline import make_pipeline
 
-
 # Old way: you write the rules
 def is_spam(email):
     if "lottery" in email: return True
     if "free money" in email: return True
     return False
 
-
 print("Rule-based:", is_spam("You won a l0ttery!!"), "<- spammers write 'l0ttery', the rule fails")
 
 # ML way: the model learns the rules from labelled examples
 # (the chapter imagines 1 million examples; a handful is enough to see the idea)
 emails = [
-    "You won a l0ttery!!", "Claim your free m0ney now", "Win a fr33 prize today",
+    "You won a lottery", "Claim your free m0ney now", "Win a fr33 prize today",
     "Congratulations, you are a lottery winner", "Cheap pr1ze, click now",
     "Meeting moved to 3pm", "Lunch tomorrow?", "Please review the attached report",
     "Your invoice for October", "Team standup notes",
 ]
+
+# Creates the label list: ['spam', 'spam', 'spam', 'spam', 'spam', 'not spam', 'not spam', 'not spam', 'not spam', 'not spam']
 labels = ["spam"] * 5 + ["not spam"] * 5
 
+# Creates and trains the ML model using the emails and their corresponding labels
 model = make_pipeline(CountVectorizer(analyzer="char_wb", ngram_range=(2, 4)), MultinomialNB())
+
+# Fit the model to the training data
 model.fit(emails, labels)
-print("Learned:   ", model.predict(["Claim your fr33 prize"])[0], "<- it learned the pattern itself")
+
+# Predict using the trained model
+print("Learned:   ", model.predict(["You won a l0ttery!!"])[0], "<- it learned the pattern itself")

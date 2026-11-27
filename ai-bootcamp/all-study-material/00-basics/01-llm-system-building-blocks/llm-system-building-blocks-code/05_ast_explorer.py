@@ -1,6 +1,8 @@
 """Worked example: see a real AST with Python's built-in ast module. Runs offline."""
 import ast
 
+# AST (Abstract Syntax Tree) exploration example
+
 code = """
 class Cart:
     def add(self, item):
