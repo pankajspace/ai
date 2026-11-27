@@ -411,7 +411,7 @@ footer.foot { border-top: 1px solid var(--line); padding: 1.2rem; text-align: ce
       <dl>
         <dt>You will</dt><dd>deploy the agent on AWS, prove it works, and delete it cleanly</dd>
         <dt>Time</dt><dd>about 45 minutes, 8 of them waiting</dd>
-        <dt>You need</dt><dd>an AWS account (SSO login or access key), Docker, an OpenAI API key</dd>
+        <dt>You need</dt><dd>an AWS account, Docker, an OpenAI API key</dd>
       </dl>
       <div class="barcode" aria-hidden="true"></div>
       <div class="sku" aria-hidden="true">GUIDE-02</div>
@@ -432,15 +432,15 @@ footer.foot { border-top: 1px solid var(--line); padding: 1.2rem; text-align: ce
 <div class="table-wrap"><table>
 <thead><tr><th>Tool</th><th>Check it with</th><th>Good answer looks like</th></tr></thead>
 <tbody>
-<tr><td>AWS CLI v2</td><td><code>aws --version</code></td><td><code>aws-cli/2.x.x …</code> (version 1 will not work for SSO or Step 8). Missing on a Mac? <code>brew install awscli</code></td></tr>
+<tr><td>AWS CLI v2</td><td><code>aws --version</code></td><td><code>aws-cli/2.x.x …</code> (version 1 will not work for Step 8)</td></tr>
 <tr><td>Docker Desktop, running</td><td><code>docker info</code></td><td>A page of details, no “Cannot connect to the Docker daemon”</td></tr>
-<tr><td>A bash shell</td><td><code>echo $SHELL</code></td><td><code>/bin/bash</code> or <code>/bin/zsh</code> (the Mac default: do “Prepare your terminal” below first). On Windows use WSL or Git Bash, not PowerShell</td></tr>
+<tr><td>A bash shell</td><td><code>echo $SHELL</code></td><td><code>/bin/bash</code> or <code>/bin/zsh</code>. On Windows use WSL or Git Bash, not PowerShell</td></tr>
 <tr><td>The code</td><td><code>ls</code> in the project folder</td><td><code>backend  db  docker-compose.yaml  frontend  infra …</code></td></tr>
 <tr><td>Session Manager plugin (only for Step 8)</td><td><code>session-manager-plugin</code></td><td>A message saying it installed successfully</td></tr>
 </tbody></table></div>
 <p>And two accounts:</p>
 <ul>
-<li><strong>AWS.</strong> One of two kinds of login. Either an <strong>SSO login</strong>: you sign in through an <em>AWS access portal</em> page that lists your accounts and roles, and your role has administrator rights. Or an <strong>IAM user</strong> with the <code>AdministratorAccess</code> policy and an access key for the CLI. Do not use the root login (the email you signed up with) for daily work: it can close the whole account, so it should stay locked away.</li>
+<li><strong>AWS.</strong> An IAM user with the <code>AdministratorAccess</code> policy and an access key for the CLI. Do not use the root login (the email you signed up with) for daily work: it can close the whole account, so it should stay locked away.</li>
 <li><strong>OpenAI.</strong> An API key from <a href="https://platform.openai.com/api-keys">platform.openai.com/api-keys</a>, on a project with billing enabled. A few dollars of credit is plenty; this whole guide uses a few cents.</li>
 </ul>
 <aside class="note teach"><p class="nt">Teaching tip</p><p>Ask every learner to create a <strong>budget alert</strong> before anything else (AWS console, Billing and Cost Management, Budgets, a monthly cost budget of $10 with an email at 80%). It takes two minutes and protects against the most common beginner surprise: a stack left running for a month.</p></aside>
@@ -464,77 +464,7 @@ footer.foot { border-top: 1px solid var(--line); padding: 1.2rem; text-align: ce
 <!-- ===================================================================== -->
 <section>
 <h2 data-toc="One-time setup">One-time setup</h2>
-<p>Do this section once per laptop. Everything here is saved in files, so it survives closing the terminal and restarting the Mac.</p>
-
-<h3>0. Check what is already set up</h3>
-<p>On a laptop you have used before (or in a VS Code terminal), much of this section may already be done. Open a terminal in the project folder (in VS Code: <em>Terminal → New Terminal</em>) and paste this. It contains no <code>#</code> notes, so it works even in a fresh zsh:</p>
-<div class="code"><pre>echo "== tools"; aws --version; docker --version
-echo "== shell"; echo "profile=[$AWS_PROFILE] pager=[$AWS_PAGER]"; setopt 2&gt;/dev/null | grep -q interactivecomments &amp;&amp; echo "comments ok" || echo "comments OFF"
-echo "== profiles"; aws configure list-profiles
-echo "== aws login"; aws sts get-caller-identity --query Arn --output text
-echo "== docker"; docker info &gt;/dev/null 2&gt;&amp;1 &amp;&amp; echo "running" || echo "NOT running"
-echo "== stacks"; aws cloudformation list-stacks --region us-east-1 --query "StackSummaries[?starts_with(StackName,'inventory-stack-') &amp;&amp; StackStatus!='DELETE_COMPLETE'].[StackName,StackStatus]" --output table</pre></div>
-<dl class="parts">
-<dt><code>aws --version</code>, <code>docker --version</code></dt><dd>Are the two tools installed? You need <code>aws-cli/2.x</code>.</dd>
-<dt><code>profile=[…] pager=[…]</code></dt><dd>Prints the two settings this section saves in <code>~/.zshrc</code>. Empty brackets mean the setting is missing.</dd>
-<dt><code>setopt | grep interactivecomments</code></dt><dd>Has zsh been told that <code>#</code> starts a comment?</dd>
-<dt><code>aws configure list-profiles</code></dt><dd>The AWS logins saved on this laptop, by name.</dd>
-<dt><code>sts get-caller-identity --query Arn</code></dt><dd>Is the current login working, and as whom?</dd>
-<dt><code>docker info</code></dt><dd>Is Docker Desktop actually running, not just installed?</dd>
-<dt><code>list-stacks</code></dt><dd>Is a deployment from earlier still running (and costing money)?</dd>
-</dl>
-<div class="table-wrap"><table>
-<thead><tr><th>You see</th><th>Do this</th></tr></thead>
-<tbody>
-<tr><td><code>comments OFF</code> or <code>pager=[]</code></td><td><em>1. Prepare your terminal</em>, below</td></tr>
-<tr><td><code>profile=[]</code>, but <code>scaler</code> (your profile) is in the list</td><td><code>echo 'export AWS_PROFILE=scaler' &gt;&gt; ~/.zshrc; export AWS_PROFILE=scaler</code></td></tr>
-<tr><td>No profile in the list, or <code>Unable to locate credentials</code></td><td><em>2. Connect the AWS CLI</em>, below</td></tr>
-<tr><td><code>Token has expired</code></td><td><code>aws sso login</code></td></tr>
-<tr><td>Docker <code>NOT running</code></td><td>Open Docker Desktop and wait until it says it is running</td></tr>
-<tr><td>A stack such as <code>inventory-stack-v1</code> is listed</td><td>An earlier deployment still exists. Step 5 simply updates it; or delete it first with Step 11</td></tr>
-<tr><td>Everything fine</td><td>Skip to <a href="#set-your-variables">Set your variables</a>. <em>3. Service-linked roles</em> only ever needs doing once per AWS account</td></tr>
-</tbody></table></div>
-<aside class="note real"><p class="nt">VS Code's own AWS sign-in does not count</p><p>The AWS extension in VS Code has its own login panel. Every command on this page uses the terminal's <code>aws</code> command and its profile, so this check is what matters.</p></aside>
-
-<h3>1. Prepare your terminal</h3>
-<div class="code"><pre>echo 'setopt interactivecomments' &gt;&gt; ~/.zshrc
-echo 'export AWS_PAGER=""' &gt;&gt; ~/.zshrc
-setopt interactivecomments
-export AWS_PAGER=""</pre></div>
-<dl class="parts">
-<dt><code>setopt interactivecomments</code></dt><dd>Makes zsh (the Mac's default shell) treat <code>#</code> as the start of a comment, as bash does. Without it, pasting any block that has a <code># note</code> in it fails with odd errors such as <code>zsh: unknown sort specifier</code> or <code>command not found: #</code>.</dd>
-<dt><code>AWS_PAGER=""</code></dt><dd>Prints AWS output straight to the screen. Otherwise long JSON opens in a viewer that waits until you press <code>q</code>.</dd>
-<dt><code>&gt;&gt; ~/.zshrc</code></dt><dd>Adds the line to the file every new terminal reads at start-up, so you never type it again. The last two lines apply it to the terminal you have open now.</dd>
-</dl>
-<aside class="note real"><p class="nt">On bash (Linux, WSL, Git Bash)</p><p>Comments already work. Run only <code>echo 'export AWS_PAGER=""' &gt;&gt; ~/.bashrc</code>, and wherever this page says <code>~/.zshrc</code>, use <code>~/.bashrc</code>.</p></aside>
-
-<h3>2. Connect the AWS CLI to your account</h3>
-<p>Pick the option that matches the login you have. <strong>Option A</strong> if you sign in through an <em>AWS access portal</em> (a page listing your AWS accounts, each with a role such as <code>AdministratorAccess</code> and an <em>Access keys</em> link). <strong>Option B</strong> if you have an IAM user and an access key.</p>
-
-<h4>Option A: SSO login (access portal)</h4>
-<p>First collect two values. In the access portal, click <strong>Access keys</strong> next to your role, and copy the <strong>SSO start URL</strong> and <strong>SSO region</strong> from the <em>AWS IAM Identity Center credentials</em> section. Then run:</p>
-<div class="code"><pre>aws configure sso</pre></div>
-<p>Answer its questions like this:</p>
-<dl class="parts">
-<dt>SSO session name</dt><dd><code>scaler</code> (any short name works)</dd>
-<dt>SSO start URL</dt><dd>Paste it from the portal. It looks like <code>https://d-xxxxxxxxxx.awsapps.com/start</code>.</dd>
-<dt>SSO region</dt><dd>Paste it from the portal, for example <code>us-west-2</code>. This is only where your login lives. It does not decide where you deploy.</dd>
-<dt>SSO registration scopes</dt><dd>Press Enter to accept the default.</dd>
-<dt><em>A browser opens</em></dt><dd>Sign in if asked, then click <strong>Allow</strong>. Come back to the terminal.</dd>
-<dt>Account and role</dt><dd>Picked automatically if you have only one. Otherwise choose the account and role meant for this lab.</dd>
-<dt>CLI default client Region</dt><dd><code>us-east-1</code>. It must match <code>REGION</code> in the variables below.</dd>
-<dt>CLI default output format</dt><dd><code>json</code></dd>
-<dt>CLI profile name</dt><dd><code>scaler</code>. This is the name the next block uses.</dd>
-</dl>
-<p>Make that profile the default for every terminal, then check it:</p>
-<div class="code"><pre>echo 'export AWS_PROFILE=scaler' &gt;&gt; ~/.zshrc
-export AWS_PROFILE=scaler
-aws sts get-caller-identity</pre></div>
-<aside class="note expect"><p class="nt">What you should see</p><p>A JSON block with your 12-digit <code>"Account"</code> and an <code>Arn</code> like <code>arn:aws:sts::123456789012:assumed-role/AWSReservedSSO_YourRole_1a2b3c…/you@company.com</code>.</p></aside>
-<aside class="note mistake"><p class="nt">Common mistake</p><p>Old access keys left in the shell override the profile, so commands go to the wrong account. If <code>get-caller-identity</code> shows an account you did not expect, run <code>unset AWS_ACCESS_KEY_ID AWS_SECRET_ACCESS_KEY AWS_SESSION_TOKEN</code> and try again.</p></aside>
-<p>An SSO login lasts a few hours. When a command says <code>Token has expired</code> or <code>The SSO session associated with this profile has expired</code>, run <code>aws sso login</code>. The first block in <a href="#set-your-variables">Set your variables</a> does this for you when it is needed.</p>
-
-<h4>Option B: IAM access key</h4>
+<h3>Connect the AWS CLI to your account</h3>
 <div class="code"><pre>aws configure</pre></div>
 <p>It asks four questions:</p>
 <dl class="parts">
@@ -543,55 +473,42 @@ aws sts get-caller-identity</pre></div>
 <dt>Default region</dt><dd><code>us-east-1</code>. Mumbai (<code>ap-south-1</code>) also works and is closer to India; prices differ slightly.</dd>
 <dt>Default output format</dt><dd><code>json</code></dd>
 </dl>
-
-<h3>3. Create the two service-linked roles</h3>
+<h3>Create the two service-linked roles</h3>
 <div class="code"><pre>aws iam create-service-linked-role --aws-service-name ecs.amazonaws.com
 aws iam create-service-linked-role --aws-service-name elasticloadbalancing.amazonaws.com</pre></div>
 <p>A <strong>service-linked role</strong> is a permission that an AWS service needs to act inside your account; ECS uses it to attach network cards to your tasks, the load balancer uses it to register targets. Brand-new accounts sometimes do not have them yet, and the first deployment fails in a confusing way.</p>
-<aside class="note expect"><p class="nt">What you should see</p><p>Either a block of JSON describing the new role, or <code>An error occurred (InvalidInput) … Service role name AWSServiceRoleForECS has been taken in this account</code>. Both are fine. Ignore the word <em>error</em>: “taken” just means the role already exists. This is normal on shared or company accounts.</p></aside>
-<p>If you get <code>AccessDenied</code> instead, your role may not be allowed to create IAM roles. Check whether they already exist:</p>
-<div class="code"><pre>aws iam get-role --role-name AWSServiceRoleForECS --query Role.RoleName
-aws iam get-role --role-name AWSServiceRoleForElasticLoadBalancing --query Role.RoleName</pre></div>
-<p>Two role names printed means you are fine. <code>NoSuchEntity</code> means you need to ask your AWS administrator to create that role.</p>
+<aside class="note expect"><p class="nt">What you should see</p><p>Either a block of JSON describing the new role, or <code>Service role name AWSServiceRoleForECS has been taken in this account</code>. Both are fine. “Taken” just means it already exists.</p></aside>
 </section>
 
 <!-- ===================================================================== -->
 <section>
 <h2 data-toc="Set your variables">Set your variables</h2>
-<p>Every command below uses a few <strong>shell variables</strong>. A variable is a sticky note the terminal remembers: you write <code>REGION=us-east-1</code> once, and every later <code>$REGION</code> is replaced with <code>us-east-1</code>. The notes disappear when you close the terminal, so <strong>run these four blocks at the start of every new terminal session</strong>, from the project folder. Paste each block on its own, in order.</p>
+<p>Every command below uses a few <strong>shell variables</strong>. A variable is a sticky note the terminal remembers: you write <code>REGION=us-east-1</code> once, and every later <code>$REGION</code> is replaced with <code>us-east-1</code>. The notes disappear when you close the terminal, so <strong>run this block at the start of every new terminal session</strong>, from the project folder.</p>
+<div class="code"><pre>VERSION=v1                              # increment for each new deployment
 
-<p class="code-cap"><strong>Block 1.</strong> Log in again if your SSO login has expired. Does nothing when you are still logged in.</p>
-<div class="code"><pre>aws sts get-caller-identity &gt;/dev/null 2&gt;&amp;1 || aws sso login</pre></div>
+# Shared (never change)
+REGION=us-east-1                        # ap-south-1 (Mumbai) also works
+API_KEY=change-me-to-a-long-random-string   # pick once, reuse forever
+OPENAI_API_KEY=sk-your-openai-key-here  # from platform.openai.com/api-keys
+OPENAI_MODEL=gpt-4o-mini                # cheapest with tool calling; gpt-4.1-mini = better quality
 
-<p class="code-cap"><strong>Block 2.</strong> The variables.</p>
-<div class="code"><pre>VERSION=v1
-REGION=us-east-1
-OPENAI_MODEL=gpt-4o-mini
-[ -f ~/.inventory-api-key ] || (umask 077; openssl rand -hex 24 &gt; ~/.inventory-api-key)
-API_KEY=$(cat ~/.inventory-api-key)
+# Derived (do not edit)
 ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
 ECR=$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com
 STACK=inventory-stack-$VERSION
 CLUSTER=inventory-$VERSION</pre></div>
-
-<p class="code-cap"><strong>Block 3.</strong> Your OpenAI key. Paste this line <strong>alone</strong> and press Enter, then paste the key and press Enter. Nothing shows on screen.</p>
-<div class="code"><pre>read -rs OPENAI_API_KEY</pre></div>
-
-<p class="code-cap"><strong>Block 4.</strong> Check everything is filled in.</p>
-<div class="code"><pre>echo "openai: ${#OPENAI_API_KEY} chars | api: ${#API_KEY} chars | $OPENAI_MODEL | $ECR | $STACK | $CLUSTER"</pre></div>
-<aside class="note expect"><p class="nt">What you should see</p><p><code>openai: 164 chars | api: 48 chars | gpt-4o-mini | 123456789012.dkr.ecr.us-east-1.amazonaws.com | inventory-stack-v1 | inventory-v1</code>, with your own account number. The OpenAI count varies by key type; anything well over 50 is fine. If <code>openai</code> shows 0, redo Block 3. If the registry starts with <code>.dkr</code> or is empty, run Block 1 and then Block 2 again.</p></aside>
-
 <dl class="parts">
-<dt><code>VERSION</code></dt><dd>Goes into every resource name, so v1 and v2 can live side by side. Lowercase letters, digits and dashes, at most 12 characters. Increase it for each new deployment.</dd>
-<dt><code>REGION</code></dt><dd>Where everything is built. <code>us-east-1</code> here; Mumbai (<code>ap-south-1</code>) also works. Keep it the same as the CLI default region you chose above.</dd>
-<dt><code>OPENAI_MODEL</code></dt><dd><code>gpt-4o-mini</code> is the cheapest model with tool calling; <code>gpt-4.1-mini</code> gives better answers.</dd>
-<dt><code>API_KEY</code></dt><dd>The shared password between frontend and backend. The <code>[ -f … ] ||</code> line creates a random one in <code>~/.inventory-api-key</code> the first time only, readable by you alone. Every later session reads the same file, so the key never changes.</dd>
+<dt><code>VERSION</code></dt><dd>Goes into every resource name, so v1 and v2 can live side by side. Lowercase letters, digits and dashes, at most 12 characters.</dd>
+<dt><code>API_KEY</code></dt><dd>The shared password between frontend and backend. Make up a long random string once (<code>openssl rand -hex 24</code> prints one), write it down, and paste the same value every time.</dd>
 <dt><code>ACCOUNT_ID</code></dt><dd>Your 12-digit account number, fetched automatically. <code>$( … )</code> means “run this command and use its output here”.</dd>
 <dt><code>ECR</code></dt><dd>The address of your private image store, built from your account and region.</dd>
-<dt><code>read -rs</code></dt><dd>Asks for the key without showing it (<code>-s</code>), so it never lands on screen or in your shell history. It must be pasted alone: in a multi-line paste, <code>read</code> takes the next pasted line as the key.</dd>
 </dl>
-<aside class="note mistake"><p class="nt">Common mistake</p><p>Using a different <code>API_KEY</code> in a later session. Step 4 stores it in AWS, but a running container keeps the value it started with. If you later restart only the frontend, it gets the new key while the backend still has the old one, and every chat fails with <em>Backend error 403</em>. Keep <code>~/.inventory-api-key</code> and do not delete it. If you already deployed with a key you typed yourself, write that one into the file first: <code>echo 'your-old-key' &gt; ~/.inventory-api-key</code>.</p></aside>
-<aside class="note mistake"><p class="nt">Common mistake</p><p>When one line of a pasted block fails, zsh skips the rest of that paste, so later variables stay empty. Fix the error, then paste the block again. Block 4 shows you straight away if anything is missing.</p></aside>
+<aside class="note mistake"><p class="nt">Common mistake</p><p>Generating a new random <code>API_KEY</code> in every session. Step 4 stores it in AWS, but a running container keeps the value it started with. If you later restart only the frontend, it gets the new key while the backend still has the old one, and every chat fails with <em>Backend error 403</em>. One key, chosen once.</p></aside>
+<details class="deep"><summary>Optional: keep your OpenAI key out of the shell history</summary><div>
+<p>Typing a key on the command line saves it in <code>~/.bash_history</code>. To avoid that, let the terminal ask for it without echoing:</p>
+<div class="code"><pre>read -rs OPENAI_API_KEY   # paste the key, press Enter; nothing is shown
+echo "${#OPENAI_API_KEY} characters stored"</pre></div>
+</div></details>
 </section>
 
 <!-- ===================================================================== -->
@@ -605,13 +522,7 @@ CLUSTER=inventory-$VERSION</pre></div>
 <p class="goal">Make sure the CLI is talking to the account you think it is.</p>
 <div class="code"><pre>aws sts get-caller-identity
 echo "Account: $ACCOUNT_ID   Region: $REGION   Registry: $ECR"</pre></div>
-<dl class="parts">
-<dt><code>sts get-caller-identity</code></dt><dd>STS is AWS's identity desk. This call asks “who am I?” and works with any login, even one with no other permissions, so it is the safest first check.</dd>
-<dt><code>"Account"</code></dt><dd>The 12-digit number of the account every following command will change.</dd>
-<dt><code>"Arn"</code></dt><dd>Your full AWS name. For an SSO login, read it in three parts: <code>assumed-role</code> means you are temporarily wearing a role; <code>AWSReservedSSO_InstructorsAdministratorAccess_…</code> is the role SSO made for your access (here, administrator); the last part is who is wearing it, usually your email.</dd>
-<dt><code>echo "…$ACCOUNT_ID…"</code></dt><dd>Prints the variables back to you, so you can see they are filled in before anything is built with them.</dd>
-</dl>
-<aside class="note expect"><p class="nt">What you should see</p><p>A small JSON block with <code>"Account": "123456789012"</code> and an <code>Arn</code> ending in your user name (access key) or in <code>assumed-role/AWSReservedSSO_…/your-email</code> (SSO login), then the echo line with your registry address filled in. If <code>Registry</code> shows <code>.dkr.ecr.us-east-1…</code> with no number at the front, the variables block failed: run it again.</p></aside>
+<aside class="note expect"><p class="nt">What you should see</p><p>A small JSON block with <code>"Account": "123456789012"</code> and an <code>Arn</code> ending in your user name, then the echo line with your registry address filled in. If <code>Registry</code> shows <code>.dkr.ecr.us-east-1…</code> with no number at the front, the variables block failed: run it again.</p></aside>
 <aside class="note why"><p class="nt">Why this step exists</p><p>Many people have a work account and a personal account configured. Deploying a class demo into your company's production account is an expensive way to learn this lesson.</p></aside>
 </div>
 </div>
@@ -628,8 +539,6 @@ aws ecr describe-repositories --repository-names inventory-frontend --region $RE
   || aws ecr create-repository --repository-name inventory-frontend --region $REGION</pre></div>
 <dl class="parts">
 <dt><code>describe-repositories</code></dt><dd>Asks “does this repository exist?”</dd>
-<dt><code>create-repository</code></dt><dd>Creates an empty, private folder for one image. Every tag you push later (<code>v1</code>, <code>v2</code>…) is one more version inside it. Only your account can read it.</dd>
-<dt><code>--region $REGION</code></dt><dd>Says which AWS location to work in. Every command on this page passes it, so nothing lands in a different region by accident.</dd>
 <dt><code>&gt;/dev/null 2&gt;&amp;1</code></dt><dd>Throws away that command's output and errors; we only care whether it succeeded.</dd>
 <dt><code>||</code></dt><dd>“Or else”: run the create command only if the check failed.</dd>
 <dt><code>\</code> at line end</dt><dd>The command continues on the next line.</dd>
@@ -654,13 +563,10 @@ docker push $ECR/inventory-backend:$VERSION
 docker push $ECR/inventory-frontend:$VERSION</pre></div>
 <dl class="parts">
 <dt><code>get-login-password | docker login</code></dt><dd>AWS prints a temporary password (valid 12 hours) and the pipe <code>|</code> hands it straight to Docker, so it never appears on screen.</dd>
-<dt><code>--username AWS --password-stdin $ECR</code></dt><dd>For ECR the user name is always the literal word <code>AWS</code>. <code>--password-stdin</code> reads the password from the pipe instead of the command line, so it is not saved in your history. <code>$ECR</code> says which registry this pass is for.</dd>
-<dt><code>docker build</code></dt><dd>Follows the Dockerfile line by line: start from Python 3.11, copy the code, <code>pip install</code> the libraries. Each line becomes a <strong>layer</strong>; the build log shows them as <code>[1/6]</code> to <code>[6/6]</code>. Unchanged layers are reused next time, which is why rebuilds are fast.</dd>
 <dt><code>--platform linux/amd64</code></dt><dd>Build for x86 processors, which our Fargate tasks use. Essential on Apple Silicon Macs (<a href="01-understand-the-system.html#design-decisions-and-their-trade-offs">why</a>).</dd>
 <dt><code>-f backend/Dockerfile</code></dt><dd>Which recipe to follow.</dd>
 <dt><code>-t …:v1</code></dt><dd>The name and tag to stick on the image.</dd>
 <dt><code>.</code> (the final dot)</dt><dd>The <strong>build context</strong>: the folder Docker may copy files from. It must be the project root, because the backend needs <code>db/schema.sql</code> from outside the <code>backend</code> folder.</dd>
-<dt><code>docker push</code></dt><dd>Uploads the image to ECR one layer at a time. Each <code>Pushed</code> line is one layer; a layer ECR already has shows <code>Layer already exists</code> and is skipped. The final <code>digest: sha256:…</code> is the image's fingerprint: the same digest always means exactly the same image.</dd>
 </dl>
 <details class="deep"><summary>Reading an image name, piece by piece</summary><div>
 <p><code>123456789012.dkr.ecr.us-east-1.amazonaws.com/inventory-backend:v1</code> is like a full postal address:</p>
@@ -681,13 +587,9 @@ docker push $ECR/inventory-frontend:$VERSION</pre></div>
 <div class="step-body">
 <h3 class="in-toc" id="step-4" data-toc="Step 4. Store secrets">Store the two secrets in Parameter Store</h3>
 <p class="goal">Put the OpenAI key and the internal API key in AWS's safe, so containers can receive them without the keys ever being written into code or configuration (<a href="01-understand-the-system.html#the-aws-building-blocks-one-by-one">SSM in Part 1</a>).</p>
-<p class="code-cap"><strong>First</strong>, confirm the API key you are about to store is the one saved in <code>~/.inventory-api-key</code>:</p>
-<div class="code"><pre>[ "$(cat ~/.inventory-api-key)" = "$API_KEY" ] &amp;&amp; echo "API key saved and matches"</pre></div>
-<p>If it does not print <code>API key saved and matches</code>, run Block 2 of <a href="#set-your-variables">Set your variables</a> again. Then store both secrets:</p>
 <div class="code"><pre>aws ssm put-parameter --name /inventory/openai-api-key --type SecureString --value "$OPENAI_API_KEY" --overwrite --region $REGION
 aws ssm put-parameter --name /inventory/api-key --type SecureString --value "$API_KEY" --overwrite --region $REGION</pre></div>
 <dl class="parts">
-<dt><code>ssm put-parameter</code></dt><dd>Saves one value in Parameter Store, part of AWS Systems Manager (SSM). The value goes from your terminal straight to AWS; nothing is written into the project files or the images.</dd>
 <dt><code>--name /inventory/…</code></dt><dd>Names look like folder paths, so related secrets group together and permissions can cover a whole folder.</dd>
 <dt><code>--type SecureString</code></dt><dd>Encrypt the value with KMS. A plain <code>String</code> would be readable by anyone who can view parameters.</dd>
 <dt><code>"$OPENAI_API_KEY"</code></dt><dd>The quotes protect values containing special characters.</dd>
@@ -717,7 +619,6 @@ aws ssm put-parameter --name /inventory/api-key --type SecureString --value "$AP
     OpenAIKeyParameterName=/inventory/openai-api-key \
     ApiKeyParameterName=/inventory/api-key</pre></div>
 <dl class="parts">
-<dt><code>cloudformation deploy</code></dt><dd>Creates the stack the first time and updates it on later runs. You never decide between “create” and “update”: CloudFormation compares the blueprint with what exists and does only the difference.</dd>
 <dt><code>--stack-name</code></dt><dd>The name for this whole bundle of resources: <code>inventory-stack-v1</code>.</dd>
 <dt><code>--template-file</code></dt><dd>The blueprint to build from.</dd>
 <dt><code>--capabilities CAPABILITY_IAM</code></dt><dd>An “I agree” checkbox. The template creates IAM roles, and AWS wants your explicit consent before any stack creates permissions.</dd>
@@ -725,14 +626,6 @@ aws ssm put-parameter --name /inventory/api-key --type SecureString --value "$AP
 <dt><code>--no-fail-on-empty-changeset</code></dt><dd>Running the command again with nothing changed is treated as success, not an error.</dd>
 <dt><code>--parameter-overrides</code></dt><dd>Fills in the blanks of the template: which version, which images, which model, where the secrets live.</dd>
 </dl>
-<details class="deep"><summary>The six blanks, one by one</summary><div>
-<dl class="parts">
-<dt><code>Version</code></dt><dd>Added to every resource name, so <code>v1</code> and <code>v2</code> never clash.</dd>
-<dt><code>BackendImage</code>, <code>FrontendImage</code></dt><dd>The full ECR addresses from Step 3. ECS pulls exactly these images when it starts a container.</dd>
-<dt><code>OpenAIModel</code></dt><dd>Passed to the backend as a setting, so you can switch models by redeploying, without rebuilding the image.</dd>
-<dt><code>OpenAIKeyParameterName</code>, <code>ApiKeyParameterName</code></dt><dd>Only the <em>names</em> of the secrets from Step 4, never the values. ECS fetches the values from Parameter Store when a container starts, so the keys never appear in CloudFormation, the console or the logs.</dd>
-</dl>
-</div></details>
 <h4>What CloudFormation does during those minutes</h4>
 <p><code>deploy</code> first creates a <strong>change set</strong>, a list of everything it is about to do (like a builder's quote), then executes it. Resources that depend on each other are built in order; independent ones are built in parallel. Roughly:</p>
 <ol>
@@ -749,7 +642,7 @@ aws ssm put-parameter --name /inventory/api-key --type SecureString --value "$AP
   --query "StackEvents[].[Timestamp,LogicalResourceId,ResourceStatus]" --output table</pre></div>
 <p>Or open the AWS console, CloudFormation, Stacks, <code>inventory-stack-v1</code>, Events tab. The newest events are at the top.</p>
 </div></details>
-<aside class="note expect"><p class="nt">What you should see</p><p><code>Waiting for changeset to be created..</code> (CloudFormation is writing its quote), then <code>Waiting for stack create/update to complete</code> (it is building), and after 6–8 minutes <code>Successfully created/updated stack - inventory-stack-v1</code> (every resource is built and both services passed their health checks).</p></aside>
+<aside class="note expect"><p class="nt">What you should see</p><p><code>Waiting for changeset to be created..</code>, then <code>Waiting for stack create/update to complete</code>, and after 6–8 minutes <code>Successfully created/updated stack - inventory-stack-v1</code>.</p></aside>
 <aside class="note mistake"><p class="nt">If it fails</p><p>The command prints <code>Failed to create/update the stack</code>. Use the four-question method in <a href="#troubleshooting">Troubleshooting</a>: the first <code>FAILED</code> event tells you which resource broke and why. Fix the cause and run Step 5 again. If CloudFormation refuses to update a failed stack, delete it (Step 11) and redeploy.</p></aside>
 </div>
 </div>
@@ -765,11 +658,6 @@ aws ssm put-parameter --name /inventory/api-key --type SecureString --value "$AP
 # Backend start-up log
 aws logs tail /ecs/inventory-$VERSION/backend --region $REGION --since 15m</pre></div>
 <p>The <code>--query</code> option is a filter (in a language called JMESPath) that picks just the fields you care about out of a very large JSON answer. Without it, <code>describe-services</code> prints hundreds of lines.</p>
-<dl class="parts">
-<dt><code>desired</code> vs <code>running</code></dt><dd><code>desired</code> is how many copies you asked ECS to keep alive; <code>running</code> is how many are up right now. When they match, ECS is happy. If <code>running</code> stays at 0, a container keeps crashing: read the log.</dd>
-<dt><code>--output table</code></dt><dd>Prints the result as a small table instead of JSON, easier to read at a glance.</dd>
-<dt><code>logs tail … --since 15m</code></dt><dd>Shows what the backend printed in the last 15 minutes, the same lines you would see in your terminal when running it locally. Add <code>--follow</code> to keep watching live; press <code>Ctrl+C</code> to stop.</dd>
-</dl>
 <aside class="note expect"><p class="nt">What you should see</p><p>A table where both services show <code>desired 1</code>, <code>running 1</code>, <code>status ACTIVE</code>. In the log: <code>Database initialized and seeded at: /app/data/inventory.db</code> and <code>Uvicorn running on http://0.0.0.0:8000</code>.</p></aside>
 </div>
 </div>
@@ -813,17 +701,9 @@ exit</pre></div>
 <div class="step-body">
 <h3 class="in-toc" id="step-9" data-toc="Step 9. Open the app">Open the app in your browser</h3>
 <p class="goal">Get the public URL and use the agent.</p>
-<div class="code"><pre>URL=$(aws cloudformation describe-stacks --stack-name $STACK --region $REGION \
-  --query "Stacks[0].Outputs[?OutputKey=='FrontendURL'].OutputValue" --output text)
-echo $URL</pre></div>
+<div class="code"><pre>aws cloudformation describe-stacks --stack-name $STACK --region $REGION \
+  --query "Stacks[0].Outputs[?OutputKey=='FrontendURL'].OutputValue" --output text</pre></div>
 <p>It prints something like <code>http://inventory-v1-alb-123456789.us-east-1.elb.amazonaws.com</code>. Open it, and note it is <strong>http</strong>, not https.</p>
-<dl class="parts">
-<dt><code>Outputs[?OutputKey=='FrontendURL']</code></dt><dd>From the stack's handover sheet, pick the one line called <code>FrontendURL</code>.</dd>
-<dt><code>--output text</code></dt><dd>Plain text without quotes, so it can be saved straight into the <code>URL</code> variable.</dd>
-</dl>
-<aside class="note mistake"><p class="nt">If the browser says “This site can't be reached” or <code>ERR_CONNECTION_TIMED_OUT</code></p><p>Usually the browser quietly tried <strong>https</strong>, which this app does not serve, and waited until it gave up. Ask the load balancer directly, without a browser:</p>
-<div class="code"><pre>curl -s -o /dev/null -w "HTTP %{http_code}\n" --max-time 15 "$URL" || echo "no answer (timeout)"</pre></div>
-<p><code>HTTP 200</code> means AWS is fine. Open the address in an Incognito window and type <code>http://</code> in front, or use Safari (<code>open -a Safari "$URL"</code> on a Mac). If Chrome still times out, turn off <em>Always use secure connections</em> in Chrome's Settings, Privacy and security, Security. If <code>curl</code> also times out, your network (office Wi-Fi, VPN or proxy) is blocking it: try a phone hotspot.</p></aside>
 <h4>A five-minute test script</h4>
 <ol>
 <li>Type <code>SKU001</code> in the SKU box and click <em>Lookup SKU</em>. You should see 100 units, 10 a day, 7 days, 20 safety stock. This proves frontend → backend → database works without OpenAI.</li>
@@ -883,39 +763,6 @@ echo "Deleted $STACK"</pre></div>
 
 <!-- ===================================================================== -->
 <section>
-<h2 data-toc="Command recap">Recap: every command in plain words</h2>
-<p>One line per command, in the order you ran them. Use it to revise after the lab, or to explain the whole flow to someone in five minutes.</p>
-<div class="table-wrap"><table>
-<thead><tr><th>When</th><th>Command</th><th>What it does</th><th>Everyday picture</th></tr></thead>
-<tbody>
-<tr><td>One-time setup</td><td><code>setopt interactivecomments</code></td><td>Lets zsh treat <code>#</code> as a comment, so pasted blocks with notes work</td><td>Teaching the terminal to skip the margin notes</td></tr>
-<tr><td></td><td><code>export AWS_PAGER=""</code></td><td>Prints AWS output straight to the screen</td><td>Taking the result out of the envelope for you</td></tr>
-<tr><td></td><td><code>aws configure sso</code></td><td>Saves your SSO login details as a named profile</td><td>Registering your office ID card</td></tr>
-<tr><td></td><td><code>export AWS_PROFILE=scaler</code></td><td>Tells every <code>aws</code> command which login to use</td><td>Choosing which ID card to show at the door</td></tr>
-<tr><td></td><td><code>aws sso login</code></td><td>Renews the SSO login, which lasts a few hours</td><td>Swiping your card again in the morning</td></tr>
-<tr><td></td><td><code>aws iam create-service-linked-role</code></td><td>Lets ECS and the load balancer act inside your account</td><td>Giving the building staff their own keys</td></tr>
-<tr><td>Every session</td><td><code>VERSION=…</code>, <code>REGION=…</code>, …</td><td>Short names the terminal remembers for later commands</td><td>Sticky notes on the monitor</td></tr>
-<tr><td></td><td><code>read -rs OPENAI_API_KEY</code></td><td>Takes the key without showing or saving it</td><td>Typing a PIN on a covered keypad</td></tr>
-<tr><td></td><td><code>echo "${#OPENAI_API_KEY} chars …"</code></td><td>Checks every variable is filled in</td><td>Checking your pockets before leaving home</td></tr>
-<tr><td>Step 1</td><td><code>aws sts get-caller-identity</code></td><td>Shows which account and role you are using</td><td>Reading the name on your badge</td></tr>
-<tr><td>Step 2</td><td><code>aws ecr create-repository</code></td><td>Creates two private image folders</td><td>Renting two shelves in a warehouse</td></tr>
-<tr><td>Step 3</td><td><code>aws ecr get-login-password | docker login</code></td><td>Gives Docker a 12-hour pass to upload</td><td>A gate pass for the warehouse</td></tr>
-<tr><td></td><td><code>docker build --platform linux/amd64</code></td><td>Packs code, Python and libraries into one image for AWS's processors</td><td>Packing a sealed box</td></tr>
-<tr><td></td><td><code>docker push</code></td><td>Uploads the image to ECR, layer by layer</td><td>Shipping the box to the warehouse</td></tr>
-<tr><td>Step 4</td><td><code>aws ssm put-parameter --type SecureString</code></td><td>Stores the two keys encrypted in Parameter Store</td><td>Locking the keys in a safe</td></tr>
-<tr><td>Step 5</td><td><code>aws cloudformation deploy</code></td><td>Builds the network, disk, containers and load balancer from the blueprint</td><td>Handing the plans to a builder</td></tr>
-<tr><td>Step 6</td><td><code>aws ecs describe-services</code></td><td>Shows how many copies of each service are running</td><td>A head count of staff on shift</td></tr>
-<tr><td></td><td><code>aws logs tail</code></td><td>Shows what the app printed</td><td>Reading the shop's diary</td></tr>
-<tr><td>Step 9</td><td><code>aws cloudformation describe-stacks … Outputs</code></td><td>Reads the addresses the stack created</td><td>The builder's handover sheet</td></tr>
-<tr><td></td><td><code>curl -w "%{http_code}"</code></td><td>Tests the address without a browser</td><td>Knocking on the door directly</td></tr>
-<tr><td>Step 10</td><td><code>aws ecs update-service --desired-count 0</code></td><td>Stops the containers, keeps everything else</td><td>Switching off the lights for the night</td></tr>
-<tr><td>Step 11</td><td><code>aws cloudformation delete-stack</code></td><td>Removes everything the stack built</td><td>Demolishing the shop, keeping the warehouse</td></tr>
-</tbody></table></div>
-<aside class="note analogy"><p class="nt">The whole lab in one breath</p><p>You logged in, packed the app into two boxes (images), shipped them to your warehouse (ECR), locked the keys in a safe (Parameter Store), and handed the blueprint to a builder (CloudFormation). The builder made a private network with a front door (load balancer), two workers (frontend and backend containers) and a filing cabinet that survives restarts (EFS). Then you opened the front door in a browser, and finally pulled the building down so the bill stops.</p></aside>
-</section>
-
-<!-- ===================================================================== -->
-<section>
 <h2 data-toc="Updating">Updating a running deployment</h2>
 <p>You will change code far more often than you build new infrastructure. Pick the smallest update that does the job.</p>
 
@@ -966,7 +813,7 @@ aws elbv2 describe-load-balancers --region $REGION --query "LoadBalancers[?start
 aws ec2 describe-vpcs --region $REGION --filters "Name=tag:Name,Values=inventory-*" --query "Vpcs[].VpcId"
 aws logs describe-log-groups --region $REGION --log-group-name-prefix /ecs/inventory --query "logGroups[].logGroupName"
 aws ecs list-clusters --region $REGION --query "clusterArns[?contains(@,'inventory-')]"</pre></div>
-<aside class="note expect"><p class="nt">What legitimately remains</p><p>The two service-linked roles (<code>AWSServiceRoleForECS</code>, <code>AWSServiceRoleForElasticLoadBalancing</code>), your IAM user or SSO profile, and <code>~/.inventory-api-key</code> on your laptop. All are free. If you created an access key only for this course, deactivate it in IAM. Check Billing, Cost Explorer the next day: charges for this project should have stopped.</p></aside>
+<aside class="note expect"><p class="nt">What legitimately remains</p><p>The two service-linked roles (<code>AWSServiceRoleForECS</code>, <code>AWSServiceRoleForElasticLoadBalancing</code>) and your IAM user. Both are free. If you created an access key only for this course, deactivate it in IAM. Check Billing, Cost Explorer the next day: charges for this project should have stopped.</p></aside>
 <aside class="note teach"><p class="nt">Teaching tip</p><p>End the class by having every learner run section C and show the empty output. “I'm sure I deleted it” is not the same as proof, and that habit will save them money for the rest of their careers.</p></aside>
 </section>
 
@@ -1002,11 +849,7 @@ aws logs tail /ecs/inventory-$VERSION/frontend --region $REGION --since 30m</pre
 <div class="table-wrap"><table>
 <thead><tr><th>You see</th><th>What it means</th><th>Fix</th></tr></thead>
 <tbody>
-<tr><td><code>Unable to locate credentials</code></td><td>The CLI has no login</td><td>SSO: check <code>echo $AWS_PROFILE</code> prints your profile name, then <code>aws sso login</code>. Access key: run <code>aws configure</code></td></tr>
-<tr><td><code>Token has expired</code> or <code>The SSO session associated with this profile has expired</code></td><td>Your SSO login timed out (it lasts a few hours)</td><td>Run <code>aws sso login</code>, then paste Block 2 of the variables again</td></tr>
-<tr><td><code>zsh: unknown sort specifier</code>, <code>zsh: command not found: #</code> or <code>bad pattern</code></td><td>zsh is reading a <code>#</code> note as part of the command</td><td><code>setopt interactivecomments</code> (One-time setup, part 1), then paste the block again</td></tr>
-<tr><td>Some variables are empty after pasting a block</td><td>One line failed, and zsh skipped the rest of the paste</td><td>Fix that line's error, paste the whole block again, check with Block 4</td></tr>
-<tr><td>Output stops with <code>(END)</code> or <code>:</code> and waits</td><td>The AWS CLI opened its pager</td><td>Press <code>q</code>. Set <code>export AWS_PAGER=""</code> (One-time setup, part 1) to stop it</td></tr>
+<tr><td><code>Unable to locate credentials</code></td><td>The CLI has no login</td><td>Run <code>aws configure</code></td></tr>
 <tr><td><code>Cannot connect to the Docker daemon</code></td><td>Docker Desktop is not running</td><td>Start it and wait for the whale icon to settle</td></tr>
 <tr><td><code>no basic auth credentials</code> when pushing</td><td>The 12-hour ECR login expired</td><td>Re-run the <code>docker login</code> line from Step 3</td></tr>
 <tr><td><code>Requires capabilities : [CAPABILITY_IAM]</code></td><td>You left out the consent flag</td><td>Add <code>--capabilities CAPABILITY_IAM</code></td></tr>
@@ -1016,7 +859,6 @@ aws logs tail /ecs/inventory-$VERSION/frontend --region $REGION --since 30m</pre
 <tr><td><code>exec format error</code> in the log, task keeps restarting</td><td>Image built for ARM (Apple Silicon)</td><td>Rebuild with <code>--platform linux/amd64</code>, push, force a new deployment</td></tr>
 <tr><td><code>… reached the limit on the number of vCPUs …</code></td><td>New AWS accounts start with a low Fargate quota</td><td>Request an increase in the Service Quotas console, or pass <code>BackendCpu=512 BackendMemory=1024</code> in Step 5</td></tr>
 <tr><td>Step 5 says the service deployment failed (circuit breaker)</td><td>The backend crashes at start-up, so ECS gave up</td><td>Questions 3 and 4 of the method above show the actual error</td></tr>
-<tr><td>Browser shows <code>ERR_CONNECTION_TIMED_OUT</code> / “This site can't be reached”</td><td>The browser switched to https, or your network blocks the address</td><td>Run the <code>curl</code> check in Step 9. <code>HTTP 200</code>: use <code>http://</code> in Incognito or Safari. Timeout: try another network</td></tr>
 <tr><td>Page shows <code>503 Service Unavailable</code></td><td>The load balancer has no healthy frontend yet</td><td>Wait one or two minutes; if it persists, check Step 6</td></tr>
 <tr><td>Chat shows <em>Cannot reach the backend</em></td><td>The backend is down or still starting</td><td>Check Step 6; wait a minute</td></tr>
 <tr><td>Chat shows <em>Backend error 403: Invalid API key</em></td><td>Frontend and backend started with different <code>API_KEY</code> values</td><td>Re-run Step 4 with your one key, then force a new deployment of both services</td></tr>
@@ -1025,14 +867,14 @@ aws logs tail /ecs/inventory-$VERSION/frontend --region $REGION --since 30m</pre
 <tr><td>Stack is <code>ROLLBACK_COMPLETE</code> and will not update</td><td>A first creation failed and was rolled back</td><td>Delete the stack (Step 11), then redeploy</td></tr>
 <tr><td><code>DELETE_FAILED</code></td><td>Network cards or a DNS record were still being released</td><td>Wait two minutes, run <code>delete-stack</code> again</td></tr>
 <tr><td><code>SessionManagerPlugin is not found</code></td><td>Plugin missing on your laptop</td><td>Install it (only needed for Step 8)</td></tr>
-<tr><td><code>AccessDenied</code> / <code>not authorized to perform</code></td><td>Your IAM user or SSO role lacks permissions</td><td>IAM user: attach <code>AdministratorAccess</code> for this lab. SSO: ask your AWS administrator for an admin role</td></tr>
+<tr><td><code>AccessDenied</code> / <code>not authorized to perform</code></td><td>Your IAM user lacks permissions</td><td>Attach <code>AdministratorAccess</code> for this lab</td></tr>
 </tbody></table></div>
 </section>
 
 <!-- ===================================================================== -->
 <section>
 <h2 data-toc="Quick reference">Quick reference</h2>
-<p>Run the four blocks in <a href="#set-your-variables">Set your variables</a> first.</p>
+<p>Run the variables block first.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>I want to…</th><th>Command</th></tr></thead>
 <tbody>
@@ -1042,8 +884,6 @@ aws logs tail /ecs/inventory-$VERSION/frontend --region $REGION --since 30m</pre
 <tr><td>Follow the backend log live</td><td><code>aws logs tail /ecs/inventory-$VERSION/backend --follow --region $REGION</code></td></tr>
 <tr><td>Check what is running</td><td><code>aws ecs describe-services --cluster $CLUSTER --services inventory-backend inventory-frontend --region $REGION --query "services[].{name:serviceName,desired:desiredCount,running:runningCount}" --output table</code></td></tr>
 <tr><td>Pause / resume</td><td><code>aws ecs update-service --cluster $CLUSTER --service inventory-backend --desired-count 0 --region $REGION</code> (1 to resume; same for the frontend)</td></tr>
-<tr><td>Test the app address without a browser</td><td><code>curl -s -o /dev/null -w "HTTP %{http_code}\n" --max-time 15 "$URL"</code> (set <code>URL</code> as in Step 9)</td></tr>
-<tr><td>Log in again after the SSO login expires</td><td><code>aws sso login</code>, then paste Block 2 of the variables again</td></tr>
 <tr><td>Redeploy after a code change</td><td><code>aws ecs update-service --cluster $CLUSTER --service inventory-backend --force-new-deployment --region $REGION</code></td></tr>
 <tr><td>Delete this version</td><td><code>aws cloudformation delete-stack --stack-name $STACK --region $REGION</code></td></tr>
 </tbody></table></div>
@@ -1055,8 +895,7 @@ aws logs tail /ecs/inventory-$VERSION/frontend --region $REGION --since 30m</pre
 <h3>The day before</h3>
 <ul>
 <li>Deploy and delete the whole thing once yourself, in the same region your learners will use.</li>
-<li>Check every learner has: an AWS account with a budget alert, a working CLI login (<code>aws sts get-caller-identity</code> succeeds), AWS CLI v2, Docker Desktop running, an OpenAI key with a spend limit set.</li>
-<li>Mac learners: run “Prepare your terminal” from the One-time setup, or pasted blocks with <code>#</code> notes will fail in zsh.</li>
+<li>Check every learner has: an AWS account with a budget alert, AWS CLI v2, Docker Desktop running, an OpenAI key with a spend limit set.</li>
 <li>Windows learners: confirm WSL or Git Bash works. PowerShell does not understand the <code>\</code> line continuations.</li>
 <li>Learners on office networks: Docker image downloads are sometimes blocked. Ask them to run <code>docker pull python:3.11-slim</code> at home first.</li>
 <li>Keep your own stack deployed during class, so you can demo the finished product in the first five minutes.</li>

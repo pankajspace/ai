@@ -1,0 +1,631 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  Inventory Planning Agent - one versioned deployment (the AWS equivalent of an
+  Azure resource group). Creates: VPC + 2 public subnets, security groups,
+  EFS (persistent SQLite), ECS Fargate cluster, Cloud Map private DNS for the
+  internal backend, public ALB for the Gradio frontend, IAM roles, log groups.
+  Delete this stack to remove every resource it created.
+
+# ---------------------------------------------------------------------------
+# Parameters - all passed from the CLI (see docs/02-deploy-by-hand.html)
+# ---------------------------------------------------------------------------
+Parameters:
+  Version:
+    Type: String
+    Description: Deployment version tag (v1, v2, ...). Used in every resource name.
+    AllowedPattern: "^[a-z0-9-]{1,12}$"
+    ConstraintDescription: lowercase letters, digits and dashes only (max 12 chars, e.g. v1, v2, demo-3)
+
+  BackendImage:
+    Type: String
+    Description: Full ECR image URI for the backend, e.g. 123456789012.dkr.ecr.us-east-1.amazonaws.com/inventory-backend:v1
+
+  FrontendImage:
+    Type: String
+    Description: Full ECR image URI for the frontend
+
+  OpenAIKeyParameterName:
+    Type: String
+    Default: /inventory/openai-api-key
+    Description: SSM Parameter Store SecureString holding the OpenAI API key
+
+  ApiKeyParameterName:
+    Type: String
+    Default: /inventory/api-key
+    Description: SSM Parameter Store SecureString holding the internal X-API-Key
+
+  OpenAIModel:
+    Type: String
+    Default: gpt-4o-mini
+    Description: OpenAI chat model used by the agent (must support tool calling)
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+    MinValue: 0
+    MaxValue: 3
+    Description: Number of tasks for each service (0 = stopped, like min-replicas 0)
+
+  BackendCpu:
+    Type: Number
+    Default: 1024
+    Description: Backend task CPU units (1024 = 1 vCPU)
+
+  BackendMemory:
+    Type: Number
+    Default: 2048
+    Description: Backend task memory in MiB
+
+  FrontendCpu:
+    Type: Number
+    Default: 512
+    Description: Frontend task CPU units (512 = 0.5 vCPU)
+
+  FrontendMemory:
+    Type: Number
+    Default: 1024
+    Description: Frontend task memory in MiB
+
+  LogRetentionDays:
+    Type: Number
+    Default: 7
+    Description: CloudWatch Logs retention
+
+# ---------------------------------------------------------------------------
+Resources:
+
+  # =========================================================================
+  # 1. Network - private environment for this version (like a Container Apps
+  #    environment). Two public subnets (ALB needs two AZs). No NAT gateway:
+  #    tasks get a public IP for outbound (ECR pull, OpenAI) but security
+  #    groups block ALL inbound except what is listed below.
+  # =========================================================================
+  Vpc:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.0.0.0/16
+      EnableDnsHostnames: true
+      EnableDnsSupport: true
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-vpc
+
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-igw
+
+  VpcGatewayAttachment:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref Vpc
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnet1:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.1.0/24
+      AvailabilityZone: !Select [0, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-public-1
+
+  PublicSubnet2:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref Vpc
+      CidrBlock: 10.0.2.0/24
+      AvailabilityZone: !Select [1, !GetAZs ""]
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-public-2
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-public-rt
+
+  PublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PublicSubnet1RouteAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2RouteAssoc:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2
+      RouteTableId: !Ref PublicRouteTable
+
+  # =========================================================================
+  # 2. Security groups - the "ingress" model
+  #    internet -> ALB:80 -> frontend:7860 -> backend:8000 -> EFS:2049
+  # =========================================================================
+  AlbSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Public ALB - allows HTTP from the internet
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+          Description: HTTP from anywhere
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-alb-sg
+
+  FrontendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Frontend tasks - only the ALB may reach port 7860
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 7860
+          ToPort: 7860
+          SourceSecurityGroupId: !Ref AlbSecurityGroup
+          Description: Gradio from ALB only
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-frontend-sg
+
+  BackendSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Backend tasks - only the frontend may reach port 8000 (internal ingress)
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 8000
+          ToPort: 8000
+          SourceSecurityGroupId: !Ref FrontendSecurityGroup
+          Description: FastAPI from frontend only
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-backend-sg
+
+  EfsSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: EFS mount targets - only the backend may mount (NFS 2049)
+      VpcId: !Ref Vpc
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 2049
+          ToPort: 2049
+          SourceSecurityGroupId: !Ref BackendSecurityGroup
+          Description: NFS from backend only
+      Tags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-efs-sg
+
+  # =========================================================================
+  # 3. Persistent storage - EFS replaces the Azure Files share
+  # =========================================================================
+  FileSystem:
+    Type: AWS::EFS::FileSystem
+    Properties:
+      Encrypted: true
+      PerformanceMode: generalPurpose
+      ThroughputMode: elastic
+      FileSystemTags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-efs
+
+  MountTarget1:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: !Ref PublicSubnet1
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+
+  MountTarget2:
+    Type: AWS::EFS::MountTarget
+    Properties:
+      FileSystemId: !Ref FileSystem
+      SubnetId: !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref EfsSecurityGroup
+
+  # Access point = a fixed directory + fixed POSIX identity, so the container
+  # can always read/write regardless of which user it runs as.
+  DbAccessPoint:
+    Type: AWS::EFS::AccessPoint
+    Properties:
+      FileSystemId: !Ref FileSystem
+      PosixUser:
+        Uid: "1000"
+        Gid: "1000"
+      RootDirectory:
+        Path: /inventorydb
+        CreationInfo:
+          OwnerUid: "1000"
+          OwnerGid: "1000"
+          Permissions: "0755"
+      AccessPointTags:
+        - Key: Name
+          Value: !Sub inventory-${Version}-db-ap
+
+  # =========================================================================
+  # 4. ECS cluster + logs + service discovery
+  # =========================================================================
+  Cluster:
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub inventory-${Version}
+      CapacityProviders:
+        - FARGATE
+      ClusterSettings:
+        - Name: containerInsights
+          Value: disabled
+
+  BackendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/inventory-${Version}/backend
+      RetentionInDays: !Ref LogRetentionDays
+
+  FrontendLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /ecs/inventory-${Version}/frontend
+      RetentionInDays: !Ref LogRetentionDays
+
+  # Private DNS inside the VPC: the frontend calls http://backend.inventory-<version>.local:8000
+  ServiceDiscoveryNamespace:
+    Type: AWS::ServiceDiscovery::PrivateDnsNamespace
+    Properties:
+      Name: !Sub inventory-${Version}.local
+      Vpc: !Ref Vpc
+      Description: Private DNS for the inventory agent backend
+
+  BackendDiscoveryService:
+    Type: AWS::ServiceDiscovery::Service
+    Properties:
+      Name: backend
+      NamespaceId: !Ref ServiceDiscoveryNamespace
+      DnsConfig:
+        RoutingPolicy: MULTIVALUE
+        DnsRecords:
+          - Type: A
+            TTL: 10
+      HealthCheckCustomConfig:
+        FailureThreshold: 1
+
+  # =========================================================================
+  # 5. IAM roles
+  # =========================================================================
+  # Used by ECS itself to pull images, write logs and read the SSM secrets
+  TaskExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy
+      Policies:
+        - PolicyName: ReadSecretsFromSsm
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameters
+                  - ssm:GetParameter
+                Resource:
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${OpenAIKeyParameterName}
+                  - !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ApiKeyParameterName}
+              - Effect: Allow
+                Action: kms:Decrypt
+                Resource: !Sub arn:${AWS::Partition}:kms:${AWS::Region}:${AWS::AccountId}:key/*
+                Condition:
+                  StringEquals:
+                    kms:ViaService: !Sub ssm.${AWS::Region}.amazonaws.com
+
+  # Used by the application code inside the containers (ECS Exec for Step 9)
+  TaskRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: ecs-tasks.amazonaws.com
+            Action: sts:AssumeRole
+      Policies:
+        - PolicyName: EcsExecAndEfs
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssmmessages:CreateControlChannel
+                  - ssmmessages:CreateDataChannel
+                  - ssmmessages:OpenControlChannel
+                  - ssmmessages:OpenDataChannel
+                Resource: "*"
+              - Effect: Allow
+                Action:
+                  - elasticfilesystem:ClientMount
+                  - elasticfilesystem:ClientWrite
+                Resource: !GetAtt FileSystem.Arn
+
+  # =========================================================================
+  # 6. Public load balancer for the frontend (external ingress)
+  # =========================================================================
+  LoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    DependsOn: VpcGatewayAttachment
+    Properties:
+      Name: !Sub inventory-${Version}-alb
+      Scheme: internet-facing
+      Type: application
+      IpAddressType: ipv4
+      Subnets:
+        - !Ref PublicSubnet1
+        - !Ref PublicSubnet2
+      SecurityGroups:
+        - !Ref AlbSecurityGroup
+      LoadBalancerAttributes:
+        - Key: idle_timeout.timeout_seconds
+          Value: "120"
+
+  FrontendTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Name: !Sub inventory-${Version}-fe-tg
+      VpcId: !Ref Vpc
+      Protocol: HTTP
+      Port: 7860
+      TargetType: ip
+      HealthCheckPath: /
+      HealthCheckIntervalSeconds: 30
+      HealthCheckTimeoutSeconds: 10
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 5
+      Matcher:
+        HttpCode: "200"
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: "15"
+        - Key: stickiness.enabled
+          Value: "true"
+        - Key: stickiness.type
+          Value: lb_cookie
+
+  HttpListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      LoadBalancerArn: !Ref LoadBalancer
+      Port: 80
+      Protocol: HTTP
+      DefaultActions:
+        - Type: forward
+          TargetGroupArn: !Ref FrontendTargetGroup
+
+  # =========================================================================
+  # 7. Backend - FastAPI + LangChain agent, EFS volume at /app/data
+  # =========================================================================
+  BackendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub inventory-${Version}-backend
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: !Ref BackendCpu
+      Memory: !Ref BackendMemory
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      RuntimePlatform:
+        OperatingSystemFamily: LINUX
+        CpuArchitecture: X86_64
+      Volumes:
+        - Name: dbdata
+          EFSVolumeConfiguration:
+            FilesystemId: !Ref FileSystem
+            TransitEncryption: ENABLED
+            AuthorizationConfig:
+              AccessPointId: !Ref DbAccessPoint
+              IAM: DISABLED
+      ContainerDefinitions:
+        - Name: backend
+          Image: !Ref BackendImage
+          Essential: true
+          PortMappings:
+            - ContainerPort: 8000
+              Protocol: tcp
+          Environment:
+            - Name: DB_PATH
+              Value: /app/data/inventory.db
+            - Name: PORT
+              Value: "8000"
+            - Name: OPENAI_MODEL
+              Value: !Ref OpenAIModel
+          Secrets:
+            - Name: OPENAI_API_KEY
+              ValueFrom: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${OpenAIKeyParameterName}
+            - Name: API_KEY
+              ValueFrom: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ApiKeyParameterName}
+          MountPoints:
+            - SourceVolume: dbdata
+              ContainerPath: /app/data
+              ReadOnly: false
+          HealthCheck:
+            Command:
+              - CMD-SHELL
+              - python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=4)" || exit 1
+            Interval: 30
+            Timeout: 5
+            Retries: 3
+            StartPeriod: 60
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref BackendLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  BackendService:
+    Type: AWS::ECS::Service
+    # Mount targets and the internet route MUST exist before the first task starts
+    DependsOn:
+      - MountTarget1
+      - MountTarget2
+      - PublicRoute
+      - PublicSubnet1RouteAssoc
+      - PublicSubnet2RouteAssoc
+    Properties:
+      ServiceName: inventory-backend
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref BackendTaskDefinition
+      EnableExecuteCommand: true
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+          SecurityGroups:
+            - !Ref BackendSecurityGroup
+      ServiceRegistries:
+        - RegistryArn: !GetAtt BackendDiscoveryService.Arn
+
+  # =========================================================================
+  # 8. Frontend - Gradio UI behind the ALB
+  # =========================================================================
+  FrontendTaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub inventory-${Version}-frontend
+      RequiresCompatibilities:
+        - FARGATE
+      NetworkMode: awsvpc
+      Cpu: !Ref FrontendCpu
+      Memory: !Ref FrontendMemory
+      ExecutionRoleArn: !GetAtt TaskExecutionRole.Arn
+      TaskRoleArn: !GetAtt TaskRole.Arn
+      RuntimePlatform:
+        OperatingSystemFamily: LINUX
+        CpuArchitecture: X86_64
+      ContainerDefinitions:
+        - Name: frontend
+          Image: !Ref FrontendImage
+          Essential: true
+          PortMappings:
+            - ContainerPort: 7860
+              Protocol: tcp
+          Environment:
+            - Name: BACKEND_URL
+              Value: !Sub http://backend.inventory-${Version}.local:8000
+            - Name: PORT
+              Value: "7860"
+          Secrets:
+            - Name: API_KEY
+              ValueFrom: !Sub arn:${AWS::Partition}:ssm:${AWS::Region}:${AWS::AccountId}:parameter${ApiKeyParameterName}
+          LogConfiguration:
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref FrontendLogGroup
+              awslogs-region: !Ref AWS::Region
+              awslogs-stream-prefix: ecs
+
+  FrontendService:
+    Type: AWS::ECS::Service
+    DependsOn:
+      - HttpListener
+      - BackendService
+    Properties:
+      ServiceName: inventory-frontend
+      Cluster: !Ref Cluster
+      LaunchType: FARGATE
+      PlatformVersion: LATEST
+      DesiredCount: !Ref DesiredCount
+      TaskDefinition: !Ref FrontendTaskDefinition
+      EnableExecuteCommand: true
+      HealthCheckGracePeriodSeconds: 120
+      DeploymentConfiguration:
+        MaximumPercent: 200
+        MinimumHealthyPercent: 100
+        DeploymentCircuitBreaker:
+          Enable: true
+          Rollback: true
+      NetworkConfiguration:
+        AwsvpcConfiguration:
+          AssignPublicIp: ENABLED
+          Subnets:
+            - !Ref PublicSubnet1
+            - !Ref PublicSubnet2
+          SecurityGroups:
+            - !Ref FrontendSecurityGroup
+      LoadBalancers:
+        - ContainerName: frontend
+          ContainerPort: 7860
+          TargetGroupArn: !Ref FrontendTargetGroup
+
+# ---------------------------------------------------------------------------
+Outputs:
+  FrontendURL:
+    Description: Public URL of the Gradio UI (Step 11)
+    Value: !Sub http://${LoadBalancer.DNSName}
+
+  BackendInternalURL:
+    Description: Internal-only backend URL (resolvable inside the VPC only)
+    Value: !Sub http://backend.inventory-${Version}.local:8000
+
+  ClusterName:
+    Description: ECS cluster name (used by ecs update-service / execute-command)
+    Value: !Ref Cluster
+
+  BackendServiceName:
+    Value: !GetAtt BackendService.Name
+
+  FrontendServiceName:
+    Value: !GetAtt FrontendService.Name
+
+  BackendLogGroup:
+    Value: !Ref BackendLogGroup
+
+  FrontendLogGroup:
+    Value: !Ref FrontendLogGroup
+
+  FileSystemId:
+    Description: EFS file system holding inventory.db
+    Value: !Ref FileSystem
+
+  VpcId:
+    Value: !Ref Vpc

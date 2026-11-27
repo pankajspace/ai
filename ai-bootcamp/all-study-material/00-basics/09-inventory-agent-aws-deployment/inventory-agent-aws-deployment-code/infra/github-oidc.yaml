@@ -1,0 +1,87 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: >
+  One-time setup for GitHub Actions -> AWS (OIDC). Creates the GitHub OIDC
+  identity provider (optional, one per account) and an IAM role that ONLY
+  workflows from the named GitHub repository can assume. No long-lived AWS
+  access keys are stored in GitHub. Delete this stack to remove both.
+
+Parameters:
+  GitHubRepo:
+    Type: String
+    Description: GitHub repository allowed to deploy, as owner/name (e.g. shivank101/inventory-agent-aws)
+    AllowedPattern: "^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+$"
+    ConstraintDescription: must be owner/name
+
+  CreateOidcProvider:
+    Type: String
+    Default: "true"
+    AllowedValues: ["true", "false"]
+    Description: >
+      An AWS account can hold only ONE provider for token.actions.githubusercontent.com.
+      Set to "false" if the first deploy fails with EntityAlreadyExists (the provider is
+      already there from another project) - the role will reuse the existing provider.
+
+  RoleName:
+    Type: String
+    Default: github-actions-inventory-agent-deploy
+    Description: Name of the IAM role GitHub Actions will assume
+
+Conditions:
+  MakeProvider: !Equals [!Ref CreateOidcProvider, "true"]
+
+Resources:
+  GitHubOidcProvider:
+    Type: AWS::IAM::OIDCProvider
+    Condition: MakeProvider
+    Properties:
+      Url: https://token.actions.githubusercontent.com
+      ClientIdList:
+        - sts.amazonaws.com
+      # AWS validates GitHub's certificate chain itself; these thumbprints are
+      # the documented placeholders and are accepted as-is.
+      ThumbprintList:
+        - 6938fd4d98bab03faadb97b34396831e3780aea1
+        - 1c58a3a8518e8759bf075b76b750d4f2df264fcd
+
+  DeployRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Ref RoleName
+      Description: !Sub Assumed by GitHub Actions workflows of ${GitHubRepo} to deploy the inventory agent
+      MaxSessionDuration: 3600
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Federated: !If
+                - MakeProvider
+                - !Ref GitHubOidcProvider
+                - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com
+            Action: sts:AssumeRoleWithWebIdentity
+            Condition:
+              StringEquals:
+                token.actions.githubusercontent.com:aud: sts.amazonaws.com
+              StringLike:
+                # any branch / tag / workflow_dispatch run of THIS repository only, in both
+                # subject formats: classic repo:owner/name and the newer immutable
+                # repo:owner@<owner-id>/name@<repo-id> that new GitHub repositories use
+                token.actions.githubusercontent.com:sub:
+                  - !Sub repo:${GitHubRepo}:*
+                  - !Join ["", ["repo:", !Select [0, !Split ["/", !Ref GitHubRepo]], "@*/", !Select [1, !Split ["/", !Ref GitHubRepo]], "@*:*"]]
+      # The deploy stack creates VPC, IAM roles, ECS, EFS, ELB, Cloud Map, logs,
+      # ECR and SSM resources. AdministratorAccess keeps the lab error-free;
+      # narrow it to those services once the pipeline is stable.
+      ManagedPolicyArns:
+        - !Sub arn:${AWS::Partition}:iam::aws:policy/AdministratorAccess
+
+Outputs:
+  DeployRoleArn:
+    Description: Put this in the GitHub repository variable AWS_ROLE_ARN
+    Value: !GetAtt DeployRole.Arn
+  OidcProviderArn:
+    Description: GitHub OIDC provider used by the role
+    Value: !If
+      - MakeProvider
+      - !Ref GitHubOidcProvider
+      - !Sub arn:${AWS::Partition}:iam::${AWS::AccountId}:oidc-provider/token.actions.githubusercontent.com

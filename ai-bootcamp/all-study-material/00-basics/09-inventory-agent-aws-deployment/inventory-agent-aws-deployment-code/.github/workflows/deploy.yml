@@ -1,0 +1,197 @@
+# =============================================================================
+# Deploy to AWS — the CI/CD version of docs/02-deploy-by-hand.html
+#
+#   push to main  ──▶  build images ──▶ push to ECR ──▶ secrets to SSM
+#                 ──▶  aws cloudformation deploy (network, EFS, ECS, ALB, services)
+#                 ──▶  print the public URL in the job summary
+#
+# Authentication: GitHub OIDC -> IAM role (infra/github-oidc.yaml). No AWS keys
+# are stored in GitHub.
+#
+# Repository configuration (Settings -> Secrets and variables -> Actions):
+#   variables:  AWS_ROLE_ARN (required)  AWS_REGION (default us-east-1)
+#               DEPLOY_VERSION (default v1)  OPENAI_MODEL (default gpt-4o-mini)
+#   secrets:    OPENAI_API_KEY (required)  API_KEY (required)
+# =============================================================================
+name: Deploy to AWS
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - "db/**"
+      - "infra/inventory-stack.yaml"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch:
+
+permissions:
+  id-token: write   # needed to request the OIDC token for AWS
+  contents: read
+
+# never run two deployments of the same version at once
+concurrency:
+  group: deploy-${{ vars.DEPLOY_VERSION || 'v1' }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  VERSION: ${{ vars.DEPLOY_VERSION || 'v1' }}
+  OPENAI_MODEL: ${{ vars.OPENAI_MODEL || 'gpt-4o-mini' }}
+
+jobs:
+  deploy:
+    name: Build, push and deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Check repository configuration
+        env:
+          AWS_ROLE_ARN: ${{ vars.AWS_ROLE_ARN }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          missing=""
+          [ -z "$AWS_ROLE_ARN" ]   && missing="$missing AWS_ROLE_ARN(variable)"
+          [ -z "$OPENAI_API_KEY" ] && missing="$missing OPENAI_API_KEY(secret)"
+          [ -z "$API_KEY" ]        && missing="$missing API_KEY(secret)"
+          if [ -n "$missing" ]; then
+            echo "::error::Missing repository configuration:$missing. See docs/03-automate-with-github-actions.html, section 'One-time setup'."
+            exit 1
+          fi
+          echo "Region: $AWS_REGION | Version: $VERSION | Model: $OPENAI_MODEL"
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials (OIDC, no stored keys)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Ensure ECR repositories exist (shared, idempotent)
+        run: |
+          for r in inventory-backend inventory-frontend; do
+            aws ecr describe-repositories --repository-names "$r" >/dev/null 2>&1 \
+              || aws ecr create-repository --repository-name "$r" >/dev/null
+          done
+
+      - name: Store secrets in SSM Parameter Store (shared, overwrite)
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
+        run: |
+          aws ssm put-parameter --name /inventory/openai-api-key --type SecureString --value "$OPENAI_API_KEY" --overwrite >/dev/null
+          aws ssm put-parameter --name /inventory/api-key        --type SecureString --value "$API_KEY"        --overwrite >/dev/null
+          echo "Secrets stored as /inventory/openai-api-key and /inventory/api-key"
+
+      - name: Build and push images (tag = commit SHA)
+        env:
+          ECR: ${{ steps.ecr.outputs.registry }}
+        run: |
+          TAG="${GITHUB_SHA::7}"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          docker build --platform linux/amd64 -f backend/Dockerfile  -t "$ECR/inventory-backend:$TAG"  -t "$ECR/inventory-backend:$VERSION"  .
+          docker build --platform linux/amd64 -f frontend/Dockerfile -t "$ECR/inventory-frontend:$TAG" -t "$ECR/inventory-frontend:$VERSION" .
+          docker push "$ECR/inventory-backend:$TAG"
+          docker push "$ECR/inventory-backend:$VERSION"
+          docker push "$ECR/inventory-frontend:$TAG"
+          docker push "$ECR/inventory-frontend:$VERSION"
+
+      - name: Deploy CloudFormation stack
+        env:
+          ECR: ${{ steps.ecr.outputs.registry }}
+        run: |
+          STACK="inventory-stack-$VERSION"
+          STATUS=$(aws cloudformation describe-stacks --stack-name "$STACK" \
+                     --query "Stacks[0].StackStatus" --output text 2>/dev/null || echo "NONE")
+          echo "Current stack status: $STATUS"
+
+          # A failed FIRST deployment has nothing worth keeping: remove it and start clean.
+          case "$STATUS" in
+            CREATE_FAILED|ROLLBACK_COMPLETE|ROLLBACK_FAILED)
+              echo "Previous first deployment failed ($STATUS) - deleting it before redeploying"
+              aws cloudformation delete-stack --stack-name "$STACK"
+              aws cloudformation wait stack-delete-complete --stack-name "$STACK"
+              STATUS="NONE" ;;
+          esac
+
+          # First creation: keep resources on failure so the diagnostics step can read logs.
+          # Updates: normal rollback, so a bad commit never takes the running version down.
+          EXTRA=""
+          [ "$STATUS" = "NONE" ] && EXTRA="--disable-rollback"
+
+          aws cloudformation deploy \
+            --stack-name "$STACK" \
+            --template-file infra/inventory-stack.yaml \
+            --capabilities CAPABILITY_IAM \
+            --no-fail-on-empty-changeset $EXTRA \
+            --parameter-overrides \
+              "Version=$VERSION" \
+              "BackendImage=$ECR/inventory-backend:$TAG" \
+              "FrontendImage=$ECR/inventory-frontend:$TAG" \
+              "OpenAIModel=$OPENAI_MODEL" \
+              "OpenAIKeyParameterName=/inventory/openai-api-key" \
+              "ApiKeyParameterName=/inventory/api-key"
+
+      - name: Smoke test the public URL
+        run: |
+          URL=$(aws cloudformation describe-stacks --stack-name "inventory-stack-$VERSION" \
+                  --query "Stacks[0].Outputs[?OutputKey=='FrontendURL'].OutputValue" --output text)
+          echo "FRONTEND_URL=$URL" >> "$GITHUB_ENV"
+          echo "Waiting for $URL ..."
+          for i in $(seq 1 20); do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 10 "$URL/" || true)
+            if [ "$code" = "200" ]; then echo "UI is up (HTTP 200)"; exit 0; fi
+            echo "attempt $i: HTTP $code - retrying in 15s"; sleep 15
+          done
+          echo "::error::UI did not return HTTP 200 within 5 minutes"; exit 1
+
+      - name: Write summary
+        run: |
+          {
+            echo "## ✅ Deployed inventory-stack-${VERSION}"
+            echo
+            echo "**Frontend URL:** ${FRONTEND_URL}"
+            echo
+            echo "| Setting | Value |"
+            echo "|---|---|"
+            echo "| Region | ${AWS_REGION} |"
+            echo "| Image tag | \`${TAG}\` (commit ${GITHUB_SHA}) |"
+            echo "| Model | ${OPENAI_MODEL} |"
+            echo "| Cluster | inventory-${VERSION} |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Diagnostics (only on failure)
+        if: failure()
+        run: |
+          STACK="inventory-stack-$VERSION"; CLUSTER="inventory-$VERSION"
+          echo "::group::Failed CloudFormation events"
+          aws cloudformation describe-stack-events --stack-name "$STACK" \
+            --query "StackEvents[?contains(ResourceStatus,'FAILED')].[Timestamp,LogicalResourceId,ResourceStatusReason]" \
+            --output table 2>/dev/null || echo "(no stack)"
+          echo "::endgroup::"
+          echo "::group::ECS service events"
+          aws ecs describe-services --cluster "$CLUSTER" --services inventory-backend inventory-frontend \
+            --query "services[].{service:serviceName,events:events[:6].message}" --output yaml 2>/dev/null || echo "(no services)"
+          echo "::endgroup::"
+          echo "::group::Stopped task reasons"
+          T=$(aws ecs list-tasks --cluster "$CLUSTER" --desired-status STOPPED --query taskArns --output text 2>/dev/null || true)
+          if [ -n "$T" ]; then
+            aws ecs describe-tasks --cluster "$CLUSTER" --tasks $T \
+              --query "tasks[].{stopped:stoppedReason,container:containers[0].reason}" --output table
+          else echo "(none)"; fi
+          echo "::endgroup::"
+          for svc in backend frontend; do
+            echo "::group::$svc log (last 80 lines)"
+            aws logs tail "/ecs/$CLUSTER/$svc" --since 30m 2>/dev/null | tail -80 || echo "(no log group)"
+            echo "::endgroup::"
+          done
+          echo "See docs/02-deploy-by-hand.html -> Troubleshooting for the fix matching the error above."

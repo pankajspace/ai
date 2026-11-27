@@ -1,0 +1,108 @@
+# =============================================================================
+# Destroy AWS deployment — manual only (Actions tab -> "Destroy AWS deployment"
+# -> Run workflow). Deletes one versioned stack and, optionally, the shared ECR
+# repositories and SSM secrets. Then lists what (if anything) is left.
+# =============================================================================
+name: Destroy AWS deployment
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Deployment version to delete (e.g. v1)"
+        required: true
+        default: "v1"
+      delete_shared:
+        description: "Also delete the shared ECR repositories and SSM secrets (end of course)"
+        type: boolean
+        default: false
+      confirm:
+        description: "Type DELETE to confirm"
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+concurrency:
+  group: deploy-${{ inputs.version }}
+  cancel-in-progress: false
+
+env:
+  AWS_REGION: ${{ vars.AWS_REGION || 'us-east-1' }}
+  VERSION: ${{ inputs.version }}
+
+jobs:
+  destroy:
+    name: Delete inventory-stack-${{ inputs.version }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Confirm
+        env:
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          if [ "$CONFIRM" != "DELETE" ]; then
+            echo "::error::You must type DELETE in the confirm box. Nothing was deleted."
+            exit 1
+          fi
+
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Delete the stack (services, ALB, EFS, VPC, roles, logs, DNS)
+        run: |
+          STACK="inventory-stack-$VERSION"
+          if ! aws cloudformation describe-stacks --stack-name "$STACK" >/dev/null 2>&1; then
+            echo "Stack $STACK does not exist - nothing to delete"; exit 0
+          fi
+          for attempt in 1 2 3; do
+            echo "delete-stack attempt $attempt"
+            aws cloudformation delete-stack --stack-name "$STACK"
+            if aws cloudformation wait stack-delete-complete --stack-name "$STACK"; then
+              echo "Deleted $STACK"; exit 0
+            fi
+            echo "Delete did not complete (usually network interfaces or DNS instances still releasing) - retrying in 60s"
+            sleep 60
+          done
+          echo "::error::Stack $STACK is still not deleted - check CloudFormation console events"; exit 1
+
+      - name: Delete shared ECR repositories and SSM secrets
+        if: ${{ inputs.delete_shared }}
+        run: |
+          for r in inventory-backend inventory-frontend; do
+            aws ecr delete-repository --repository-name "$r" --force >/dev/null 2>&1 && echo "deleted ECR repo $r" || echo "ECR repo $r not found"
+          done
+          for p in /inventory/openai-api-key /inventory/api-key; do
+            aws ssm delete-parameter --name "$p" >/dev/null 2>&1 && echo "deleted parameter $p" || echo "parameter $p not found"
+          done
+
+      - name: Verify what is left
+        run: |
+          {
+            echo "## 🧹 Destroy report (${AWS_REGION})"
+            echo
+            echo '```'
+            echo "Stacks still present:"
+            aws cloudformation list-stacks \
+              --query "StackSummaries[?starts_with(StackName,'inventory-stack-') && StackStatus!='DELETE_COMPLETE'].[StackName,StackStatus]" --output text
+            echo "ECR repositories:"
+            aws ecr describe-repositories --query "repositories[?starts_with(repositoryName,'inventory-')].repositoryName" --output text
+            echo "SSM parameters:"
+            aws ssm get-parameters-by-path --path /inventory --query "Parameters[].Name" --output text
+            echo "EFS file systems:"
+            aws efs describe-file-systems --query "FileSystems[?Name && starts_with(Name,'inventory-')].FileSystemId" --output text
+            echo "Load balancers:"
+            aws elbv2 describe-load-balancers --query "LoadBalancers[?starts_with(LoadBalancerName,'inventory-')].LoadBalancerName" --output text
+            echo "VPCs:"
+            aws ec2 describe-vpcs --filters Name=tag:Name,Values=inventory-* --query "Vpcs[].VpcId" --output text
+            echo "Log groups:"
+            aws logs describe-log-groups --log-group-name-prefix /ecs/inventory --query "logGroups[].logGroupName" --output text
+            echo '```'
+            echo
+            echo "Empty lines above = nothing left (the two free service-linked roles and the OIDC role remain by design)."
+          } | tee -a "$GITHUB_STEP_SUMMARY"
