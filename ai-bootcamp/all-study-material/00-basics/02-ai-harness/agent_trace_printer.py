@@ -57,12 +57,12 @@ def print_agent_trace(result: dict) -> None:
         if tool_calls:
             for call in tool_calls:
                 print(
-                    f"  [{index}] {kind:<13}: 🛠  tool call → {call['name']}({_one_line(call['args'], 120)})"
+                    f"  [{index}] {kind}: 🛠  tool call → {call['name']}({_one_line(call['args'], 120)})"
                 )
         elif kind == "ToolMessage":
-            print(f"  [{index}] {kind:<13}: ({message.name}) {_one_line(message.text)}")
+            print(f"  [{index}] {kind}: ({message.name}) {_one_line(message.text)}")
         else:
-            print(f"  [{index}] {kind:<13}: {_one_line(message.text)}")
+            print(f"  [{index}] {kind}: {_one_line(message.text)}")
 
     # The final answer is simply the text of the LAST message.
     print("\nFINAL ANSWER:")
